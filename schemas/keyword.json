@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zerlinpi/amazon-ads-skills/schemas/keyword.json",
+  "title": "Amazon Ads Keyword or Target",
+  "type": "object",
+  "required": ["target_id", "campaign_id", "ad_group_id", "target_type", "state", "currency", "date_start", "date_end", "impressions", "clicks", "spend", "orders", "sales"],
+  "properties": {
+    "target_id": {"type": "string", "minLength": 1},
+    "campaign_id": {"type": "string", "minLength": 1},
+    "ad_group_id": {"type": "string", "minLength": 1},
+    "target_type": {"type": "string"},
+    "target_text": {"type": ["string", "null"]},
+    "match_type": {"type": ["string", "null"]},
+    "state": {"type": "string"},
+    "bid": {"type": ["number", "null"], "minimum": 0},
+    "currency": {"type": "string", "minLength": 3, "maxLength": 3},
+    "date_start": {"type": "string", "format": "date"},
+    "date_end": {"type": "string", "format": "date"},
+    "impressions": {"type": "integer", "minimum": 0},
+    "clicks": {"type": "integer", "minimum": 0},
+    "spend": {"type": "number", "minimum": 0},
+    "orders": {"type": "number", "minimum": 0},
+    "sales": {"type": "number", "minimum": 0}
+  },
+  "additionalProperties": true
+}

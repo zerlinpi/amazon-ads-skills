@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zerlinpi/amazon-ads-skills/schemas/search-term.json",
+  "title": "Amazon Ads Search Term",
+  "type": "object",
+  "required": ["search_term", "campaign_id", "ad_group_id", "currency", "date_start", "date_end", "impressions", "clicks", "spend", "orders", "sales"],
+  "properties": {
+    "search_term": {"type": "string", "minLength": 1},
+    "campaign_id": {"type": "string", "minLength": 1},
+    "ad_group_id": {"type": "string", "minLength": 1},
+    "matched_target_id": {"type": ["string", "null"]},
+    "match_type": {"type": ["string", "null"]},
+    "currency": {"type": "string", "minLength": 3, "maxLength": 3},
+    "date_start": {"type": "string", "format": "date"},
+    "date_end": {"type": "string", "format": "date"},
+    "impressions": {"type": "integer", "minimum": 0},
+    "clicks": {"type": "integer", "minimum": 0},
+    "spend": {"type": "number", "minimum": 0},
+    "orders": {"type": "number", "minimum": 0},
+    "sales": {"type": "number", "minimum": 0}
+  },
+  "additionalProperties": true
+}

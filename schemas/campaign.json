@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zerlinpi/amazon-ads-skills/schemas/campaign.json",
+  "title": "Amazon Ads Campaign",
+  "type": "object",
+  "required": ["campaign_id", "campaign_name", "ad_type", "state", "currency", "date_start", "date_end", "impressions", "clicks", "spend", "orders", "sales"],
+  "properties": {
+    "campaign_id": {"type": "string", "minLength": 1},
+    "campaign_name": {"type": "string"},
+    "ad_type": {"type": "string", "enum": ["SP", "SB", "SD", "DSP", "OTHER"]},
+    "state": {"type": "string"},
+    "targeting_type": {"type": ["string", "null"]},
+    "bidding_strategy": {"type": ["string", "null"]},
+    "daily_budget": {"type": ["number", "null"], "minimum": 0},
+    "currency": {"type": "string", "minLength": 3, "maxLength": 3},
+    "marketplace": {"type": ["string", "null"]},
+    "date_start": {"type": "string", "format": "date"},
+    "date_end": {"type": "string", "format": "date"},
+    "impressions": {"type": "integer", "minimum": 0},
+    "clicks": {"type": "integer", "minimum": 0},
+    "spend": {"type": "number", "minimum": 0},
+    "orders": {"type": "number", "minimum": 0},
+    "sales": {"type": "number", "minimum": 0},
+    "top_of_search_modifier": {"type": ["number", "null"], "minimum": 0},
+    "product_pages_modifier": {"type": ["number", "null"], "minimum": 0},
+    "rest_of_search_modifier": {"type": ["number", "null"], "minimum": 0},
+    "budget_status": {"type": ["string", "null"]}
+  },
+  "additionalProperties": true
+}
