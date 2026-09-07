@@ -1,0 +1,34 @@
+{
+  "name": "amazon-ads-skills",
+  "version": "0.1.0",
+  "description": "Amazon Ads AI Agent skills for monitoring, analysis, optimization and guarded advertising decisions.",
+  "author": {
+    "name": "zerlinpi"
+  },
+  "skills": [
+    "./skills/amazon-ads-audit",
+    "./skills/campaign-health-monitor",
+    "./skills/search-term-analysis",
+    "./skills/keyword-optimization",
+    "./skills/bid-optimization",
+    "./skills/budget-optimization",
+    "./skills/placement-optimization",
+    "./skills/negative-targeting",
+    "./skills/profitability-analysis",
+    "./skills/anomaly-detection",
+    "./skills/amazon-ads-optimizer"
+  ],
+  "displayName": {
+    "en": "Amazon Ads Skills",
+    "zh": "亚马逊广告技能库"
+  },
+  "displayDescription": {
+    "en": "Reusable Amazon Ads skills for auditing, monitoring, search-term analysis, bidding, budgets, placements, profitability and guarded optimization.",
+    "zh": "面向亚马逊广告审计、监控、搜索词、竞价、预算、版位、利润与安全优化的一组可复用 AI Skills。"
+  },
+  "tags": [
+    {"en": "Amazon Ads", "zh": "亚马逊广告"},
+    {"en": "Advertising Optimization", "zh": "广告优化"},
+    {"en": "AI Agent", "zh": "AI Agent"}
+  ]
+}
