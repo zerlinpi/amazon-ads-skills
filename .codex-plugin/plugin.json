@@ -1,0 +1,14 @@
+{
+  "name": "amazon-ads-skills",
+  "version": "0.1.0",
+  "description": "Amazon Ads AI Agent skills for auditing, monitoring, analysis, optimization and guarded advertising decisions.",
+  "author": {
+    "name": "zerlinpi",
+    "url": "https://github.com/zerlinpi"
+  },
+  "homepage": "https://github.com/zerlinpi/amazon-ads-skills",
+  "repository": "https://github.com/zerlinpi/amazon-ads-skills",
+  "license": "MIT",
+  "keywords": ["amazon-ads", "amazon-ppc", "advertising", "agent-skills", "codex"],
+  "skills": "./skills/"
+}
