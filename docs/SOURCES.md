@@ -1,128 +1,83 @@
 # Methodology sources
 
-This repository does not copy third-party skill text wholesale. External repositories are used to discover useful patterns, operating concepts, and documentation structures. Reusable ideas are rewritten for this project, checked against the repository's safety model, and adapted to Amazon Ads.
+This repository does not copy third-party skill text wholesale. Public repositories are used to discover generic methods, operating concepts and documentation structures. Ideas are independently rewritten for Amazon Ads, checked against the repository safety model, and kept connector/runtime neutral.
 
 ## Reviewed repositories
 
 ### nospicyplease/amazon-ppc-advanced-skills
 
-Useful patterns reviewed:
+Reviewed for thin `SKILL.md + references`, performance-drop diagnosis, contribution analysis, retail context, control-change timelines, Mixed-ASIN safety, negative attachment verification, growth headroom, post-change readback, optimization memory and approval-gated mutation concepts.
 
-- one operator job per skill;
-- concise `SKILL.md` with detailed logic moved to `references/`;
-- performance-drop diagnosis using exact windows, contribution analysis, retail context, control-change timelines and mixed-ASIN safety;
-- verify negative-keyword/negative-target attachment to the campaign/ad-group route before treating a change as causal or action-safe;
-- growth-opportunity analysis combining ads evidence, retail readiness, product context, headroom and incrementality questions;
-- post-change readback before judging outcome;
-- shared optimization memory before legacy changelogs;
-- applied/failed/unknown event history, pending evaluations and entity history for avoiding duplicate or contradictory optimizations;
-- warnings when memory is local-only, partial or has unsynchronized/spooled events;
-- weekly/downside/upside operating-system thinking that separates decline diagnosis, growth opportunities and action gates instead of collapsing everything into ACOS tuning;
-- explicit distinction between facts, hypotheses, missing data, confidence and actionability;
-- approval-gated mutation design.
-
-Adopted as independently rewritten concepts. Vendor-specific APIs, storage implementations, local spool mechanics and fixed click/order/spend thresholds are intentionally not imported. This repository expresses the generic memory concept as an append-first event ledger plus a derived compact `entity-history` view so the canonical Skills remain connector- and runtime-neutral.
+Only generic concepts were adopted. Vendor-specific APIs, storage implementations and fixed click/order/spend thresholds were not imported.
 
 Repository: https://github.com/nospicyplease/amazon-ppc-advanced-skills
 
 ### AgriciDaniel/claude-ads
 
-Useful patterns reviewed:
-
-- thin skill entrypoints and progressive loading;
-- contextual rather than universal benchmarks;
-- marginal-return thinking;
-- guardrails, validation and rollback;
-- separation between observation, diagnosis, recommendation and mutation.
+Reviewed for progressive loading, contextual benchmarks, marginal-return thinking, guardrails, validation/rollback and separation of observation, diagnosis, recommendation and mutation.
 
 Repository: https://github.com/AgriciDaniel/claude-ads
 
 ### weisberg/agile_agentic_analytics
 
-Useful experimentation concepts reviewed:
-
-- experiment lifecycle as a distinct capability instead of mixing test design into every optimization skill;
-- power/minimum-detectable-effect thinking only when required inputs support it;
-- sample-ratio-mismatch and contamination awareness;
-- sequential-testing/early-stopping caution;
-- structured experiment results for later evaluation.
-
-The repository is MIT licensed. This project does not copy its implementation or prose. The generic experimentation ideas were independently rewritten for Amazon Ads in `skills/experiment-planner/` with stricter `Suggest/Shadow` boundaries and account-specific economics, Mixed-ASIN, attribution, promotion and retail-readiness gates.
+MIT-licensed repository reviewed for experiment lifecycle, power/MDE discipline when inputs exist, sample-ratio/contamination awareness, sequential-testing caution and structured experiment results. Concepts were rewritten for Amazon Ads with stricter Suggest/Shadow, Mixed-ASIN, attribution, promotion and retail-readiness gates.
 
 Repository: https://github.com/weisberg/agile_agentic_analytics
 
-### heymoezy/porter
-
-The public `experiment-designer` skill was reviewed for generic experiment-design anti-patterns, especially the risk of testing bundled changes without an attribution strategy and the value of defining interpretation and stop criteria before launch.
-
-A repository-level license file was not verified during review. Therefore no prose, code, templates or implementation details were imported. The only retained idea is the general, independently expressed principle already consistent with this project's experiment design: material concurrent changes contaminate causal readout and should downgrade the decision to Hold / Redesign / Experiment Only rather than an action-safe rollout.
-
-Repository: https://github.com/heymoezy/porter
-
-### paperclipai/paperclip
-
-Reviewed only for generic execution-reliability patterns: partial application, ambiguous delivery and retries require explicit reconciliation/idempotency thinking so repeated delivery does not silently duplicate state changes.
-
-No implementation or prose is imported. In this project the adopted safety boundary is connector-neutral: Post-change Review must distinguish intended treatment from realized treatment, classify partial/unknown application explicitly, require trusted readback, and avoid crediting aggregate outcomes to an action that was not fully verified. A timeout or ambiguous executor response is not treated as proof of failure; a repeat write must wait for readback/reconciliation or an executor-level idempotency guarantee. Executor idempotency remains an external connector concern rather than being embedded as live mutation logic inside Amazon Ads Skills.
-
-Repository: https://github.com/paperclipai/paperclip
-
 ### unifyai/unify
 
-Useful evaluation concepts reviewed:
-
-- distinguish deterministic/symbolic contract tests from end-to-end capability evals;
-- treat a capability failure as potentially coming from prompt/instruction/tool design rather than only programmatic code;
-- use replay/caching as evidence of the exact model input/output rather than clearing evidence to make a failure disappear;
-- separate infrastructure regression tests from semantic quality tests.
-
-The repository is MIT licensed. No implementation or prose was copied. For this project the generic distinction was independently rewritten as `contract checks` vs `capability replay` in `evals/README.md`, with Amazon Ads-specific safety rubrics and synthetic fixtures.
+MIT-licensed repository reviewed for separating deterministic contract tests from end-to-end capability evals and for treating capability failures as semantic/system-design failures rather than only code failures. Rewritten as `contract checks` vs `capability replay` in `evals/README.md`.
 
 Repository: https://github.com/unifyai/unify
 
 ### Observal/Observal
 
-Useful evaluation concepts reviewed:
-
-- criteria should be evidence-bearing rather than assumed;
-- an evaluator benefits from an explicit third state for cases where the available trace cannot support a defensible pass/fail judgment.
-
-The repository is Apache-2.0 licensed. This project independently expresses the concept as `met / not_met / insufficient_evidence` for decision-behavior evals. No source implementation or prose was copied.
+Apache-2.0 repository reviewed for evidence-bearing evaluation criteria and a third state when evidence is insufficient. Rewritten as `met / not_met / insufficient_evidence`.
 
 Repository: https://github.com/Observal/Observal
 
 ### TheQtCompanyRnD/agent-skills
 
-Useful structural patterns reviewed:
-
-- one canonical `skills/` tree shared across multiple agent runtimes where practical;
-- `SKILL.md + references` as a portable full-directory skill model;
-- platform adapters/manifests separated from canonical business logic.
-
-Only the architecture pattern is used; Qt-specific content is not copied.
+Reviewed for a canonical skills tree shared across multiple agent runtimes, portable `SKILL.md + references`, and platform-specific manifests separated from business logic.
 
 Repository: https://github.com/TheQtCompanyRnD/agent-skills
 
 ### noique/cross-border-ecommerce-skills
 
-Useful high-level workflow ideas reviewed:
-
-- weekly Amazon PPC operating rhythm;
-- current vs prior-period comparison;
-- campaign triage;
-- search-term harvesting and negative review;
-- prioritized action lists;
-- separating recurring weekly review from deeper structural diagnosis.
-
-The project uses CC BY-NC 4.0 and includes fixed heuristic thresholds and vendor/tool-specific output steps that are not suitable as universal automation rules. Its text, thresholds, API calls and report-export instructions are therefore not copied into this MIT repository.
-
-For this project's `playbooks/weekly-review.md`, only the generic concept of a recurring review cadence was retained. The implementation was independently rewritten to use business contribution, attribution maturity, optimization memory, Mixed-ASIN safety, action/hold states, marginal evidence and specialist-Skill escalation rather than fixed red/yellow/green ACOS or bid-change percentages.
+CC BY-NC 4.0 project reviewed only for high-level weekly PPC cadence, current/prior-period comparison, campaign triage, search-term review and prioritized actions. Its prose, fixed thresholds, API calls and export steps were not copied into this MIT repository.
 
 Repository: https://github.com/noique/cross-border-ecommerce-skills
 
-## Other memory/event-log patterns reviewed but not directly imported
+### heymoezy/porter
 
-During optimization-memory and execution-integrity passes, generic public agent repositories were searched for persistent memory, event-log, retry and mutation-reconciliation patterns. The useful general lessons were to keep facts/events distinct from mutable summaries, treat stale memory as historical context rather than current state, preserve entity identity boundaries across restructures, and fail closed when write outcome is ambiguous. No implementation or prose from those projects was copied; the resulting contracts and eval fixtures were designed specifically around this repository's existing optimization-event lifecycle, Post-change Review and Amazon Ads safety model.
+Reviewed only for the generic experiment anti-pattern that bundled concurrent changes destroy causal attribution. A repository-level license was not verified during review, so no prose, code, templates or implementation details were imported.
+
+Repository: https://github.com/heymoezy/porter
+
+### paperclipai/paperclip
+
+Reviewed for generic execution-reliability patterns: partial application, ambiguous delivery, reconciliation and retry/idempotency. No implementation was imported. This repository keeps idempotency in the external Connector/Executor and uses Skills only to reason about `Unknown / Partial / Drifted` states.
+
+Repository: https://github.com/paperclipai/paperclip
+
+### prathamesh-git9/effect-broker
+
+Reviewed for a particularly useful distinction between three side-effect classes: safely idempotent, reconcilable after uncertain delivery, and unsafe-to-repeat when neither guarantee exists. The important generic idea adopted here is **stable intent + explicit idempotency contract + authoritative reconciliation**.
+
+This project does not import effect-broker code or prose. The idea was independently adapted into two complementary Amazon Ads evals:
+
+- ambiguous mutation without trusted readback/idempotency → block blind retry;
+- same stable intent with the same idempotency key and an explicit executor deduplication contract → connector-level retry may be safe, while application status still remains unconfirmed until reconciliation/readback.
+
+Repository: https://github.com/prathamesh-git9/effect-broker
+
+### nexscope-ai/Amazon-Skills
+
+MIT-licensed multi-agent-compatible Amazon skill collection reviewed for public Amazon-domain coverage, portable skill packaging, and profitability modeling that includes advertising spend alongside product/FBA/fee economics rather than treating ROAS as a complete profitability measure.
+
+No skill prose, templates or fixed recommendations were copied. This repository already had its own contribution-profit model; the review reinforced the eval requirement that higher attributed revenue/ROAS must not override deteriorating contribution profit under a profit-maximization objective.
+
+Repository: https://github.com/nexscope-ai/Amazon-Skills
 
 ## Integration rules
 
@@ -130,24 +85,28 @@ Before adopting an external idea:
 
 1. Prefer generic methodology over vendor-specific APIs.
 2. Do not copy substantial third-party prose.
-3. Do not import client/account data or private examples.
-4. Treat fixed thresholds as optional heuristics unless backed by account-specific evidence.
+3. Do not import private/client data.
+4. Treat fixed thresholds as optional heuristics unless supported by account evidence.
 5. Preserve `Read-only / Suggest / Shadow / Execute` boundaries.
-6. Put detailed reusable knowledge in references/playbooks for progressive loading.
-7. Keep canonical business logic tool-agnostic; keep runtime compatibility in manifests/adapters.
-8. For experiment designs, predeclare the decision question, hypothesis, primary metric, guardrails and stop rules before observing results.
-9. Do not fabricate statistical confidence, power or MDE when the required inputs are missing.
-10. For optimization memory, preserve event lineage, distinguish intent/application/readback/outcome, bound history retrieval, and never treat stale or partial memory as current complete state.
-11. Prefer a playbook over another Skill when the new content composes existing capabilities into a recurring operating cadence rather than creating a new decision domain.
-12. For evals, separate contract failures from capability failures and score decision behavior instead of exact wording.
-13. Preserve `insufficient_evidence` as a real outcome when a replay cannot support a defensible pass/fail judgment.
-14. Never weaken a regression fixture merely to make the current model pass; fixtures should represent intended safe behavior.
-15. Verify control/negative attachment scope before converting temporal coincidence into causal attribution or an action-safe mutation.
-16. Treat coupled auction controls as interacting parameters; prefer staged changes or explicit experiments when simultaneous changes would destroy attribution.
-17. Treat experiment contamination as a readout limitation, not as a reason to cherry-pick the apparent winner.
-18. Treat partial application as a realized treatment different from the intended treatment; reconcile readback before outcome attribution.
-19. Do not compare promotion-contaminated or otherwise structurally different windows as if they were ordinary evergreen baselines.
-20. Treat stockout and other dated retail-readiness failures as causal gates before suppressing apparently non-converting traffic.
-21. Do not transfer entity-level optimization memory across recreated IDs without an explicit, verified identity mapping and fresh current-state evidence.
-22. Treat timeout/unknown mutation results as unresolved; do not blindly retry until readback/reconciliation or executor-level idempotency makes repetition safe.
-23. Record reviewed sources here when they materially influence the project.
+6. Keep detailed knowledge in references/playbooks for progressive loading.
+7. Keep canonical business logic runtime neutral.
+8. Predeclare experiment question, hypothesis, primary metric, guardrails and stop rules.
+9. Never fabricate statistical confidence, power or MDE.
+10. Preserve event lineage and distinguish intent, application, readback and outcome.
+11. Prefer playbooks for recurring compositions of existing Skills.
+12. Separate contract failures from capability failures in evals.
+13. Preserve `insufficient_evidence` as a real outcome.
+14. Never weaken a regression fixture merely to make a model pass.
+15. Verify negative/control attachment scope before causal attribution.
+16. Treat coupled auction controls as interacting parameters.
+17. Treat experiment contamination as a readout limitation.
+18. Treat partial application as a realized treatment different from intended treatment.
+19. Do not compare promotion-contaminated windows as ordinary evergreen baselines.
+20. Treat stockout/retail-readiness failures as causal gates before traffic suppression.
+21. Do not transfer entity memory across recreated IDs without verified identity mapping.
+22. Treat timeout/unknown mutation outcomes as unresolved until readback/reconciliation or executor-level idempotency makes repetition safe.
+23. Stable idempotency keys must stay bound to the same stable intent and payload; a new value is a new intent.
+24. Trusted current-state readback overrides earlier executor acknowledgement when the states disagree; classify the difference as drift/partial/unresolved before outcome attribution.
+25. Do not equate higher ROAS or revenue with higher profit; use contribution economics when the business objective is profitability.
+26. A historically proven relevant query that temporarily has zero orders should be diagnosed as a possible conversion break before being treated as irrelevant traffic.
+27. Record reviewed sources here when they materially influence the project.
