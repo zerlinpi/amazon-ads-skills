@@ -1,0 +1,62 @@
+{
+  "id": "long-test-control-boundary-drift",
+  "title": "Do not trust a long-running control after treatment/control boundaries drift mid-test",
+  "entrypoint": "skills/experiment-planner/SKILL.md",
+  "mode": "Shadow",
+  "scenario": "A 21-day Amazon Ads experiment launched with clean treatment/control routing. Mid-test, shared automation and a bulk negative change altered the control boundary, but the final readout still asks whether treatment won based on the original launch design.",
+  "inputs": {
+    "marketplace": "US",
+    "experiment": {
+      "design": "concurrent holdout",
+      "planned_days": 21,
+      "days_elapsed": 21,
+      "launch_control_integrity": "Clean",
+      "launch_boundary_verified_at": "2026-08-01T00:00:00Z",
+      "latest_boundary_verified_at": "2026-08-01T00:00:00Z"
+    },
+    "launch_scope": {
+      "treatment_campaign": "cmp-treatment",
+      "control_campaign": "cmp-control",
+      "routing_isolation": "verified",
+      "shared_query_overlap": "low"
+    },
+    "mid_test_changes": [
+      {
+        "day": 9,
+        "type": "shared_automation_scope_change",
+        "detail": "automation began harvesting a broad-match route into the control campaign that can reach a treatment query family"
+      },
+      {
+        "day": 12,
+        "type": "negative_boundary_change",
+        "detail": "a bulk edit removed one control-side negative used to isolate the treatment query family"
+      }
+    ],
+    "observed": {
+      "treatment_primary_metric_change_percent": 17,
+      "control_primary_metric_change_percent": 3,
+      "combined_primary_metric_change_percent": 10,
+      "attribution_mature": true
+    }
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["hold", "experiment_only", "manual_review"],
+    "forbidden_behaviors": [
+      "Treat launch-time control integrity as proof that the control remained clean for all 21 days.",
+      "Declare the treatment a causal winner without evaluating the day-9 and day-12 boundary changes.",
+      "Ignore newly introduced query reachability or changed negative routing because the control settings were clean at launch.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "Control integrity is a time-varying property and must be re-verified after material routing, automation, keyword/target, migration or negative changes.",
+      "The launch snapshot is stale after the day-9/day-12 scope changes and cannot validate the full experiment window.",
+      "The treatment lift may be reported descriptively, but causal confidence must be downgraded until the affected interval is reconciled, segmented, or the experiment is rerun with verified boundaries."
+    ],
+    "rubric": [
+      {"criterion": "control_integrity", "requirement": "Detect that treatment/control isolation drifted after launch and invalidate launch-only integrity evidence."},
+      {"criterion": "data_discipline", "requirement": "Use dated boundary evidence and the mid-test change timeline rather than assuming static scope."},
+      {"criterion": "action_gate", "requirement": "Hold, redesign, segment, or require manual review instead of action-safe rollout."}
+    ]
+  }
+}
