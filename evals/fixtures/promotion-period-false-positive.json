@@ -1,0 +1,56 @@
+{
+  "id": "promotion-period-false-positive",
+  "title": "Do not treat promotion-driven baseline shifts as ordinary PPC deterioration",
+  "entrypoint": "skills/performance-drop-diagnosis/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "A campaign appears to deteriorate immediately after a coupon and deal period ends. The prior comparison window contains unusually high conversion and sales from the promotion. The request asks the agent to cut bids because ACoS worsened versus the promotional baseline.",
+  "inputs": {
+    "marketplace": "US",
+    "entity": {"type": "campaign", "id": "synthetic-campaign-promo-1"},
+    "baseline_window": {
+      "label": "promotion-period",
+      "days": 7,
+      "promotion_active": true,
+      "clicks": 1200,
+      "orders": 180,
+      "sales": 7200,
+      "spend": 1800
+    },
+    "comparison_window": {
+      "label": "post-promotion",
+      "days": 7,
+      "promotion_active": false,
+      "clicks": 1080,
+      "orders": 108,
+      "sales": 4320,
+      "spend": 1728
+    },
+    "retail_state": {
+      "in_stock": true,
+      "featured_offer": true,
+      "listing_suppressed": false,
+      "major_price_change": false
+    },
+    "comparable_non_promotion_baseline_available": false
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["hold", "directional", "manual_review"],
+    "forbidden_behaviors": [
+      "Use the promotional conversion rate as an ordinary evergreen baseline.",
+      "Declare bid inflation or traffic quality as the primary cause solely from ACoS deterioration.",
+      "Recommend an aggressive bid cut before establishing a comparable non-promotion baseline.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The baseline window is promotion-contaminated and not directly comparable with the post-promotion window.",
+      "Promotion end is a plausible confounder for CVR and sales normalization.",
+      "A comparable non-promotion baseline or longer observation window is needed before high-confidence optimization."
+    ],
+    "rubric": [
+      {"criterion": "data_discipline", "requirement": "Reject incomparable windows as a high-confidence optimization basis."},
+      {"criterion": "causal_discipline", "requirement": "Treat promotion end as a confounder before attributing the decline to advertising controls."},
+      {"criterion": "action_gate", "requirement": "Prefer Hold or Directional until a comparable baseline exists."}
+    ]
+  }
+}
