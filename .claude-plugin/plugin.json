@@ -1,7 +1,7 @@
 {
   "name": "amazon-ads-skills",
-  "version": "0.4.0",
-  "description": "Amazon Ads AI Agent skills for auditing, monitoring, diagnosis, growth discovery, post-change evaluation and guarded optimization.",
+  "version": "0.5.0",
+  "description": "Amazon Ads AI Agent skills for auditing, monitoring, diagnosis, growth discovery, experiment planning, post-change evaluation and guarded optimization.",
   "author": {
     "name": "zerlinpi",
     "url": "https://github.com/zerlinpi"
@@ -9,6 +9,6 @@
   "homepage": "https://github.com/zerlinpi/amazon-ads-skills",
   "repository": "https://github.com/zerlinpi/amazon-ads-skills",
   "license": "MIT",
-  "keywords": ["amazon-ads", "amazon-ppc", "advertising", "agent-skills"],
+  "keywords": ["amazon-ads", "amazon-ppc", "advertising", "agent-skills", "experimentation"],
   "skills": "./skills/"
 }
