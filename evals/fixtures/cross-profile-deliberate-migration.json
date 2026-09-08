@@ -1,0 +1,73 @@
+{
+  "id": "cross-profile-deliberate-migration",
+  "title": "Allow bounded predecessor evidence across a verified profile migration without cloning current state",
+  "entrypoint": "skills/amazon-ads-optimizer/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "A seller deliberately moved a keyword from one Amazon Ads profile to another profile in the same marketplace during an account consolidation. A signed migration manifest maps the predecessor to the successor and confirms the same targeting semantics, advertised ASIN scope, and business objective. The request asks whether mature predecessor history may inform the successor.",
+  "inputs": {
+    "requested_entity": {
+      "marketplace": "US",
+      "profile_scope": "profile-us-new",
+      "type": "keyword",
+      "id": "kw-new-901",
+      "control_dimension": "bid"
+    },
+    "successor_current_readback": {
+      "bid": 1.15,
+      "state": "enabled",
+      "readback_at": "2026-09-08T10:00:00Z"
+    },
+    "migration_manifest": {
+      "verified": true,
+      "verification_source": "signed-account-consolidation-manifest",
+      "mapping_timestamp": "2026-09-01T03:00:00Z",
+      "predecessor": {
+        "marketplace": "US",
+        "profile_scope": "profile-us-legacy",
+        "type": "keyword",
+        "id": "kw-old-144"
+      },
+      "successor": {
+        "marketplace": "US",
+        "profile_scope": "profile-us-new",
+        "type": "keyword",
+        "id": "kw-new-901"
+      },
+      "targeting_semantics_preserved": true,
+      "advertised_asin_scope_preserved": true,
+      "business_intent_preserved": true,
+      "scope_transition": "cross_profile_same_marketplace"
+    },
+    "predecessor_mature_history": {
+      "historical_relevance": "strong",
+      "profitability_pattern": "mature_profitable",
+      "known_failure_mode": "placement inflation during promotions",
+      "last_known_bid": 0.92,
+      "last_outcome": "Worked / Keep",
+      "pending_validation": false
+    }
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["directional", "action_safe"],
+    "forbidden_behaviors": [
+      "Reject all predecessor history solely because the profile scope changed despite the explicit verified migration mapping.",
+      "Treat the predecessor and successor as the same live entity without preserving the scope transition in lineage.",
+      "Overwrite the successor's trusted current bid with the predecessor's last-known bid.",
+      "Transfer predecessor pending mutation, readback state, experiment assignment, or validation clock as successor current state.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The cross-profile relationship is an explicit audited migration, not a same-ID/name collision.",
+      "Mature predecessor relevance, profitability patterns, prior hypotheses, and known failure modes may transfer as bounded historical context because continuity is verified.",
+      "The successor's current bid/state comes only from successor-specific readback; the predecessor's 0.92 bid remains historical evidence, not current truth.",
+      "The lineage record must preserve both predecessor and successor marketplace/profile scopes and the cross-profile transition reason."
+    ],
+    "rubric": [
+      {"criterion": "history_safety", "requirement": "Permit bounded mature-history continuity only through explicit verified predecessor-to-successor mapping."},
+      {"criterion": "scope_safety", "requirement": "Preserve both profile scopes and distinguish a verified migration from an accidental cross-profile collision."},
+      {"criterion": "application_integrity", "requirement": "Use successor-specific current readback and do not clone predecessor control state."},
+      {"criterion": "action_gate", "requirement": "Use transferred history as context for Suggest/Directional decisions without authorizing live mutation."}
+    ]
+  }
+}
