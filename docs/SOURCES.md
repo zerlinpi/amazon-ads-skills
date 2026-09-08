@@ -12,10 +12,12 @@ Useful patterns reviewed:
 - concise `SKILL.md` with detailed logic moved to `references/`;
 - performance-drop diagnosis based on exact windows, contribution analysis, retail context, control-change timelines, and mixed-ASIN safety;
 - growth-opportunity analysis that combines ads evidence, retail readiness, ASIN/product context, ranking/organic context, budget or impression headroom and incrementality questions;
+- post-change readback before judging outcome, plus current-state verification, monitoring and rollback-readiness concepts;
+- snapshots/changelogs/entity-history as context for avoiding duplicate or contradictory optimizations;
 - explicit distinction between facts, hypotheses, missing data, confidence, and actionability;
 - approval-gated mutation design.
 
-Adopted here as independently rewritten concepts, especially in `skills/performance-drop-diagnosis/`, `skills/growth-opportunity-finder/`, and their references. Fixed click/order/spend thresholds found in external material are intentionally not imported as universal automation rules.
+Adopted here as independently rewritten concepts, especially in `skills/performance-drop-diagnosis/`, `skills/growth-opportunity-finder/`, `skills/post-change-review/`, and their references. Vendor-specific capability names and fixed click/order/spend thresholds found in external material are intentionally not imported as universal automation rules.
 
 Repository: https://github.com/nospicyplease/amazon-ppc-advanced-skills
 
@@ -31,6 +33,19 @@ Useful patterns reviewed:
 - clear separation between observation, diagnosis, recommendation and mutation.
 
 Repository: https://github.com/AgriciDaniel/claude-ads
+
+### TheQtCompanyRnD/agent-skills
+
+Useful structural patterns reviewed:
+
+- one canonical `skills/` tree shared across multiple agent runtimes where practical;
+- `SKILL.md + references` as a portable full-directory skill model;
+- platform adapters/manifests kept separate from canonical skill business logic;
+- multi-tool compatibility without maintaining duplicate domain instructions.
+
+Only the architecture pattern is used here; Qt-specific skill content is not copied.
+
+Repository: https://github.com/TheQtCompanyRnD/agent-skills
 
 ### noique/cross-border-ecommerce-skills
 
@@ -56,4 +71,5 @@ Before adopting an external idea:
 4. Treat fixed thresholds as optional heuristics unless backed by account-specific evidence.
 5. Preserve this repository's `Read-only / Suggest / Shadow / Execute` safety model.
 6. Put detailed reusable knowledge in references/playbooks so Skills load progressively.
-7. Record important reviewed sources here when they materially influence the project.
+7. Keep canonical business logic tool-agnostic where possible; put runtime compatibility in manifests/adapters rather than duplicated Skills.
+8. Record important reviewed sources here when they materially influence the project.
