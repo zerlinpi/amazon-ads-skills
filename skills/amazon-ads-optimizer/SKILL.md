@@ -41,6 +41,7 @@ Default mode: `Suggest`. Use `Shadow` for simulation/backtesting. Never claim a 
 - Use `experiment-planner` when the user asks for an A/B test, holdout, phased rollout, switchback, test plan, success metric, guardrail or controlled validation.
 - When the user asks whether a previous change worked, use `post-change-review` before proposing another edit on the same entity.
 - Before a new control change, load `../../references/optimization-memory.md` when history is available or a recent action may overlap the entity/window.
+- Resolve marketplace + profile/account scope before trusting retrieved optimization history. If the memory query is scope-incomplete, ambiguous, or collides across scopes, do not merge histories; prefer `Hold`, `Directional`, or `Manual Review` until identity is resolved.
 - If the previous action is still pending evaluation, application is unknown/drifted, or a new action would contaminate an active experiment, prefer `Hold`, `Experiment Only` or `Manual Review` unless a safety guardrail has triggered.
 - Load only the minimum child Skills required and only a bounded slice of relevant history.
 
@@ -48,7 +49,7 @@ Default mode: `Suggest`. Use `Shadow` for simulation/backtesting. Never claim a 
 
 Before high-confidence recommendations confirm when relevant:
 
-- marketplace, currency and timezone;
+- marketplace, profile/account scope, currency and timezone;
 - exact date windows and attribution maturity;
 - ad type and entity scope;
 - business objective / target economics;
@@ -56,11 +57,11 @@ Before high-confidence recommendations confirm when relevant:
 - data freshness and sample sufficiency;
 - mixed-ASIN / halo risk;
 - recent actions, pending evaluations, active experiments or control changes affecting the same entity;
-- memory freshness/completeness warnings when entity history is used.
+- memory freshness/completeness warnings and identity-scope status when entity history is used.
 
 Use `../../playbooks/weekly-review.md` for recurring weekly operating cadence.
 Use `../../references/benchmark-policy.md` when external benchmarks affect a decision.
-Use `../../references/optimization-memory.md` for read-before-recommend, anti-thrashing, staleness and event-lineage rules.
+Use `../../references/optimization-memory.md` for read-before-recommend, identity scoping, anti-thrashing, staleness and event-lineage rules.
 Use `../../references/decision-boundaries.md` for action permissions.
 Use `../../schemas/experiment-plan.json` for structured experiment design.
 Use `../../schemas/optimization-event.json` for action/readback/evaluation events.
@@ -71,13 +72,14 @@ Use `../../schemas/entity-history.json` for compact derived entity-history views
 If Skills propose incompatible actions on the same entity:
 
 1. fix data/serving/retail-readiness issues before tuning;
-2. respect explicit business and profitability constraints;
-3. inspect recent optimization events, current readback and unfinished validation windows;
-4. when causal evidence is weak but testable, convert the conflict into a controlled experiment;
-5. prefer protective, reversible and better-scoped actions;
-6. if uncertainty remains, output `manual_review` / hold.
+2. resolve identity scope before using historical evidence across marketplace/profile boundaries;
+3. respect explicit business and profitability constraints;
+4. inspect recent optimization events, current readback and unfinished validation windows;
+5. when causal evidence is weak but testable, convert the conflict into a controlled experiment;
+6. prefer protective, reversible and better-scoped actions;
+7. if uncertainty remains, output `manual_review` / hold.
 
-Invalid unresolved conflicts include increase+decrease on the same control, harvest+negate the same term, scaling structurally unprofitable traffic without an explicit strategic exception, or editing an entity again before the prior action is mature unless a safety guardrail triggered.
+Invalid unresolved conflicts include increase+decrease on the same control, harvest+negate the same term, cross-profile memory reuse without verified scope, scaling structurally unprofitable traffic without an explicit strategic exception, or editing an entity again before the prior action is mature unless a safety guardrail triggered.
 
 ## Priority
 
@@ -93,6 +95,6 @@ Return executive summary, data confidence, routed findings, a deduplicated prior
 
 For weekly reviews, also return current/comparable windows, recent-action status, Protect/Recover/Optimize/Grow/Experiment/Hold triage, and the next-review measurement contract from `../../playbooks/weekly-review.md`.
 
-When history materially changes a recommendation, also return history status, latest relevant action/readback, validation maturity, unresolved warnings and the event IDs supporting the decision when available.
+When history materially changes a recommendation, also return identity-scope status, marketplace/profile scope used for retrieval, history status, latest relevant action/readback, validation maturity, unresolved warnings and the event IDs supporting the decision when available.
 
 Every actionable proposal should include entity, reason, evidence, confidence, mode, guardrails, validation window and rollback condition. Every experiment should additionally define a falsifiable hypothesis, comparison design, one primary metric, contamination risks and predeclared decision rules.
