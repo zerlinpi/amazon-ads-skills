@@ -65,7 +65,7 @@ Historical Replay / Eval Fixtures
 
 `evals/README.md` 定义 Contract checks + Capability replay。Capability Eval 使用 `met / not_met / insufficient_evidence`，比较决策行为而不是 exact wording。
 
-当前 regression pack 已覆盖 **25 类关键安全风险**：Mixed-ASIN 误否词、Negative attachment 错层级、Previous Winner 短期 0 单、Pending Change 反复调参、Bid×Placement 联动、Featured Offer / Buy Box 冲击、Stockout 转化冲击、stale retail snapshot、Promotion baseline 假异常、Attribution Lag 假失败、Unknown Application 错误归因、Partial Application、未验证 stale entity identity、verified deliberate entity migration、blind retry、显式 idempotency safe retry、readback 与 intended state 不一致、Experiment contamination、Sample Ratio / Allocation Integrity 异常、control-group treatment leakage、auction interference / traffic displacement、portfolio fixed-budget local optimum conflict、Proven Winner 合理扩量、Budget exhausted 但无 marginal headroom、ROAS 增长但贡献利润恶化。
+当前 regression pack 已覆盖 **27 类关键安全风险**：Mixed-ASIN 误否词、Negative attachment 错层级、Previous Winner 短期 0 单、Pending Change 反复调参、Bid×Placement 联动、Featured Offer / Buy Box 冲击、Stockout 转化冲击、stale retail snapshot、Promotion baseline 假异常、Attribution Lag 假失败、Unknown Application 错误归因、Partial Application、未验证 stale entity identity、verified deliberate entity migration、blind retry、显式 idempotency safe retry、readback 与 intended state 不一致、Experiment contamination、Sample Ratio / Allocation Integrity 异常、control-group treatment leakage、auction interference / traffic displacement、shared-budget experiment starvation、parent/child ASIN substitution、portfolio fixed-budget local optimum conflict、Proven Winner 合理扩量、Budget exhausted 但无 marginal headroom、ROAS 增长但贡献利润恶化。
 
 执行完整性原则：
 
@@ -83,6 +83,8 @@ stale retail snapshot ≠ current retail state
 declared experiment split ≠ realized allocation integrity
 control received treatment-like exposure ≠ clean control
 campaign-local lift ≠ incremental value when cohorts share auctions/demand
+shared pool capacity shift ≠ independent control response
+child-ASIN lift ≠ family-level incrementality when sibling substitution exists
 campaign-local optimum ≠ portfolio optimum
 ```
 
@@ -123,7 +125,16 @@ protected spend / business role → 不能被局部效率排序静默覆盖
 
 证据不足但可验证的优化优先进入 Experiment / Shadow。实验应预声明 decision question、hypothesis、treatment、control/holdout、primary metric、guardrails、attribution-mature window、contamination risk、allocation integrity、control integrity 与 stop/rollback rule。
 
-当 treatment/control 可能共享 query、target、ASIN、budget pool、routing、placement、auction 或 automation 时，按需加载 `skills/experiment-planner/references/interference-and-leakage.md`。Treatment 自身指标上涨并不自动证明增量价值；如果 Control 同时掉量或边界被污染，需要检查 displacement、combined/pool outcome 或重新设计实验。
+当 treatment/control 可能共享 query、target、ASIN、variation family、budget pool、routing、placement、auction 或 automation 时，按需加载 `skills/experiment-planner/references/interference-and-leakage.md`。
+
+特别防止两种假增量：
+
+```text
+Treatment 多花预算 → Control 被同一 fixed pool 饿死
+Treatment child ASIN ↑ → sibling child ↓ → parent-family total 不变
+```
+
+这两种情况下，Treatment 自身指标上涨都不能自动证明增量价值；需要看 combined / pool / family outcome，或者重新设计实验。
 
 缺少统计输入时不伪造 power/MDE/SRM 显著性，也不假装组间独立。
 
@@ -163,7 +174,7 @@ protected spend / business role → 不能被局部效率排序静默覆盖
 - 固定预算池先做 portfolio reconciliation，再给单 Campaign 预算动作；
 - 历史赢家短期 0 单先诊断 conversion break，不自动否定；
 - 实验先验证 realized allocation、control integrity、leakage / interference，再解释 treatment lift；
-- 当 treatment 可能挤占 control 流量时，优先看 combined/pool outcome 而非 treatment-only lift；
+- 当 treatment 可能挤占 control 的流量、预算或 sibling-ASIN demand 时，优先看 combined / pool / family outcome；
 - Eval 判断行为而不是 exact wording；
 - 默认 Suggest/Shadow，不直接写真实账户。
 
@@ -186,8 +197,9 @@ protected spend / business role → 不能被局部效率排序静默覆盖
 - [x] Previous Winner / profitability conflict / reconciliation / retry / stale retail / allocation integrity fixtures
 - [x] Portfolio-level budget conflict + verified entity migration continuity evals
 - [x] Treatment/control leakage + auction interference / displacement evals
+- [x] Shared-budget starvation + parent/child ASIN substitution evals
 - [ ] 继续拆薄旧版较厚 Skills
-- [ ] 扩展 shared-budget experiment starvation 与 parent/child ASIN substitution evals
+- [ ] 扩展 long-test control-boundary drift 与 cross-marketplace identity evals
 - [ ] Amazon Ads API / 自研 Connector 示例
 
 ## Disclaimer
