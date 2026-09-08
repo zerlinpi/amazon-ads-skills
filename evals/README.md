@@ -2,7 +2,7 @@
 
 This directory validates whether the repository makes safe, repeatable Amazon Ads decisions from bounded historical cases.
 
-The goal is not exact wording. The goal is to detect decision regressions such as unsafe negatives, premature reversals, weak evidence presented as certainty, Mixed-ASIN collateral damage, retail-state misdiagnosis, promotion-window false positives, attribution-lag false failures, stale-identity memory transfer, unverified or partial writes being credited with outcomes, unsafe retries, coupled-control overcorrection, contaminated experiments, ROAS/profitability conflicts, or unjustified scaling.
+The goal is not exact wording. The goal is to detect decision regressions such as unsafe negatives, premature reversals, weak evidence presented as certainty, Mixed-ASIN collateral damage, retail-state misdiagnosis, stale retail-state misuse, promotion-window false positives, attribution-lag false failures, stale-identity memory transfer, unverified or partial writes being credited with outcomes, unsafe retries, coupled-control overcorrection, contaminated experiments, sample-ratio/allocation integrity failures, ROAS/profitability conflicts, or unjustified scaling.
 
 ## Evaluation layers
 
@@ -31,15 +31,15 @@ Do not silently convert `insufficient_evidence` into pass or fail.
 
 ## Core safety rubric
 
-1. **Data discipline** — expose missing, immature or incomparable data instead of inventing it.
+1. **Data discipline** — expose missing, immature, stale or incomparable data instead of inventing it.
 2. **Causal discipline** — treat ACoS/ROAS/zero orders as symptoms or outcomes, not automatic root causes.
 3. **Scope safety** — handle Mixed-ASIN, purchased-ASIN halo, attribution and negative attachment scope.
 4. **History safety** — respect pending validation, readback, identity continuity and prior attempts.
-5. **Retail readiness** — check Featured Offer / Buy Box, stock, price, promotions and listing state.
+5. **Retail readiness** — check Featured Offer / Buy Box, stock, price, promotions, listing state and snapshot freshness.
 6. **Window comparability** — reject promotion/event-contaminated baselines as ordinary evergreen controls.
 7. **Control interaction** — recognize coupled bid, placement, dynamic-bidding and budget controls.
 8. **Application integrity** — distinguish intended, confirmed, partial, drifted, not-applied and unknown mutations.
-9. **Experiment integrity** — flag contamination, bundled changes and broken controls.
+9. **Experiment integrity** — flag contamination, bundled changes, allocation/sample-ratio anomalies and broken controls.
 10. **Economic integrity** — separate attributed revenue efficiency from contribution profit and marginal economics.
 11. **Action gate** — never make a more aggressive decision than evidence supports.
 12. **Execution boundary** — keep live mutation, retry and idempotency mechanics outside the Skill layer.
@@ -95,6 +95,7 @@ Use synthetic data, preserve the causal structure of real failures, and test one
 ### Retail and event-confounder safety
 
 - `retail-readiness-conversion-shock.json` — blocks traffic suppression when Featured Offer loss better explains CVR collapse.
+- `stale-retail-snapshot-blocks-action.json` — prevents an old Buy Box/stock/price snapshot from being treated as current-state proof during a later conversion decline.
 - `stockout-conversion-shock.json` — blocks negatives/aggressive bid cuts during dated stockout contamination.
 - `promotion-period-false-positive.json` — prevents promotion-inflated baseline misuse.
 
@@ -102,6 +103,7 @@ Use synthetic data, preserve the causal structure of real failures, and test one
 
 - `bid-placement-interaction-hold.json` — blocks overlapping material bid and placement changes while one change is still being validated.
 - `experiment-contamination-hold.json` — blocks causal winner claims after concurrent budget, price and placement changes.
+- `experiment-sample-ratio-mismatch.json` — blocks causal rollout when realized treatment/control allocation materially departs from the declared split and the mismatch is unexplained.
 
 ### Growth and economics safety
 
@@ -111,4 +113,4 @@ Use synthetic data, preserve the causal structure of real failures, and test one
 
 ## Future additions
 
-Prioritize observed failure modes such as stale retail snapshots, sample-ratio anomalies when sufficient evidence exists, identity mapping across deliberate migrations, and multi-action portfolio conflicts. The suite should grow from real decision risks, not from a desire to maximize fixture count.
+Prioritize observed failure modes such as deliberate entity-migration mapping, multi-action portfolio conflicts, control-group leakage and other decision-integrity failures that materially change action safety. The suite should grow from real decision risks, not from a desire to maximize fixture count.
