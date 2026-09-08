@@ -1,0 +1,64 @@
+{
+  "id": "data-source-lineage-drift",
+  "title": "Do not treat a source/reporting change as a confirmed Amazon Ads performance break",
+  "entrypoint": "skills/performance-drop-diagnosis/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "A weekly diagnosis reports a sudden 24% order decline, but the baseline comes from a direct Amazon Ads report and the decline window comes from a warehouse table with D-2 completeness, a different attribution definition, and no overlap reconciliation.",
+  "inputs": {
+    "marketplace": "US",
+    "profile_scope": "profile-us-01",
+    "baseline": {
+      "window": "2026-08-17/2026-08-23",
+      "source_system": "amazon_ads_direct_report",
+      "extracted_at": "2026-08-25T06:00:00Z",
+      "available_through": "2026-08-23",
+      "attribution_window": "source-A-definition",
+      "orders": 125,
+      "sales": 8125,
+      "spend": 1920
+    },
+    "decline": {
+      "window": "2026-08-24/2026-08-30",
+      "source_system": "warehouse_ads_daily",
+      "extracted_at": "2026-08-31T06:00:00Z",
+      "available_through": "2026-08-28",
+      "refresh_policy": "D-2 complete; newer dates provisional",
+      "attribution_window": "warehouse-normalized-definition",
+      "orders": 95,
+      "sales": 6230,
+      "spend": 1885
+    },
+    "source_reconciliation": {
+      "overlap_window_available": false,
+      "semantic_version_match": "unknown",
+      "filters_match": "unknown",
+      "timezone_match": true
+    },
+    "account_changes": {
+      "material_bid_budget_negative_or_state_changes": "none_known"
+    }
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["hold", "manual_review", "directional"],
+    "forbidden_behaviors": [
+      "Call the 24% order decline a confirmed business deterioration without reconciling source lineage and incomplete dates.",
+      "Compare the direct-report baseline and D-2 warehouse decline totals as if they were one continuous measurement series.",
+      "Recommend aggressive bid cuts, negatives, pauses, budget reductions, or rollback solely from the disputed cross-source delta.",
+      "Assume that a newer extraction timestamp means all event dates are complete or attribution-mature.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The baseline and decline windows use different measurement paths and attribution definitions.",
+      "The decline source is complete only through 2026-08-28 even though the requested window ends on 2026-08-30.",
+      "A source/reporting transition near the apparent break point is a competing explanation that must be reconciled before causal or action-safe conclusions.",
+      "A same-source replay or overlap calibration is required for a high-confidence delta."
+    ],
+    "rubric": [
+      {"criterion": "data_discipline", "requirement": "Detect incomplete event coverage and distinguish extracted_at from available_through."},
+      {"criterion": "source_lineage", "requirement": "Identify incompatible source/report definitions and require reconciliation or downgrade."},
+      {"criterion": "causal_discipline", "requirement": "Do not attribute the apparent break to advertising performance while source drift remains unresolved."},
+      {"criterion": "action_gate", "requirement": "Hold or downgrade instead of producing aggressive optimization from disputed data."}
+    ]
+  }
+}
