@@ -92,9 +92,9 @@ The storage/retrieval layer should preserve scope fields alongside the local ent
 
 ## Verified migration lineage
 
-A deliberate restructure can replace an entity with a new ID or move it to another profile while preserving some business intent. This is different from assuming that two similarly named entities are the same.
+A deliberate restructure can replace an entity with a new ID or move it to another profile/marketplace while preserving some business intent. This is different from assuming that two similarly named entities are the same.
 
-History may cross an ID or profile boundary only when there is explicit migration evidence such as a trusted bulk-operation record, migration manifest, connector event, or another auditable mapping that links predecessor and successor.
+History may cross an ID, profile, or marketplace boundary only when there is explicit migration evidence such as a trusted bulk-operation record, migration manifest, connector event, or another auditable mapping that links predecessor and successor.
 
 A migration record should capture when available:
 
@@ -104,9 +104,10 @@ A migration record should capture when available:
 - verification source;
 - scope-transition type;
 - whether targeting semantics/match type were preserved;
-- whether advertised-ASIN scope was preserved;
+- whether advertised-ASIN/product equivalence was preserved;
 - whether business role/objective was preserved;
-- continuity status: `Verified`, `Partial`, `Rejected`, or `Unknown`.
+- continuity status: `Verified`, `Partial`, `Rejected`, or `Unknown`;
+- evidence-portability status and constraints.
 
 ### Scope-transition types
 
@@ -119,19 +120,52 @@ Use when helpful:
 
 A cross-profile mapping is **not** a collision when it is explicit, audited and attached to the successor as lineage. However, it does not make the predecessor's live state current in the successor profile.
 
-For `cross_marketplace` transitions, default continuity to `Partial` unless strong evidence shows the specific historical fact remains portable. Auction conditions, currency, retail context, demand, attribution, and marketplace mechanics can change enough that performance outcomes should normally be treated as directional context rather than directly portable proof.
+### Cross-marketplace portability limits
+
+For `cross_marketplace` transitions, default continuity to `Partial` and `predecessor_evidence_portability` to `Directional Only` unless successor-market evidence proves a narrower fact is portable.
+
+Potentially useful as bounded directional context:
+
+- semantic query/product relevance;
+- business intent and taxonomy;
+- prior hypotheses worth retesting;
+- known failure modes and safety pitfalls;
+- structural lessons that do not depend on auction economics.
+
+Do **not** transfer as action-safe performance evidence without successor-market calibration:
+
+- bid magnitude or bid-change percentage;
+- CPC, CVR, CTR, ACOS, ROAS or CPA baselines;
+- budget size or pacing thresholds;
+- placement multipliers;
+- profitability thresholds or target economics;
+- traffic/sample thresholds;
+- validation clocks or expected response magnitude.
+
+Why: currency, auction density, query demand, competitor set, retail price position, tax/fee economics, conversion behavior, logistics, promotion norms, attribution/reporting context, and product assortment can differ materially by marketplace.
+
+Therefore:
+
+```text
+verified cross-marketplace mapping
+≠ portable performance conclusion
+```
+
+A predecessor `Worked / Keep` outcome can justify a hypothesis or experiment in the successor marketplace, not a direct copy of the old action.
 
 ### What may transfer
 
 When continuity is `Verified`, mature historical evidence may be used as bounded context, for example:
 
 - historical relevance;
-- mature profitability/efficiency patterns when economics and marketplace context remain compatible;
+- mature profitability/efficiency patterns only when marketplace economics and measurement context are demonstrably compatible;
 - prior hypotheses and tested actions;
 - known failure modes;
 - predecessor relationship for audit lineage.
 
 For a verified `cross_profile_same_marketplace` migration, the above context may be retrieved after current-scope history and clearly labeled as predecessor evidence.
+
+For `cross_marketplace`, prefer semantic/qualitative evidence first and require successor-specific observations before performance-based action.
 
 ### What must not transfer as current truth
 
@@ -149,7 +183,7 @@ Even with verified lineage, do not copy the predecessor's last known:
 
 The successor's current state must come from successor-specific trusted readback or source data.
 
-If targeting semantics, ASIN scope, objective, route, marketplace, or important economics changed materially, downgrade continuity to `Partial` or `Rejected`. Preserve lineage for auditability without treating the predecessor and successor as literally identical entities.
+If targeting semantics, ASIN/product scope, objective, route, marketplace, or important economics changed materially, downgrade continuity to `Partial` or `Rejected`. Preserve lineage for auditability without treating the predecessor and successor as literally identical entities.
 
 ## Event lifecycle
 
@@ -259,7 +293,7 @@ For a new optimization decision, retrieve in this order:
 6. active experiments containing the entity;
 7. recent account-wide or portfolio controls that materially affect delivery.
 
-For cross-profile migrations, keep predecessor events labeled with their original scope. Do not rewrite them as if they originated in the successor profile.
+For cross-profile/cross-marketplace migrations, keep predecessor events labeled with their original scope. Do not rewrite them as if they originated in the successor scope.
 
 Keep the returned slice bounded. Do not dump the whole account history into context.
 
@@ -275,7 +309,8 @@ A derived summary should answer:
 - Is evaluation complete?
 - What was the outcome?
 - Is a rollback condition active?
-- Is there a verified predecessor/successor lineage or profile transition?
+- Is there a verified predecessor/successor lineage or scope transition?
+- If marketplace changed, which predecessor facts are actually portable?
 - Are there unresolved events or memory-quality warnings?
 - When is the next decision point?
 
@@ -311,7 +346,7 @@ When memory materially affects a recommendation, include:
 - validation maturity;
 - latest outcome;
 - identity-lineage and scope-transition status when migration is relevant;
-- predecessor scope when predecessor evidence is used;
+- predecessor scope and portability status when predecessor evidence is used;
 - unresolved conflicts or warnings;
 - whether the new proposal is `Allowed`, `Hold`, `Experiment Only`, or `Manual Review`;
 - the event IDs supporting the decision when available.
