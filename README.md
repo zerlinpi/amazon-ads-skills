@@ -52,20 +52,20 @@ Historical Replay / Eval Fixtures
 | `search-term-analysis` | Search Term 赢家、收割、流量质量 |
 | `keyword-optimization` | Keyword/Target 生命周期与结构 |
 | `bid-optimization` | Bid/CPC 建议 |
-| `budget-optimization` | Budget pacing、重分配与扩量 |
+| `budget-optimization` | Budget pacing、边际分配、预算池冲突与扩量 |
 | `placement-optimization` | Top of Search / Product Pages / Rest of Search |
 | `negative-targeting` | Negative 与误杀保护 |
 | `profitability-analysis` | Break-even ACOS、贡献利润、TACOS |
 | `anomaly-detection` | 历史基线异常检测 |
 | `amazon-ads-optimizer` | 总调度、记忆检查、去重与冲突消解 |
 
-当前保持 **15 个 Skills**。组合型运营流程优先进入 `playbooks/`；可靠性验证优先进入 `evals/`，而不是继续拆新 Skill。
+当前保持 **15 个 Skills**。组合型运营流程优先进入 `playbooks/`；复杂细节优先进入按需 `references/`；可靠性验证优先进入 `evals/`，而不是继续拆新 Skill。
 
 ## Historical Replay / Evals
 
 `evals/README.md` 定义 Contract checks + Capability replay。Capability Eval 使用 `met / not_met / insufficient_evidence`，比较决策行为而不是 exact wording。
 
-当前 regression pack 已覆盖 **21 类关键安全风险**：Mixed-ASIN 误否词、Negative attachment 错层级、Previous Winner 短期 0 单、Pending Change 反复调参、Bid×Placement 联动、Featured Offer / Buy Box 冲击、Stockout 转化冲击、stale retail snapshot、Promotion baseline 假异常、Attribution Lag 假失败、Unknown Application 错误归因、Partial Application、stale entity identity memory、blind retry、显式 idempotency safe retry、readback 与 intended state 不一致、Experiment contamination、Sample Ratio / Allocation Integrity 异常、Proven Winner 合理扩量、Budget exhausted 但无 marginal headroom、ROAS 增长但贡献利润恶化。
+当前 regression pack 已覆盖 **23 类关键安全风险**：Mixed-ASIN 误否词、Negative attachment 错层级、Previous Winner 短期 0 单、Pending Change 反复调参、Bid×Placement 联动、Featured Offer / Buy Box 冲击、Stockout 转化冲击、stale retail snapshot、Promotion baseline 假异常、Attribution Lag 假失败、Unknown Application 错误归因、Partial Application、未验证 stale entity identity、verified deliberate entity migration、blind retry、显式 idempotency safe retry、readback 与 intended state 不一致、Experiment contamination、Sample Ratio / Allocation Integrity 异常、portfolio fixed-budget local optimum conflict、Proven Winner 合理扩量、Budget exhausted 但无 marginal headroom、ROAS 增长但贡献利润恶化。
 
 执行完整性原则：
 
@@ -76,10 +76,12 @@ same intended value ≠ retry is automatically safe
 same idempotency key + same stable intent + explicit dedup contract → transport retry may be safe
 safe retry ≠ application confirmed
 same keyword text ≠ same optimization identity
+verified migration lineage → bounded history continuity, not state cloning
 higher ROAS ≠ higher contribution profit
 recent zero orders ≠ irrelevant query
 stale retail snapshot ≠ current retail state
 declared experiment split ≠ realized allocation integrity
+campaign-local optimum ≠ portfolio optimum
 ```
 
 ## Weekly Review Playbook
@@ -98,6 +100,22 @@ schemas/optimization-event.json
 ```
 
 明确区分 `proposed ≠ applied`、`applied ≠ readback confirmed`、`readback confirmed ≠ worked`。历史是证据，不是当前事实。
+
+对于 deliberate restructure，只有明确、可审计的 predecessor → successor mapping 才允许跨 ID 继承有限的成熟历史证据；successor 当前 Bid/Budget/State/Readback 仍必须独立读取。
+
+## Budget Pool / Portfolio Conflicts
+
+当多个 Campaign 竞争固定业务预算、portfolio cap 或外部 pacing pool 时，`budget-optimization` 按需加载 `skills/budget-optimization/references/portfolio-budget-conflicts.md`。
+
+核心约束：
+
+```text
+平均历史 ROAS ≠ 下一单位预算的边际回报
+固定总预算 → destination gain 必须同时计算 source opportunity cost
+protected spend / business role → 不能被局部效率排序静默覆盖
+```
+
+预算调整不再采用通用固定百分比；幅度由 marginal headroom、数据成熟度、库存、业务角色、预算池空间、最近变更和可逆性共同约束。
 
 ## Experiment Planner
 
@@ -128,13 +146,15 @@ schemas/optimization-event.json
 ## Development Rules
 
 - `SKILL.md` 保持薄，详细知识按需加载；
-- 不把固定经验阈值伪装成官方规则；
+- 不把固定经验阈值伪装成官方规则或默认动作幅度；
 - 区分 Fact / Observation / Hypothesis / Cause / Action / Outcome；
 - 同实体新动作先检查未完成验证和可信 readback；
 - stale memory / stale identity / stale retail snapshot 不等于当前状态；
+- deliberate entity migration 需要显式 lineage mapping，不能靠名称/文本相似度推断；
 - Executor 的 unknown/timeout 结果先 reconcile，再决定 retry；
 - 幂等重试必须保持 stable intent、相同 key 与相同 mutation payload；
 - ROAS/ACoS 不能替代贡献利润和业务目标；
+- 固定预算池先做 portfolio reconciliation，再给单 Campaign 预算动作；
 - 历史赢家短期 0 单先诊断 conversion break，不自动否定；
 - 实验先验证 realized allocation / control integrity，再解释 treatment lift；
 - Eval 判断行为而不是 exact wording；
@@ -157,8 +177,9 @@ schemas/optimization-event.json
 - [x] Weekly Review Playbook
 - [x] Historical replay / regression fixtures
 - [x] Previous Winner / profitability conflict / reconciliation / retry / stale retail / allocation integrity fixtures
+- [x] Portfolio-level budget conflict + verified entity migration continuity evals
 - [ ] 继续拆薄旧版较厚 Skills
-- [ ] 扩展 portfolio-level conflict 与 deliberate entity migration evals
+- [ ] 扩展 treatment/control leakage 与 auction interference evals
 - [ ] Amazon Ads API / 自研 Connector 示例
 
 ## Disclaimer
