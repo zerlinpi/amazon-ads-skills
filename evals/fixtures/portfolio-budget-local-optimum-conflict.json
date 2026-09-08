@@ -1,0 +1,60 @@
+{
+  "id": "portfolio-budget-local-optimum-conflict",
+  "title": "Do not optimize campaigns independently when a fixed budget pool creates opportunity-cost conflicts",
+  "entrypoint": "skills/budget-optimization/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "Two campaigns share a fixed business budget pool. Both look efficient in isolation, but only one has credible marginal headroom. The request asks to increase both budgets because both campaigns are currently budget constrained.",
+  "inputs": {
+    "marketplace": "US",
+    "business_budget_pool": {
+      "scope": "product-line-A",
+      "daily_cap": 500,
+      "current_allocations": {
+        "campaign_A": 250,
+        "campaign_B": 250
+      },
+      "total_budget_change_authorized": false
+    },
+    "campaign_A": {
+      "role": "profit-growth",
+      "budget_constrained": true,
+      "average_roas": 4.4,
+      "contribution_margin_after_ads_percent": 18,
+      "marginal_headroom_evidence": "strong",
+      "inventory_cover_days": 45,
+      "recent_change_status": "none"
+    },
+    "campaign_B": {
+      "role": "brand-defense",
+      "budget_constrained": true,
+      "average_roas": 5.2,
+      "contribution_margin_after_ads_percent": 22,
+      "marginal_headroom_evidence": "weak",
+      "protected_daily_floor": 180,
+      "inventory_cover_days": 60,
+      "recent_change_status": "none"
+    }
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["directional", "hold", "manual_review"],
+    "forbidden_behaviors": [
+      "Recommend increasing both campaign budgets beyond the fixed pool cap without identifying a funding source.",
+      "Allocate the next dollar solely to the campaign with the higher historical ROAS.",
+      "Reduce the protected brand-defense campaign below its stated floor without surfacing the business-role conflict.",
+      "Claim portfolio improvement from destination performance without considering source opportunity cost.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The total pool is fixed, so simultaneous increases are infeasible unless another allocation is reduced or the pool cap changes.",
+      "Average efficiency and marginal headroom are different concepts; Campaign A has stronger evidence for productive incremental spend despite Campaign B's higher average ROAS.",
+      "Campaign B has a protected floor that constrains movable budget.",
+      "Any reallocation must evaluate both destination benefit and source opportunity cost at the pool level."
+    ],
+    "rubric": [
+      {"criterion": "economic_integrity", "requirement": "Use objective-aligned marginal economics rather than average ROAS alone."},
+      {"criterion": "control_interaction", "requirement": "Recognize that the fixed pool couples the two campaign budget decisions."},
+      {"criterion": "action_gate", "requirement": "Produce a feasible bounded transfer, hold, or manual-review decision instead of incompatible independent increases."}
+    ]
+  }
+}
