@@ -22,14 +22,23 @@ Repository: https://github.com/AgriciDaniel/claude-ads
 
 MIT-licensed repository reviewed for experiment lifecycle, power/MDE discipline when inputs exist, sample-ratio/contamination awareness, sequential-testing caution, realized-allocation integrity, holdout/control integrity and advertising-market interference.
 
-Two generic ideas materially influenced recent hardening:
+Generic ideas that materially influenced experiment hardening:
 
 1. a declared split or nominal control does not prove correct realized assignment/delivery;
-2. in advertising markets, treatment can alter the comparison cohort through spillover or a changed auction opportunity set, so treatment lift is not automatically incremental lift.
+2. in advertising markets, treatment can alter the comparison cohort through spillover or a changed auction opportunity set;
+3. experiment validity must be checked before interpreting a treatment-only KPI lift.
 
-These concepts were independently rewritten for Amazon Ads as query/target/ASIN overlap, shared-budget/routing/automation leakage and auction displacement checks. No platform-specific experiment APIs, prose or implementation details were copied. No statistical significance is fabricated when expected allocation or assignment assumptions are missing.
+These concepts were independently rewritten for Amazon Ads as query/target/ASIN overlap, shared-budget/routing/automation leakage, auction displacement and constrained-resource interference checks. No platform-specific experiment APIs, prose or implementation details were copied. No statistical significance is fabricated when expected allocation or assignment assumptions are missing.
 
 Repository: https://github.com/weisberg/agile_agentic_analytics
+
+### ir-anthology/ir-anthology.github.io
+
+Public bibliography repository reviewed only as a discovery index for the WWW 2022 research topic **Interference, Bias, and Variance in Two-Sided Marketplace Experimentation: Guidance for Platforms**.
+
+The project does not copy the paper, bibliography prose, formulas, code, or implementation. The high-level marketplace lesson used here is only that interacting units can bias naive treatment/control comparisons. It is independently adapted to Amazon Ads as shared auction opportunity, shared pacing capacity and substitution between advertising scopes.
+
+Repository: https://github.com/ir-anthology/ir-anthology.github.io
 
 ### unifyai/unify
 
@@ -104,6 +113,8 @@ Examples:
 - **Verified entity migration lineage** — a deliberate restructure can preserve useful predecessor history, but only through an explicit auditable predecessor→successor mapping. Historical evidence may transfer as bounded context; successor Bid/Budget/State/readback never transfers as current truth.
 - **Portfolio opportunity cost** — under a fixed business budget pool, locally attractive campaign increases can be mutually incompatible. A reallocation must identify the funding source, protected floors, marginal headroom and source opportunity cost.
 - **Treatment/control interference** — a cohort can improve because it captures traffic, auction opportunity or budget that would otherwise have served the comparison cohort. When displacement is plausible, combined/pool outcomes and control-boundary integrity matter more than treatment-only lift.
+- **Shared-budget starvation** — if treatment spends more from the same fixed pool and mechanically reduces control capacity, treatment growth is a redistribution signal until pool-level incrementality is demonstrated.
+- **Variation-family substitution** — when treatment and control advertise sibling child ASINs, child-level growth can be a family mix shift. Parent-family totals and purchased-ASIN crossover are required before claiming child-level incrementality.
 
 ## Integration rules
 
@@ -127,16 +138,18 @@ Before adopting an external idea:
 16. Treat coupled auction controls as interacting parameters.
 17. Treat experiment contamination, unexplained allocation mismatch, treatment leakage or treatment→control interference as readout limitations.
 18. Treatment-only improvement is not proof of incrementality when treatment and control share query/ASIN/auction/budget opportunity; inspect combined or pool-level outcomes when displacement is plausible.
-19. Treat partial application as a realized treatment different from intended treatment.
-20. Do not compare promotion-contaminated windows as ordinary evergreen baselines.
-21. Treat stockout/retail-readiness failures as causal gates before traffic suppression.
-22. Treat stale retail snapshots as historical evidence, not current-state proof.
-23. Do not transfer entity memory across recreated IDs without verified identity mapping; verified migrations may carry bounded historical context but never clone successor current state.
-24. Treat timeout/unknown mutation outcomes as unresolved until readback/reconciliation or executor-level idempotency makes repetition safe.
-25. Stable idempotency keys must stay bound to the same stable intent and payload; a new value is a new intent.
-26. Trusted current-state readback overrides earlier executor acknowledgement when the states disagree; classify the difference as drift/partial/unresolved before outcome attribution.
-27. Do not equate higher ROAS or revenue with higher profit; use contribution economics when the business objective is profitability.
-28. A historically proven relevant query that temporarily has zero orders should be diagnosed as a possible conversion break before being treated as irrelevant traffic.
-29. A declared experiment allocation does not prove realized allocation integrity; unexplained imbalance must be investigated before causal rollout.
-30. Under a fixed budget pool, reconcile source and destination allocations and evaluate source opportunity cost; campaign-local efficiency does not prove portfolio-level optimality.
-31. Record reviewed sources here when they materially influence the project.
+19. If treatment and control share a constrained budget/pacing resource, distinguish incremental performance from resource redistribution/starvation.
+20. If sibling child ASINs can substitute, evaluate parent-family outcomes and purchased-ASIN crossover before claiming child-level incrementality.
+21. Treat partial application as a realized treatment different from intended treatment.
+22. Do not compare promotion-contaminated windows as ordinary evergreen baselines.
+23. Treat stockout/retail-readiness failures as causal gates before traffic suppression.
+24. Treat stale retail snapshots as historical evidence, not current-state proof.
+25. Do not transfer entity memory across recreated IDs without verified identity mapping; verified migrations may carry bounded historical context but never clone successor current state.
+26. Treat timeout/unknown mutation outcomes as unresolved until readback/reconciliation or executor-level idempotency makes repetition safe.
+27. Stable idempotency keys must stay bound to the same stable intent and payload; a new value is a new intent.
+28. Trusted current-state readback overrides earlier executor acknowledgement when the states disagree; classify the difference as drift/partial/unresolved before outcome attribution.
+29. Do not equate higher ROAS or revenue with higher profit; use contribution economics when the business objective is profitability.
+30. A historically proven relevant query that temporarily has zero orders should be diagnosed as a possible conversion break before being treated as irrelevant traffic.
+31. A declared experiment allocation does not prove realized allocation integrity; unexplained imbalance must be investigated before causal rollout.
+32. Under a fixed budget pool, reconcile source and destination allocations and evaluate source opportunity cost; campaign-local efficiency does not prove portfolio-level optimality.
+33. Record reviewed sources here when they materially influence the project.
