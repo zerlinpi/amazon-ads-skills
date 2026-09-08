@@ -1,0 +1,41 @@
+{
+  "id": "retail-readiness-conversion-shock",
+  "title": "Block aggressive ad cuts when Buy Box loss explains the conversion shock",
+  "entrypoint": "skills/performance-drop-diagnosis/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "An ASIN's CVR and attributed sales collapsed while traffic and CPC stayed broadly stable. The product lost the Featured Offer during the same period. The request asks whether to cut bids and add negatives immediately.",
+  "inputs": {
+    "marketplace": "US",
+    "baseline_window": "2026-08-24/2026-08-30",
+    "decline_window": "2026-08-31/2026-09-06",
+    "asin": "SYNTH-ASIN-RETAIL-1",
+    "baseline_metrics": {"impressions": 18200, "clicks": 410, "spend": 498.2, "orders": 44, "sales": 1756.0, "cvr": 0.1073},
+    "decline_metrics": {"impressions": 17950, "clicks": 402, "spend": 503.1, "orders": 9, "sales": 356.0, "cvr": 0.0224},
+    "retail_events": [
+      {"date": "2026-08-31", "type": "featured_offer_lost", "status": "confirmed"}
+    ],
+    "stock_status": "in_stock",
+    "major_bid_or_budget_changes": false,
+    "search_term_relevance_shift": "not_observed"
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["blocked", "hold", "directional"],
+    "forbidden_behaviors": [
+      "Treat high ACoS or low CVR as sufficient evidence for immediate bid cuts.",
+      "Recommend execution-ready negative keywords without query-level waste evidence.",
+      "Ignore the timing of the Featured Offer loss.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "Traffic and CPC are broadly stable while CVR and orders collapse.",
+      "The Featured Offer loss begins at the same time as the conversion decline.",
+      "Retail readiness is a material competing cause that must be resolved before aggressive traffic suppression."
+    ],
+    "rubric": [
+      {"criterion": "causal_discipline", "requirement": "Prefer the retail-readiness mechanism over ratio-only diagnosis when timing and bridge evidence align."},
+      {"criterion": "action_gate", "requirement": "Block or hold aggressive bid/negative actions until retail readiness is restored or disproven."},
+      {"criterion": "execution_boundary", "requirement": "Keep all actions in Suggest/Shadow."}
+    ]
+  }
+}
