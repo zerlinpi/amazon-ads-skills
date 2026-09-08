@@ -18,6 +18,26 @@
       },
       "additionalProperties": true
     },
+    "identity_scope_status": {
+      "type": ["string", "null"],
+      "enum": ["Complete", "Incomplete", "Ambiguous", "Collision Detected", null]
+    },
+    "identity_scope_warnings": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "candidate_scopes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "marketplace": {"type": ["string", "null"]},
+          "profile_scope": {"type": ["string", "null"]},
+          "reason": {"type": ["string", "null"]}
+        },
+        "additionalProperties": true
+      }
+    },
     "as_of": {"type": "string", "format": "date-time"},
     "latest_source_event_at": {"type": ["string", "null"], "format": "date-time"},
     "latest_readback_at": {"type": ["string", "null"], "format": "date-time"},
