@@ -50,6 +50,30 @@ The repository is MIT licensed. This project does not copy its implementation or
 
 Repository: https://github.com/weisberg/agile_agentic_analytics
 
+### unifyai/unify
+
+Useful evaluation concepts reviewed:
+
+- distinguish deterministic/symbolic contract tests from end-to-end capability evals;
+- treat a capability failure as potentially coming from prompt/instruction/tool design rather than only programmatic code;
+- use replay/caching as evidence of the exact model input/output rather than clearing evidence to make a failure disappear;
+- separate infrastructure regression tests from semantic quality tests.
+
+The repository is MIT licensed. No implementation or prose was copied. For this project the generic distinction was independently rewritten as `contract checks` vs `capability replay` in `evals/README.md`, with Amazon Ads-specific safety rubrics and synthetic fixtures.
+
+Repository: https://github.com/unifyai/unify
+
+### Observal/Observal
+
+Useful evaluation concepts reviewed:
+
+- criteria should be evidence-bearing rather than assumed;
+- an evaluator benefits from an explicit third state for cases where the available trace cannot support a defensible pass/fail judgment.
+
+The repository is Apache-2.0 licensed. This project independently expresses the concept as `met / not_met / insufficient_evidence` for decision-behavior evals. No source implementation or prose was copied.
+
+Repository: https://github.com/Observal/Observal
+
 ### TheQtCompanyRnD/agent-skills
 
 Useful structural patterns reviewed:
@@ -98,4 +122,7 @@ Before adopting an external idea:
 9. Do not fabricate statistical confidence, power or MDE when the required inputs are missing.
 10. For optimization memory, preserve event lineage, distinguish intent/application/readback/outcome, bound history retrieval, and never treat stale or partial memory as current complete state.
 11. Prefer a playbook over another Skill when the new content composes existing capabilities into a recurring operating cadence rather than creating a new decision domain.
-12. Record reviewed sources here when they materially influence the project.
+12. For evals, separate contract failures from capability failures and score decision behavior instead of exact wording.
+13. Preserve `insufficient_evidence` as a real outcome when a replay cannot support a defensible pass/fail judgment.
+14. Never weaken a regression fixture merely to make the current model pass; fixtures should represent intended safe behavior.
+15. Record reviewed sources here when they materially influence the project.
