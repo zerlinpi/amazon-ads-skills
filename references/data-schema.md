@@ -2,7 +2,7 @@
 
 本仓库不绑定某个数据源。Amazon Ads API、MCP、领星 MCP、CSV、数据库查询结果应先映射为统一字段，再交给 Skills。
 
-跨来源比较、拼接或回放时，按需加载 `data-lineage.md`；不要仅因为字段名一致就假设测量定义一致。
+跨来源、跨刷新路径或跨指标语义版本比较/回放时，按需加载 `data-lineage.md`；不要仅因为字段名或表路径一致就假设测量定义一致。
 
 ## 通用上下文
 
@@ -27,6 +27,16 @@
     "available_through": "2026-08-31",
     "aggregation_grain": "daily",
     "semantic_version": null,
+    "metric_semantics": {
+      "orders": {
+        "definition_id": "attributed_orders",
+        "semantic_version": null
+      },
+      "sales": {
+        "definition_id": "attributed_sales",
+        "semantic_version": null
+      }
+    },
     "completeness": "complete"
   }
 }
@@ -34,7 +44,9 @@
 
 `extracted_at` 表示何时获取数据；`available_through` 表示数据实际完整到哪一天。两者不可互相替代。
 
-当数据来自 Warehouse、BI、MCP 或派生表时，推荐额外记录 upstream/source lineage、refresh policy、filters、backfill/partial 状态。缺失 lineage 应标记为未知，不得自动假设与另一数据源完全可比。
+当数据来自 Warehouse、BI、MCP 或派生表时，推荐额外记录 upstream/source lineage、refresh policy、filters、backfill/partial 状态。若同一 dataset 内不同指标可能独立升级定义，使用 `metric_semantics.<metric>.definition_id / semantic_version` 记录，而不要只依赖 dataset-level `semantic_version`。
+
+缺失 lineage 应标记为未知，不得自动假设与另一数据源或另一语义版本完全可比。
 
 ## Campaign
 
@@ -86,7 +98,7 @@
 
 ## Source comparability
 
-跨窗口/跨来源分析时，至少检查：
+跨窗口/跨来源/跨语义版本分析时，至少检查：
 
 - marketplace / profile scope；
 - timezone / currency；
@@ -95,11 +107,12 @@
 - aggregation grain；
 - filters / entity inclusion；
 - refresh/backfill lag；
-- semantic/report version。
+- dataset semantic/report version；
+- per-metric definition ID / semantic version。
 
 可将比较状态标记为：`Comparable`、`Reconcilable`、`Directional`、`Not Comparable`、`Unknown`。
 
-如果 apparent break 与 source switch 同期发生，先把 source-lineage drift 当作 competing explanation，再进入广告优化。
+如果 apparent break 与 source switch 或 metric semantic-version cutover 同期发生，先把 measurement drift 当作 competing explanation，再进入广告优化。
 
 ## Optimization Action
 
@@ -130,4 +143,4 @@
 - `0` 必须表示真实观测到 0。
 - 金额必须带可确定的 currency 上下文。
 - 百分比在机器结构中优先使用 0-1 小数，例如 ACOS 30% 表示 `0.30`。
-- 来源、刷新时间、完整日期或 attribution 定义未知时，应显式标记 unknown；不得通过猜测补齐 lineage。
+- 来源、刷新时间、完整日期、attribution 定义或 metric semantic version 未知时，应显式标记 unknown；不得通过猜测补齐 lineage。
