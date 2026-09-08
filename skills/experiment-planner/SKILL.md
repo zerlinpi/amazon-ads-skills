@@ -17,17 +17,18 @@ Default mode: `Shadow` for design/simulation, otherwise `Suggest`. This Skill ne
 4. Choose one primary success metric and a small set of diagnostic/guardrail metrics.
 5. Check sample sufficiency, attribution maturity, seasonality, promotions, stock, price, Buy Box / Featured Offer, mixed-ASIN and concurrent-change risk.
 6. Check whether treatment/control can interfere through shared queries, ASIN demand, budgets, routing, placements, auctions, or automation.
-7. Estimate the minimum decision-useful effect or practical business threshold when the economics support it; do not invent statistical precision from missing inputs.
-8. Define pre-test state, test window, observation window, stop conditions and rollback triggers before any mutation.
-9. Output a machine-readable experiment plan when needed using `../../schemas/experiment-plan.json`.
-10. After an externally applied test, route outcome evaluation to `post-change-review` rather than judging success inside this planner.
+7. For long-running tests, re-verify control boundaries after material keyword/target/negative, automation, migration, budget-pool, variation-family or retail-scope changes; launch-time cleanliness is not permanent proof.
+8. Estimate the minimum decision-useful effect or practical business threshold when the economics support it; do not invent statistical precision from missing inputs.
+9. Define pre-test state, test window, observation window, stop conditions and rollback triggers before any mutation.
+10. Output a machine-readable experiment plan when needed using `../../schemas/experiment-plan.json`.
+11. After an externally applied test, route outcome evaluation to `post-change-review` rather than judging success inside this planner.
 
 ## Progressive loading
 
 - Detailed design, control selection, windows and general contamination: `references/experiment-design.md`
-- Shared query/ASIN/budget/auction/control leakage or interference: `references/interference-and-leakage.md`
+- Shared query/ASIN/budget/auction/control leakage, interference, or long-test boundary drift: `references/interference-and-leakage.md`
 
-Load only the reference required by the experiment. Ordinary low-overlap tests should not load the interference reference.
+Load only the reference required by the experiment. Ordinary short, low-overlap tests should not load the interference reference.
 
 ## Experiment validity gates
 
@@ -36,6 +37,7 @@ Do not call an experiment decision-ready when any material issue remains unresol
 - the hypothesis changes multiple independent controls without a way to separate effects;
 - baseline and treatment periods differ materially in promotion, stock, price, listing state or attribution maturity;
 - treatment and control share traffic or resources in a way that causes substantial leakage, displacement, or interference;
+- a material scope-changing event occurred after the latest trustworthy control-boundary verification;
 - realized treatment/control allocation materially departs from the declared design without an explanation;
 - the test entity is mixed-ASIN and the proposed conclusion requires ASIN-level attribution that is not reliable;
 - the primary metric can improve while profitability or a critical guardrail deteriorates;
@@ -52,6 +54,7 @@ When blocked, return `Redesign`, `Hold`, or `Directional only` instead of forcin
 - Keep efficiency and volume together. A lower ACOS with collapsed qualified demand is not automatically a win.
 - Separate platform-attributed outcomes from business profitability and incrementality claims.
 - When cohorts interact, inspect combined/pool outcomes before calling a treatment incremental.
+- Treat control integrity as time-varying during long tests; revalidate after material scope changes.
 - Use account-specific economics and comparable history before generic benchmarks.
 - Never treat a fixed click/order count as a universal Amazon requirement.
 
@@ -62,7 +65,7 @@ Return:
 1. **Decision question** — what uncertainty this test should resolve.
 2. **Hypothesis** — treatment → mechanism → expected outcome.
 3. **Scope** — marketplace, ad type, entity IDs/ASINs and exclusions.
-4. **Design** — treatment, comparison method, baseline/control, allocation integrity and interference risk.
+4. **Design** — treatment, comparison method, baseline/control, allocation integrity, boundary freshness and interference risk.
 5. **Metrics** — one primary metric, diagnostics and guardrails.
 6. **Readiness** — data quality, sample sufficiency, attribution maturity, overlap/interference and confounders.
 7. **Windows** — pre-test baseline, treatment period, conversion-lag/observation period and next review point.
