@@ -1,18 +1,19 @@
 ---
 name: amazon-ads-optimizer
-description: Orchestrate Amazon Ads audit, monitoring, diagnosis, growth-opportunity, experiment planning, post-change review, search-term, keyword, bid, budget, placement, negative-targeting, profitability and anomaly skills into one memory-aware guarded action plan. Use for whole-account optimization, multi-domain analysis, or when the user does not know which Amazon Ads skill to choose.
+description: Orchestrate Amazon Ads audit, monitoring, diagnosis, growth-opportunity, experiment planning, post-change review, search-term, keyword, bid, budget, placement, negative-targeting, profitability and anomaly skills into one memory-aware guarded action plan. Use for whole-account optimization, multi-domain analysis, recurring weekly reviews, or when the user does not know which Amazon Ads skill to choose.
 ---
 
 # Amazon Ads Optimizer
 
-Use this as the routing layer. Load only the selected child Skill and references needed for the current decision.
+Use this as the routing layer. Load only the selected child Skill, playbook and references needed for the current decision.
 
 Default mode: `Suggest`. Use `Shadow` for simulation/backtesting. Never claim a live change succeeded unless an external connector/executor returned success and current state was read back when material.
 
 ## Route by intent
 
-| Intent | Skill |
+| Intent | Route |
 |---|---|
+| Recurring weekly / Monday PPC review, this week vs prior period | `../../playbooks/weekly-review.md` then only the required child Skills |
 | Whole-account audit / account takeover | `amazon-ads-audit` |
 | Routine campaign health / alerts | `campaign-health-monitor` |
 | Sustained sales, orders, ROAS, ACOS or traffic decline; what dropped and why | `performance-drop-diagnosis` |
@@ -30,6 +31,8 @@ Default mode: `Suggest`. Use `Shadow` for simulation/backtesting. Never claim a 
 
 ## Routing rules
 
+- For recurring weekly operating reviews, load `../../playbooks/weekly-review.md` first. It is a conductor playbook, not a replacement for specialist Skills.
+- During a weekly review, escalate only material findings to the minimum specialist Skill needed; do not load every Skill preemptively.
 - For a sustained business-impact decline, prefer `performance-drop-diagnosis` over a generic anomaly review.
 - For an alert without a confirmed sustained decline, start with `anomaly-detection` or `campaign-health-monitor`.
 - For “lower ACOS”, diagnose traffic quality, CPC, CVR, placement, budget, retail readiness and economics before routing to bid reduction.
@@ -55,6 +58,7 @@ Before high-confidence recommendations confirm when relevant:
 - recent actions, pending evaluations, active experiments or control changes affecting the same entity;
 - memory freshness/completeness warnings when entity history is used.
 
+Use `../../playbooks/weekly-review.md` for recurring weekly operating cadence.
 Use `../../references/benchmark-policy.md` when external benchmarks affect a decision.
 Use `../../references/optimization-memory.md` for read-before-recommend, anti-thrashing, staleness and event-lineage rules.
 Use `../../references/decision-boundaries.md` for action permissions.
@@ -86,6 +90,8 @@ Invalid unresolved conflicts include increase+decrease on the same control, harv
 ## Output
 
 Return executive summary, data confidence, routed findings, a deduplicated prioritized action plan, resolved/unresolved conflicts, hold/observe items, and the next validation point.
+
+For weekly reviews, also return current/comparable windows, recent-action status, Protect/Recover/Optimize/Grow/Experiment/Hold triage, and the next-review measurement contract from `../../playbooks/weekly-review.md`.
 
 When history materially changes a recommendation, also return history status, latest relevant action/readback, validation maturity, unresolved warnings and the event IDs supporting the decision when available.
 
