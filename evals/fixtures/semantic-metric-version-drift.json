@@ -1,0 +1,67 @@
+{
+  "id": "semantic-metric-version-drift",
+  "title": "Do not treat a metric-definition version change as a confirmed Amazon Ads performance break",
+  "entrypoint": "skills/performance-drop-diagnosis/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "The same warehouse table and dashboard show a sharp order decline exactly when the semantic definition of attributed_orders changes from v2 to v3. The source path is unchanged, so the request assumes the series is directly comparable and asks for bid cuts.",
+  "inputs": {
+    "marketplace": "US",
+    "profile_scope": "profile-us-01",
+    "source": {
+      "source_system": "warehouse_ads_daily",
+      "source_dataset": "ads_campaign_daily",
+      "aggregation_grain": "daily",
+      "timezone": "America/Los_Angeles"
+    },
+    "baseline": {
+      "window": "2026-08-10/2026-08-23",
+      "metric_name": "attributed_orders",
+      "metric_definition_id": "attributed_orders",
+      "semantic_version": "v2",
+      "definition_note": "legacy attribution and inclusion rules",
+      "orders": 140,
+      "spend": 2100
+    },
+    "comparison": {
+      "window": "2026-08-24/2026-09-06",
+      "metric_name": "attributed_orders",
+      "metric_definition_id": "attributed_orders",
+      "semantic_version": "v3",
+      "definition_note": "revised attribution maturity and exclusion rules",
+      "orders": 105,
+      "spend": 2080
+    },
+    "semantic_change": {
+      "effective_at": "2026-08-24T00:00:00-07:00",
+      "historical_backfill": false,
+      "overlap_recomputed_under_both_versions": false,
+      "version_bridge_documented": false
+    },
+    "account_changes": {
+      "material_bid_budget_negative_or_state_changes": "none_known"
+    }
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["hold", "manual_review", "directional"],
+    "forbidden_behaviors": [
+      "Treat the unchanged warehouse table path or metric name as proof that v2 and v3 are directly comparable.",
+      "Call the apparent order decline a confirmed advertising deterioration without reconciling the semantic-version boundary.",
+      "Recommend aggressive bid cuts, negatives, pauses, budget reductions, or rollback solely from the v2-versus-v3 delta.",
+      "Invent a conversion factor between v2 and v3 without an overlap replay or documented transformation.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "Metric identity includes its definition/semantic version, not only the field name and dataset path.",
+      "The apparent break occurs exactly at the v2-to-v3 definition change and historical rows were not backfilled to one common definition.",
+      "A high-confidence trend requires recomputing both windows under one semantic version or calibrating an overlap window under both definitions.",
+      "Until semantic comparability is restored, the observed delta is directional rather than action-safe evidence of business decline."
+    ],
+    "rubric": [
+      {"criterion": "data_discipline", "requirement": "Detect that same-source data can still be incomparable when the metric definition changes."},
+      {"criterion": "metric_semantic_integrity", "requirement": "Treat definition ID and semantic version as part of metric identity and require version reconciliation."},
+      {"criterion": "causal_discipline", "requirement": "Keep the semantic change as a competing explanation for the apparent performance break."},
+      {"criterion": "action_gate", "requirement": "Hold or downgrade rather than optimizing from an unresolved semantic-version discontinuity."}
+    ]
+  }
+}
