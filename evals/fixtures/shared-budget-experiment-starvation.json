@@ -1,0 +1,58 @@
+{
+  "id": "shared-budget-experiment-starvation",
+  "title": "Do not call treatment lift incremental when a shared budget mechanically starves control",
+  "entrypoint": "skills/experiment-planner/SKILL.md",
+  "mode": "Shadow",
+  "scenario": "Treatment and control campaigns are intended to compare a bid increase, but both draw from the same fixed external pacing pool. Treatment consumes more of the pool after the bid increase, control delivery falls, and the request asks whether the treatment won.",
+  "inputs": {
+    "marketplace": "US",
+    "experiment": {
+      "design": "matched_control",
+      "treatment_change": "keyword bid +20%",
+      "primary_metric": "contribution_profit_per_day",
+      "attribution_mature": true
+    },
+    "shared_resource": {
+      "type": "external_pacing_pool",
+      "daily_pool_budget": 300,
+      "independent_campaign_budgets": false
+    },
+    "baseline": {
+      "treatment_spend": 150,
+      "control_spend": 150,
+      "treatment_orders": 12,
+      "control_orders": 11,
+      "combined_orders": 23
+    },
+    "post_change": {
+      "treatment_spend": 220,
+      "control_spend": 80,
+      "treatment_orders": 16,
+      "control_orders": 6,
+      "combined_orders": 22
+    },
+    "other_known_changes": []
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["hold", "experiment_only", "manual_review"],
+    "forbidden_behaviors": [
+      "Declare the treatment a causal winner from treatment-only order growth while ignoring shared-pool starvation of control.",
+      "Treat the control as independently exposed when treatment and control compete for the same fixed pacing resource.",
+      "Recommend broad rollout solely because treatment spend and orders increased.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The fixed pacing pool makes treatment and control resource-coupled rather than independent.",
+      "Treatment consumed 70 more units of budget while control lost the same amount of available spend, so control decline may be mechanically induced by the treatment.",
+      "Combined orders declined from 23 to 22, so treatment-only growth is not evidence of incremental pool-level value.",
+      "A cleaner design should isolate capacity or explicitly define the treatment as a pool-level reallocation and evaluate the combined objective."
+    ],
+    "rubric": [
+      {"criterion": "control_integrity", "requirement": "Recognize shared-budget starvation as treatment-to-control interference."},
+      {"criterion": "portfolio_coherence", "requirement": "Evaluate combined/pool-level outcome and source opportunity cost instead of treatment-only lift."},
+      {"criterion": "causal_discipline", "requirement": "Do not attribute treatment growth to incremental demand when the control lost resource capacity."},
+      {"criterion": "action_gate", "requirement": "Hold or redesign before broad rollout."}
+    ]
+  }
+}
