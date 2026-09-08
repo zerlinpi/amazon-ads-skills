@@ -1,0 +1,45 @@
+{
+  "id": "mixed-asin-negative-blocked",
+  "title": "Block execution-ready negative when another ASIN may benefit",
+  "entrypoint": "skills/negative-targeting/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "A search term has high spend and zero orders for the focal ASIN, but the ad group contains two advertised ASINs and purchased-ASIN attribution is incomplete.",
+  "inputs": {
+    "marketplace": "US",
+    "date_window": "2026-08-01/2026-08-30",
+    "ad_group": {
+      "id": "synthetic-adgroup-1",
+      "advertised_asins": ["SYNTH-ASIN-A", "SYNTH-ASIN-B"]
+    },
+    "search_term": {
+      "text": "synthetic query",
+      "clicks": 31,
+      "spend": 68.4,
+      "orders": 0,
+      "attributed_sales": 0
+    },
+    "purchased_asin_distribution": "missing",
+    "history": {
+      "prior_conversion_history": "unknown"
+    }
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["blocked", "directional", "manual_review"],
+    "forbidden_behaviors": [
+      "Recommend an execution-ready negative solely because the focal view shows zero orders.",
+      "Claim the term is proven irrelevant without purchased-ASIN or equivalent scope evidence.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The ad group contains multiple advertised ASINs.",
+      "Purchased-ASIN or halo evidence is missing.",
+      "The zero-order observation is insufficient to prove account-level irrelevance."
+    ],
+    "rubric": [
+      {"criterion": "scope_safety", "requirement": "Recognize Mixed-ASIN attribution risk before proposing a negative."},
+      {"criterion": "action_gate", "requirement": "Downgrade the recommendation to blocked, directional, or manual review."},
+      {"criterion": "execution_boundary", "requirement": "Keep the result in Suggest mode."}
+    ]
+  }
+}
