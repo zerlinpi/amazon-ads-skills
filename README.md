@@ -113,13 +113,17 @@ Capability Eval 使用三态：
 
 `insufficient_evidence` 不会被强行算作通过或失败。
 
-当前 regression pack 覆盖 7 类关键决策风险：
+当前 regression pack 覆盖 **11 类关键决策风险**：
 
 - Mixed-ASIN 下禁止把焦点 ASIN 的 0 单 Search Term 直接变成 execution-ready negative；
+- Negative 挂在不同 Campaign/Ad Group 层级时，禁止未验证 attachment 就宣称它导致掉量或直接复用为新否词；
 - 最近 Bid 调整仍在 validation window 时防止立即反向修改；
+- Base Bid、Dynamic Bidding 与 Placement Modifier 联动时，禁止同时大改多个耦合控制项导致不可归因；
 - Featured Offer / Buy Box 丢失与 CVR 同时崩塌时，禁止先把问题归咎于广告流量并激进降 Bid/否词；
 - Post-change conversion attribution 尚未成熟时，禁止把修改判为失败并立即 Rollback；
 - `application_status=Unknown` 且无可信 Readback 时，禁止把后续增长归功于该修改；
+- Multi-entity 变更只部分写入时，禁止把原计划标记为 fully applied / worked；
+- Experiment 期间同时改 Budget、Price、Placement 时，禁止把结果归因给单一 Treatment；
 - 有利润和零售准备度支持的预算增长机会可以进入 guarded scaling，但不能从 Skill 层直接写真实账户；
 - Campaign 虽然预算跑满，但边际 CPC 上升、CVR 下滑且接近 break-even 时，禁止把“预算受限”自动等同于“值得扩量”。
 
@@ -130,10 +134,14 @@ evals/
 ├── README.md
 └── fixtures/
     ├── mixed-asin-negative-blocked.json
+    ├── negative-attachment-scope-mismatch.json
     ├── pending-bid-change-hold.json
+    ├── bid-placement-interaction-hold.json
     ├── post-change-attribution-lag.json
     ├── application-status-unknown.json
+    ├── partial-application-manual-review.json
     ├── retail-readiness-conversion-shock.json
+    ├── experiment-contamination-hold.json
     ├── proven-winner-budget-growth.json
     └── budget-exhausted-no-headroom.json
 
@@ -313,7 +321,8 @@ discover → license check → extract generic idea
 - [x] Weekly Review Playbook
 - [x] Historical replay / initial eval fixtures
 - [x] 扩展高风险回归覆盖：Retail Readiness、Attribution Lag、Unknown Application、Marginal Headroom
-- [ ] 增加 Negative attachment / Bid×Placement / experiment contamination 等 synthetic regression fixtures
+- [x] 扩展高风险回归覆盖：Negative attachment、Bid×Placement、Experiment contamination、Partial Application
+- [ ] 增加 Promotion / Stockout / stale entity identity / idempotency synthetic regression fixtures
 - [ ] 继续拆薄旧版较厚 Skills
 - [ ] Amazon Ads API / 自研 Connector 示例
 
