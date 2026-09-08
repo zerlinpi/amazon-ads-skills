@@ -13,7 +13,15 @@ author: zerlinpi
 
 ## 核心原则
 
-“预算花完”不是自动加预算信号；“预算没花完”也不等于 campaign 有问题。预算动作必须结合边际效率和业务目标。
+“预算花完”不是自动加预算信号；“预算没花完”也不等于 campaign 有问题。预算动作必须结合边际效率、业务目标和预算池约束。
+
+## Progressive loading
+
+只有多个 Campaign 竞争同一个业务预算、portfolio cap 或外部 pacing pool 时，再加载：
+
+- `references/portfolio-budget-conflicts.md`
+
+普通单 Campaign 预算诊断不加载该 reference。
 
 ## 输入
 
@@ -31,7 +39,7 @@ author: zerlinpi
 - inventory；
 - promotion plan；
 - campaign priority/role；
-- 同账户可调配预算池。
+- 同账户可调配预算池、protected floor 或外部 pacing 约束。
 
 ## 诊断
 
@@ -41,7 +49,8 @@ author: zerlinpi
 - 库存；
 - 是否已有足够规模；
 - 预算增加后边际流量是否可能明显变差；
-- 大促是否即将结束。
+- 大促是否即将结束；
+- 如果总预算固定，新增预算从哪里来以及来源 Campaign 的机会成本。
 
 ### Inefficient and budget constrained
 
@@ -68,15 +77,27 @@ author: zerlinpi
 ## 预算重分配
 
 当总预算固定时：
-1. 保护品牌/核心防御和关键业务 campaign；
+1. 明确总预算池、业务目标和不可随意移动的 protected spend；
 2. 识别低边际回报预算；
-3. 识别高边际回报且受限 campaign；
-4. 先小幅重分配；
-5. 设验证窗口观察边际 ACOS/ROAS 是否恶化。
+3. 识别高边际回报且存在真实 headroom 的 Campaign；
+4. 把建议写成来源 Campaign → 目标 Campaign 的平衡转移，而不是彼此冲突的独立增预算建议；
+5. 同时估计目标收益与来源机会成本；
+6. 采用与证据质量、风险和可逆性匹配的变更幅度；
+7. 设验证窗口观察 pool-level 结果与边际效率。
 
-## 默认 Guardrail
+## 变更幅度 Guardrail
 
-单次 daily budget 变更建议通常不超过 ±25%，除非用户已有明确大促计划/预算策略。该值是本仓库保守默认，不是 Amazon 官方限制。
+不使用通用固定百分比作为默认预算调整幅度。建议幅度应由以下因素共同约束：
+
+- 可用的 marginal headroom 证据；
+- 数据量和归因成熟度；
+- 库存与促销窗口；
+- 预算池可移动空间；
+- Campaign 的业务角色和 protected floor；
+- 最近是否存在未完成验证的 Bid / Placement / Budget / Structure 变更；
+- 动作可逆性与潜在损失上限。
+
+证据弱时优先小范围、Shadow、Experiment 或 Hold，而不是套用固定比例。
 
 ## 输出
 
@@ -85,12 +106,16 @@ author: zerlinpi
 - constrained/not constrained；
 - efficient/inefficient；
 - role/priority；
+- marginal headroom；
+- pool constraint / protected floor（如适用）；
 - recommended direction。
 
 ### Reallocation plan
 列出来源 campaign → 目标 campaign，以及：
 - 预算前后；
+- pool total reconciliation；
 - 证据；
+- 来源机会成本；
 - 预计目的；
 - confidence；
 - guardrail；
@@ -99,6 +124,9 @@ author: zerlinpi
 ## 禁止
 
 - 不把预算增长当作销售增长保证；
-- 不从高效品牌防御 campaign 抽走关键预算而不提示风险；
+- 不把平均 ROAS/ACOS 当作下一单位预算的边际回报；
+- 不在固定总预算池下对所有受限 Campaign 同时给出无法调和的增预算建议；
+- 不从高效品牌防御或其他 protected Campaign 抽走关键预算而不提示风险；
 - 不在库存紧张时建议大幅扩量；
-- 不同时大幅改 budget、bid、placement 而没有分阶段验证计划。
+- 不同时大幅改 budget、bid、placement 而没有分阶段验证计划；
+- 不引入未经授权的真实账户写入。
