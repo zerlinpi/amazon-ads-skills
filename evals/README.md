@@ -2,7 +2,7 @@
 
 This directory validates whether the repository makes safe, repeatable Amazon Ads decisions from bounded historical cases.
 
-The goal is not exact wording. The goal is to detect decision regressions such as unsafe negatives, premature reversals, weak evidence presented as certainty, Mixed-ASIN collateral damage, retail-state misdiagnosis, stale retail-state misuse, promotion-window false positives, attribution-lag false failures, unsafe cross-ID or cross-profile memory transfer, lost deliberate-migration lineage, unverified or partial writes being credited with outcomes, unsafe retries, coupled-control overcorrection, portfolio/local-optimum conflicts, contaminated experiments, sample-ratio/allocation integrity failures, control leakage, auction displacement, shared-resource starvation, variation-family substitution, long-test boundary drift, ROAS/profitability conflicts, or unjustified scaling.
+The goal is not exact wording. The goal is to detect decision regressions such as unsafe negatives, premature reversals, weak evidence presented as certainty, Mixed-ASIN collateral damage, retail-state misdiagnosis, stale retail-state misuse, parent/variation-family retail shocks, promotion-window false positives, attribution-lag false failures, source-lineage drift, unsafe cross-ID or cross-profile memory transfer, lost deliberate-migration lineage, unverified or partial writes being credited with outcomes, unsafe retries, coupled-control overcorrection, portfolio/local-optimum conflicts, contaminated experiments, sample-ratio/allocation integrity failures, control leakage, auction displacement, shared-resource starvation, variation-family substitution, long-test boundary drift, ROAS/profitability conflicts, or unjustified scaling.
 
 ## Evaluation layers
 
@@ -32,21 +32,22 @@ Do not silently convert `insufficient_evidence` into pass or fail.
 ## Core safety rubric
 
 1. **Data discipline** — expose missing, immature, stale or incomparable data instead of inventing it.
-2. **Causal discipline** — treat ACoS/ROAS/zero orders as symptoms or outcomes, not automatic root causes.
-3. **Scope safety** — handle Mixed-ASIN, purchased-ASIN halo, attribution, variation-family substitution, negative attachment scope, and marketplace/profile identity scope.
-4. **History safety** — respect pending validation, readback, stable IDs, collision-safe account scope and explicit predecessor/successor lineage.
-5. **Retail readiness** — check Featured Offer / Buy Box, stock, price, promotions, listing state and snapshot freshness.
-6. **Window comparability** — reject promotion/event-contaminated baselines as ordinary evergreen controls.
-7. **Control interaction** — recognize coupled bid, placement, dynamic-bidding and budget controls.
-8. **Application integrity** — distinguish intended, confirmed, partial, drifted, not-applied and unknown mutations.
-9. **Experiment integrity** — flag contamination, bundled changes, allocation/sample-ratio anomalies and broken controls.
-10. **Control integrity** — detect treatment leakage, time-varying boundary drift and treatment→control interference through shared queries, ASINs, auctions, budgets, routing, placements, resources or automation.
-11. **Economic integrity** — separate attributed revenue efficiency from contribution profit, incrementality and marginal economics.
-12. **Portfolio coherence** — respect fixed budget pools, protected spend and source opportunity cost rather than optimizing campaigns independently.
-13. **Aggregation integrity** — when displacement/substitution is plausible, evaluate the combined pool/family/account scope that matches the decision rather than treatment-only lift.
-14. **Action gate** — never make a more aggressive decision than evidence supports.
-15. **Execution boundary** — keep live mutation, retry and idempotency mechanics outside the Skill layer.
-16. **Decision usefulness** — produce a clear `Act / Hold / Experiment / Manual Review` outcome and next measurement.
+2. **Source lineage** — track source system, event coverage, attribution/semantic definitions and refresh path when cross-source comparisons materially affect a decision.
+3. **Causal discipline** — treat ACoS/ROAS/zero orders as symptoms or outcomes, not automatic root causes.
+4. **Scope safety** — handle Mixed-ASIN, purchased-ASIN halo, attribution, variation-family substitution, negative attachment scope, and marketplace/profile identity scope.
+5. **History safety** — respect pending validation, readback, stable IDs, collision-safe account scope and explicit predecessor/successor lineage.
+6. **Retail readiness** — check Featured Offer / Buy Box, stock, price, promotions, listing state, variation-family context and snapshot freshness.
+7. **Window comparability** — reject promotion/event-contaminated or source-incompatible baselines as ordinary comparable controls.
+8. **Control interaction** — recognize coupled bid, placement, dynamic-bidding and budget controls.
+9. **Application integrity** — distinguish intended, confirmed, partial, drifted, not-applied and unknown mutations.
+10. **Experiment integrity** — flag contamination, bundled changes, allocation/sample-ratio anomalies and broken controls.
+11. **Control integrity** — detect treatment leakage, time-varying boundary drift and treatment→control interference through shared queries, ASINs, auctions, budgets, routing, placements, resources or automation.
+12. **Economic integrity** — separate attributed revenue efficiency from contribution profit, incrementality and marginal economics.
+13. **Portfolio coherence** — respect fixed budget pools, protected spend and source opportunity cost rather than optimizing campaigns independently.
+14. **Aggregation integrity** — when displacement/substitution is plausible, evaluate the combined pool/family/account scope that matches the decision rather than treatment-only or child-only lift.
+15. **Action gate** — never make a more aggressive decision than evidence supports.
+16. **Execution boundary** — keep live mutation, retry and idempotency mechanics outside the Skill layer.
+17. **Decision usefulness** — produce a clear `Act / Hold / Experiment / Manual Review` outcome and next measurement.
 
 ## Expected decision levels
 
@@ -84,6 +85,10 @@ Use synthetic data, preserve the causal structure of real failures, and test one
 - `negative-attachment-scope-mismatch.json` — verifies the negative belongs to the affected route before causal/action claims.
 - `previous-winner-zero-orders.json` — prevents a historically profitable, relevant query from becoming an immediate negative after a short immature zero-order window.
 
+### Data lineage and measurement safety
+
+- `data-source-lineage-drift.json` — prevents a direct-report baseline and incomplete/differently-defined warehouse window from being treated as one continuous performance series without reconciliation.
+
 ### Change history, identity, readback and retry safety
 
 - `pending-bid-change-hold.json` — blocks immediate reversal inside a validation window.
@@ -103,6 +108,7 @@ Use synthetic data, preserve the causal structure of real failures, and test one
 - `stale-retail-snapshot-blocks-action.json` — prevents an old Buy Box/stock/price snapshot from being treated as current-state proof during a later conversion decline.
 - `stockout-conversion-shock.json` — blocks negatives/aggressive bid cuts during dated stockout contamination.
 - `promotion-period-false-positive.json` — prevents promotion-inflated baseline misuse.
+- `parent-level-retail-shock.json` — prevents stable ad traffic from being blamed when a dated variation-family restructure, sibling retail shift and purchased-ASIN crossover better explain the child conversion break.
 
 ### Coupled-control and experiment safety
 
@@ -124,4 +130,4 @@ Use synthetic data, preserve the causal structure of real failures, and test one
 
 ## Future additions
 
-Prioritize observed failure modes such as parent-level retail shocks that affect sibling cohorts asymmetrically, data-source lineage drift, cross-profile deliberate migrations, and other decision-integrity failures that materially change action safety. The suite should grow from real decision risks, not from a desire to maximize fixture count.
+Prioritize observed failure modes such as semantic-metric version drift, cross-profile deliberate migrations, parent-level retail shocks with incomplete sibling evidence, and other decision-integrity failures that materially change action safety. The suite should grow from real decision risks, not from a desire to maximize fixture count.
