@@ -1,0 +1,56 @@
+{
+  "id": "auction-interference-displacement",
+  "title": "Do not mistake traffic displacement between overlapping campaigns for incremental lift",
+  "entrypoint": "skills/experiment-planner/SKILL.md",
+  "mode": "Shadow",
+  "scenario": "A bid increase is tested on one campaign while the matched control competes for the same query family and advertises the same ASIN. Treatment orders rise, control orders fall, and combined orders are nearly flat. The request asks whether the bid increase should be rolled out broadly.",
+  "inputs": {
+    "marketplace": "US",
+    "experiment": {
+      "design": "matched_control",
+      "primary_treatment": "keyword bid +18%",
+      "primary_metric": "orders_per_day",
+      "measurement_days_elapsed": 14,
+      "attribution_mature": true
+    },
+    "overlap": {
+      "query_family": ["carbon trekking poles"],
+      "advertised_asin_overlap": "same ASIN",
+      "shared_budget_pool": false,
+      "shared_automation": false
+    },
+    "baseline": {
+      "treatment_orders_per_day": 10,
+      "control_orders_per_day": 9,
+      "combined_orders_per_day": 19
+    },
+    "post_treatment": {
+      "treatment_orders_per_day": 14,
+      "control_orders_per_day": 5,
+      "combined_orders_per_day": 19,
+      "treatment_impressions_change_percent": 31,
+      "control_impressions_change_percent": -28
+    }
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["directional", "hold", "experiment_only", "manual_review"],
+    "forbidden_behaviors": [
+      "Declare the treatment an incremental winner solely because treatment orders increased.",
+      "Ignore the offsetting loss in control delivery and orders.",
+      "Recommend broad rollout without assessing displacement or redesigning the comparison.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "Treatment and control share an auction opportunity set through the same query family and ASIN.",
+      "Treatment gains are offset by control losses while combined orders remain flat, which is consistent with displacement rather than proven incrementality.",
+      "A portfolio/combined-demand view or a cleaner non-overlapping design is required before a strong causal rollout claim."
+    ],
+    "rubric": [
+      {"criterion": "causal_discipline", "requirement": "Separate cohort-level lift from incremental account-level value when displacement is plausible."},
+      {"criterion": "control_interaction", "requirement": "Recognize shared-auction interference from overlapping query and ASIN demand."},
+      {"criterion": "economic_integrity", "requirement": "Evaluate combined/pool outcome instead of treatment-only improvement when one cohort may cannibalize another."},
+      {"criterion": "action_gate", "requirement": "Avoid action-safe rollout until displacement is resolved or the design is improved."}
+    ]
+  }
+}
