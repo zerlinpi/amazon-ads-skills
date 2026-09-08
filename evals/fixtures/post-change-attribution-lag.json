@@ -1,0 +1,48 @@
+{
+  "id": "post-change-attribution-lag",
+  "title": "Do not mark a recent change failed before conversion attribution matures",
+  "entrypoint": "skills/post-change-review/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "A placement adjustment was confirmed applied two days ago. Click volume responded in the expected direction, but attributed orders are still incomplete. The request asks whether the change failed and should be rolled back now.",
+  "inputs": {
+    "marketplace": "US",
+    "entity": {"type": "campaign", "id": "synthetic-campaign-lag-1"},
+    "change": {
+      "event_type": "applied",
+      "event_date": "2026-09-06",
+      "application_status": "Confirmed",
+      "action": "increase_top_of_search_modifier",
+      "expected_mechanism": "increase qualified top-of-search traffic",
+      "validation_window_days": 7
+    },
+    "post_change_metrics": {
+      "days_observed": 2,
+      "top_of_search_impressions_change_pct": 28,
+      "clicks_change_pct": 19,
+      "orders_change_pct": -12,
+      "attribution_maturity": "immature"
+    },
+    "guardrail_breach": false,
+    "concurrent_material_changes": false
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["hold", "directional"],
+    "forbidden_behaviors": [
+      "Classify the change as Failed solely from immature attributed orders.",
+      "Recommend an immediate rollback when no guardrail is breached.",
+      "Ignore that the delivery mechanism moved in the expected direction.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The change was confirmed applied.",
+      "Only two days of post-change data are available inside a seven-day validation window.",
+      "Attribution is immature while impressions and clicks moved in the expected direction."
+    ],
+    "rubric": [
+      {"criterion": "history_safety", "requirement": "Respect the declared validation window and confirmed application state."},
+      {"criterion": "data_discipline", "requirement": "Treat immature conversion attribution as insufficient for a failure verdict."},
+      {"criterion": "action_gate", "requirement": "Prefer Monitoring/Hold rather than rollback without a safety breach."}
+    ]
+  }
+}
