@@ -16,6 +16,7 @@ Useful patterns reviewed:
 - shared optimization memory before legacy changelogs;
 - applied/failed/unknown event history, pending evaluations and entity history for avoiding duplicate or contradictory optimizations;
 - warnings when memory is local-only, partial or has unsynchronized/spooled events;
+- weekly/downside/upside operating-system thinking that separates decline diagnosis, growth opportunities and action gates instead of collapsing everything into ACOS tuning;
 - explicit distinction between facts, hypotheses, missing data, confidence and actionability;
 - approval-gated mutation design.
 
@@ -69,9 +70,12 @@ Useful high-level workflow ideas reviewed:
 - current vs prior-period comparison;
 - campaign triage;
 - search-term harvesting and negative review;
-- prioritized action lists.
+- prioritized action lists;
+- separating recurring weekly review from deeper structural diagnosis.
 
-The project uses CC BY-NC 4.0 and includes fixed heuristic thresholds that are not suitable as universal automation rules. Its text and thresholds are therefore not copied into this MIT repository.
+The project uses CC BY-NC 4.0 and includes fixed heuristic thresholds and vendor/tool-specific output steps that are not suitable as universal automation rules. Its text, thresholds, API calls and report-export instructions are therefore not copied into this MIT repository.
+
+For this project's `playbooks/weekly-review.md`, only the generic concept of a recurring review cadence was retained. The implementation was independently rewritten to use business contribution, attribution maturity, optimization memory, Mixed-ASIN safety, action/hold states, marginal evidence and specialist-Skill escalation rather than fixed red/yellow/green ACOS or bid-change percentages.
 
 Repository: https://github.com/noique/cross-border-ecommerce-skills
 
@@ -93,4 +97,5 @@ Before adopting an external idea:
 8. For experiment designs, predeclare the decision question, hypothesis, primary metric, guardrails and stop rules before observing results.
 9. Do not fabricate statistical confidence, power or MDE when the required inputs are missing.
 10. For optimization memory, preserve event lineage, distinguish intent/application/readback/outcome, bound history retrieval, and never treat stale or partial memory as current complete state.
-11. Record reviewed sources here when they materially influence the project.
+11. Prefer a playbook over another Skill when the new content composes existing capabilities into a recurring operating cadence rather than creating a new decision domain.
+12. Record reviewed sources here when they materially influence the project.
