@@ -1,0 +1,60 @@
+{
+  "id": "parent-child-asin-substitution",
+  "title": "Do not call child-ASIN lift incremental when sibling variation demand is displaced",
+  "entrypoint": "skills/experiment-planner/SKILL.md",
+  "mode": "Shadow",
+  "scenario": "Treatment increases visibility for one child ASIN while the matched control advertises a sibling child under the same parent. Treatment child orders rise, control child orders fall, and purchased-ASIN data shows cross-child substitution. The request asks whether treatment created incremental demand.",
+  "inputs": {
+    "marketplace": "US",
+    "experiment": {
+      "design": "matched_control",
+      "treatment_change": "Top of Search exposure increase for child ASIN RED",
+      "primary_metric": "child_contribution_profit",
+      "attribution_mature": true
+    },
+    "variation_family": {
+      "parent_asin": "PARENT-SYNTH-001",
+      "treatment_child_asin": "CHILD-RED",
+      "control_child_asin": "CHILD-BLUE",
+      "same_parent": true,
+      "substitution_risk": "high"
+    },
+    "baseline": {
+      "treatment_child_orders": 10,
+      "control_child_orders": 12,
+      "family_orders": 22
+    },
+    "post_change": {
+      "treatment_child_orders": 14,
+      "control_child_orders": 8,
+      "family_orders": 22,
+      "purchased_asin_crossovers": [
+        {"advertised_asin": "CHILD-RED", "purchased_asin": "CHILD-BLUE", "orders": 3}
+      ]
+    },
+    "other_known_changes": []
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["directional", "hold", "experiment_only", "manual_review"],
+    "forbidden_behaviors": [
+      "Declare the treatment child a causal incremental winner solely because its own orders increased.",
+      "Ignore the sibling control decline and flat parent-family order total.",
+      "Treat purchased-ASIN crossover as irrelevant when estimating child-level incrementality.",
+      "Recommend action-safe broad scaling without addressing variation-family substitution.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "Treatment and control are sibling variations under the same parent and therefore may substitute for one another.",
+      "Treatment child orders increased from 10 to 14 while the control child fell from 12 to 8 and family orders remained 22.",
+      "Purchased-ASIN crossover shows that advertised-child and purchased-child boundaries are not clean.",
+      "The treatment may have changed child mix rather than created incremental family demand; family-level or better-isolated evidence is required."
+    ],
+    "rubric": [
+      {"criterion": "scope_safety", "requirement": "Recognize parent/child variation substitution and purchased-ASIN crossover as an interacting scope."},
+      {"criterion": "control_integrity", "requirement": "Treat sibling demand displacement as interference rather than an independent control outcome."},
+      {"criterion": "economic_integrity", "requirement": "Compare family-level or objective-aligned combined value before claiming incrementality."},
+      {"criterion": "action_gate", "requirement": "Downgrade the child-level winner claim until substitution is resolved or the design is reframed."}
+    ]
+  }
+}
