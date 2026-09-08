@@ -1,6 +1,6 @@
 ---
 name: amazon-ads-optimizer
-description: Orchestrate Amazon Ads audit, monitoring, diagnosis, search-term, keyword, bid, budget, placement, negative-targeting, profitability and anomaly skills into one guarded action plan. Use for whole-account optimization, multi-domain analysis, or when the user does not know which Amazon Ads skill to choose.
+description: Orchestrate Amazon Ads audit, monitoring, diagnosis, growth-opportunity, search-term, keyword, bid, budget, placement, negative-targeting, profitability and anomaly skills into one guarded action plan. Use for whole-account optimization, multi-domain analysis, or when the user does not know which Amazon Ads skill to choose.
 ---
 
 # Amazon Ads Optimizer
@@ -20,6 +20,7 @@ Never claim a live Amazon Ads change succeeded unless an external connector/exec
 | Whole-account audit / account takeover | `amazon-ads-audit` |
 | Routine campaign health / alerts | `campaign-health-monitor` |
 | Sudden sales, orders, ROAS, ACOS or traffic decline; “what dropped and why?” | `performance-drop-diagnosis` |
+| Where to scale / which winners deserve more investment / growth headroom | `growth-opportunity-finder` |
 | Search-term winners / harvesting / query quality | `search-term-analysis` |
 | Keyword/target structure and lifecycle | `keyword-optimization` |
 | Bid/CPC adjustment | `bid-optimization` |
@@ -34,7 +35,8 @@ Never claim a live Amazon Ads change succeeded unless an external connector/exec
 - For a sustained decline with a business impact, prefer `performance-drop-diagnosis` over a generic anomaly review.
 - For an alert without a confirmed sustained decline, start with `anomaly-detection` or `campaign-health-monitor`.
 - For “lower ACOS”, first diagnose whether the driver is traffic quality, CPC, CVR, placement, budget allocation, retail readiness, or economics. Do not route directly to bid reduction by default.
-- For growth, identify proven winners and profitability/stock constraints before increasing bids or budgets.
+- For “where can I grow?”, use `growth-opportunity-finder` before bid/budget tuning. It must prove demand, headroom, economics/readiness and acceptable incrementality risk.
+- For a growth opportunity that is promising but not yet proven, prefer a controlled test/Shadow plan over treating it as a scale-ready winner.
 - Load only the minimum child Skills needed for the question.
 
 ## Shared checks
@@ -66,7 +68,8 @@ Examples of invalid unresolved conflicts:
 - increase bid + decrease bid;
 - increase budget + decrease budget;
 - harvest a search term + negate the same term;
-- scale a campaign while profitability analysis says it is structurally loss-making without an explicit strategic exception.
+- scale a campaign while profitability analysis says it is structurally loss-making without an explicit strategic exception;
+- expand spend on an ASIN while inventory, Featured Offer/Buy Box or attribution ambiguity blocks safe scaling.
 
 ## Action priority
 
@@ -84,7 +87,7 @@ Return:
 
 1. Executive summary.
 2. Data confidence and important missing inputs.
-3. Routed diagnoses with supporting evidence.
+3. Routed diagnoses/opportunities with supporting evidence.
 4. Deduplicated prioritized action plan.
 5. Conflicts resolved or unresolved.
 6. Hold/observe list.
