@@ -2,7 +2,7 @@
 
 This directory validates whether the repository makes safe, repeatable Amazon Ads decisions from bounded historical cases.
 
-The goal is not exact wording. The goal is to detect decision regressions such as unsafe negatives, premature reversals, weak evidence presented as certainty, Mixed-ASIN collateral damage, retail-state misdiagnosis, stale retail-state misuse, promotion-window false positives, attribution-lag false failures, unsafe cross-ID memory transfer, lost deliberate-migration lineage, unverified or partial writes being credited with outcomes, unsafe retries, coupled-control overcorrection, portfolio/local-optimum conflicts, contaminated experiments, sample-ratio/allocation integrity failures, control leakage, auction displacement, ROAS/profitability conflicts, or unjustified scaling.
+The goal is not exact wording. The goal is to detect decision regressions such as unsafe negatives, premature reversals, weak evidence presented as certainty, Mixed-ASIN collateral damage, retail-state misdiagnosis, stale retail-state misuse, promotion-window false positives, attribution-lag false failures, unsafe cross-ID memory transfer, lost deliberate-migration lineage, unverified or partial writes being credited with outcomes, unsafe retries, coupled-control overcorrection, portfolio/local-optimum conflicts, contaminated experiments, sample-ratio/allocation integrity failures, control leakage, auction displacement, shared-resource starvation, variation-family substitution, ROAS/profitability conflicts, or unjustified scaling.
 
 ## Evaluation layers
 
@@ -33,19 +33,20 @@ Do not silently convert `insufficient_evidence` into pass or fail.
 
 1. **Data discipline** — expose missing, immature, stale or incomparable data instead of inventing it.
 2. **Causal discipline** — treat ACoS/ROAS/zero orders as symptoms or outcomes, not automatic root causes.
-3. **Scope safety** — handle Mixed-ASIN, purchased-ASIN halo, attribution and negative attachment scope.
+3. **Scope safety** — handle Mixed-ASIN, purchased-ASIN halo, attribution, variation-family substitution and negative attachment scope.
 4. **History safety** — respect pending validation, readback, stable IDs and explicit predecessor/successor lineage.
 5. **Retail readiness** — check Featured Offer / Buy Box, stock, price, promotions, listing state and snapshot freshness.
 6. **Window comparability** — reject promotion/event-contaminated baselines as ordinary evergreen controls.
 7. **Control interaction** — recognize coupled bid, placement, dynamic-bidding and budget controls.
 8. **Application integrity** — distinguish intended, confirmed, partial, drifted, not-applied and unknown mutations.
 9. **Experiment integrity** — flag contamination, bundled changes, allocation/sample-ratio anomalies and broken controls.
-10. **Control integrity** — detect treatment leakage and treatment→control interference through shared queries, ASINs, auctions, budgets, routing, placements or automation.
+10. **Control integrity** — detect treatment leakage and treatment→control interference through shared queries, ASINs, auctions, budgets, routing, placements, resources or automation.
 11. **Economic integrity** — separate attributed revenue efficiency from contribution profit, incrementality and marginal economics.
 12. **Portfolio coherence** — respect fixed budget pools, protected spend and source opportunity cost rather than optimizing campaigns independently.
-13. **Action gate** — never make a more aggressive decision than evidence supports.
-14. **Execution boundary** — keep live mutation, retry and idempotency mechanics outside the Skill layer.
-15. **Decision usefulness** — produce a clear `Act / Hold / Experiment / Manual Review` outcome and next measurement.
+13. **Aggregation integrity** — when displacement/substitution is plausible, evaluate the combined pool/family/account scope that matches the decision rather than treatment-only lift.
+14. **Action gate** — never make a more aggressive decision than evidence supports.
+15. **Execution boundary** — keep live mutation, retry and idempotency mechanics outside the Skill layer.
+16. **Decision usefulness** — produce a clear `Act / Hold / Experiment / Manual Review` outcome and next measurement.
 
 ## Expected decision levels
 
@@ -109,6 +110,8 @@ Use synthetic data, preserve the causal structure of real failures, and test one
 - `experiment-sample-ratio-mismatch.json` — blocks causal rollout when realized treatment/control allocation materially departs from the declared split and the mismatch is unexplained.
 - `control-group-treatment-leakage.json` — rejects a control that receives treatment-like exposure through shared automation and overlapping query/ASIN demand.
 - `auction-interference-displacement.json` — prevents treatment-only lift from being called incremental when overlapping campaigns exchange delivery and combined demand remains flat.
+- `shared-budget-experiment-starvation.json` — detects a fixed pacing/budget resource that lets treatment consume capacity previously available to control; requires pool-level readout or redesign.
+- `parent-child-asin-substitution.json` — prevents a sibling child-ASIN mix shift from being called incremental demand when parent-family totals stay flat and purchased-ASIN crossover exists.
 
 ### Portfolio allocation, growth and economics safety
 
@@ -119,4 +122,4 @@ Use synthetic data, preserve the causal structure of real failures, and test one
 
 ## Future additions
 
-Prioritize observed failure modes such as parent/child ASIN substitution across portfolio decisions, shared-budget experiment starvation, control-boundary drift over long tests, and other decision-integrity failures that materially change action safety. The suite should grow from real decision risks, not from a desire to maximize fixture count.
+Prioritize observed failure modes such as control-boundary drift over long tests, parent-level retail shocks that affect sibling cohorts asymmetrically, cross-marketplace identity collisions, and other decision-integrity failures that materially change action safety. The suite should grow from real decision risks, not from a desire to maximize fixture count.
