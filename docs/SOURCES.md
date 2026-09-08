@@ -61,9 +61,9 @@ Repository: https://github.com/heymoezy/porter
 
 ### paperclipai/paperclip
 
-Reviewed only for a generic execution-reliability pattern: partial application and retries can require explicit idempotency/transactional thinking so repeated delivery does not silently duplicate state changes.
+Reviewed only for generic execution-reliability patterns: partial application, ambiguous delivery and retries require explicit reconciliation/idempotency thinking so repeated delivery does not silently duplicate state changes.
 
-No implementation or prose is imported. In this project the currently adopted safety boundary is narrower and connector-neutral: Post-change Review must distinguish intended treatment from realized treatment, classify partial application explicitly, require trusted readback, and avoid crediting aggregate outcomes to an action that was not fully applied. Executor idempotency is kept as a future connector concern rather than embedded in Amazon Ads Skills.
+No implementation or prose is imported. In this project the adopted safety boundary is connector-neutral: Post-change Review must distinguish intended treatment from realized treatment, classify partial/unknown application explicitly, require trusted readback, and avoid crediting aggregate outcomes to an action that was not fully verified. A timeout or ambiguous executor response is not treated as proof of failure; a repeat write must wait for readback/reconciliation or an executor-level idempotency guarantee. Executor idempotency remains an external connector concern rather than being embedded as live mutation logic inside Amazon Ads Skills.
 
 Repository: https://github.com/paperclipai/paperclip
 
@@ -122,7 +122,7 @@ Repository: https://github.com/noique/cross-border-ecommerce-skills
 
 ## Other memory/event-log patterns reviewed but not directly imported
 
-During the optimization-memory pass, generic public agent repositories were also searched for persistent memory and event-log patterns. The useful general lesson was to keep facts/events distinct from mutable summaries and to treat stale memory as historical context rather than current state. No implementation or prose from those projects was copied; the resulting memory contract was designed specifically around this repository's existing `optimization-event.json`, Post-change Review lifecycle and Amazon Ads safety model.
+During optimization-memory and execution-integrity passes, generic public agent repositories were searched for persistent memory, event-log, retry and mutation-reconciliation patterns. The useful general lessons were to keep facts/events distinct from mutable summaries, treat stale memory as historical context rather than current state, preserve entity identity boundaries across restructures, and fail closed when write outcome is ambiguous. No implementation or prose from those projects was copied; the resulting contracts and eval fixtures were designed specifically around this repository's existing optimization-event lifecycle, Post-change Review and Amazon Ads safety model.
 
 ## Integration rules
 
@@ -146,4 +146,8 @@ Before adopting an external idea:
 16. Treat coupled auction controls as interacting parameters; prefer staged changes or explicit experiments when simultaneous changes would destroy attribution.
 17. Treat experiment contamination as a readout limitation, not as a reason to cherry-pick the apparent winner.
 18. Treat partial application as a realized treatment different from the intended treatment; reconcile readback before outcome attribution.
-19. Record reviewed sources here when they materially influence the project.
+19. Do not compare promotion-contaminated or otherwise structurally different windows as if they were ordinary evergreen baselines.
+20. Treat stockout and other dated retail-readiness failures as causal gates before suppressing apparently non-converting traffic.
+21. Do not transfer entity-level optimization memory across recreated IDs without an explicit, verified identity mapping and fresh current-state evidence.
+22. Treat timeout/unknown mutation results as unresolved; do not blindly retry until readback/reconciliation or executor-level idempotency makes repetition safe.
+23. Record reviewed sources here when they materially influence the project.
