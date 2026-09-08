@@ -39,6 +39,40 @@
         "Conflicted / Manual Review"
       ]
     },
+    "identity_lineage": {
+      "type": ["object", "null"],
+      "properties": {
+        "continuity_status": {
+          "type": ["string", "null"],
+          "enum": ["Verified", "Partial", "Rejected", "Unknown", null]
+        },
+        "predecessor_entities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type", "id"],
+            "properties": {
+              "type": {"type": "string", "minLength": 1},
+              "id": {"type": "string", "minLength": 1},
+              "marketplace": {"type": ["string", "null"]},
+              "profile_scope": {"type": ["string", "null"]}
+            },
+            "additionalProperties": true
+          }
+        },
+        "migration_reason": {"type": ["string", "null"]},
+        "mapping_timestamp": {"type": ["string", "null"], "format": "date-time"},
+        "verification_source": {"type": ["string", "null"]},
+        "business_intent_preserved": {"type": ["boolean", "null"]},
+        "targeting_semantics_preserved": {"type": ["boolean", "null"]},
+        "asin_scope_preserved": {"type": ["boolean", "null"]},
+        "warnings": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      },
+      "additionalProperties": true
+    },
     "latest_known_state": {},
     "latest_action": {"type": ["object", "null"]},
     "application_status": {
