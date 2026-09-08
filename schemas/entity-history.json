@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zerlinpi/amazon-ads-skills/schemas/entity-history.json",
+  "title": "Amazon Ads Entity Optimization History",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["entity", "as_of", "history_status", "recent_events"],
+  "properties": {
+    "entity": {
+      "type": "object",
+      "required": ["type", "id"],
+      "properties": {
+        "marketplace": {"type": ["string", "null"]},
+        "profile_scope": {"type": ["string", "null"]},
+        "type": {"type": "string", "minLength": 1},
+        "id": {"type": "string", "minLength": 1},
+        "control_dimension": {"type": ["string", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "as_of": {"type": "string", "format": "date-time"},
+    "latest_source_event_at": {"type": ["string", "null"], "format": "date-time"},
+    "latest_readback_at": {"type": ["string", "null"], "format": "date-time"},
+    "history_status": {
+      "type": "string",
+      "enum": [
+        "No Recent Action",
+        "Proposed Only",
+        "Awaiting Application",
+        "Application Unknown",
+        "Pending Readback",
+        "Pending Evaluation",
+        "Worked / Keep",
+        "Monitoring",
+        "Rollback Candidate",
+        "Rolled Back",
+        "Failed Application",
+        "Drifted",
+        "Conflicted / Manual Review"
+      ]
+    },
+    "latest_known_state": {},
+    "latest_action": {"type": ["object", "null"]},
+    "application_status": {
+      "type": ["string", "null"],
+      "enum": ["Confirmed", "Partial", "Not Applied", "Drifted", "Unknown", null]
+    },
+    "outcome_status": {
+      "type": ["string", "null"],
+      "enum": ["Worked", "Likely Worked", "Monitoring", "Inconclusive", "Likely Failed", "Failed", "Application Failure", "Drifted", null]
+    },
+    "validation": {
+      "type": ["object", "null"],
+      "properties": {
+        "status": {
+          "type": ["string", "null"],
+          "enum": ["Not Started", "Pending", "Mature", "Blocked", "Unknown", null]
+        },
+        "window": {"type": ["object", "null"]},
+        "next_evaluation": {"type": ["string", "object", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "active_rollback_condition": {},
+    "pending_event_count": {"type": "integer", "minimum": 0},
+    "memory_warnings": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "active_experiments": {
+      "type": "array",
+      "items": {}
+    },
+    "recent_events": {
+      "type": "array",
+      "items": {}
+    },
+    "decision_gate": {
+      "type": ["string", "null"],
+      "enum": ["Allowed", "Hold", "Experiment Only", "Manual Review", null]
+    },
+    "source_complete": {"type": ["boolean", "null"]}
+  }
+}
