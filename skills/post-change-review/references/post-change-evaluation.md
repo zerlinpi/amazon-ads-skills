@@ -32,7 +32,7 @@ Every optimization action should declare its mechanism. Examples:
 
 Judge upstream indicators before downstream indicators when the downstream outcome has attribution lag.
 
-## 3. Evaluation windows
+## 3. Evaluation windows and measurement parity
 
 Use exact dates and completed periods.
 
@@ -50,6 +50,20 @@ When a 3/7/14-day cadence is operationally useful, treat it as a review schedule
 - middle: directional conversion evidence;
 - later: efficiency/profit and secondary effects.
 
+Measurement maturity must also be comparable. If historical partitions can restate through late conversions, attribution, refunds, deduplication or upstream backfills, compare baseline and post windows under the same snapshot/backfill policy where possible.
+
+Before calling an outcome `Worked`, `Likely Worked`, `Likely Failed`, or `Failed`, check when relevant:
+
+- source system and dataset;
+- metric definition/semantic version;
+- snapshot capture time;
+- event-window end date;
+- backfill age/maturity;
+- whether historical rows are mutable;
+- whether both windows were re-read at comparable maturity.
+
+A baseline frozen at D+1 and a post window evaluated at D+7 can create a false lift even when both use the same table and semantic version. Load `../../../references/data-lineage.md` for detailed reconciliation rules.
+
 ## 4. Counterfactual hierarchy
 
 Use the strongest available comparison:
@@ -60,7 +74,7 @@ Use the strongest available comparison:
 4. account/category trend adjusted comparison;
 5. simple before/after, explicitly labeled weak.
 
-Do not claim incremental lift from a plain before/after comparison when market, promotion, price or seasonality changed materially.
+Do not claim incremental lift from a plain before/after comparison when market, promotion, price, seasonality, or measurement maturity changed materially.
 
 ## 5. Concurrent-change contamination
 
@@ -74,7 +88,8 @@ Build a short timeline around the evaluated action and list any other material c
 - price, coupon, deal or promotion;
 - inventory/availability;
 - listing/variation structure;
-- external automation.
+- external automation;
+- source/metric semantics or backfill policy when those affect the comparison.
 
 If multiple changes plausibly affect the same KPI, classify the result as multi-change or lower causal confidence instead of assigning all movement to one action.
 
@@ -82,10 +97,10 @@ If multiple changes plausibly affect the same KPI, classify the result as multi-
 
 Use these labels:
 
-- `Worked` — intended state confirmed, mechanism-consistent improvement observed, and material alternative explanations are weak.
+- `Worked` — intended state confirmed, mechanism-consistent improvement observed, measurement windows are comparable, and material alternative explanations are weak.
 - `Likely Worked` — evidence supports success but counterfactual or attribution remains imperfect.
 - `Monitoring` — action is applied but the performance window is not mature enough.
-- `Inconclusive` — enough time passed but signal is weak/noisy or confounded.
+- `Inconclusive` — enough time passed but signal is weak/noisy, confounded, or measurement comparability remains unresolved.
 - `Likely Failed` — application confirmed and mechanism-consistent deterioration or lack of expected effect is reasonably supported.
 - `Failed` — strong evidence shows the action did not achieve the intended objective or violated a rollback guardrail.
 - `Application Failure` — intended state was not correctly applied; performance outcome should not be attributed to the proposal.
@@ -115,12 +130,13 @@ Prepare a rollback candidate only when:
 - the current applied state is known;
 - the original before-state is known or safely reconstructable;
 - the observed failure is material relative to the stated objective;
-- attribution maturity is sufficient for the decision;
+- attribution and backfill maturity are sufficient for the decision;
+- baseline/post measurement definitions are comparable;
 - product/retail changes do not better explain the result;
 - rollback does not create a new known safety risk;
 - entity IDs and before/after values are exact when a future executor would need them.
 
-If the original before-state is unknown, prefer `Manual Review` over inventing a rollback value.
+If the original before-state is unknown or measurement parity is unresolved, prefer `Manual Review` over inventing a rollback value or failure verdict.
 
 ## 9. Memory event fields
 
@@ -140,6 +156,7 @@ When writing a structured optimization event, capture enough context for a later
 - outcome status;
 - confidence;
 - baseline/post windows;
+- measurement/source/backfill comparability when material;
 - confounders;
 - decision;
 - next evaluation time/window;
