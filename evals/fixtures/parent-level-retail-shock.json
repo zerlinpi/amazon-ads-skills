@@ -1,0 +1,88 @@
+{
+  "id": "parent-level-retail-shock",
+  "title": "Do not blame a child campaign when a variation-family retail change better explains the conversion break",
+  "entrypoint": "skills/performance-drop-diagnosis/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "A child-ASIN campaign keeps similar traffic and CPC but loses conversion immediately after a variation-family restructure and sibling retail change. The request asks whether bids should be cut because child-level ACOS worsened.",
+  "inputs": {
+    "marketplace": "US",
+    "profile_scope": "profile-us-01",
+    "advertised_asin": "B0CHILDRED",
+    "parent_asin": "B0PARENT01",
+    "baseline": {
+      "window": "2026-08-10/2026-08-23",
+      "impressions": 52000,
+      "clicks": 780,
+      "spend": 1170,
+      "orders": 78,
+      "sales": 5070,
+      "cpc": 1.5,
+      "cvr": 0.10
+    },
+    "decline": {
+      "window": "2026-08-24/2026-09-06",
+      "impressions": 53500,
+      "clicks": 795,
+      "spend": 1195,
+      "orders": 39,
+      "sales": 2505,
+      "cpc": 1.50,
+      "cvr": 0.049
+    },
+    "retail_timeline": [
+      {
+        "date": "2026-08-24",
+        "scope": "variation_family",
+        "event": "parent_child_mapping_changed",
+        "detail": "the advertised child was moved into a restructured variation family"
+      },
+      {
+        "date": "2026-08-24",
+        "scope": "sibling_child",
+        "event": "sibling_price_promotion_started",
+        "detail": "a close substitute sibling became materially cheaper during the decline window"
+      },
+      {
+        "date": "2026-08-25",
+        "scope": "purchased_asin",
+        "event": "crossover_shift",
+        "detail": "purchased-ASIN mix shifted toward the promoted sibling while family-level demand stayed approximately stable"
+      }
+    ],
+    "family_outcome": {
+      "parent_family_total_orders_change_percent": -2,
+      "advertised_child_orders_change_percent": -50,
+      "sibling_orders_change_percent": 42
+    },
+    "ad_control_changes": {
+      "bid": "stable",
+      "budget": "stable",
+      "placement": "stable",
+      "negatives": "no material change",
+      "campaign_state": "stable"
+    }
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["hold", "directional", "manual_review"],
+    "forbidden_behaviors": [
+      "Recommend an aggressive bid cut solely because the advertised child's ACOS or CVR worsened.",
+      "Ignore the dated variation-family restructure, sibling price event, and purchased-ASIN crossover because the advertised child itself remained active.",
+      "Describe the child conversion decline as confirmed advertising inefficiency when campaign controls and traffic are stable.",
+      "Treat child-level attributed sales movement as equivalent to parent-family demand loss.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "Traffic, CPC, and core ad controls are broadly stable while conversion breaks on the same date as family-level retail changes.",
+      "Parent/child structure and sibling retail conditions are plausible upstream causes of the child-level conversion shift.",
+      "Family-level orders are approximately stable while demand/purchased-ASIN mix moves toward a sibling, which is consistent with substitution or retail mix shift rather than simple traffic waste.",
+      "Recovery should prioritize retail/family diagnosis or scoped observation before suppressing qualified advertising traffic."
+    ],
+    "rubric": [
+      {"criterion": "retail_readiness", "requirement": "Check dated parent/variation and sibling retail changes before blaming advertising."},
+      {"criterion": "aggregation_integrity", "requirement": "Compare child and family-level outcomes when substitution or purchased-ASIN crossover is plausible."},
+      {"criterion": "causal_discipline", "requirement": "Prefer the retail/family explanation over unsupported bid inefficiency when timing and mechanism align."},
+      {"criterion": "action_gate", "requirement": "Hold or downgrade aggressive traffic suppression until the family-level retail cause is resolved or rejected."}
+    ]
+  }
+}
