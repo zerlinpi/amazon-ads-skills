@@ -12,6 +12,7 @@ This repository contains reusable Amazon Ads Agent Skills. The canonical busines
 - For recurring weekly/Monday account reviews, start with `playbooks/weekly-review.md`, then load only specialist Skills required by material findings.
 - When the task asks whether a previous optimization worked, route to `skills/post-change-review/SKILL.md` before proposing another edit on the same entity.
 - When prior actions may overlap a new decision, load `references/optimization-memory.md` and retrieve only the bounded relevant entity history.
+- Historical replay fixtures under `evals/` are test inputs, not reusable operating instructions; do not load them during ordinary account analysis unless explicitly running an eval.
 - Do not duplicate business logic into this file.
 
 ## Default operating mode
@@ -39,7 +40,7 @@ Modes:
 - Any `Execute` plan must include evidence, confidence, guardrails, validation window, and rollback criteria.
 - A `Rollback Candidate` is a proposal only; this repository does not perform the rollback itself.
 
-## Shared references and playbooks
+## Shared references, playbooks and evals
 
 - Weekly operating cadence: `playbooks/weekly-review.md`
 - Metrics: `references/amazon-ads-metrics.md`
@@ -52,6 +53,20 @@ Modes:
 - Action/readback/evaluation event schema: `schemas/optimization-event.json`
 - Derived entity-history schema: `schemas/entity-history.json`
 - Experiment plan schema: `schemas/experiment-plan.json`
+- Historical replay framework: `evals/README.md`
+- Eval-case schema: `schemas/eval-case.json`
+
+## Evaluation rules
+
+When adding or changing decision logic, prefer adding a focused synthetic replay fixture for material failure modes.
+
+- Keep contract checks separate from capability evals.
+- Score decision behavior rather than exact prose.
+- Use `met`, `not_met`, or `insufficient_evidence`; do not coerce missing evidence into pass/fail.
+- A fixture may allow multiple conservative outcomes, but must list forbidden unsafe behaviors explicitly.
+- Do not weaken a fixture merely because a current model fails it; change the Skill only when the fixture represents the intended behavior.
+- Prefer synthetic identifiers and values. Never commit client/account secrets or proprietary exports as fixtures.
+- Eval fixtures must remain closed-world by default and must not trigger live Amazon Ads writes.
 
 ## Contribution rules
 
@@ -65,3 +80,5 @@ New skills must:
 Add a playbook instead of a new Skill when the new material is primarily a recurring operating rhythm that composes existing Skills rather than a distinct decision capability.
 
 Shared memory/history features should prefer append-first events plus derived compact summaries rather than mutable prose logs.
+
+When a change materially affects negatives, bid/budget reversals, Mixed-ASIN safety, growth qualification, experiments, readback, or rollback decisions, add or update a replay fixture when practical.
