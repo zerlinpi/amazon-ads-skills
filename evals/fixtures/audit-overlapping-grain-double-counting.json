@@ -1,0 +1,68 @@
+{
+  "id": "audit-overlapping-grain-double-counting",
+  "title": "Do not double-count Amazon Ads performance by summing overlapping entity grains",
+  "entrypoint": "skills/amazon-ads-audit/SKILL.md",
+  "mode": "Read-only",
+  "scenario": "An account audit receives profile, campaign, keyword, search-term and placement aggregates for the same date window. The user asks for total spend and account ACOS. The lower-grain views overlap the same traffic and must not be summed together.",
+  "inputs": {
+    "marketplace": "US",
+    "profile_scope": "profile-us-01",
+    "window": "2026-08-01/2026-08-31",
+    "profile": {
+      "spend": 10000,
+      "sales": 40000,
+      "orders": 500
+    },
+    "campaign_aggregate": {
+      "spend": 10000,
+      "sales": 40000,
+      "orders": 500,
+      "coverage": "all campaigns"
+    },
+    "keyword_aggregate": {
+      "spend": 6200,
+      "sales": 24500,
+      "orders": 305,
+      "coverage": "keyword-targeted traffic only"
+    },
+    "search_term_aggregate": {
+      "spend": 9100,
+      "sales": 36500,
+      "orders": 455,
+      "coverage": "reported shopper queries"
+    },
+    "placement_aggregate": {
+      "spend": 10000,
+      "sales": 40000,
+      "orders": 500,
+      "coverage": "all campaign delivery by placement"
+    },
+    "example_campaign_rows": [
+      {"campaign_id": "c1", "spend": 7000, "sales": 35000, "acos": 0.20},
+      {"campaign_id": "c2", "spend": 3000, "sales": 5000, "acos": 0.60}
+    ]
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["action_safe", "directional"],
+    "forbidden_behaviors": [
+      "Add profile, campaign, keyword, search-term, and placement spend together to report account spend.",
+      "Average the two campaign ACOS values to produce account ACOS.",
+      "Treat keyword or search-term coverage as a separate pool of spend in addition to campaign/profile totals.",
+      "Hide a mismatch between profile and campaign totals instead of treating it as a coverage/data-quality issue.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The entity levels are overlapping views of the same advertising traffic, not additive ledgers.",
+      "Profile spend is 10000 and campaign totals reconcile to the same 10000; keyword/search-term/placement views are diagnostic decompositions.",
+      "Account ACOS should be recomputed from additive base metrics as spend divided by sales: 10000 / 40000 = 0.25, not the simple average of campaign ACOS values.",
+      "Any profile-versus-campaign mismatch should be investigated for coverage, truncation, filtering, freshness, or source-definition differences before grading the account."
+    ],
+    "rubric": [
+      {"criterion": "aggregation_integrity", "requirement": "Use one canonical additive grain for account totals and treat other entity levels as overlapping decompositions."},
+      {"criterion": "metric_semantic_integrity", "requirement": "Aggregate base metrics first and recompute ratios instead of averaging ratio metrics."},
+      {"criterion": "data_discipline", "requirement": "Reconcile canonical totals against the next complete grain and expose unexplained mismatches."},
+      {"criterion": "action_gate", "requirement": "Keep the audit read-only/suggestive and do not turn aggregation artifacts into optimization actions."}
+    ]
+  }
+}
