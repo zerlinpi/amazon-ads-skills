@@ -1,8 +1,8 @@
 # Data lineage and comparability
 
-Load this shared reference only when a decision compares, joins, or reconciles metrics from different exports, APIs, MCPs, warehouses, dashboards, caches, refresh schedules, or metric-definition versions.
+Load this shared reference only when a decision compares, joins, or reconciles metrics from different exports, APIs, MCPs, warehouses, dashboards, caches, refresh schedules, metric-definition versions, or snapshots with different backfill maturity.
 
-The goal is to prevent a source or measurement-definition change from being mistaken for a business change.
+The goal is to prevent a source, measurement-definition, or historical-restatement change from being mistaken for a business change.
 
 ## 1. Same metric name does not guarantee the same measurement
 
@@ -49,6 +49,7 @@ When lineage matters, capture when available:
 - semantic/report version when known;
 - per-metric definition/version when a dataset can evolve individual metrics independently;
 - completeness/backfill status;
+- `backfill_age` or snapshot maturity when historical partitions can restate;
 - transformation lineage or upstream source when a derived dataset is used.
 
 Missing lineage is not proof that two sources are equivalent.
@@ -143,7 +144,51 @@ Track separately:
 - which event dates are complete;
 - which conversion dates are mature enough for the decision.
 
-## 8. Derived metrics
+## 8. Backfill parity and mutable history
+
+Historical rows may change after their event date because conversions, attribution, refunds, deduplication, late-arriving events, or upstream corrections are backfilled.
+
+Therefore:
+
+```text
+same source + same semantic version
+≠ comparable snapshots
+```
+
+when baseline and comparison were captured at materially different backfill maturity.
+
+Common failure pattern:
+
+```text
+baseline window frozen at D+1
+post window read at D+7
+source and metric version are identical
+late conversions continue to backfill
+apparent post-change lift
+```
+
+The apparent lift may be a snapshot-maturity artifact rather than an optimization effect.
+
+For post-change reviews and historical comparisons, prefer one of:
+
+1. re-extract both windows at a comparable maturity age;
+2. freeze both windows under the same snapshot policy;
+3. retain revision metadata and reconcile the amount of historical restatement;
+4. use a source-provided finalization/completeness state when it is trustworthy.
+
+Track when useful:
+
+- snapshot capture timestamp;
+- event-window end date;
+- backfill age or maturity label;
+- whether historical partitions are mutable;
+- last restatement timestamp;
+- revision/backfill status;
+- whether both windows were re-read under the same policy.
+
+Do not call a post-change result `Worked` merely because the later window had more time to accumulate attributed conversions than the frozen baseline.
+
+## 9. Derived metrics
 
 Ratios inherit the weakest lineage of their components.
 
@@ -153,11 +198,11 @@ For example:
 ROAS = sales / spend
 ```
 
-If sales and spend come from different source definitions, semantic versions, or maturity states, the resulting ROAS should not be treated as clean even when the arithmetic is correct.
+If sales and spend come from different source definitions, semantic versions, snapshot maturities, or attribution states, the resulting ROAS should not be treated as clean even when the arithmetic is correct.
 
-Prefer recomputing derived metrics from compatible components rather than mixing precomputed ratios from different systems or versions.
+Prefer recomputing derived metrics from compatible components rather than mixing precomputed ratios from different systems, versions, or maturity states.
 
-## 9. Source precedence
+## 10. Source precedence
 
 Do not hard-code a universal rule that API always beats warehouse, or warehouse always beats MCP.
 
@@ -169,19 +214,20 @@ Prefer the measurement path that is:
 4. attribution-mature enough;
 5. auditable and reproducible;
 6. stable across the compared windows;
-7. explicit about metric semantic version when definitions can change.
+7. explicit about metric semantic version when definitions can change;
+8. comparable in historical-restatement/backfill maturity when snapshots are mutable.
 
 If two trusted paths disagree materially, expose the disagreement rather than silently choosing the more favorable result.
 
-## 10. Action gate
+## 11. Action gate
 
-When a material performance break aligns with unresolved source-lineage or semantic-version drift:
+When a material performance break or post-change lift aligns with unresolved source-lineage, semantic-version, or asymmetric-backfill drift:
 
-- do not call the break `Confirmed` business deterioration;
-- do not generate aggressive bid, budget, negative, pause, or rollback actions from the disputed delta;
+- do not call the movement `Confirmed` business deterioration or `Worked` optimization outcome;
+- do not generate aggressive bid, budget, negative, pause, scaling, or rollback actions from the disputed delta;
 - return `Directional`, `Missing Data`, `Hold`, or `Manual Review` as appropriate;
-- request a same-source/same-version replay or overlap reconciliation.
+- request a same-source/same-version replay, matched-maturity snapshot, or overlap reconciliation.
 
-## 11. Safety boundary
+## 12. Safety boundary
 
 This reference governs evidence quality only. It does not authorize live Amazon Ads writes and does not require any private connector implementation.
