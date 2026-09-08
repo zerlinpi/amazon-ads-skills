@@ -20,9 +20,14 @@ Repository: https://github.com/AgriciDaniel/claude-ads
 
 ### weisberg/agile_agentic_analytics
 
-MIT-licensed repository reviewed for experiment lifecycle, power/MDE discipline when inputs exist, sample-ratio/contamination awareness, sequential-testing caution, realized-allocation integrity checks and structured experiment results. The generic idea adopted in a recent pass is that a declared split does not prove correct realized assignment: unexplained treatment/control imbalance can indicate assignment, filtering, logging, delivery or interference problems and should invalidate action-safe causal claims until explained.
+MIT-licensed repository reviewed for experiment lifecycle, power/MDE discipline when inputs exist, sample-ratio/contamination awareness, sequential-testing caution, realized-allocation integrity, holdout/control integrity and advertising-market interference.
 
-Concepts were independently rewritten for Amazon Ads with stricter Suggest/Shadow, Mixed-ASIN, attribution, promotion and retail-readiness gates. No statistical significance is fabricated when expected allocation or assignment assumptions are missing.
+Two generic ideas materially influenced recent hardening:
+
+1. a declared split or nominal control does not prove correct realized assignment/delivery;
+2. in advertising markets, treatment can alter the comparison cohort through spillover or a changed auction opportunity set, so treatment lift is not automatically incremental lift.
+
+These concepts were independently rewritten for Amazon Ads as query/target/ASIN overlap, shared-budget/routing/automation leakage and auction displacement checks. No platform-specific experiment APIs, prose or implementation details were copied. No statistical significance is fabricated when expected allocation or assignment assumptions are missing.
 
 Repository: https://github.com/weisberg/agile_agentic_analytics
 
@@ -98,6 +103,7 @@ Examples:
 - **Retail snapshot freshness** — a Buy Box, inventory, price or listing snapshot only proves the state at the timestamp it observed. If that snapshot predates a later conversion decline, it must not be used as current-state proof to justify aggressive traffic suppression.
 - **Verified entity migration lineage** — a deliberate restructure can preserve useful predecessor history, but only through an explicit auditable predecessor→successor mapping. Historical evidence may transfer as bounded context; successor Bid/Budget/State/readback never transfers as current truth.
 - **Portfolio opportunity cost** — under a fixed business budget pool, locally attractive campaign increases can be mutually incompatible. A reallocation must identify the funding source, protected floors, marginal headroom and source opportunity cost.
+- **Treatment/control interference** — a cohort can improve because it captures traffic, auction opportunity or budget that would otherwise have served the comparison cohort. When displacement is plausible, combined/pool outcomes and control-boundary integrity matter more than treatment-only lift.
 
 ## Integration rules
 
@@ -119,17 +125,18 @@ Before adopting an external idea:
 14. Never weaken a regression fixture merely to make a model pass.
 15. Verify negative/control attachment scope before causal attribution.
 16. Treat coupled auction controls as interacting parameters.
-17. Treat experiment contamination or unexplained allocation mismatch as a readout limitation.
-18. Treat partial application as a realized treatment different from intended treatment.
-19. Do not compare promotion-contaminated windows as ordinary evergreen baselines.
-20. Treat stockout/retail-readiness failures as causal gates before traffic suppression.
-21. Treat stale retail snapshots as historical evidence, not current-state proof.
-22. Do not transfer entity memory across recreated IDs without verified identity mapping; verified migrations may carry bounded historical context but never clone successor current state.
-23. Treat timeout/unknown mutation outcomes as unresolved until readback/reconciliation or executor-level idempotency makes repetition safe.
-24. Stable idempotency keys must stay bound to the same stable intent and payload; a new value is a new intent.
-25. Trusted current-state readback overrides earlier executor acknowledgement when the states disagree; classify the difference as drift/partial/unresolved before outcome attribution.
-26. Do not equate higher ROAS or revenue with higher profit; use contribution economics when the business objective is profitability.
-27. A historically proven relevant query that temporarily has zero orders should be diagnosed as a possible conversion break before being treated as irrelevant traffic.
-28. A declared experiment allocation does not prove realized allocation integrity; unexplained imbalance must be investigated before causal rollout.
-29. Under a fixed budget pool, reconcile source and destination allocations and evaluate source opportunity cost; campaign-local efficiency does not prove portfolio-level optimality.
-30. Record reviewed sources here when they materially influence the project.
+17. Treat experiment contamination, unexplained allocation mismatch, treatment leakage or treatment→control interference as readout limitations.
+18. Treatment-only improvement is not proof of incrementality when treatment and control share query/ASIN/auction/budget opportunity; inspect combined or pool-level outcomes when displacement is plausible.
+19. Treat partial application as a realized treatment different from intended treatment.
+20. Do not compare promotion-contaminated windows as ordinary evergreen baselines.
+21. Treat stockout/retail-readiness failures as causal gates before traffic suppression.
+22. Treat stale retail snapshots as historical evidence, not current-state proof.
+23. Do not transfer entity memory across recreated IDs without verified identity mapping; verified migrations may carry bounded historical context but never clone successor current state.
+24. Treat timeout/unknown mutation outcomes as unresolved until readback/reconciliation or executor-level idempotency makes repetition safe.
+25. Stable idempotency keys must stay bound to the same stable intent and payload; a new value is a new intent.
+26. Trusted current-state readback overrides earlier executor acknowledgement when the states disagree; classify the difference as drift/partial/unresolved before outcome attribution.
+27. Do not equate higher ROAS or revenue with higher profit; use contribution economics when the business objective is profitability.
+28. A historically proven relevant query that temporarily has zero orders should be diagnosed as a possible conversion break before being treated as irrelevant traffic.
+29. A declared experiment allocation does not prove realized allocation integrity; unexplained imbalance must be investigated before causal rollout.
+30. Under a fixed budget pool, reconcile source and destination allocations and evaluate source opportunity cost; campaign-local efficiency does not prove portfolio-level optimality.
+31. Record reviewed sources here when they materially influence the project.
