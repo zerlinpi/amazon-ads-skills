@@ -2,7 +2,7 @@
 
 Amazon Ads AI Agent 技能库：监控、因果诊断、增长机会、受控实验、变更后复盘、优化记忆、安全优化与历史回放 Eval。
 
-> 当前版本：`v0.8.0`  
+> 当前版本：`v0.9.0`  
 > 默认模式：`Suggest`  
 > 本仓库不直接修改真实 Amazon Ads 账户；写入由外部 Connector / Executor 负责。
 
@@ -92,7 +92,7 @@ skill-local reference
 
 ## Historical Replay / Evals
 
-`evals/README.md` 定义了历史回放和回归测试合同。
+`evals/README.md` 定义历史回放和回归测试合同。
 
 评估拆成两层：
 
@@ -113,11 +113,15 @@ Capability Eval 使用三态：
 
 `insufficient_evidence` 不会被强行算作通过或失败。
 
-当前初始 regression pack 覆盖：
+当前 regression pack 覆盖 7 类关键决策风险：
 
 - Mixed-ASIN 下禁止把焦点 ASIN 的 0 单 Search Term 直接变成 execution-ready negative；
 - 最近 Bid 调整仍在 validation window 时防止立即反向修改；
-- 有利润和零售准备度支持的预算增长机会可进入 guarded scaling，但不能从 Skill 层直接写真实账户。
+- Featured Offer / Buy Box 丢失与 CVR 同时崩塌时，禁止先把问题归咎于广告流量并激进降 Bid/否词；
+- Post-change conversion attribution 尚未成熟时，禁止把修改判为失败并立即 Rollback；
+- `application_status=Unknown` 且无可信 Readback 时，禁止把后续增长归功于该修改；
+- 有利润和零售准备度支持的预算增长机会可以进入 guarded scaling，但不能从 Skill 层直接写真实账户；
+- Campaign 虽然预算跑满，但边际 CPC 上升、CVR 下滑且接近 break-even 时，禁止把“预算受限”自动等同于“值得扩量”。
 
 结构：
 
@@ -127,7 +131,11 @@ evals/
 └── fixtures/
     ├── mixed-asin-negative-blocked.json
     ├── pending-bid-change-hold.json
-    └── proven-winner-budget-growth.json
+    ├── post-change-attribution-lag.json
+    ├── application-status-unknown.json
+    ├── retail-readiness-conversion-shock.json
+    ├── proven-winner-budget-growth.json
+    └── budget-exhausted-no-headroom.json
 
 schemas/eval-case.json
 ```
@@ -304,7 +312,8 @@ discover → license check → extract generic idea
 - [x] Contextual Benchmark Policy
 - [x] Weekly Review Playbook
 - [x] Historical replay / initial eval fixtures
-- [ ] 增加更多来自真实失误模式的 synthetic regression fixtures
+- [x] 扩展高风险回归覆盖：Retail Readiness、Attribution Lag、Unknown Application、Marginal Headroom
+- [ ] 增加 Negative attachment / Bid×Placement / experiment contamination 等 synthetic regression fixtures
 - [ ] 继续拆薄旧版较厚 Skills
 - [ ] Amazon Ads API / 自研 Connector 示例
 
