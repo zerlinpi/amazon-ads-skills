@@ -12,9 +12,12 @@ Record:
 - decline start/end;
 - attribution maturity;
 - known promotions or outages;
-- marketplace, currency and timezone.
+- marketplace, profile/account scope, currency and timezone;
+- source system and `available_through` when the measurement path differs between windows.
 
-Do not hide window mismatches inside a percentage delta.
+Do not hide window mismatches or source-definition mismatches inside a percentage delta.
+
+When baseline and decline come from different reports, APIs, MCPs, warehouses or semantic versions, load `../../../references/data-lineage.md` before sizing the loss. A source/reporting switch near the apparent break point is a competing cause until reconciled.
 
 ## 2. Driver bridge
 
@@ -42,6 +45,8 @@ Primary driver labels:
 - `budget-or-serving-constraint`
 - `control-change`
 - `retail-readiness`
+- `variation-family-shift`
+- `source-lineage-drift`
 - `market-or-seasonality`
 - `mixed`
 - `unknown`
@@ -57,6 +62,8 @@ Start from business loss, not from bad-looking ratios. Rank entities by:
 5. actionability and attribution quality.
 
 A tiny target with extreme ACOS should not outrank a large previous winner that lost substantial qualified traffic.
+
+Do not rank contribution from disputed cross-source deltas as high-confidence until source comparability is established.
 
 ## 4. Control-change timeline
 
@@ -95,9 +102,37 @@ Before blaming advertising, check whether the promoted product could still conve
 - listing suppression or content disruption;
 - delivery promise / Prime availability;
 - review/rating shock;
-- parent-child or variation changes.
+- parent-child or variation-family changes.
 
 A current snapshot is evidence about current state only. Historical causality requires dated observations or change history.
+
+### Variation-family / parent-level shock
+
+A child-ASIN campaign can look worse even when its ad controls and qualified traffic are stable if the surrounding variation family changed.
+
+Check, when relevant:
+
+- parent/child mapping additions, removals, splits or merges;
+- sibling price/promotion differences;
+- sibling inventory or purchasability changes;
+- Featured Offer / retail-status shifts across sibling children;
+- purchased-ASIN crossover toward another child;
+- family-level orders/sales vs the advertised child's orders/sales;
+- whether a family-level retail event begins at the same time as the child conversion break.
+
+Warning pattern:
+
+```text
+child clicks/CPC stable
+child CVR/orders ↓
+sibling orders or purchased-ASIN share ↑
+family total approximately stable
+family/retail change precedes or overlaps break
+```
+
+This is compatible with substitution or retail mix shift, not automatically advertising waste.
+
+Do not assume the parent entity itself has the same purchasability mechanics as a child ASIN. Use the family relationship as causal context and evaluate dated child/sibling retail observations at the scope where they are actually measured.
 
 ## 6. Mixed-ASIN safety
 
@@ -111,11 +146,11 @@ Use when the route is sufficiently attributable to the affected ASIN and the pro
 
 ### Directional
 
-Use when evidence suggests a problem but mixed-ASIN, halo, low-volume, or attribution uncertainty could materially change the decision. Recommend further segmentation or observation rather than immediate mutation.
+Use when evidence suggests a problem but mixed-ASIN, halo, low-volume, attribution uncertainty, family substitution, or source-lineage uncertainty could materially change the decision. Recommend further segmentation or observation rather than immediate mutation.
 
 ### Blocked
 
-Use when the data cannot tell which ASIN benefits from the route, or when an action could plausibly damage another strategically important ASIN.
+Use when the data cannot tell which ASIN benefits from the route, when a source disagreement makes the underlying delta unreliable, or when an action could plausibly damage another strategically important ASIN.
 
 Never turn a `Directional` or `Blocked` row into an execution-ready negative, pause or large bid cut.
 
@@ -131,18 +166,20 @@ Use explicit labels:
 
 Keep facts separate from hypotheses. A recommendation should never be more confident than the cause supporting it.
 
+Unresolved source lineage, stale retail state, or family-level substitution evidence can cap an otherwise strong-looking ad diagnosis at `Directional` or `Missing Data`.
+
 ## 8. Negative-targeting protection
 
 A high-spend zero-order query can be a new negative candidate, but it is not automatically the cause of a sales decline.
 
 Before recommending a negative in a drop investigation:
 
-- compare multiple windows when available;
+- compare multiple compatible windows when available;
 - check prior conversion history;
 - verify attachment scope;
 - verify whether the search term served another ASIN profitably;
 - distinguish `new waste` from `previous winner stopped converting`;
-- consider attribution lag and promotion periods.
+- consider attribution lag, promotion periods and variation-family retail shifts.
 
 ## 9. Recovery design
 
@@ -161,6 +198,8 @@ Every proposal should carry:
 - rollback trigger;
 - mode: `Suggest` or `Shadow` unless explicitly authorized externally.
 
+When source lineage is unresolved, the recovery action may simply be `same-source replay / reconcile data`. When a family-level retail shock is more plausible than ad inefficiency, prioritize retail/family investigation before suppressing traffic.
+
 ## 10. Monitoring cadence
 
 Use short windows for serving-state recovery and longer windows for conversion and profitability confirmation:
@@ -169,4 +208,4 @@ Use short windows for serving-state recovery and longer windows for conversion a
 - 7-day: conversion and order direction where attribution is sufficiently mature;
 - 14-day: efficiency, profitability and secondary effects.
 
-Adjust these windows when product velocity, attribution lag, seasonality or sample size makes them inappropriate.
+Adjust these windows when product velocity, attribution lag, seasonality, sample size, data refresh lag, or retail changes make them inappropriate.
