@@ -31,7 +31,7 @@ If no memory source exists, say `history unavailable` rather than assuming there
 
 ## Entity identity
 
-Memory must be scoped tightly enough to avoid cross-account collisions.
+Memory must be scoped tightly enough to avoid cross-account and cross-marketplace collisions.
 
 Preferred identity tuple:
 
@@ -51,6 +51,44 @@ Examples of `control dimension`:
 - match type / structure.
 
 Do not merge two entities because their names match. Use stable IDs when available.
+
+## Identity-scope safety gate
+
+Treat `marketplace` and `profile/account scope` as part of optimization identity whenever memory can contain more than one account/profile/marketplace.
+
+A matching entity ID, keyword text, campaign name, ASIN label, or display name is **not sufficient** to establish same-entity history across scopes.
+
+Classify identity scope when useful as:
+
+- `Complete` — marketplace and profile/account scope are present and match the requested entity;
+- `Incomplete` — one or more required scope dimensions are missing;
+- `Ambiguous` — multiple plausible histories remain after available scope filtering;
+- `Collision Detected` — records with the same local entity key/name resolve to different marketplace/profile scopes.
+
+### Fail-closed rules
+
+When identity scope is `Incomplete`, `Ambiguous`, or `Collision Detected`:
+
+- do not merge histories across candidate scopes;
+- do not transfer `Worked / Keep`, `Rollback Candidate`, pending validation, or prior action outcomes from another scope;
+- do not infer identity from display-name similarity;
+- do not use a foreign-scope readback as current state;
+- downgrade the memory-dependent decision to `Hold`, `Directional`, or `Manual Review` until the requested scope is resolved.
+
+If the current request explicitly identifies marketplace/profile scope, filter memory to that scope before ranking recency or semantic similarity.
+
+### Connector-normalized or local IDs
+
+Some connectors, exports, test fixtures, caches, or intermediate stores may expose locally normalized IDs rather than globally collision-proof identifiers.
+
+Therefore:
+
+```text
+entity type + entity id alone
+≠ collision-safe optimization identity
+```
+
+The storage/retrieval layer should preserve scope fields alongside the local entity key. Public examples should use synthetic profile IDs and never rely on customer-identifying data.
 
 ## Verified migration lineage
 
@@ -174,7 +212,9 @@ Expose warnings such as:
 - `missing readback`;
 - `unknown write result`;
 - `legacy changelog only`;
-- `event gap detected`.
+- `event gap detected`;
+- `identity scope incomplete`;
+- `cross-profile collision detected`.
 
 Do not silently treat a partial ledger as complete account history.
 
@@ -193,12 +233,13 @@ For mutually conflicting events, prefer current trusted readback for state, but 
 
 For a new optimization decision, retrieve in this order:
 
-1. same entity + same control, most recent first;
-2. verified predecessor history when an explicit migration mapping exists;
-3. same entity, other controls in the overlapping window;
-4. parent campaign/ad-group/product-ad changes;
-5. active experiments containing the entity;
-6. recent account-wide or portfolio controls that materially affect delivery.
+1. resolve marketplace + profile/account scope and reject cross-scope collisions;
+2. same entity + same control, most recent first;
+3. verified predecessor history when an explicit migration mapping exists;
+4. same entity, other controls in the overlapping window;
+5. parent campaign/ad-group/product-ad changes;
+6. active experiments containing the entity;
+7. recent account-wide or portfolio controls that materially affect delivery.
 
 Keep the returned slice bounded. Do not dump the whole account history into context.
 
@@ -206,6 +247,8 @@ Keep the returned slice bounded. Do not dump the whole account history into cont
 
 A derived summary should answer:
 
+- What marketplace/profile scope does this history belong to?
+- Is the identity scope complete and collision-free?
 - What is the latest known control state?
 - What was the last material action and why?
 - Did it actually apply?
@@ -241,6 +284,8 @@ Use these derived states when useful:
 When memory materially affects a recommendation, include:
 
 - `history_status`;
+- identity-scope status and warnings;
+- marketplace/profile scope used for retrieval;
 - latest relevant action and timestamp;
 - application/readback status;
 - validation maturity;
@@ -254,4 +299,4 @@ When memory materially affects a recommendation, include:
 
 Do not store credentials, refresh tokens, client secrets, access tokens or unnecessary customer-identifying data in optimization memory.
 
-Use the minimum account/profile scope required for collision-safe entity identity. Public examples should use synthetic identifiers.
+Use the minimum marketplace/account/profile scope required for collision-safe entity identity. Public examples should use synthetic identifiers.
