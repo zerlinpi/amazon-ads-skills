@@ -1,8 +1,8 @@
 # Data lineage and comparability
 
-Load this shared reference only when a decision compares, joins, or reconciles metrics from different exports, APIs, MCPs, warehouses, dashboards, caches, or refresh schedules.
+Load this shared reference only when a decision compares, joins, or reconciles metrics from different exports, APIs, MCPs, warehouses, dashboards, caches, refresh schedules, or metric-definition versions.
 
-The goal is to prevent a source change from being mistaken for a business change.
+The goal is to prevent a source or measurement-definition change from being mistaken for a business change.
 
 ## 1. Same metric name does not guarantee the same measurement
 
@@ -21,6 +21,19 @@ Two fields both named `orders`, `sales`, `spend`, `ACOS`, or `ROAS` may differ b
 
 Do not compare them as one continuous series until these dimensions are compatible or reconciled.
 
+A useful metric identity is:
+
+```text
+metric name
++ metric definition ID
++ semantic/report version
++ attribution definition
++ aggregation grain
++ scope/filter contract
+```
+
+The table path or dashboard label alone is not metric identity.
+
 ## 2. Minimum source metadata
 
 When lineage matters, capture when available:
@@ -34,6 +47,7 @@ When lineage matters, capture when available:
 - attribution window/model or `unknown`;
 - aggregation grain and filters;
 - semantic/report version when known;
+- per-metric definition/version when a dataset can evolve individual metrics independently;
 - completeness/backfill status;
 - transformation lineage or upstream source when a derived dataset is used.
 
@@ -41,15 +55,17 @@ Missing lineage is not proof that two sources are equivalent.
 
 ## 3. Comparability states
 
-Classify a cross-source comparison as:
+Classify a comparison as:
 
 - `Comparable` — material definitions, scope, maturity and time boundaries align;
 - `Reconcilable` — differences exist but can be calibrated or normalized with evidence;
 - `Directional` — useful for broad direction only; exact deltas/causal claims are unsafe;
-- `Not Comparable` — source differences can plausibly explain the apparent movement;
+- `Not Comparable` — measurement differences can plausibly explain the apparent movement;
 - `Unknown` — required lineage is missing.
 
 A recommendation must not be more confident than the comparability state.
+
+These states apply even when both windows come from the **same** source system or table.
 
 ## 4. Detect source-lineage drift
 
@@ -66,21 +82,56 @@ Examples:
 
 Treat a source switch near the apparent break point as a competing cause until reconciled.
 
-## 5. Reconciliation workflow
+## 5. Detect semantic metric-version drift
 
-When a source change is unavoidable:
+A stable source path can still contain a discontinuous metric definition.
+
+Flag semantic drift when the same metric name changes materially in any of these ways:
+
+- attribution rule or maturity rule;
+- included/excluded entity states;
+- order/sales deduplication logic;
+- purchased-ASIN or halo inclusion;
+- currency or timezone normalization;
+- aggregation or filtering contract;
+- backfill behavior;
+- business-semantic transformation;
+- calculation formula for a derived metric.
+
+Warning pattern:
+
+```text
+same dataset
+same column name
+semantic_version v2 → v3
+historical backfill = false
+apparent KPI break occurs at version cutover
+```
+
+Do not interpret the break as a confirmed Amazon Ads change until one of the following is available:
+
+1. both windows recomputed under one semantic version;
+2. an overlap period computed under both definitions with a defensible bridge;
+3. a documented, deterministic transformation proving comparability.
+
+Do not invent a conversion factor from one noisy day or infer semantic equivalence because the source URI did not change.
+
+## 6. Reconciliation workflow
+
+When a source or semantic change is unavoidable:
 
 1. identify the canonical decision metric and required scope;
-2. find an overlap window where both sources report the same dates/entities;
-3. compare totals and key components, not only ratios;
-4. explain systematic lag, filtering, attribution or semantic differences;
-5. normalize only when the transformation is explicit and defensible;
-6. label unresolved differences and downgrade actionability;
-7. prefer one stable source for both baseline and decline windows when possible.
+2. identify the metric definition/version used in each window;
+3. find an overlap window where both measurement paths report the same dates/entities when possible;
+4. compare totals and key components, not only ratios;
+5. explain systematic lag, filtering, attribution or semantic differences;
+6. normalize only when the transformation is explicit and defensible;
+7. label unresolved differences and downgrade actionability;
+8. prefer one stable source and one stable semantic version for both windows when possible.
 
-Do not invent a conversion factor from one noisy day.
+For a semantic-version cutover, prefer replaying history under the current definition over splicing pre-cutover and post-cutover values into one trend.
 
-## 6. Freshness vs event coverage
+## 7. Freshness vs event coverage
 
 `extracted_at` is not the same as `available_through`.
 
@@ -92,7 +143,7 @@ Track separately:
 - which event dates are complete;
 - which conversion dates are mature enough for the decision.
 
-## 7. Derived metrics
+## 8. Derived metrics
 
 Ratios inherit the weakest lineage of their components.
 
@@ -102,34 +153,35 @@ For example:
 ROAS = sales / spend
 ```
 
-If sales and spend come from different source definitions or maturity states, the resulting ROAS should not be treated as clean even when the arithmetic is correct.
+If sales and spend come from different source definitions, semantic versions, or maturity states, the resulting ROAS should not be treated as clean even when the arithmetic is correct.
 
-Prefer recomputing derived metrics from compatible components rather than mixing precomputed ratios from different systems.
+Prefer recomputing derived metrics from compatible components rather than mixing precomputed ratios from different systems or versions.
 
-## 8. Source precedence
+## 9. Source precedence
 
 Do not hard-code a universal rule that API always beats warehouse, or warehouse always beats MCP.
 
-Prefer the source that is:
+Prefer the measurement path that is:
 
 1. correctly scoped to the requested marketplace/profile/entity;
 2. definitionally compatible with the decision;
 3. complete for the required dates;
 4. attribution-mature enough;
 5. auditable and reproducible;
-6. stable across the compared windows.
+6. stable across the compared windows;
+7. explicit about metric semantic version when definitions can change.
 
-If two trusted sources disagree materially, expose the disagreement rather than silently choosing the more favorable result.
+If two trusted paths disagree materially, expose the disagreement rather than silently choosing the more favorable result.
 
-## 9. Action gate
+## 10. Action gate
 
-When a material performance break aligns with unresolved lineage drift:
+When a material performance break aligns with unresolved source-lineage or semantic-version drift:
 
 - do not call the break `Confirmed` business deterioration;
 - do not generate aggressive bid, budget, negative, pause, or rollback actions from the disputed delta;
 - return `Directional`, `Missing Data`, `Hold`, or `Manual Review` as appropriate;
-- request a same-source replay or overlap reconciliation.
+- request a same-source/same-version replay or overlap reconciliation.
 
-## 10. Safety boundary
+## 11. Safety boundary
 
 This reference governs evidence quality only. It does not authorize live Amazon Ads writes and does not require any private connector implementation.
