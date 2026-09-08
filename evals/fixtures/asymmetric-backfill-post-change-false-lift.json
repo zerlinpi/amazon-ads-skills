@@ -1,0 +1,75 @@
+{
+  "id": "asymmetric-backfill-post-change-false-lift",
+  "title": "Do not credit a post-change lift when baseline and post windows have unequal backfill maturity",
+  "entrypoint": "skills/post-change-review/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "A bid change appears to improve orders and ROAS. The baseline snapshot was frozen one day after its period ended before late-attributed conversions were backfilled, while the post-change window was evaluated after a full seven-day backfill. Both windows use the same warehouse table and metric version, so the request assumes the comparison is fair.",
+  "inputs": {
+    "marketplace": "US",
+    "profile_scope": "profile-us-01",
+    "action": {
+      "type": "adjust_bid",
+      "entity_type": "keyword",
+      "entity_id": "kw-501",
+      "before": 1.05,
+      "intended_after": 1.20,
+      "applied_at": "2026-08-25T16:00:00Z",
+      "readback_status": "Confirmed"
+    },
+    "baseline_snapshot": {
+      "window": "2026-08-11/2026-08-24",
+      "source_system": "warehouse_ads_daily",
+      "semantic_version": "v3",
+      "captured_at": "2026-08-25T06:00:00Z",
+      "backfill_age_days": 1,
+      "backfill_status": "provisional",
+      "orders": 40,
+      "sales": 2600,
+      "spend": 780
+    },
+    "post_change_snapshot": {
+      "window": "2026-08-26/2026-09-08",
+      "source_system": "warehouse_ads_daily",
+      "semantic_version": "v3",
+      "captured_at": "2026-09-15T06:00:00Z",
+      "backfill_age_days": 7,
+      "backfill_status": "mature",
+      "orders": 50,
+      "sales": 3300,
+      "spend": 900
+    },
+    "known_backfill_behavior": {
+      "late_conversion_backfill": true,
+      "historical_partitions_mutable": true,
+      "baseline_reextracted_at_equal_maturity": false,
+      "baseline_current_restatement_available": false
+    },
+    "other_context": {
+      "major_retail_or_promotion_changes": "none_known",
+      "other_material_ad_control_changes": "none_known"
+    }
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["hold", "manual_review", "directional"],
+    "forbidden_behaviors": [
+      "Call the bid change Worked or Likely Worked solely from the 40-to-50 order comparison while ignoring unequal backfill maturity.",
+      "Treat same table and same semantic version as proof that the frozen baseline and mature post window are measurement-equivalent.",
+      "Use the apparent ROAS/order lift to justify another bid increase before baseline is restated or matched for backfill maturity.",
+      "Assume historical warehouse rows are immutable when the source explicitly performs late conversion backfills.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The baseline was captured at D+1 and remained provisional while the post window was evaluated at D+7 maturity.",
+      "Backfill maturity is part of measurement comparability even when source system and metric semantic version are unchanged.",
+      "A fair post-change evaluation should re-extract the baseline at comparable maturity, freeze both windows under the same snapshot policy, or otherwise reconcile the backfill delta.",
+      "Until backfill parity is restored, the apparent lift is descriptive rather than causal evidence that the bid change worked."
+    ],
+    "rubric": [
+      {"criterion": "source_lineage", "requirement": "Detect asymmetric historical backfill and require matched snapshot/backfill maturity."},
+      {"criterion": "data_discipline", "requirement": "Distinguish event window dates from snapshot capture age and mutable historical partitions."},
+      {"criterion": "causal_discipline", "requirement": "Do not attribute the apparent lift to the action while measurement maturity differs across windows."},
+      {"criterion": "action_gate", "requirement": "Hold or downgrade rather than stacking another optimization from a backfill-skewed comparison."}
+    ]
+  }
+}
