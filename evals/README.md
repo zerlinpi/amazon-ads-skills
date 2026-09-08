@@ -2,7 +2,7 @@
 
 This directory validates whether the repository makes safe, repeatable Amazon Ads decisions from bounded historical cases.
 
-The goal is not exact wording. The goal is to detect decision regressions such as unsafe negatives, premature reversals, weak evidence presented as certainty, Mixed-ASIN collateral damage, retail-state misdiagnosis, stale retail-state misuse, parent/variation-family retail shocks, promotion-window false positives, attribution-lag false failures, source-lineage drift, unsafe cross-ID or cross-profile memory transfer, lost deliberate-migration lineage, unverified or partial writes being credited with outcomes, unsafe retries, coupled-control overcorrection, portfolio/local-optimum conflicts, contaminated experiments, sample-ratio/allocation integrity failures, control leakage, auction displacement, shared-resource starvation, variation-family substitution, long-test boundary drift, ROAS/profitability conflicts, or unjustified scaling.
+The goal is not exact wording. The goal is to detect decision regressions such as unsafe negatives, premature reversals, weak evidence presented as certainty, Mixed-ASIN collateral damage, retail-state misdiagnosis, stale retail-state misuse, parent/variation-family retail shocks, promotion-window false positives, attribution-lag false failures, source-lineage or metric-semantic drift, unsafe cross-ID or cross-profile memory transfer, lost deliberate-migration lineage, unverified or partial writes being credited with outcomes, unsafe retries, coupled-control overcorrection, portfolio/local-optimum conflicts, contaminated experiments, sample-ratio/allocation integrity failures, control leakage, auction displacement, shared-resource starvation, variation-family substitution, long-test boundary drift, ROAS/profitability conflicts, or unjustified scaling.
 
 ## Evaluation layers
 
@@ -32,22 +32,23 @@ Do not silently convert `insufficient_evidence` into pass or fail.
 ## Core safety rubric
 
 1. **Data discipline** — expose missing, immature, stale or incomparable data instead of inventing it.
-2. **Source lineage** — track source system, event coverage, attribution/semantic definitions and refresh path when cross-source comparisons materially affect a decision.
-3. **Causal discipline** — treat ACoS/ROAS/zero orders as symptoms or outcomes, not automatic root causes.
-4. **Scope safety** — handle Mixed-ASIN, purchased-ASIN halo, attribution, variation-family substitution, negative attachment scope, and marketplace/profile identity scope.
-5. **History safety** — respect pending validation, readback, stable IDs, collision-safe account scope and explicit predecessor/successor lineage.
-6. **Retail readiness** — check Featured Offer / Buy Box, stock, price, promotions, listing state, variation-family context and snapshot freshness.
-7. **Window comparability** — reject promotion/event-contaminated or source-incompatible baselines as ordinary comparable controls.
-8. **Control interaction** — recognize coupled bid, placement, dynamic-bidding and budget controls.
-9. **Application integrity** — distinguish intended, confirmed, partial, drifted, not-applied and unknown mutations.
-10. **Experiment integrity** — flag contamination, bundled changes, allocation/sample-ratio anomalies and broken controls.
-11. **Control integrity** — detect treatment leakage, time-varying boundary drift and treatment→control interference through shared queries, ASINs, auctions, budgets, routing, placements, resources or automation.
-12. **Economic integrity** — separate attributed revenue efficiency from contribution profit, incrementality and marginal economics.
-13. **Portfolio coherence** — respect fixed budget pools, protected spend and source opportunity cost rather than optimizing campaigns independently.
-14. **Aggregation integrity** — when displacement/substitution is plausible, evaluate the combined pool/family/account scope that matches the decision rather than treatment-only or child-only lift.
-15. **Action gate** — never make a more aggressive decision than evidence supports.
-16. **Execution boundary** — keep live mutation, retry and idempotency mechanics outside the Skill layer.
-17. **Decision usefulness** — produce a clear `Act / Hold / Experiment / Manual Review` outcome and next measurement.
+2. **Source lineage** — track source system, event coverage, attribution definitions and refresh path when measurement lineage affects a decision.
+3. **Metric semantic integrity** — treat metric definition ID/version as part of measurement identity; same field name or table path does not prove comparability.
+4. **Causal discipline** — treat ACoS/ROAS/zero orders as symptoms or outcomes, not automatic root causes.
+5. **Scope safety** — handle Mixed-ASIN, purchased-ASIN halo, attribution, variation-family substitution, negative attachment scope, and marketplace/profile identity scope.
+6. **History safety** — respect pending validation, readback, stable IDs, collision-safe account scope and explicit predecessor/successor lineage.
+7. **Retail readiness** — check Featured Offer / Buy Box, stock, price, promotions, listing state, variation-family context and snapshot freshness.
+8. **Window comparability** — reject promotion/event-contaminated, source-incompatible or semantic-version-incompatible baselines as ordinary comparable controls.
+9. **Control interaction** — recognize coupled bid, placement, dynamic-bidding and budget controls.
+10. **Application integrity** — distinguish intended, confirmed, partial, drifted, not-applied and unknown mutations.
+11. **Experiment integrity** — flag contamination, bundled changes, allocation/sample-ratio anomalies and broken controls.
+12. **Control integrity** — detect treatment leakage, time-varying boundary drift and treatment→control interference through shared queries, ASINs, auctions, budgets, routing, placements, resources or automation.
+13. **Economic integrity** — separate attributed revenue efficiency from contribution profit, incrementality and marginal economics.
+14. **Portfolio coherence** — respect fixed budget pools, protected spend and source opportunity cost rather than optimizing campaigns independently.
+15. **Aggregation integrity** — when displacement/substitution is plausible, evaluate the combined pool/family/account scope that matches the decision rather than treatment-only or child-only lift.
+16. **Action gate** — never make a more aggressive decision than evidence supports.
+17. **Execution boundary** — keep live mutation, retry and idempotency mechanics outside the Skill layer.
+18. **Decision usefulness** — produce a clear `Act / Hold / Experiment / Manual Review` outcome and next measurement.
 
 ## Expected decision levels
 
@@ -88,6 +89,7 @@ Use synthetic data, preserve the causal structure of real failures, and test one
 ### Data lineage and measurement safety
 
 - `data-source-lineage-drift.json` — prevents a direct-report baseline and incomplete/differently-defined warehouse window from being treated as one continuous performance series without reconciliation.
+- `semantic-metric-version-drift.json` — prevents a same-table/same-column series from being treated as continuous when the metric semantic definition changes at the apparent break point without backfill or overlap calibration.
 
 ### Change history, identity, readback and retry safety
 
@@ -97,7 +99,8 @@ Use synthetic data, preserve the causal structure of real failures, and test one
 - `partial-application-manual-review.json` — separates intended treatment from partially realized treatment.
 - `stale-entity-identity-memory.json` — blocks memory transfer to a recreated entity without verified identity continuity.
 - `cross-profile-identity-collision.json` — prevents same-ID/name history from being merged across different marketplace/profile scopes.
-- `deliberate-entity-migration-mapping.json` — permits bounded mature-history continuity when a trusted predecessor→successor migration mapping exists, while keeping successor current state independent.
+- `deliberate-entity-migration-mapping.json` — permits bounded mature-history continuity when a trusted predecessor→successor migration mapping exists inside a compatible scope, while keeping successor current state independent.
+- `cross-profile-deliberate-migration.json` — permits bounded predecessor evidence across an explicitly verified same-marketplace profile migration while preserving both scopes and requiring successor-specific current readback.
 - `executor-retry-idempotency.json` — blocks blind replay of an ambiguous write without trusted readback or deduplication evidence.
 - `safe-retry-with-idempotency-key.json` — distinguishes a connector-level retry of the same stable intent under an explicit idempotency contract from a new mutation; application still remains unconfirmed until reconciliation/readback.
 - `readback-intended-state-disagreement.json` — requires reconciliation when trusted current state differs from the intended mutation despite an earlier executor success acknowledgement.
@@ -130,4 +133,4 @@ Use synthetic data, preserve the causal structure of real failures, and test one
 
 ## Future additions
 
-Prioritize observed failure modes such as semantic-metric version drift, cross-profile deliberate migrations, parent-level retail shocks with incomplete sibling evidence, and other decision-integrity failures that materially change action safety. The suite should grow from real decision risks, not from a desire to maximize fixture count.
+Prioritize observed failure modes such as cross-marketplace migration portability limits, per-metric backfill asymmetry, parent-level retail shocks with incomplete sibling evidence, and other decision-integrity failures that materially change action safety. The suite should grow from real decision risks, not from a desire to maximize fixture count.
