@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Amazon Ads Experiment Plan",
+  "type": "object",
+  "required": [
+    "experiment_id",
+    "decision_question",
+    "hypothesis",
+    "mode",
+    "treatment",
+    "comparison",
+    "primary_metric",
+    "guardrails",
+    "windows",
+    "status"
+  ],
+  "properties": {
+    "experiment_id": {"type": "string"},
+    "decision_question": {"type": "string"},
+    "hypothesis": {
+      "type": "object",
+      "required": ["change", "mechanism", "expected_outcome"],
+      "properties": {
+        "change": {"type": "string"},
+        "mechanism": {"type": "string"},
+        "expected_outcome": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["Suggest", "Shadow"]
+    },
+    "scope": {
+      "type": "object",
+      "properties": {
+        "marketplace": {"type": ["string", "null"]},
+        "ad_type": {"type": ["string", "null"]},
+        "entity_type": {"type": ["string", "null"]},
+        "entity_ids": {"type": "array", "items": {"type": "string"}},
+        "asin_ids": {"type": "array", "items": {"type": "string"}},
+        "exclusions": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "treatment": {
+      "type": "object",
+      "required": ["description"],
+      "properties": {
+        "description": {"type": "string"},
+        "planned_changes": {"type": "array", "items": {"type": "object"}},
+        "reversible": {"type": ["boolean", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "comparison": {
+      "type": "object",
+      "required": ["design_type"],
+      "properties": {
+        "design_type": {
+          "type": "string",
+          "enum": ["holdout", "matched_control", "phased_rollout", "switchback", "historical_baseline", "pre_post"]
+        },
+        "control_entity_ids": {"type": "array", "items": {"type": "string"}},
+        "rationale": {"type": ["string", "null"]},
+        "contamination_risk": {
+          "type": ["string", "null"],
+          "enum": ["Low", "Moderate", "High", "Unknown", null]
+        }
+      },
+      "additionalProperties": false
+    },
+    "primary_metric": {
+      "type": "object",
+      "required": ["name", "success_rule"],
+      "properties": {
+        "name": {"type": "string"},
+        "success_rule": {"type": "string"},
+        "minimum_decision_useful_effect": {"type": ["number", "string", "null"]},
+        "unit": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "diagnostic_metrics": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "guardrails": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["metric", "rule"],
+        "properties": {
+          "metric": {"type": "string"},
+          "rule": {"type": "string"},
+          "action_if_breached": {"type": ["string", "null"]}
+        },
+        "additionalProperties": false
+      }
+    },
+    "windows": {
+      "type": "object",
+      "required": ["baseline", "treatment", "observation"],
+      "properties": {
+        "baseline": {"type": "string"},
+        "treatment": {"type": "string"},
+        "observation": {"type": "string"},
+        "next_review": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "readiness": {
+      "type": "object",
+      "properties": {
+        "data_quality": {"type": ["string", "null"]},
+        "sample_sufficiency": {"type": ["string", "null"]},
+        "attribution_maturity": {"type": ["string", "null"]},
+        "mixed_asin_risk": {"type": ["string", "null"]},
+        "confounders": {"type": "array", "items": {"type": "string"}},
+        "source_lineage": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "stop_conditions": {"type": "array", "items": {"type": "string"}},
+    "rollback_conditions": {"type": "array", "items": {"type": "string"}},
+    "status": {
+      "type": "string",
+      "enum": ["Ready", "Shadow Only", "Redesign", "Hold"]
+    }
+  },
+  "additionalProperties": false
+}
