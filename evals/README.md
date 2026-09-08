@@ -2,7 +2,7 @@
 
 This directory validates whether the repository makes safe, repeatable Amazon Ads decisions from bounded historical cases.
 
-The goal is not exact wording. The goal is to detect decision regressions such as unsafe negatives, premature reversals, weak evidence presented as certainty, Mixed-ASIN collateral damage, retail-state misdiagnosis, stale retail-state misuse, promotion-window false positives, attribution-lag false failures, unsafe cross-ID memory transfer, lost deliberate-migration lineage, unverified or partial writes being credited with outcomes, unsafe retries, coupled-control overcorrection, portfolio/local-optimum conflicts, contaminated experiments, sample-ratio/allocation integrity failures, ROAS/profitability conflicts, or unjustified scaling.
+The goal is not exact wording. The goal is to detect decision regressions such as unsafe negatives, premature reversals, weak evidence presented as certainty, Mixed-ASIN collateral damage, retail-state misdiagnosis, stale retail-state misuse, promotion-window false positives, attribution-lag false failures, unsafe cross-ID memory transfer, lost deliberate-migration lineage, unverified or partial writes being credited with outcomes, unsafe retries, coupled-control overcorrection, portfolio/local-optimum conflicts, contaminated experiments, sample-ratio/allocation integrity failures, control leakage, auction displacement, ROAS/profitability conflicts, or unjustified scaling.
 
 ## Evaluation layers
 
@@ -40,11 +40,12 @@ Do not silently convert `insufficient_evidence` into pass or fail.
 7. **Control interaction** — recognize coupled bid, placement, dynamic-bidding and budget controls.
 8. **Application integrity** — distinguish intended, confirmed, partial, drifted, not-applied and unknown mutations.
 9. **Experiment integrity** — flag contamination, bundled changes, allocation/sample-ratio anomalies and broken controls.
-10. **Economic integrity** — separate attributed revenue efficiency from contribution profit and marginal economics.
-11. **Portfolio coherence** — respect fixed budget pools, protected spend and source opportunity cost rather than optimizing campaigns independently.
-12. **Action gate** — never make a more aggressive decision than evidence supports.
-13. **Execution boundary** — keep live mutation, retry and idempotency mechanics outside the Skill layer.
-14. **Decision usefulness** — produce a clear `Act / Hold / Experiment / Manual Review` outcome and next measurement.
+10. **Control integrity** — detect treatment leakage and treatment→control interference through shared queries, ASINs, auctions, budgets, routing, placements or automation.
+11. **Economic integrity** — separate attributed revenue efficiency from contribution profit, incrementality and marginal economics.
+12. **Portfolio coherence** — respect fixed budget pools, protected spend and source opportunity cost rather than optimizing campaigns independently.
+13. **Action gate** — never make a more aggressive decision than evidence supports.
+14. **Execution boundary** — keep live mutation, retry and idempotency mechanics outside the Skill layer.
+15. **Decision usefulness** — produce a clear `Act / Hold / Experiment / Manual Review` outcome and next measurement.
 
 ## Expected decision levels
 
@@ -106,6 +107,8 @@ Use synthetic data, preserve the causal structure of real failures, and test one
 - `bid-placement-interaction-hold.json` — blocks overlapping material bid and placement changes while one change is still being validated.
 - `experiment-contamination-hold.json` — blocks causal winner claims after concurrent budget, price and placement changes.
 - `experiment-sample-ratio-mismatch.json` — blocks causal rollout when realized treatment/control allocation materially departs from the declared split and the mismatch is unexplained.
+- `control-group-treatment-leakage.json` — rejects a control that receives treatment-like exposure through shared automation and overlapping query/ASIN demand.
+- `auction-interference-displacement.json` — prevents treatment-only lift from being called incremental when overlapping campaigns exchange delivery and combined demand remains flat.
 
 ### Portfolio allocation, growth and economics safety
 
@@ -116,4 +119,4 @@ Use synthetic data, preserve the causal structure of real failures, and test one
 
 ## Future additions
 
-Prioritize observed failure modes such as treatment/control leakage, auction interference across supposedly independent cohorts, parent/child ASIN substitution in portfolio decisions, and other decision-integrity failures that materially change action safety. The suite should grow from real decision risks, not from a desire to maximize fixture count.
+Prioritize observed failure modes such as parent/child ASIN substitution across portfolio decisions, shared-budget experiment starvation, control-boundary drift over long tests, and other decision-integrity failures that materially change action safety. The suite should grow from real decision risks, not from a desire to maximize fixture count.
