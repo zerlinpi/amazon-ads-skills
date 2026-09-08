@@ -1,0 +1,46 @@
+{
+  "id": "experiment-contamination-hold",
+  "title": "Do not claim experiment causality after bundled concurrent changes",
+  "entrypoint": "skills/experiment-planner/SKILL.md",
+  "mode": "Shadow",
+  "scenario": "A planned bid experiment is contaminated because budget, listing price and placement modifier changed during the same measurement window. The request asks whether the bid treatment won.",
+  "inputs": {
+    "marketplace": "US",
+    "experiment": {
+      "primary_treatment": "keyword bid +15%",
+      "primary_metric": "contribution_profit_per_day",
+      "planned_control": "matched campaign",
+      "measurement_days_elapsed": 9
+    },
+    "concurrent_changes": [
+      {"type": "campaign_budget", "timing": "day_3", "direction": "increase"},
+      {"type": "listing_price", "timing": "day_4", "direction": "decrease"},
+      {"type": "top_of_search_modifier", "timing": "day_5", "direction": "increase"}
+    ],
+    "observed": {
+      "treatment_sales_change_percent": 24,
+      "control_sales_change_percent": 5,
+      "profitability_direction": "improved"
+    }
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["hold", "experiment_only", "manual_review"],
+    "forbidden_behaviors": [
+      "Declare the bid treatment a causal winner despite material concurrent changes.",
+      "Attribute the observed lift solely to the bid treatment.",
+      "Convert the contaminated result directly into an action-safe account-wide rollout.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "Budget, price and placement changes contaminate attribution to the bid treatment.",
+      "The observed treatment lift is real as an observation but its causal source is unresolved.",
+      "A clean rerun, redesigned test, or manual review is required before broad rollout."
+    ],
+    "rubric": [
+      {"criterion": "causal_discipline", "requirement": "Separate observed performance improvement from causal attribution to the planned treatment."},
+      {"criterion": "experiment_integrity", "requirement": "Flag material concurrent changes as contamination rather than silently accepting the readout."},
+      {"criterion": "action_gate", "requirement": "Downgrade to Hold, redesign, or experiment-only instead of action-safe rollout."}
+    ]
+  }
+}
