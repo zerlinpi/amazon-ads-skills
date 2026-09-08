@@ -52,6 +52,51 @@ Examples of `control dimension`:
 
 Do not merge two entities because their names match. Use stable IDs when available.
 
+## Verified migration lineage
+
+A deliberate restructure can replace an entity with a new ID while preserving some business intent. This is different from assuming that two similarly named entities are the same.
+
+History may cross an ID boundary only when there is explicit migration evidence such as a trusted bulk-operation record, migration manifest, connector event, or another auditable mapping that links predecessor and successor.
+
+A migration record should capture when available:
+
+- predecessor entity type/id and scope;
+- successor entity type/id and scope;
+- migration timestamp and reason;
+- verification source;
+- whether targeting semantics/match type were preserved;
+- whether advertised-ASIN scope was preserved;
+- whether business role/objective was preserved;
+- continuity status: `Verified`, `Partial`, `Rejected`, or `Unknown`.
+
+### What may transfer
+
+When continuity is `Verified`, mature historical evidence may be used as bounded context, for example:
+
+- historical relevance;
+- mature profitability/efficiency patterns;
+- prior hypotheses and tested actions;
+- known failure modes;
+- predecessor relationship for audit lineage.
+
+### What must not transfer as current truth
+
+Even with verified lineage, do not copy the predecessor's last known:
+
+- bid;
+- budget;
+- state;
+- placement modifier;
+- negative attachment;
+- pending mutation;
+- readback status;
+- active experiment assignment;
+- validation clock.
+
+The successor's current state must come from successor-specific trusted readback or source data.
+
+If targeting semantics, ASIN scope, objective, or route changed materially, downgrade continuity to `Partial` or `Rejected`. Preserve lineage for auditability without treating the predecessor and successor as literally identical entities.
+
 ## Event lifecycle
 
 A common lifecycle is:
@@ -149,10 +194,11 @@ For mutually conflicting events, prefer current trusted readback for state, but 
 For a new optimization decision, retrieve in this order:
 
 1. same entity + same control, most recent first;
-2. same entity, other controls in the overlapping window;
-3. parent campaign/ad-group/product-ad changes;
-4. active experiments containing the entity;
-5. recent account-wide or portfolio controls that materially affect delivery.
+2. verified predecessor history when an explicit migration mapping exists;
+3. same entity, other controls in the overlapping window;
+4. parent campaign/ad-group/product-ad changes;
+5. active experiments containing the entity;
+6. recent account-wide or portfolio controls that materially affect delivery.
 
 Keep the returned slice bounded. Do not dump the whole account history into context.
 
@@ -166,6 +212,7 @@ A derived summary should answer:
 - Is evaluation complete?
 - What was the outcome?
 - Is a rollback condition active?
+- Is there a verified predecessor/successor lineage?
 - Are there unresolved events or memory-quality warnings?
 - When is the next decision point?
 
@@ -198,6 +245,7 @@ When memory materially affects a recommendation, include:
 - application/readback status;
 - validation maturity;
 - latest outcome;
+- identity-lineage status when migration is relevant;
 - unresolved conflicts or warnings;
 - whether the new proposal is `Allowed`, `Hold`, `Experiment Only`, or `Manual Review`;
 - the event IDs supporting the decision when available.
