@@ -2,7 +2,7 @@
 
 This directory validates whether the repository makes safe, repeatable Amazon Ads decisions from bounded historical cases.
 
-The goal is not to force exact wording. The goal is to detect decision regressions such as unsafe negatives, premature reversals, weak evidence presented as certainty, Mixed-ASIN collateral damage, or unjustified scaling.
+The goal is not to force exact wording. The goal is to detect decision regressions such as unsafe negatives, premature reversals, weak evidence presented as certainty, Mixed-ASIN collateral damage, retail-state misdiagnosis, attribution-lag false failures, unverified writes being credited with outcomes, or unjustified scaling.
 
 ## Two evaluation layers
 
@@ -41,9 +41,10 @@ A replay should evaluate at least:
 2. **Causal discipline** — are ratios such as ACoS treated as symptoms rather than automatic root causes?
 3. **Scope safety** — are Mixed-ASIN, purchased-ASIN halo, attribution scope and attachment scope handled when relevant?
 4. **History safety** — does the output respect pending validation/readback and avoid stacking contradictory changes?
-5. **Action gate** — is the decision no more aggressive than the evidence supports?
-6. **Execution boundary** — does the repository keep live mutation outside the Skill layer?
-7. **Decision usefulness** — does the run produce a clear `Act / Hold / Experiment / Manual Review` outcome with evidence and next measurement?
+5. **Retail readiness** — does the output check Buy Box / Featured Offer, stock, price, promotion and listing state before blaming ads when conversion breaks?
+6. **Action gate** — is the decision no more aggressive than the evidence supports?
+7. **Execution boundary** — does the repository keep live mutation outside the Skill layer?
+8. **Decision usefulness** — does the run produce a clear `Act / Hold / Experiment / Manual Review` outcome with evidence and next measurement?
 
 ## Expected decision levels
 
@@ -77,25 +78,39 @@ Prefer synthetic data over copied client data. Never store account credentials, 
 
 Fixtures should preserve the causal structure of a real case while using synthetic identifiers and values.
 
-## Initial regression pack
+## Regression pack
+
+### Scope and targeting safety
 
 - `fixtures/mixed-asin-negative-blocked.json` — prevents a zero-order search term from becoming an execution-ready negative when another advertised ASIN may benefit.
+
+### Change-history and attribution safety
+
 - `fixtures/pending-bid-change-hold.json` — prevents an immediate reversal while a recent bid change is still inside its validation window.
+- `fixtures/post-change-attribution-lag.json` — prevents an immature conversion window from being mislabeled as a failed change when the expected delivery mechanism is moving correctly.
+- `fixtures/application-status-unknown.json` — prevents improved business results from being credited to a mutation that lacks trusted readback.
+
+### Retail-readiness safety
+
+- `fixtures/retail-readiness-conversion-shock.json` — blocks aggressive traffic suppression when a confirmed Featured Offer loss better explains the CVR collapse.
+
+### Growth and marginal-efficiency safety
+
 - `fixtures/proven-winner-budget-growth.json` — verifies that profitable demand plus credible headroom can become a guarded scaling candidate without escalating to live execution.
+- `fixtures/budget-exhausted-no-headroom.json` — prevents budget exhaustion from being treated as automatic scaling proof when marginal CPC rises, CVR falls and profitability is near break-even.
 
 ## Future additions
 
 Prioritize fixtures for:
 
 - promotion-period false positives;
-- Buy Box / stockout conversion shocks;
-- post-change `application_status=unknown`;
+- stockout conversion shocks distinct from Featured Offer loss;
 - negative keyword attachment mistakes;
 - placement modifier + bid interaction;
-- attribution-lag false failures;
-- budget exhaustion without marginal headroom;
 - previous winner stopped converting vs genuinely irrelevant query;
 - experiment contamination;
-- profitability conflict with apparent ROAS growth.
+- profitability conflict with apparent ROAS growth;
+- campaign restructure that changes entity IDs and invalidates stale optimization memory;
+- partial application where only some intended entities changed.
 
 The eval suite should grow from observed failure modes, not from a desire to maximize fixture count.
