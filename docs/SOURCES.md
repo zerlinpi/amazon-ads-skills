@@ -8,6 +8,8 @@ This repository does not copy third-party skill text wholesale. Public repositor
 
 Reviewed for thin `SKILL.md + references`, performance-drop diagnosis, contribution analysis, retail context, control-change timelines, Mixed-ASIN safety, negative attachment verification, growth headroom, post-change readback, optimization memory and approval-gated mutation concepts.
 
+A recent review also reinforced two Amazon-domain reliability ideas: retail intelligence should carry freshness/coverage labels before trend claims, and parent/child variation changes belong in retail-readiness diagnosis when they can explain ASIN-level conversion shifts.
+
 Only generic concepts were adopted. Vendor-specific APIs, storage implementations and fixed click/order/spend thresholds were not imported.
 
 Repository: https://github.com/nospicyplease/amazon-ppc-advanced-skills
@@ -48,6 +50,14 @@ MIT-licensed multi-tenant application reviewed only for the generic engineering 
 No Open Mercato code, ACL model, schemas, or prose were copied. The concept was independently adapted to Amazon Ads optimization memory as a collision-safety rule: marketplace + profile/account scope must be resolved before entity ID/name history is merged or reused.
 
 Repository: https://github.com/open-mercato/open-mercato
+
+### datascale-ai/data_engineering_book
+
+MIT-licensed data-engineering reference reviewed only for generic provenance/freshness concepts: heterogeneous sources have different ingestion paths and update frequencies, and useful data products should retain metadata such as source, ingestion timestamp and lineage rather than presenting all downstream rows as measurement-equivalent.
+
+No chapter text, diagrams, code or templates were copied. The generic idea was independently adapted into `references/data-lineage.md` for Amazon Ads: distinguish extraction time from event-date completeness, record attribution/semantic/filter scope, and reconcile source transitions before treating an apparent metric break as a business break.
+
+Repository: https://github.com/datascale-ai/data_engineering_book
 
 ### unifyai/unify
 
@@ -119,6 +129,8 @@ Some additions are not copied from an external repository at all. They are indep
 Examples:
 
 - **Retail snapshot freshness** — a Buy Box, inventory, price or listing snapshot only proves the state at the timestamp it observed. If that snapshot predates a later conversion decline, it must not be used as current-state proof to justify aggressive traffic suppression.
+- **Source-lineage drift** — the same metric name can come from different attribution definitions, refresh lags, filters, grains or semantic versions. A source switch near an apparent break point is a competing cause until a same-source replay or overlap reconciliation shows the business movement is real.
+- **Parent/variation-family retail shock** — a child campaign can lose attributed conversion while ad traffic remains stable because family structure, sibling price/promotion, sibling availability or purchased-ASIN mix changed. Child-level deterioration is not automatically ad inefficiency when family-level evidence points to substitution.
 - **Verified entity migration lineage** — a deliberate restructure can preserve useful predecessor history, but only through an explicit auditable predecessor→successor mapping. Historical evidence may transfer as bounded context; successor Bid/Budget/State/readback never transfers as current truth.
 - **Portfolio opportunity cost** — under a fixed business budget pool, locally attractive campaign increases can be mutually incompatible. A reallocation must identify the funding source, protected floors, marginal headroom and source opportunity cost.
 - **Treatment/control interference** — a cohort can improve because it captures traffic, auction opportunity or budget that would otherwise have served the comparison cohort. When displacement is plausible, combined/pool outcomes and control-boundary integrity matter more than treatment-only lift.
@@ -152,17 +164,20 @@ Before adopting an external idea:
 19. If treatment and control share a constrained budget/pacing resource, distinguish incremental performance from resource redistribution/starvation.
 20. If sibling child ASINs can substitute, evaluate parent-family outcomes and purchased-ASIN crossover before claiming child-level incrementality.
 21. Revalidate control boundaries after material scope-changing events during long experiments; launch-time isolation is not permanent evidence.
-22. Treat partial application as a realized treatment different from intended treatment.
-23. Do not compare promotion-contaminated windows as ordinary evergreen baselines.
-24. Treat stockout/retail-readiness failures as causal gates before traffic suppression.
-25. Treat stale retail snapshots as historical evidence, not current-state proof.
-26. Resolve marketplace + profile/account scope before merging optimization memory. Missing, ambiguous or colliding scope must fail closed.
-27. Do not transfer entity memory across recreated IDs without verified identity mapping; verified migrations may carry bounded historical context but never clone successor current state.
-28. Treat timeout/unknown mutation outcomes as unresolved until readback/reconciliation or executor-level idempotency makes repetition safe.
-29. Stable idempotency keys must stay bound to the same stable intent and payload; a new value is a new intent.
-30. Trusted current-state readback overrides earlier executor acknowledgement when the states disagree; classify the difference as drift/partial/unresolved before outcome attribution.
-31. Do not equate higher ROAS or revenue with higher profit; use contribution economics when the business objective is profitability.
-32. A historically proven relevant query that temporarily has zero orders should be diagnosed as a possible conversion break before being treated as irrelevant traffic.
-33. A declared experiment allocation does not prove realized allocation integrity; unexplained imbalance must be investigated before causal rollout.
-34. Under a fixed budget pool, reconcile source and destination allocations and evaluate source opportunity cost; campaign-local efficiency does not prove portfolio-level optimality.
-35. Record reviewed sources here when they materially influence the project.
+22. For cross-source comparisons, distinguish `extracted_at` from `available_through` and verify attribution, scope, grain, filters and semantic compatibility before treating deltas as one continuous series.
+23. Treat a source/reporting switch near an apparent performance break as a competing explanation until reconciled.
+24. Treat parent/variation-family and sibling retail changes as upstream causal candidates when child-level conversion moves while ad delivery stays stable.
+25. Treat partial application as a realized treatment different from intended treatment.
+26. Do not compare promotion-contaminated windows as ordinary evergreen baselines.
+27. Treat stockout/retail-readiness failures as causal gates before traffic suppression.
+28. Treat stale retail snapshots as historical evidence, not current-state proof.
+29. Resolve marketplace + profile/account scope before merging optimization memory. Missing, ambiguous or colliding scope must fail closed.
+30. Do not transfer entity memory across recreated IDs without verified identity mapping; verified migrations may carry bounded historical context but never clone successor current state.
+31. Treat timeout/unknown mutation outcomes as unresolved until readback/reconciliation or executor-level idempotency makes repetition safe.
+32. Stable idempotency keys must stay bound to the same stable intent and payload; a new value is a new intent.
+33. Trusted current-state readback overrides earlier executor acknowledgement when the states disagree; classify the difference as drift/partial/unresolved before outcome attribution.
+34. Do not equate higher ROAS or revenue with higher profit; use contribution economics when the business objective is profitability.
+35. A historically proven relevant query that temporarily has zero orders should be diagnosed as a possible conversion break before being treated as irrelevant traffic.
+36. A declared experiment allocation does not prove realized allocation integrity; unexplained imbalance must be investigated before causal rollout.
+37. Under a fixed budget pool, reconcile source and destination allocations and evaluate source opportunity cost; campaign-local efficiency does not prove portfolio-level optimality.
+38. Record reviewed sources here when they materially influence the project.
