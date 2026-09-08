@@ -75,6 +75,10 @@
           "type": ["string", "null"],
           "enum": ["Bounded", "Directional Only", "Rejected", "Unknown", null]
         },
+        "portability_constraints": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
         "predecessor_entities": {
           "type": "array",
           "items": {
