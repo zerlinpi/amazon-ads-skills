@@ -2,7 +2,7 @@
 
 Load this shared reference when a decision touches an entity with prior optimization activity, when a previous action may still be maturing, or when the user asks for historical context.
 
-The goal is not to create a generic long-term memory system. It is to preserve enough decision lineage to prevent duplicate, contradictory, stale, or falsely attributed Amazon Ads optimizations.
+The goal is not to create a generic long-term memory system. It is to preserve enough decision lineage to prevent duplicate, contradictory, stale, cross-scope, or falsely attributed Amazon Ads optimizations.
 
 ## Core principle
 
@@ -92,30 +92,46 @@ The storage/retrieval layer should preserve scope fields alongside the local ent
 
 ## Verified migration lineage
 
-A deliberate restructure can replace an entity with a new ID while preserving some business intent. This is different from assuming that two similarly named entities are the same.
+A deliberate restructure can replace an entity with a new ID or move it to another profile while preserving some business intent. This is different from assuming that two similarly named entities are the same.
 
-History may cross an ID boundary only when there is explicit migration evidence such as a trusted bulk-operation record, migration manifest, connector event, or another auditable mapping that links predecessor and successor.
+History may cross an ID or profile boundary only when there is explicit migration evidence such as a trusted bulk-operation record, migration manifest, connector event, or another auditable mapping that links predecessor and successor.
 
 A migration record should capture when available:
 
-- predecessor entity type/id and scope;
-- successor entity type/id and scope;
+- predecessor entity type/id and marketplace/profile scope;
+- successor entity type/id and marketplace/profile scope;
 - migration timestamp and reason;
 - verification source;
+- scope-transition type;
 - whether targeting semantics/match type were preserved;
 - whether advertised-ASIN scope was preserved;
 - whether business role/objective was preserved;
 - continuity status: `Verified`, `Partial`, `Rejected`, or `Unknown`.
+
+### Scope-transition types
+
+Use when helpful:
+
+- `same_scope` — predecessor/successor remain in the same marketplace/profile scope;
+- `cross_profile_same_marketplace` — profile/account scope changed inside the same marketplace;
+- `cross_marketplace` — marketplace changed;
+- `unknown` — transition scope is not reliably known.
+
+A cross-profile mapping is **not** a collision when it is explicit, audited and attached to the successor as lineage. However, it does not make the predecessor's live state current in the successor profile.
+
+For `cross_marketplace` transitions, default continuity to `Partial` unless strong evidence shows the specific historical fact remains portable. Auction conditions, currency, retail context, demand, attribution, and marketplace mechanics can change enough that performance outcomes should normally be treated as directional context rather than directly portable proof.
 
 ### What may transfer
 
 When continuity is `Verified`, mature historical evidence may be used as bounded context, for example:
 
 - historical relevance;
-- mature profitability/efficiency patterns;
+- mature profitability/efficiency patterns when economics and marketplace context remain compatible;
 - prior hypotheses and tested actions;
 - known failure modes;
 - predecessor relationship for audit lineage.
+
+For a verified `cross_profile_same_marketplace` migration, the above context may be retrieved after current-scope history and clearly labeled as predecessor evidence.
 
 ### What must not transfer as current truth
 
@@ -133,7 +149,7 @@ Even with verified lineage, do not copy the predecessor's last known:
 
 The successor's current state must come from successor-specific trusted readback or source data.
 
-If targeting semantics, ASIN scope, objective, or route changed materially, downgrade continuity to `Partial` or `Rejected`. Preserve lineage for auditability without treating the predecessor and successor as literally identical entities.
+If targeting semantics, ASIN scope, objective, route, marketplace, or important economics changed materially, downgrade continuity to `Partial` or `Rejected`. Preserve lineage for auditability without treating the predecessor and successor as literally identical entities.
 
 ## Event lifecycle
 
@@ -214,7 +230,9 @@ Expose warnings such as:
 - `legacy changelog only`;
 - `event gap detected`;
 - `identity scope incomplete`;
-- `cross-profile collision detected`.
+- `cross-profile collision detected`;
+- `migration mapping partial`;
+- `cross-marketplace portability limited`.
 
 Do not silently treat a partial ledger as complete account history.
 
@@ -233,13 +251,15 @@ For mutually conflicting events, prefer current trusted readback for state, but 
 
 For a new optimization decision, retrieve in this order:
 
-1. resolve marketplace + profile/account scope and reject cross-scope collisions;
+1. resolve marketplace + profile/account scope and reject accidental cross-scope collisions;
 2. same entity + same control, most recent first;
-3. verified predecessor history when an explicit migration mapping exists;
+3. verified predecessor history only when an explicit migration mapping links it to the requested successor;
 4. same entity, other controls in the overlapping window;
 5. parent campaign/ad-group/product-ad changes;
 6. active experiments containing the entity;
 7. recent account-wide or portfolio controls that materially affect delivery.
+
+For cross-profile migrations, keep predecessor events labeled with their original scope. Do not rewrite them as if they originated in the successor profile.
 
 Keep the returned slice bounded. Do not dump the whole account history into context.
 
@@ -255,7 +275,7 @@ A derived summary should answer:
 - Is evaluation complete?
 - What was the outcome?
 - Is a rollback condition active?
-- Is there a verified predecessor/successor lineage?
+- Is there a verified predecessor/successor lineage or profile transition?
 - Are there unresolved events or memory-quality warnings?
 - When is the next decision point?
 
@@ -285,12 +305,13 @@ When memory materially affects a recommendation, include:
 
 - `history_status`;
 - identity-scope status and warnings;
-- marketplace/profile scope used for retrieval;
+- marketplace/profile scope used for current-entity retrieval;
 - latest relevant action and timestamp;
 - application/readback status;
 - validation maturity;
 - latest outcome;
-- identity-lineage status when migration is relevant;
+- identity-lineage and scope-transition status when migration is relevant;
+- predecessor scope when predecessor evidence is used;
 - unresolved conflicts or warnings;
 - whether the new proposal is `Allowed`, `Hold`, `Experiment Only`, or `Manual Review`;
 - the event IDs supporting the decision when available.
