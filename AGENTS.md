@@ -9,6 +9,7 @@ This repository contains reusable Amazon Ads Agent Skills. The canonical busines
 - Treat every `skills/*/SKILL.md` as an independently invocable skill.
 - Read only the matching skill first; load shared files from `references/` and `schemas/` only when needed.
 - For cross-domain requests, use `skills/amazon-ads-optimizer/SKILL.md` as the orchestrator.
+- When the task asks whether a previous optimization worked, route to `skills/post-change-review/SKILL.md` before proposing another edit on the same entity.
 - Do not duplicate business logic into this file.
 
 ## Default operating mode
@@ -27,16 +28,20 @@ Modes:
 - Do not recommend aggressive bid/budget changes when sample size is insufficient.
 - Check marketplace, currency, timezone, attribution window, date range, promotion context, and data freshness before high-confidence recommendations.
 - Treat Prime Day, Best Deal, Lightning Deal, Coupon, Prime-exclusive promotions, stockouts, listing suppression, and major price changes as confounders.
+- Before reversing or stacking another action on the same entity, check whether a recent action is still inside its validation window when history is available.
 - Do not place credentials, refresh tokens, client secrets, profile IDs, account IDs, or customer secrets in generated files or logs.
 - Any `Execute` plan must include evidence, confidence, guardrails, validation window, and rollback criteria.
+- A `Rollback Candidate` is a proposal only; this repository does not perform the rollback itself.
 
 ## Shared references
 
 - Metrics: `references/amazon-ads-metrics.md`
 - Optimization framework: `references/optimization-framework.md`
 - Decision boundaries: `references/decision-boundaries.md`
+- Benchmark policy: `references/benchmark-policy.md`
 - Canonical data model: `references/data-schema.md`
-- Machine-readable schemas: `schemas/*.json`
+- Action proposal schema: `schemas/optimization-action.json`
+- Action/readback/evaluation event schema: `schemas/optimization-event.json`
 
 ## Contribution rules
 
