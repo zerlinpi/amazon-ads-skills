@@ -1,0 +1,86 @@
+{
+  "id": "cross-marketplace-portability-limit",
+  "title": "Do not treat verified cross-marketplace predecessor performance as directly portable proof",
+  "entrypoint": "skills/amazon-ads-optimizer/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "A seller launches a closely equivalent product/keyword structure in JP using a verified business mapping from a mature US predecessor. The US entity was historically profitable and responded well to a bid increase. The request asks whether the JP successor can inherit the US bid and scaling conclusion.",
+  "inputs": {
+    "requested_entity": {
+      "marketplace": "JP",
+      "profile_scope": "profile-jp-new",
+      "type": "keyword",
+      "id": "kw-jp-901",
+      "control_dimension": "bid"
+    },
+    "successor_current_context": {
+      "currency": "JPY",
+      "timezone": "Asia/Tokyo",
+      "current_bid": 165,
+      "orders": 4,
+      "spend": 7800,
+      "attribution_mature": false,
+      "retail_readiness": "current and purchasable"
+    },
+    "migration_mapping": {
+      "verified": true,
+      "scope_transition_type": "cross_marketplace",
+      "predecessor": {
+        "marketplace": "US",
+        "profile_scope": "profile-us-legacy",
+        "type": "keyword",
+        "id": "kw-us-144"
+      },
+      "successor": {
+        "marketplace": "JP",
+        "profile_scope": "profile-jp-new",
+        "type": "keyword",
+        "id": "kw-jp-901"
+      },
+      "business_intent_preserved": true,
+      "targeting_semantics_preserved": true,
+      "product_equivalence": "verified business mapping",
+      "mapping_timestamp": "2026-09-03T00:00:00Z"
+    },
+    "predecessor_mature_history": {
+      "currency": "USD",
+      "historical_relevance": "strong",
+      "profitability_pattern": "mature_profitable",
+      "last_known_bid": 1.25,
+      "last_action": "bid increase",
+      "last_outcome": "Worked / Keep",
+      "mature_cvr": 0.12,
+      "mature_cpc": 1.48
+    },
+    "market_context_differences": {
+      "currency": "different",
+      "auction_conditions": "not calibrated",
+      "search_demand": "not calibrated",
+      "retail_price_position": "different",
+      "competitive_set": "unknown",
+      "conversion_baseline": "insufficient JP evidence"
+    }
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["directional", "hold", "manual_review"],
+    "forbidden_behaviors": [
+      "Copy or currency-convert the US predecessor bid into the JP successor as an action-safe recommendation.",
+      "Treat the US Worked/Keep outcome as proof that the same bid direction or magnitude will work in JP.",
+      "Transfer US CPC, CVR, profitability thresholds, target economics, or validation state as JP current truth.",
+      "Reject all predecessor evidence merely because the marketplace changed; verified historical relevance or known failure modes may still be useful as hypotheses.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The predecessor/successor relationship is verified, but cross-marketplace continuity is weaker than same-marketplace continuity.",
+      "Historical relevance, business intent, and known failure modes may transfer as bounded directional context, while bid magnitude and performance outcomes require JP-specific evidence.",
+      "Currency, auction conditions, demand, retail positioning, competition, and conversion economics can break direct portability even when targeting semantics are similar.",
+      "The JP successor needs its own mature baseline or controlled test before a performance-based scaling conclusion becomes action-safe."
+    ],
+    "rubric": [
+      {"criterion": "scope_safety", "requirement": "Preserve both marketplace/profile scopes and classify the mapping as a cross-marketplace transition."},
+      {"criterion": "history_safety", "requirement": "Allow only bounded portable context from the predecessor and reject cloning of performance outcomes or current state."},
+      {"criterion": "economic_integrity", "requirement": "Recognize that currency and marketplace economics invalidate direct transfer of bid/CPC/CVR/profitability conclusions."},
+      {"criterion": "action_gate", "requirement": "Use JP-specific evidence or an experiment before making an action-safe scaling recommendation."}
+    ]
+  }
+}
