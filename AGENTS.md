@@ -7,15 +7,16 @@ This repository contains reusable Amazon Ads Agent Skills. The canonical busines
 ## Skill discovery
 
 - Treat every `skills/*/SKILL.md` as an independently invocable skill.
-- Read only the matching skill first; load shared files from `references/` and `schemas/` only when needed.
+- Read only the matching skill first; load shared files from `references/`, `playbooks/` and `schemas/` only when needed.
 - For cross-domain requests, use `skills/amazon-ads-optimizer/SKILL.md` as the orchestrator.
+- For recurring weekly/Monday account reviews, start with `playbooks/weekly-review.md`, then load only specialist Skills required by material findings.
 - When the task asks whether a previous optimization worked, route to `skills/post-change-review/SKILL.md` before proposing another edit on the same entity.
 - When prior actions may overlap a new decision, load `references/optimization-memory.md` and retrieve only the bounded relevant entity history.
 - Do not duplicate business logic into this file.
 
 ## Default operating mode
 
-Default to `Suggest` mode. Analysis may propose actions, but no skill in this repository directly modifies a live Amazon Ads account.
+Default to `Suggest` mode. Analysis may propose actions, but no skill or playbook in this repository directly modifies a live Amazon Ads account.
 
 Modes:
 1. `Read-only` — inspect and explain data.
@@ -33,12 +34,14 @@ Modes:
 - Distinguish `proposed`, `applied`, `readback confirmed`, and `worked`; none of these imply the next stage automatically.
 - If history is unavailable or partial, expose that limitation instead of treating the ledger as complete.
 - Prefer `Hold`, `Experiment Only`, or `Manual Review` when application is unknown/drifted, evaluation is still pending, or a new action would contaminate an active experiment unless a safety guardrail triggered.
+- Weekly reviews must include a hold list; do not force every material entity into an action.
 - Do not place credentials, refresh tokens, client secrets, profile IDs, account IDs, or customer secrets in generated files or logs.
 - Any `Execute` plan must include evidence, confidence, guardrails, validation window, and rollback criteria.
 - A `Rollback Candidate` is a proposal only; this repository does not perform the rollback itself.
 
-## Shared references
+## Shared references and playbooks
 
+- Weekly operating cadence: `playbooks/weekly-review.md`
 - Metrics: `references/amazon-ads-metrics.md`
 - Optimization framework: `references/optimization-framework.md`
 - Decision boundaries: `references/decision-boundaries.md`
@@ -58,5 +61,7 @@ New skills must:
 - keep the core `SKILL.md` concise and progressively load shared references;
 - state required inputs, workflow, output contract, safety checks, and stop conditions;
 - output proposals rather than performing live account mutation.
+
+Add a playbook instead of a new Skill when the new material is primarily a recurring operating rhythm that composes existing Skills rather than a distinct decision capability.
 
 Shared memory/history features should prefer append-first events plus derived compact summaries rather than mutable prose logs.
