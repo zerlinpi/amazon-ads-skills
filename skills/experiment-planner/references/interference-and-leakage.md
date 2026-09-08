@@ -145,19 +145,40 @@ Do not call the treatment child an incremental winner from its own lift alone. I
 
 ## 7. Control-boundary drift during long tests
 
-A clean design at launch can become invalid later.
+A clean design at launch can become invalid later. Control integrity is a **time-varying property**, not a launch-time certificate.
 
-Re-check during the test when practical:
+Re-verify boundaries after material scope-changing events and at sensible checkpoints for long-running tests. Relevant events include:
 
-- newly created keywords/targets;
-- new negatives or routing rules;
-- campaign migrations or renamed/recreated entities;
-- automation scope changes;
-- budget-pool membership changes;
+- newly created or harvested keywords/targets;
+- new, removed, or reattached negatives/routing rules;
+- campaign/ad-group migrations or recreated entities;
+- automation/rule scope changes;
+- bulk edits that touch either cohort or a shared parent;
+- budget-pool/portfolio membership changes;
 - variation availability or parent/child structure changes;
-- promotion or retail events that affect only one cohort.
+- promotion, price, inventory, Buy Box / Featured Offer or listing-state changes that affect only one cohort.
 
-Do not assume launch-time isolation persisted through the full readout window.
+Track when possible:
+
+- `launch_boundary_verified_at`;
+- `latest_boundary_verified_at`;
+- material scope-change timestamps;
+- whether each change was reviewed against the treatment/control map;
+- the first interval where boundary integrity became `At Risk`, `Leaky`, `Interfering`, or `Unknown`.
+
+If the latest trustworthy boundary check predates a material scope-changing event, do not claim the entire later window remained clean.
+
+### Readout under drift
+
+When drift begins mid-test:
+
+1. keep the pre-drift interval separate from the affected interval;
+2. do not silently pool both intervals into one clean causal estimate;
+3. determine whether the affected interval can be excluded or separately interpreted without post-hoc cherry-picking;
+4. if the design is no longer comparable, downgrade to `Hold`, `Redesign`, `Experiment Only`, or `Manual Review`;
+5. prefer a clean rerun when the business decision requires strong causal evidence.
+
+A successful launch audit does not override later evidence of changed routing, automation, entity lineage, budget membership, or control exposure.
 
 ## 8. Integrity states
 
@@ -168,7 +189,15 @@ Use a compact interference state when useful:
 - `High` — treatment can materially change control exposure, demand, or resources;
 - `Unknown` — the required overlap/routing/resource evidence is missing.
 
-`High` or `Unknown` does not automatically mean the observed data are useless. It means causal winner claims and broad rollout require redesign, additional evidence, or a clearly directional interpretation.
+For control integrity, useful states are:
+
+- `Clean` — currently verified against the relevant scope map;
+- `At Risk` — a material scope change occurred and clean isolation is not yet re-verified;
+- `Leaky` — control receives treatment-like exposure;
+- `Interfering` — cohorts remain distinct but materially affect one another;
+- `Unknown` — evidence is insufficient to verify current boundaries.
+
+`High`, `At Risk`, `Leaky`, `Interfering`, or `Unknown` does not automatically mean the observed data are useless. It means causal winner claims and broad rollout require redesign, segmentation, additional evidence, or a clearly directional interpretation.
 
 ## 9. Redesign options
 
@@ -190,11 +219,12 @@ Before calling a treatment `Winner / Keep`:
 
 1. confirm intended treatment actually applied;
 2. verify allocation/delivery integrity;
-3. check leakage into control;
-4. check shared-auction, ASIN-family, budget, routing, and automation interference;
-5. compare combined/pool/family outcomes when displacement is possible;
-6. account for attribution maturity and retail confounders;
-7. state residual interference risk.
+3. verify control integrity across the relevant time window, not only at launch;
+4. check leakage into control;
+5. check shared-auction, ASIN-family, budget, routing, and automation interference;
+6. compare combined/pool/family outcomes when displacement is possible;
+7. account for attribution maturity and retail confounders;
+8. state residual interference and boundary-drift risk.
 
 A treatment can improve its own ROAS, orders, or contribution profit while producing no incremental account-level value if it mostly captures traffic, budget, or demand previously available to control.
 
