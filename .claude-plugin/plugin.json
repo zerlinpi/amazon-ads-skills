@@ -1,7 +1,7 @@
 {
   "name": "amazon-ads-skills",
-  "version": "0.1.0",
-  "description": "Amazon Ads AI Agent skills for auditing, monitoring, analysis, optimization and guarded advertising decisions.",
+  "version": "0.2.0",
+  "description": "Amazon Ads AI Agent skills for auditing, monitoring, causal diagnosis, optimization and guarded advertising decisions.",
   "author": {
     "name": "zerlinpi",
     "url": "https://github.com/zerlinpi"
