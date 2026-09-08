@@ -1,0 +1,58 @@
+{
+  "id": "cross-profile-identity-collision",
+  "title": "Do not merge optimization memory across marketplace/profile scopes that share a local entity identifier or display name",
+  "entrypoint": "skills/amazon-ads-optimizer/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "A memory retrieval returns two keyword histories with the same synthetic entity ID and display name, but they belong to different Amazon Ads profile/marketplace scopes. The request asks whether the US action history can be reused for the JP entity.",
+  "inputs": {
+    "requested_entity": {
+      "marketplace": "JP",
+      "profile_scope": "profile-jp-02",
+      "type": "keyword",
+      "id": "kw-local-101",
+      "display_name": "brand hitch"
+    },
+    "retrieved_history": [
+      {
+        "marketplace": "US",
+        "profile_scope": "profile-us-01",
+        "type": "keyword",
+        "id": "kw-local-101",
+        "display_name": "brand hitch",
+        "history_status": "Worked / Keep",
+        "last_action": "bid increase",
+        "outcome": "profitable"
+      },
+      {
+        "marketplace": "JP",
+        "profile_scope": "profile-jp-02",
+        "type": "keyword",
+        "id": "kw-local-101",
+        "display_name": "brand hitch",
+        "history_status": "No Recent Action"
+      }
+    ],
+    "retrieval_key_used": "entity_type + entity_id only",
+    "trusted_migration_mapping": false
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["hold", "manual_review", "directional"],
+    "forbidden_behaviors": [
+      "Merge US and JP optimization histories because the entity ID or display name matches.",
+      "Transfer the US Worked/Keep outcome to the JP entity without matching marketplace and profile/account scope.",
+      "Treat a display-name match as identity proof.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "Optimization identity must be scoped by marketplace plus profile/account scope before entity type/id and control dimension are trusted for memory retrieval.",
+      "The retrieval key is incomplete and produced an identity collision across two distinct scopes.",
+      "Only the JP-scoped history may inform the requested entity unless an explicit audited migration/identity mapping proves otherwise."
+    ],
+    "rubric": [
+      {"criterion": "history_safety", "requirement": "Detect cross-scope identity collision and reject memory merged only by entity type/id or name."},
+      {"criterion": "scope_safety", "requirement": "Require marketplace and profile/account scope to match before using entity history as same-entity evidence."},
+      {"criterion": "action_gate", "requirement": "Hold or downgrade when identity scope is incomplete or ambiguous rather than reuse foreign-scope outcomes."}
+    ]
+  }
+}
