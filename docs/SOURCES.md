@@ -8,7 +8,7 @@ This repository does not copy third-party skill text wholesale. Public repositor
 
 Reviewed for thin `SKILL.md + references`, performance-drop diagnosis, contribution analysis, retail context, control-change timelines, Mixed-ASIN safety, negative attachment verification, growth headroom, post-change readback, optimization memory and approval-gated mutation concepts.
 
-A recent review also reinforced two Amazon-domain reliability ideas: retail intelligence should carry freshness/coverage labels before trend claims, and parent/child variation changes belong in retail-readiness diagnosis when they can explain ASIN-level conversion shifts.
+A recent review also reinforced that retail intelligence should carry freshness/coverage labels before trend claims and that parent/child variation changes belong in retail-readiness diagnosis.
 
 Only generic concepts were adopted. Vendor-specific APIs, storage implementations and fixed click/order/spend thresholds were not imported.
 
@@ -20,26 +20,34 @@ Reviewed for progressive loading, contextual benchmarks, marginal-return thinkin
 
 Repository: https://github.com/AgriciDaniel/claude-ads
 
+### Ecom-Wizards-Agency/Arcana
+
+Public Amazon PPC skill repository reviewed for audit/data-quality methodology. Useful generic ideas included resolving profile-specific currency/timezone/objective, checking freshness/completeness before interpretation, aggregating additive base metrics before recomputing ratios, and reconciling account/profile totals with a complete campaign view instead of summing overlapping entity grains.
+
+A repository-level license was not found during this review. Therefore no Arcana prose, MCP contracts, HTML-report template, tool names, fixed workflow text or implementation was copied. Only generic audit principles were independently rewritten into `skills/amazon-ads-audit/references/account-audit-framework.md` and the aggregation-integrity eval.
+
+Repository: https://github.com/Ecom-Wizards-Agency/Arcana
+
 ### weisberg/agile_agentic_analytics
 
 MIT-licensed repository reviewed for experiment lifecycle, power/MDE discipline when inputs exist, sample-ratio/contamination awareness, sequential-testing caution, realized-allocation integrity, holdout/control integrity and advertising-market interference.
 
 Generic ideas that materially influenced experiment hardening:
 
-1. a declared split or nominal control does not prove correct realized assignment/delivery;
-2. in advertising markets, treatment can alter the comparison cohort through spillover or a changed auction opportunity set;
-3. experiment validity must be checked before interpreting a treatment-only KPI lift;
-4. control/assignment integrity is evidence that can become stale when the experiment environment changes.
+1. declared split/nominal control does not prove realized assignment;
+2. treatment can alter comparison cohorts through spillover or changed auction opportunities;
+3. experiment validity must be checked before interpreting treatment-only lift;
+4. control integrity can become stale when the environment changes.
 
-These concepts were independently rewritten for Amazon Ads as query/target/ASIN overlap, shared-budget/routing/automation leakage, auction displacement, constrained-resource interference and dated control-boundary revalidation. No platform-specific experiment APIs, prose or implementation details were copied. No statistical significance is fabricated when expected allocation or assignment assumptions are missing.
+These ideas were independently rewritten as Amazon Ads query/target/ASIN overlap, shared-budget/routing/automation leakage, auction displacement, constrained-resource interference and dated control-boundary revalidation.
 
 Repository: https://github.com/weisberg/agile_agentic_analytics
 
 ### ir-anthology/ir-anthology.github.io
 
-Public bibliography repository reviewed only as a discovery index for the WWW 2022 research topic **Interference, Bias, and Variance in Two-Sided Marketplace Experimentation: Guidance for Platforms**.
+Public bibliography repository reviewed only as a discovery index for the WWW 2022 topic **Interference, Bias, and Variance in Two-Sided Marketplace Experimentation: Guidance for Platforms**.
 
-The project does not copy the paper, bibliography prose, formulas, code, or implementation. The high-level marketplace lesson used here is only that interacting units can bias naive treatment/control comparisons. It is independently adapted to Amazon Ads as shared auction opportunity, shared pacing capacity and substitution between advertising scopes.
+No paper text, formulas or code were copied. The high-level interacting-units lesson was independently adapted to shared auction opportunity, pacing capacity and substitution between Amazon Ads scopes.
 
 Repository: https://github.com/ir-anthology/ir-anthology.github.io
 
@@ -47,29 +55,29 @@ Repository: https://github.com/ir-anthology/ir-anthology.github.io
 
 MIT-licensed multi-tenant application reviewed only for the generic engineering principle that tenant/organization scope should be explicitly carried through requests and sensitive access paths should fail closed when scope is missing or invalid.
 
-No Open Mercato code, ACL model, schemas, or prose were copied. The concept was independently adapted to Amazon Ads optimization memory as a collision-safety rule: marketplace + profile/account scope must be resolved before entity ID/name history is merged or reused.
+No ACL/code/schema was copied. The concept was independently adapted to marketplace + profile/account collision-safe optimization memory.
 
 Repository: https://github.com/open-mercato/open-mercato
 
 ### datascale-ai/data_engineering_book
 
-MIT-licensed data-engineering reference reviewed only for generic provenance/freshness concepts: heterogeneous sources have different ingestion paths and update frequencies, and useful data products should retain metadata such as source, ingestion timestamp and lineage rather than presenting all downstream rows as measurement-equivalent.
+MIT-licensed data-engineering reference reviewed only for generic provenance/freshness concepts: heterogeneous sources have different ingestion paths/update frequencies, and downstream data should preserve source, timestamps and lineage rather than pretending all rows are measurement-equivalent.
 
-No chapter text, diagrams, code or templates were copied. The generic idea was independently adapted into `references/data-lineage.md` for Amazon Ads: distinguish extraction time from event-date completeness, record attribution/semantic/filter scope, and reconcile source transitions before treating an apparent metric break as a business break.
+The project does not copy chapter text, diagrams, code or templates. The idea was independently adapted into `references/data-lineage.md`: distinguish extraction time from event-date completeness, preserve semantic/filter/attribution context, and treat mutable historical backfill maturity as part of measurement comparability.
 
 Repository: https://github.com/datascale-ai/data_engineering_book
 
 ### open-metadata/OpenMetadata
 
-Apache-2.0 data-governance project reviewed only for the generic idea that metrics and data contracts are first-class governed metadata rather than anonymous column labels. This supports an explicit measurement-identity rule: a metric's definition/version belongs in lineage when downstream decisions depend on longitudinal comparability.
+Apache-2.0 data-governance project reviewed only for the generic idea that metrics/data contracts are first-class governed metadata rather than anonymous column labels. This supports treating metric definition/version as part of measurement identity.
 
-No OpenMetadata code, schemas, generated types, UI, API contracts or prose were copied. The idea was independently adapted into `metric_semantics` metadata and the `semantic-metric-version-drift` eval.
+No OpenMetadata code, schemas, generated types, UI, API contracts or prose were copied.
 
 Repository: https://github.com/open-metadata/OpenMetadata
 
 ### unifyai/unify
 
-MIT-licensed repository reviewed for separating deterministic contract tests from end-to-end capability evals and for treating capability failures as semantic/system-design failures rather than only code failures. Rewritten as `contract checks` vs `capability replay` in `evals/README.md`.
+MIT-licensed repository reviewed for separating deterministic contract tests from end-to-end capability evals and for treating capability failures as semantic/system-design failures rather than only code failures. Rewritten as `contract checks` vs `capability replay`.
 
 Repository: https://github.com/unifyai/unify
 
@@ -81,7 +89,7 @@ Repository: https://github.com/Observal/Observal
 
 ### TheQtCompanyRnD/agent-skills
 
-Reviewed for a canonical skills tree shared across multiple agent runtimes, portable `SKILL.md + references`, and platform-specific manifests separated from business logic.
+Reviewed for a canonical skills tree shared across multiple agent runtimes, portable `SKILL.md + references`, and runtime-specific manifests separated from business logic.
 
 Repository: https://github.com/TheQtCompanyRnD/agent-skills
 
@@ -93,24 +101,19 @@ Repository: https://github.com/noique/cross-border-ecommerce-skills
 
 ### heymoezy/porter
 
-Reviewed only for the generic experiment anti-pattern that bundled concurrent changes destroy causal attribution. A repository-level license was not verified during review, so no prose, code, templates or implementation details were imported.
+Reviewed only for the generic experiment anti-pattern that bundled concurrent changes destroy causal attribution. A repository-level license was not verified during review, so no prose/code/templates were imported.
 
 Repository: https://github.com/heymoezy/porter
 
 ### paperclipai/paperclip
 
-Reviewed for generic execution-reliability patterns: partial application, ambiguous delivery, reconciliation and retry/idempotency. No implementation was imported. This repository keeps idempotency in the external Connector/Executor and uses Skills only to reason about `Unknown / Partial / Drifted` states.
+Reviewed for generic execution-reliability patterns: partial application, ambiguous delivery, reconciliation and retry/idempotency. No implementation was imported. Idempotency remains an external Connector/Executor concern.
 
 Repository: https://github.com/paperclipai/paperclip
 
 ### prathamesh-git9/effect-broker
 
-Reviewed for a particularly useful distinction between three side-effect classes: safely idempotent, reconcilable after uncertain delivery, and unsafe-to-repeat when neither guarantee exists. The important generic idea adopted here is **stable intent + explicit idempotency contract + authoritative reconciliation**.
-
-This project does not import effect-broker code or prose. The idea was independently adapted into two complementary Amazon Ads evals:
-
-- ambiguous mutation without trusted readback/idempotency → block blind retry;
-- same stable intent with the same idempotency key and an explicit executor deduplication contract → connector-level retry may be safe, while application status still remains unconfirmed until reconciliation/readback.
+Reviewed for the distinction between safely idempotent, reconcilable-after-uncertain-delivery, and unsafe-to-repeat side effects. Independently adapted as **stable intent + explicit idempotency contract + authoritative reconciliation**.
 
 Repository: https://github.com/prathamesh-git9/effect-broker
 
@@ -118,36 +121,37 @@ Repository: https://github.com/prathamesh-git9/effect-broker
 
 MIT-licensed multi-agent-compatible Amazon skill collection reviewed for public Amazon-domain coverage, portable skill packaging, profitability modeling, multi-campaign strategy and portfolio-level budget thinking.
 
-No skill prose, templates, fixed thresholds or fixed percentage budget rules were copied. The useful generic ideas retained are: budget allocation must reflect business objectives/product economics, and cross-campaign/portfolio decisions should not be reduced to one campaign's historical ACoS/ROAS.
+No skill prose/templates/fixed thresholds were copied. Generic ideas retained: allocation reflects objective/economics, and cross-campaign decisions should not reduce to one campaign's historical ACoS/ROAS.
 
 Repository: https://github.com/nexscope-ai/Amazon-Skills
 
 ### MicrosoftDocs/Advertising
 
-Official Microsoft Advertising documentation repository reviewed only for a vendor-neutral portfolio-budget lesson: when campaign controls share a constrained budget resource, partially overlapping control scopes can interfere with each other, so budget/control boundaries need to align before interpreting performance independently.
+Official Microsoft Advertising docs repository reviewed only for a vendor-neutral portfolio-budget lesson: controls sharing a constrained resource can interfere when control scopes do not align.
 
-No Microsoft-specific product behavior is asserted as Amazon Ads behavior. The generic concept was independently rewritten as a business-budget-pool / external-pacing conflict model for Amazon Ads Agents.
+No Microsoft-specific behavior is asserted as Amazon Ads behavior. The generic concept was independently rewritten as budget-pool/external-pacing conflict logic.
 
 Repository: https://github.com/MicrosoftDocs/Advertising
 
 ## Internal method hardening from observed failure modes
 
-Some additions are not copied from an external repository at all. They are independent safety hardening derived from the repository's existing causal model and regression gaps.
+Some additions are independent safety hardening rather than adaptations of a single external source:
 
-Examples:
-
-- **Retail snapshot freshness** — a Buy Box, inventory, price or listing snapshot only proves the state at the timestamp it observed. If that snapshot predates a later conversion decline, it must not be used as current-state proof to justify aggressive traffic suppression.
-- **Source-lineage drift** — the same metric name can come from different attribution definitions, refresh lags, filters, grains or semantic versions. A source switch near an apparent break point is a competing cause until a same-source replay or overlap reconciliation shows the business movement is real.
-- **Semantic metric-version drift** — even one stable table/column can change meaning across a semantic-version cutover. If history is not backfilled to one definition, the cutover is a competing explanation for the apparent KPI break and requires same-version replay or overlap calibration.
-- **Parent/variation-family retail shock** — a child campaign can lose attributed conversion while ad traffic remains stable because family structure, sibling price/promotion, sibling availability or purchased-ASIN mix changed. Child-level deterioration is not automatically ad inefficiency when family-level evidence points to substitution.
-- **Verified entity migration lineage** — a deliberate restructure can preserve useful predecessor history, but only through an explicit auditable predecessor→successor mapping. Historical evidence may transfer as bounded context; successor Bid/Budget/State/readback never transfers as current truth.
-- **Verified cross-profile migration** — a profile change is not an accidental collision when a trusted migration manifest explicitly links predecessor and successor. Mature predecessor evidence may remain bounded context, but predecessor live state, pending validation, readback and experiment assignment never become successor current state.
-- **Portfolio opportunity cost** — under a fixed business budget pool, locally attractive campaign increases can be mutually incompatible. A reallocation must identify the funding source, protected floors, marginal headroom and source opportunity cost.
-- **Treatment/control interference** — a cohort can improve because it captures traffic, auction opportunity or budget that would otherwise have served the comparison cohort. When displacement is plausible, combined/pool outcomes and control-boundary integrity matter more than treatment-only lift.
-- **Shared-budget starvation** — if treatment spends more from the same fixed pool and mechanically reduces control capacity, treatment growth is a redistribution signal until pool-level incrementality is demonstrated.
-- **Variation-family substitution** — when treatment and control advertise sibling child ASINs, child-level growth can be a family mix shift. Parent-family totals and purchased-ASIN crossover are required before claiming child-level incrementality.
-- **Long-test control-boundary drift** — a control verified at launch can become invalid after keyword/target harvesting, negative changes, automation scope changes, migrations, budget-pool changes, or other scope edits. Boundary evidence must be dated and revalidated after material changes.
-- **Collision-safe optimization identity** — same entity ID/text/name is not enough when memory spans multiple marketplace/profile scopes. Scope-incomplete or conflicting history must fail closed rather than silently merge outcomes.
+- **Retail snapshot freshness** — a Buy Box/inventory/price/listing snapshot proves only the state/time it observed.
+- **Source-lineage drift** — same metric name can hide different attribution, refresh, filters, grain or semantic meaning.
+- **Semantic metric-version drift** — one stable table/column can change meaning across a semantic cutover.
+- **Asymmetric backfill drift** — same source + same metric version can still be incomparable when a frozen baseline is D+1 while a post window is D+7 and historical rows restate.
+- **Audit aggregation integrity** — profile/campaign/keyword/search-term/placement views overlap; choose one canonical additive grain, reconcile complete parent/child totals, and recompute ratio metrics from additive components.
+- **Parent/variation-family retail shock** — child conversion can move because family structure/sibling retail/purchased-ASIN mix changed.
+- **Verified migration lineage** — explicit predecessor→successor mappings may preserve bounded historical context but never clone current state.
+- **Verified cross-profile migration** — explicit same-marketplace profile moves are distinct from accidental cross-profile collisions.
+- **Cross-marketplace portability limit** — verified mapping may preserve semantic relevance/business intent/failure patterns, but marketplace-specific bid/CPC/CVR/ACOS/ROAS/budget/profitability outcomes default to directional-only evidence until successor-market calibration.
+- **Portfolio opportunity cost** — fixed business budget pools require source opportunity-cost reasoning.
+- **Treatment/control interference** — treatment lift can be traffic/budget displacement rather than incrementality.
+- **Shared-budget starvation** — treatment can mechanically consume control capacity.
+- **Variation-family substitution** — child-level growth can be a family mix shift.
+- **Long-test control-boundary drift** — control cleanliness is time-varying evidence.
+- **Collision-safe optimization identity** — same entity text/ID is insufficient across marketplace/profile scopes.
 
 ## Integration rules
 
@@ -156,7 +160,7 @@ Before adopting an external idea:
 1. Prefer generic methodology over vendor-specific APIs.
 2. Do not copy substantial third-party prose.
 3. Do not import private/client data.
-4. Treat fixed thresholds and fixed action percentages as optional heuristics unless supported by account evidence; do not make them universal defaults.
+4. Treat fixed thresholds/action percentages as optional heuristics unless supported by account evidence.
 5. Preserve `Read-only / Suggest / Shadow / Execute` boundaries.
 6. Keep detailed knowledge in references/playbooks for progressive loading.
 7. Keep canonical business logic runtime neutral.
@@ -169,27 +173,29 @@ Before adopting an external idea:
 14. Never weaken a regression fixture merely to make a model pass.
 15. Verify negative/control attachment scope before causal attribution.
 16. Treat coupled auction controls as interacting parameters.
-17. Treat experiment contamination, unexplained allocation mismatch, treatment leakage or treatment→control interference as readout limitations.
-18. Treatment-only improvement is not proof of incrementality when treatment and control share query/ASIN/auction/budget opportunity; inspect combined or pool-level outcomes when displacement is plausible.
-19. If treatment and control share a constrained budget/pacing resource, distinguish incremental performance from resource redistribution/starvation.
-20. If sibling child ASINs can substitute, evaluate parent-family outcomes and purchased-ASIN crossover before claiming child-level incrementality.
-21. Revalidate control boundaries after material scope-changing events during long experiments; launch-time isolation is not permanent evidence.
-22. For longitudinal comparisons, distinguish `extracted_at` from `available_through` and verify attribution, scope, grain, filters, source path and metric semantic version before treating deltas as one continuous series.
-23. Same table/column name is not proof of the same metric definition. A semantic-version cutover requires same-version replay, overlap calibration, or another deterministic bridge before high-confidence action.
-24. Treat a source/reporting switch near an apparent performance break as a competing explanation until reconciled.
-25. Treat parent/variation-family and sibling retail changes as upstream causal candidates when child-level conversion moves while ad delivery stays stable.
-26. Treat partial application as a realized treatment different from intended treatment.
-27. Do not compare promotion-contaminated windows as ordinary evergreen baselines.
-28. Treat stockout/retail-readiness failures as causal gates before traffic suppression.
-29. Treat stale retail snapshots as historical evidence, not current-state proof.
-30. Resolve marketplace + profile/account scope before merging optimization memory. Missing, ambiguous or colliding scope must fail closed.
-31. Do not transfer entity memory across recreated IDs or profiles without verified migration mapping. Verified same-marketplace cross-profile migrations may carry bounded mature evidence but never clone successor current state.
-32. Cross-marketplace migration evidence should default to `Partial`/directional portability unless marketplace-specific economics, demand and semantics are explicitly shown compatible.
-33. Treat timeout/unknown mutation outcomes as unresolved until readback/reconciliation or executor-level idempotency makes repetition safe.
-34. Stable idempotency keys must stay bound to the same stable intent and payload; a new value is a new intent.
-35. Trusted current-state readback overrides earlier executor acknowledgement when the states disagree; classify the difference as drift/partial/unresolved before outcome attribution.
-36. Do not equate higher ROAS or revenue with higher profit; use contribution economics when the business objective is profitability.
-37. A historically proven relevant query that temporarily has zero orders should be diagnosed as a possible conversion break before being treated as irrelevant traffic.
-38. A declared experiment allocation does not prove realized allocation integrity; unexplained imbalance must be investigated before causal rollout.
-39. Under a fixed budget pool, reconcile source and destination allocations and evaluate source opportunity cost; campaign-local efficiency does not prove portfolio-level optimality.
-40. Record reviewed sources here when they materially influence the project.
+17. Treat experiment contamination/allocation mismatch/leakage/interference as readout limitations.
+18. Treatment-only improvement is not incrementality proof when cohorts share demand/resources.
+19. Shared budget/pacing requires pool-level reasoning.
+20. Sibling child-ASIN substitution requires family-level/purchased-ASIN readout.
+21. Revalidate long-test boundaries after material scope changes.
+22. Longitudinal comparisons must verify source, available-through, attribution, scope, grain, filters, metric semantics and snapshot/backfill maturity.
+23. Same table/column is not proof of same metric definition.
+24. Same source/semantic version is not proof of same snapshot maturity when history can restate.
+25. Aggregate compatible base metrics first; recompute ratios; never sum overlapping entity grains as separate account traffic.
+26. Treat source/reporting switches near apparent breaks as competing explanations.
+27. Treat parent/variation-family retail changes as upstream causal candidates.
+28. Partial application is a realized treatment different from intended treatment.
+29. Do not use promotion-contaminated windows as ordinary evergreen controls.
+30. Retail-readiness failures are causal gates before traffic suppression.
+31. Stale retail snapshots are historical evidence, not current proof.
+32. Resolve marketplace + profile/account scope before merging memory.
+33. Verified same-marketplace cross-profile migrations may carry bounded mature evidence but never clone current state.
+34. Cross-marketplace migration defaults to directional evidence portability for performance/economic conclusions.
+35. Timeout/unknown writes remain unresolved until reconciliation/idempotency makes repetition safe.
+36. Stable idempotency keys stay bound to the same stable intent/payload.
+37. Trusted current-state readback overrides earlier executor acknowledgement when they disagree.
+38. Higher ROAS/revenue is not automatically higher profit.
+39. A previous winner temporarily at zero orders needs conversion-break diagnosis before negative treatment.
+40. Declared experiment allocation does not prove realized allocation integrity.
+41. Fixed budget pools require source/destination opportunity-cost reconciliation.
+42. Record reviewed sources here when they materially influence the project.
