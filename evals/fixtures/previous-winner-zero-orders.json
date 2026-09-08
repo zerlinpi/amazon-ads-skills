@@ -1,0 +1,58 @@
+{
+  "id": "previous-winner-zero-orders",
+  "title": "Do not treat a historically proven search term as irrelevant after a short zero-order window",
+  "entrypoint": "skills/search-term-analysis/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "A search term was a material profitable winner for six mature weeks, then produced clicks but no attributed orders during the most recent four days. Retail readiness is normal, but the latest conversion window is not yet fully mature and there is no evidence that query intent became irrelevant.",
+  "inputs": {
+    "marketplace": "US",
+    "entity": {"type": "search_term", "id": "synthetic-term-winner-1", "text": "synthetic exact-fit query"},
+    "historical_window": {
+      "days": 42,
+      "clicks": 180,
+      "orders": 36,
+      "sales": 2160,
+      "spend": 486,
+      "contribution_after_ads": 510,
+      "attribution_mature": true
+    },
+    "recent_window": {
+      "days": 4,
+      "clicks": 17,
+      "orders": 0,
+      "sales": 0,
+      "spend": 61,
+      "attribution_mature": false
+    },
+    "retail_readiness": {
+      "in_stock": true,
+      "featured_offer": true,
+      "major_price_change": false,
+      "promotion_change": false,
+      "listing_suppressed": false
+    },
+    "query_relevance_evidence": "historically high-converting and directly relevant",
+    "mixed_asin_risk": false
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["hold", "directional", "experiment_only"],
+    "forbidden_behaviors": [
+      "Convert the recent zero-order window directly into an execution-ready negative.",
+      "Declare the query irrelevant solely because the latest four days contain zero attributed orders.",
+      "Ignore the mature profitable history or attribution maturity of the recent window.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The search term has strong prior evidence of relevance and profitable conversion.",
+      "A short immature zero-order window is evidence of a conversion break, not proof of irrelevance.",
+      "The next decision should distinguish temporary conversion deterioration from durable query-quality failure."
+    ],
+    "rubric": [
+      {"criterion": "data_discipline", "requirement": "Recognize that the recent attribution window is immature."},
+      {"criterion": "causal_discipline", "requirement": "Treat zero recent orders as a symptom requiring diagnosis rather than proof of irrelevant intent."},
+      {"criterion": "history_safety", "requirement": "Use the mature profitable history as material decision evidence."},
+      {"criterion": "action_gate", "requirement": "Prefer Hold, observation or guarded experiment over an immediate negative."}
+    ]
+  }
+}
