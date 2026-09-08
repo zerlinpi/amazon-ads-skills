@@ -11,6 +11,7 @@ Useful patterns reviewed:
 - one operator job per skill;
 - concise `SKILL.md` with detailed logic moved to `references/`;
 - performance-drop diagnosis using exact windows, contribution analysis, retail context, control-change timelines and mixed-ASIN safety;
+- verify negative-keyword/negative-target attachment to the campaign/ad-group route before treating a change as causal or action-safe;
 - growth-opportunity analysis combining ads evidence, retail readiness, product context, headroom and incrementality questions;
 - post-change readback before judging outcome;
 - shared optimization memory before legacy changelogs;
@@ -49,6 +50,22 @@ Useful experimentation concepts reviewed:
 The repository is MIT licensed. This project does not copy its implementation or prose. The generic experimentation ideas were independently rewritten for Amazon Ads in `skills/experiment-planner/` with stricter `Suggest/Shadow` boundaries and account-specific economics, Mixed-ASIN, attribution, promotion and retail-readiness gates.
 
 Repository: https://github.com/weisberg/agile_agentic_analytics
+
+### heymoezy/porter
+
+The public `experiment-designer` skill was reviewed for generic experiment-design anti-patterns, especially the risk of testing bundled changes without an attribution strategy and the value of defining interpretation and stop criteria before launch.
+
+A repository-level license file was not verified during review. Therefore no prose, code, templates or implementation details were imported. The only retained idea is the general, independently expressed principle already consistent with this project's experiment design: material concurrent changes contaminate causal readout and should downgrade the decision to Hold / Redesign / Experiment Only rather than an action-safe rollout.
+
+Repository: https://github.com/heymoezy/porter
+
+### paperclipai/paperclip
+
+Reviewed only for a generic execution-reliability pattern: partial application and retries can require explicit idempotency/transactional thinking so repeated delivery does not silently duplicate state changes.
+
+No implementation or prose is imported. In this project the currently adopted safety boundary is narrower and connector-neutral: Post-change Review must distinguish intended treatment from realized treatment, classify partial application explicitly, require trusted readback, and avoid crediting aggregate outcomes to an action that was not fully applied. Executor idempotency is kept as a future connector concern rather than embedded in Amazon Ads Skills.
+
+Repository: https://github.com/paperclipai/paperclip
 
 ### unifyai/unify
 
@@ -125,4 +142,8 @@ Before adopting an external idea:
 12. For evals, separate contract failures from capability failures and score decision behavior instead of exact wording.
 13. Preserve `insufficient_evidence` as a real outcome when a replay cannot support a defensible pass/fail judgment.
 14. Never weaken a regression fixture merely to make the current model pass; fixtures should represent intended safe behavior.
-15. Record reviewed sources here when they materially influence the project.
+15. Verify control/negative attachment scope before converting temporal coincidence into causal attribution or an action-safe mutation.
+16. Treat coupled auction controls as interacting parameters; prefer staged changes or explicit experiments when simultaneous changes would destroy attribution.
+17. Treat experiment contamination as a readout limitation, not as a reason to cherry-pick the apparent winner.
+18. Treat partial application as a realized treatment different from the intended treatment; reconcile readback before outcome attribution.
+19. Record reviewed sources here when they materially influence the project.
