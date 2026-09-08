@@ -65,7 +65,7 @@ Historical Replay / Eval Fixtures
 
 `evals/README.md` 定义 Contract checks + Capability replay。Capability Eval 使用 `met / not_met / insufficient_evidence`，比较决策行为而不是 exact wording。
 
-当前 regression pack 已覆盖 **29 类关键安全风险**：Mixed-ASIN 误否词、Negative attachment 错层级、Previous Winner 短期 0 单、Pending Change 反复调参、Bid×Placement 联动、Featured Offer / Buy Box 冲击、Stockout 转化冲击、stale retail snapshot、Promotion baseline 假异常、Attribution Lag 假失败、Unknown Application 错误归因、Partial Application、未验证 stale entity identity、cross-profile identity collision、verified deliberate entity migration、blind retry、显式 idempotency safe retry、readback 与 intended state 不一致、Experiment contamination、Sample Ratio / Allocation Integrity 异常、control-group treatment leakage、auction interference / traffic displacement、shared-budget experiment starvation、parent/child ASIN substitution、long-test control-boundary drift、portfolio fixed-budget local optimum conflict、Proven Winner 合理扩量、Budget exhausted 但无 marginal headroom、ROAS 增长但贡献利润恶化。
+当前 regression pack 已覆盖 **31 类关键安全风险**：Mixed-ASIN 误否词、Negative attachment 错层级、Previous Winner 短期 0 单、Data-source lineage drift、Pending Change 反复调参、Bid×Placement 联动、Featured Offer / Buy Box 冲击、Stockout 转化冲击、stale retail snapshot、parent-level retail shock、Promotion baseline 假异常、Attribution Lag 假失败、Unknown Application 错误归因、Partial Application、未验证 stale entity identity、cross-profile identity collision、verified deliberate entity migration、blind retry、显式 idempotency safe retry、readback 与 intended state 不一致、Experiment contamination、Sample Ratio / Allocation Integrity 异常、control-group treatment leakage、auction interference / traffic displacement、shared-budget experiment starvation、parent/child ASIN substitution、long-test control-boundary drift、portfolio fixed-budget local optimum conflict、Proven Winner 合理扩量、Budget exhausted 但无 marginal headroom、ROAS 增长但贡献利润恶化。
 
 执行完整性原则：
 
@@ -78,9 +78,12 @@ safe retry ≠ application confirmed
 same keyword text ≠ same optimization identity
 same entity id/name across profiles ≠ same optimization identity
 verified migration lineage → bounded history continuity, not state cloning
+same metric name ≠ same measurement definition
+extracted_at ≠ available_through
 higher ROAS ≠ higher contribution profit
 recent zero orders ≠ irrelevant query
 stale retail snapshot ≠ current retail state
+child-level CVR drop ≠ ad inefficiency when family retail shift explains substitution
 declared experiment split ≠ realized allocation integrity
 launch-time clean control ≠ full-window clean control
 control received treatment-like exposure ≠ clean control
@@ -89,6 +92,25 @@ shared pool capacity shift ≠ independent control response
 child-ASIN lift ≠ family-level incrementality when sibling substitution exists
 campaign-local optimum ≠ portfolio optimum
 ```
+
+## Data Lineage
+
+统一数据模型见 `references/data-schema.md`。当 baseline/comparison 来自不同 API、MCP、CSV、Warehouse、BI 或刷新路径时，按需加载 `references/data-lineage.md`。
+
+至少区分：
+
+```text
+source system / dataset
+extracted_at
+available_through
+attribution definition / maturity
+aggregation grain
+filters / scope
+semantic version
+completeness / backfill status
+```
+
+跨来源比较可标记为 `Comparable / Reconcilable / Directional / Not Comparable / Unknown`。如果 apparent break 与 source switch 同期发生，先完成 same-source replay 或 overlap reconciliation，再做高置信广告动作。
 
 ## Weekly Review Playbook
 
@@ -176,9 +198,11 @@ Treatment/Control 启动时隔离 → 中途 routing/automation 漂移 → final
 - `SKILL.md` 保持薄，详细知识按需加载；
 - 不把固定经验阈值伪装成官方规则或默认动作幅度；
 - 区分 Fact / Observation / Hypothesis / Cause / Action / Outcome；
+- 跨来源趋势先检查 source lineage、available-through、attribution、semantic/filter comparability；
 - 同实体新动作先检查未完成验证和可信 readback；
 - memory 检索先匹配 marketplace/profile scope，scope 不完整或冲突时 fail closed；
 - stale memory / stale identity / stale retail snapshot 不等于当前状态；
+- child-ASIN 变化存在 parent/variation-family retail shock 时先看 family/sibling/purchased-ASIN 证据；
 - deliberate entity migration 需要显式 lineage mapping，不能靠名称/文本相似度推断；
 - Executor 的 unknown/timeout 结果先 reconcile，再决定 retry；
 - 幂等重试必须保持 stable intent、相同 key 与相同 mutation payload；
@@ -212,8 +236,9 @@ Treatment/Control 启动时隔离 → 中途 routing/automation 漂移 → final
 - [x] Treatment/control leakage + auction interference / displacement evals
 - [x] Shared-budget starvation + parent/child ASIN substitution evals
 - [x] Long-test control-boundary drift + cross-profile identity collision evals
+- [x] Data-source lineage drift + parent-level retail shock evals
 - [ ] 继续拆薄旧版较厚 Skills
-- [ ] 扩展 parent-level retail shock 与 data-source lineage drift evals
+- [ ] 扩展 semantic-metric version drift / cross-profile deliberate migration evals
 - [ ] Amazon Ads API / 自研 Connector 示例
 
 ## Disclaimer
