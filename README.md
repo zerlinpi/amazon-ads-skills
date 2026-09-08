@@ -105,27 +105,11 @@ Capability replay
 → score decision behavior, not wording
 ```
 
-Capability Eval 使用三态：
+Capability Eval 使用三态：`met / not_met / insufficient_evidence`。`insufficient_evidence` 不会被强行算作通过或失败。
 
-- `met`
-- `not_met`
-- `insufficient_evidence`
+当前 regression pack 已覆盖 **15 类关键安全风险**，包括：Mixed-ASIN 误否词、Negative attachment 错层级、Pending Change 反复调参、Bid×Placement 联动、Featured Offer / Buy Box 冲击、Stockout 转化冲击、Promotion baseline 假异常、Attribution Lag 假失败、Unknown Application 错误归因、Partial Application、stale entity identity memory、Executor retry/idempotency 风险、Experiment contamination、Proven Winner 合理扩量、Budget exhausted 但无 marginal headroom。
 
-`insufficient_evidence` 不会被强行算作通过或失败。
-
-当前 regression pack 覆盖 **11 类关键决策风险**：
-
-- Mixed-ASIN 下禁止把焦点 ASIN 的 0 单 Search Term 直接变成 execution-ready negative；
-- Negative 挂在不同 Campaign/Ad Group 层级时，禁止未验证 attachment 就宣称它导致掉量或直接复用为新否词；
-- 最近 Bid 调整仍在 validation window 时防止立即反向修改；
-- Base Bid、Dynamic Bidding 与 Placement Modifier 联动时，禁止同时大改多个耦合控制项导致不可归因；
-- Featured Offer / Buy Box 丢失与 CVR 同时崩塌时，禁止先把问题归咎于广告流量并激进降 Bid/否词；
-- Post-change conversion attribution 尚未成熟时，禁止把修改判为失败并立即 Rollback；
-- `application_status=Unknown` 且无可信 Readback 时，禁止把后续增长归功于该修改；
-- Multi-entity 变更只部分写入时，禁止把原计划标记为 fully applied / worked；
-- Experiment 期间同时改 Budget、Price、Placement 时，禁止把结果归因给单一 Treatment；
-- 有利润和零售准备度支持的预算增长机会可以进入 guarded scaling，但不能从 Skill 层直接写真实账户；
-- Campaign 虽然预算跑满，但边际 CPC 上升、CVR 下滑且接近 break-even 时，禁止把“预算受限”自动等同于“值得扩量”。
+其中新增的执行完整性原则是：**timeout ≠ failed write**。当外部 Executor 写入结果为 `Unknown` 且没有 trusted readback / idempotency evidence 时，Skill 只能 Hold / Manual Review / Blocked，不能盲目重复写入。实体经过 Campaign/Ad Group restructure 重新创建后，也不能因为 keyword text 相同就自动继承旧实体的 optimization memory。
 
 结构：
 
@@ -140,7 +124,11 @@ evals/
     ├── post-change-attribution-lag.json
     ├── application-status-unknown.json
     ├── partial-application-manual-review.json
+    ├── stale-entity-identity-memory.json
+    ├── executor-retry-idempotency.json
     ├── retail-readiness-conversion-shock.json
+    ├── stockout-conversion-shock.json
+    ├── promotion-period-false-positive.json
     ├── experiment-contamination-hold.json
     ├── proven-winner-budget-growth.json
     └── budget-exhausted-no-headroom.json
@@ -152,32 +140,9 @@ Fixture 使用合成数据，不提交真实客户、账户或第三方私有导
 
 ## Weekly Review Playbook
 
-`playbooks/weekly-review.md` 用于周期性账户复盘。
+`playbooks/weekly-review.md` 用于周期性账户复盘。它不是固定阈值表，而是从 Comparable windows、Business-first scorecard、Recent-action / memory checkpoint、Contribution triage、Campaign + ASIN review、Search term / target review、Budget / bid / placement review、Retail / event confounders，最终输出 Protect / Recover / Optimize / Grow / Experiment / Hold 与 P0-P4 action packet。
 
-它不是固定阈值表，而是：
-
-```text
-Comparable windows
-→ Business-first scorecard
-→ Recent-action / memory checkpoint
-→ Contribution triage
-→ Campaign + ASIN review
-→ Search term / target review
-→ Budget / bid / placement review
-→ Retail / event confounders
-→ Protect / Recover / Optimize / Grow / Experiment / Hold
-→ P0-P4 action packet
-→ Next-review contract
-```
-
-核心原则：
-
-- 不用固定 ACOS/CTR/CVR 阈值给 Campaign 强行红黄绿；
-- 不因预算跑满就自动加预算；
-- 不因 Search Term 暂时 0 单就自动否定；
-- 不在上一动作尚未成熟时反向叠加新动作；
-- Weekly Review 只识别和排序问题，复杂根因交给专业 Skill；
-- 输出必须包含 `Hold` 列表，而不是每周强行改所有实体。
+核心原则：不使用固定 ACOS/CTR/CVR 阈值强制打标；不因预算跑满自动加预算；不因 Search Term 暂时 0 单自动否定；不在上一动作未成熟时叠加反向动作；复杂根因交给专业 Skill；输出必须允许明确 Hold。
 
 ## Optimization Memory
 
@@ -191,26 +156,11 @@ Append-first event ledger
 → read-before-recommend gate
 ```
 
-明确区分：
-
-```text
-proposed ≠ applied
-applied ≠ readback confirmed
-readback confirmed ≠ worked
-rollback proposed ≠ rolled back
-```
-
-历史是证据，不是当前事实。当前 Bid/Budget/State 等状态仍应从可信数据源 Readback。
+明确区分 `proposed ≠ applied`、`applied ≠ readback confirmed`、`readback confirmed ≠ worked`、`rollback proposed ≠ rolled back`。历史是证据，不是当前事实；实体身份也必须连续可验证，不能把旧 entity history 直接迁移到重建后的新 ID。
 
 ## Experiment Planner
 
-不确定但可验证的优化优先进入实验，而不是伪装成高置信动作。
-
-实验应预声明：decision question、falsifiable hypothesis、treatment、control/holdout 设计、一个 primary metric、guardrails、attribution-mature window、contamination risk、stop/rollback rule。
-
-固定点击数、订单数或预算倍数不作为通用实验标准；缺少统计输入时不伪造 power/MDE。
-
-结构化合同：`schemas/experiment-plan.json`。
+不确定但可验证的优化优先进入实验，而不是伪装成高置信动作。实验应预声明 decision question、falsifiable hypothesis、treatment、control/holdout、一个 primary metric、guardrails、attribution-mature window、contamination risk、stop/rollback rule。固定点击数、订单数或预算倍数不作为通用实验标准；缺少统计输入时不伪造 power/MDE。
 
 ## Safety
 
@@ -221,19 +171,11 @@ rollback proposed ≠ rolled back
 | `Shadow` | 模拟、回测、实验 |
 | `Execute` | 仅显式授权并交给外部 Executor |
 
-建议应尽量携带：evidence、confidence、data quality、sample sufficiency、guardrails、validation window、rollback condition。
+建议应尽量携带 evidence、confidence、data quality、sample sufficiency、guardrails、validation window、rollback condition。
 
 ## Benchmark Policy
 
-外部 benchmark 不作为自动执行阈值。优先顺序：
-
-1. 同账户、同目标、同归因口径历史；
-2. 同账户实验 / Holdout；
-3. 同实体可比历史；
-4. 方法透明的外部 cohort；
-5. 泛行业 benchmark，仅作方向参考。
-
-详见 `references/benchmark-policy.md`。
+外部 benchmark 不作为自动执行阈值。优先顺序：同账户、同目标、同归因口径历史 → 同账户实验/Holdout → 同实体可比历史 → 方法透明的外部 cohort → 泛行业 benchmark。详见 `references/benchmark-policy.md`。
 
 ## Multi-Agent Compatibility
 
@@ -246,40 +188,6 @@ rollback proposed ≠ rolled back
 
 三套 Runtime 共用同一个 canonical `skills/` 树，不复制 Amazon Ads 业务逻辑。
 
-## Structure
-
-```text
-amazon-ads-skills/
-├── skills/
-│   ├── amazon-ads-optimizer/
-│   ├── performance-drop-diagnosis/
-│   ├── growth-opportunity-finder/
-│   ├── experiment-planner/
-│   ├── post-change-review/
-│   └── ...
-├── playbooks/
-│   └── weekly-review.md
-├── evals/
-│   ├── README.md
-│   └── fixtures/
-├── references/
-│   ├── optimization-memory.md
-│   ├── benchmark-policy.md
-│   └── ...
-├── schemas/
-│   ├── optimization-action.json
-│   ├── optimization-event.json
-│   ├── entity-history.json
-│   ├── experiment-plan.json
-│   └── eval-case.json
-├── docs/SOURCES.md
-├── AGENTS.md
-├── CLAUDE.md
-├── .codex-plugin/
-├── .claude-plugin/
-└── .workbuddy-plugin/
-```
-
 ## Development Rules
 
 - 一个 Skill 解决一个清晰决策问题；
@@ -291,22 +199,15 @@ amazon-ads-skills/
 - 不把固定经验阈值伪装成官方规则；
 - 对同实体新动作先检查未完成验证的旧动作；
 - 事件尽量 append-first，实体摘要可重建；
-- stale memory 不等于当前状态；
+- stale memory 不等于当前状态，stale identity 也不等于同一实体；
+- Executor 的 unknown/timeout 结果必须先 readback/reconcile，再考虑 retry；
 - 不确定但可验证的结论优先进入实验；
 - Eval 判断行为而不是 exact wording；
 - 默认 Suggest/Shadow，不直接写真实账户。
 
 ## Sources & Licenses
 
-项目持续研究公开 Amazon Ads / PPC / Agent Skills 项目。采用流程：
-
-```text
-discover → license check → extract generic idea
-→ independently rewrite → Amazon Ads adaptation
-→ safety gate → progressive loading
-```
-
-不会把第三方受版权保护的大段文本、固定阈值或私有接口实现直接搬入仓库。已审阅来源见 `docs/SOURCES.md`。
+项目持续研究公开 Amazon Ads / PPC / Agent Skills 项目。采用流程：`discover → license check → extract generic idea → independently rewrite → Amazon Ads adaptation → safety gate → progressive loading`。不会把第三方受版权保护的大段文本、固定阈值或私有接口实现直接搬入仓库。已审阅来源见 `docs/SOURCES.md`。
 
 ## Roadmap
 
@@ -322,7 +223,8 @@ discover → license check → extract generic idea
 - [x] Historical replay / initial eval fixtures
 - [x] 扩展高风险回归覆盖：Retail Readiness、Attribution Lag、Unknown Application、Marginal Headroom
 - [x] 扩展高风险回归覆盖：Negative attachment、Bid×Placement、Experiment contamination、Partial Application
-- [ ] 增加 Promotion / Stockout / stale entity identity / idempotency synthetic regression fixtures
+- [x] 扩展高风险回归覆盖：Promotion、Stockout、stale entity identity、Executor retry/idempotency
+- [ ] Previous Winner suddenly zero-order / profitability conflict / reconciliation disagreement fixtures
 - [ ] 继续拆薄旧版较厚 Skills
 - [ ] Amazon Ads API / 自研 Connector 示例
 
