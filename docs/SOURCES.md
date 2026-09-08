@@ -11,10 +11,11 @@ Useful patterns reviewed:
 - one operator job per skill;
 - concise `SKILL.md` with detailed logic moved to `references/`;
 - performance-drop diagnosis based on exact windows, contribution analysis, retail context, control-change timelines, and mixed-ASIN safety;
+- growth-opportunity analysis that combines ads evidence, retail readiness, ASIN/product context, ranking/organic context, budget or impression headroom and incrementality questions;
 - explicit distinction between facts, hypotheses, missing data, confidence, and actionability;
 - approval-gated mutation design.
 
-Adopted here as independently rewritten concepts, especially in `skills/performance-drop-diagnosis/` and related references.
+Adopted here as independently rewritten concepts, especially in `skills/performance-drop-diagnosis/`, `skills/growth-opportunity-finder/`, and their references. Fixed click/order/spend thresholds found in external material are intentionally not imported as universal automation rules.
 
 Repository: https://github.com/nospicyplease/amazon-ppc-advanced-skills
 
@@ -26,6 +27,7 @@ Useful patterns reviewed:
 - progressive loading of measurement, benchmark, budget, bidding, policy and other references;
 - contextual rather than universal benchmarks;
 - marginal-return thinking for budget allocation;
+- decision-complete growth actions with guardrails, validation and rollback;
 - clear separation between observation, diagnosis, recommendation and mutation.
 
 Repository: https://github.com/AgriciDaniel/claude-ads
