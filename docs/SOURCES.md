@@ -13,11 +13,13 @@ Useful patterns reviewed:
 - performance-drop diagnosis using exact windows, contribution analysis, retail context, control-change timelines and mixed-ASIN safety;
 - growth-opportunity analysis combining ads evidence, retail readiness, product context, headroom and incrementality questions;
 - post-change readback before judging outcome;
-- entity history for avoiding duplicate or contradictory optimizations;
+- shared optimization memory before legacy changelogs;
+- applied/failed/unknown event history, pending evaluations and entity history for avoiding duplicate or contradictory optimizations;
+- warnings when memory is local-only, partial or has unsynchronized/spooled events;
 - explicit distinction between facts, hypotheses, missing data, confidence and actionability;
 - approval-gated mutation design.
 
-Adopted as independently rewritten concepts. Vendor-specific APIs and fixed click/order/spend thresholds are intentionally not imported as universal automation rules.
+Adopted as independently rewritten concepts. Vendor-specific APIs, storage implementations, local spool mechanics and fixed click/order/spend thresholds are intentionally not imported. This repository expresses the generic memory concept as an append-first event ledger plus a derived compact `entity-history` view so the canonical Skills remain connector- and runtime-neutral.
 
 Repository: https://github.com/nospicyplease/amazon-ppc-advanced-skills
 
@@ -73,6 +75,10 @@ The project uses CC BY-NC 4.0 and includes fixed heuristic thresholds that are n
 
 Repository: https://github.com/noique/cross-border-ecommerce-skills
 
+## Other memory/event-log patterns reviewed but not directly imported
+
+During the optimization-memory pass, generic public agent repositories were also searched for persistent memory and event-log patterns. The useful general lesson was to keep facts/events distinct from mutable summaries and to treat stale memory as historical context rather than current state. No implementation or prose from those projects was copied; the resulting memory contract was designed specifically around this repository's existing `optimization-event.json`, Post-change Review lifecycle and Amazon Ads safety model.
+
 ## Integration rules
 
 Before adopting an external idea:
@@ -86,4 +92,5 @@ Before adopting an external idea:
 7. Keep canonical business logic tool-agnostic; keep runtime compatibility in manifests/adapters.
 8. For experiment designs, predeclare the decision question, hypothesis, primary metric, guardrails and stop rules before observing results.
 9. Do not fabricate statistical confidence, power or MDE when the required inputs are missing.
-10. Record reviewed sources here when they materially influence the project.
+10. For optimization memory, preserve event lineage, distinguish intent/application/readback/outcome, bound history retrieval, and never treat stale or partial memory as current complete state.
+11. Record reviewed sources here when they materially influence the project.
