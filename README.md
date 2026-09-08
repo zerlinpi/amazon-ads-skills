@@ -1,16 +1,14 @@
 # amazon-ads-skills
 
-亚马逊广告 AI Agent 技能库，用于广告监控、数据分析、因果诊断、增长机会发现、安全优化与智能决策。
+亚马逊广告 AI Agent 技能库，用于广告监控、数据分析、因果诊断、增长机会发现、变更后复盘、安全优化与智能决策。
 
-> 当前版本：`v0.3.0`  
+> 当前版本：`v0.4.0`  
 > 默认模式：`Suggest`  
 > 真实 Amazon Ads 写入由外部 Connector / Executor 负责，本仓库不直接执行账户修改。
 
 ## 核心设计
 
-本仓库不是一组“ACOS 高就降价”的静态规则，而是一套可被 Codex、Claude Code、WorkBuddy 等 Agent 调用的 Amazon Ads 决策知识层。
-
-核心流程：
+本仓库不是一组“ACOS 高就降 Bid”的静态规则，而是一套可被 Codex、Claude Code、WorkBuddy 等 Agent 调用的 Amazon Ads 决策知识层。
 
 ```text
 数据
@@ -27,7 +25,9 @@ Suggest / Shadow
   ↓
 外部 Executor（可选）
   ↓
-Observe / Evaluate / Rollback
+Readback → Observe → Evaluate → Keep / Rollback Candidate
+  ↓
+Optimization Event / History
 ```
 
 ## Progressive Loading：节省 Token
@@ -37,32 +37,37 @@ Observe / Evaluate / Rollback
 ```text
 薄 SKILL.md
    ↓
-只有在命中具体问题时
+命中具体问题时
    ↓
-references / shared references
+skill-local references
+   ↓
+必要时再读取 shared references / schemas
 ```
 
-例如用户问“为什么这个 ASIN 这周突然掉量”：
+例如“这个 ASIN 为什么突然掉量”：
 
 ```text
 amazon-ads-optimizer
-  ↓
-performance-drop-diagnosis/SKILL.md
-  ↓
-performance-drop-diagnosis/references/causal-drop-diagnosis.md
+  → performance-drop-diagnosis/SKILL.md
+  → references/causal-drop-diagnosis.md
 ```
 
-用户问“哪里还能继续扩量”：
+“哪里还能继续扩量”：
 
 ```text
 amazon-ads-optimizer
-  ↓
-growth-opportunity-finder/SKILL.md
-  ↓
-growth-opportunity-finder/references/opportunity-evaluation.md
+  → growth-opportunity-finder/SKILL.md
+  → references/opportunity-evaluation.md
 ```
 
-只有涉及外部 benchmark 时，才额外读取 `references/benchmark-policy.md`。
+“昨天调了 Bid，现在到底有没有效果”：
+
+```text
+amazon-ads-optimizer
+  → post-change-review/SKILL.md
+  → references/post-change-evaluation.md
+  → schemas/optimization-event.json（结构化历史需要时）
+```
 
 ## Agent 兼容
 
@@ -73,7 +78,7 @@ growth-opportunity-finder/references/opportunity-evaluation.md
 | WorkBuddy | `.workbuddy-plugin/plugin.json` + `skills/` |
 | 其他 Agent Skills Runtime | `skills/<name>/SKILL.md` |
 
-所有 Agent 共用同一份核心 Skills，不维护重复业务逻辑。
+所有运行时共用同一份核心 Skills，不维护重复业务逻辑。
 
 ## Skills
 
@@ -82,7 +87,8 @@ growth-opportunity-finder/references/opportunity-evaluation.md
 | `amazon-ads-audit` | 账户级体检、结构、浪费与增长机会 |
 | `campaign-health-monitor` | Campaign 日常健康监控与告警 |
 | `performance-drop-diagnosis` | 业绩突降因果诊断：断点、贡献、Retail、控制变更、Mixed-ASIN 安全 |
-| `growth-opportunity-finder` | 增长机会发现：验证赢家、Headroom、Incrementality、Retail Readiness 与受控扩量 |
+| `growth-opportunity-finder` | 增长机会：验证赢家、Headroom、Incrementality、Retail Readiness 与受控扩量 |
+| `post-change-review` | 变更后 Readback、效果评估、混杂因素检查、Keep/Monitor/Rollback Candidate |
 | `search-term-analysis` | Search Term 赢家、Exact 收割、流量质量与否词候选 |
 | `keyword-optimization` | Keyword/Target 生命周期、Match Type 与结构优化 |
 | `bid-optimization` | 基于目标、样本和 Guardrail 的 Bid 建议 |
@@ -93,76 +99,51 @@ growth-opportunity-finder/references/opportunity-evaluation.md
 | `anomaly-detection` | 历史基线异常检测及促销/库存误报过滤 |
 | `amazon-ads-optimizer` | 总调度、意图路由、去重、冲突消解、优先级排序 |
 
-## 业绩突降诊断
+## Post-change 闭环
 
-`performance-drop-diagnosis` 不从“哪个 ACOS 最差”开始，而是从业务损失开始：
-
-```text
-确认完整窗口
-  ↓
-定位 break point
-  ↓
-Account / ASIN 贡献排序
-  ↓
-Impressions → Clicks → CPC → CVR → Orders → Sales bridge
-  ↓
-Retail Readiness
-  ↓
-Bid / Budget / Placement / Negative / State 变更时间线
-  ↓
-Mixed-ASIN / Halo 风险
-  ↓
-Confirmed / Likely / Directional / Rejected / Missing Data
-  ↓
-Action-safe / Directional / Blocked
-```
-
-## 增长机会框架
-
-`growth-opportunity-finder` 不把“低 ACoS”直接等同于“应该加预算”。它要求增长候选同时检查：
+`post-change-review` 把“提出建议”升级成“知道建议是否真的生效”。
 
 ```text
-Demand evidence
-  + Economics / objective fit
-  + Headroom
-  + Retail readiness
-  + Attribution quality
-  + Incrementality
-  + Reversibility
+Original Proposal
   ↓
-Proven scale / Constrained winner / Harvest / Experiment / Hold
+Readback：实际是否应用？
+  ↓
+Confirmed / Partial / Not Applied / Drifted / Unknown
+  ↓
+Expected mechanism
+  ↓
+Comparable baseline + attribution-mature post window
+  ↓
+Concurrent changes / Promotion / Price / Stock / Buy Box confounders
+  ↓
+Worked / Likely Worked / Monitoring / Inconclusive /
+Likely Failed / Failed / Application Failure / Drifted
+  ↓
+Keep / Keep Monitoring / Rollback Candidate /
+Follow-up Experiment / Fix Application / Manual Review
 ```
 
-典型机会类型包括：
+重点原则：
 
-- `scale-proven-winner`
-- `budget-release`
-- `query-harvest`
-- `target-expansion`
-- `placement-opportunity`
-- `asin-investment`
-- `listing-before-spend`
-- `defense-or-protection`
-- `experiment`
-- `hold`
+- 未确认 Readback，不评价“优化是否成功”；
+- 不把归因未成熟的短期无订单直接判成失败；
+- 不只看 ACOS/ROAS，而是检查动作原本应该影响的机制；
+- 多个控制项同时改变时，降低单动作因果置信度；
+- `Rollback Candidate` 只是建议，不代表仓库直接执行回滚。
 
-增长建议继续使用 `Action-safe / Directional / Blocked`，并要求验证窗口和 rollback 条件。
+结构化事件使用 `schemas/optimization-event.json`，为后续 Action History / Optimization Memory 提供稳定数据合同。
 
 ## Benchmark 使用规则
 
-本仓库不把通用 benchmark 当作自动执行阈值。
+外部 Benchmark 不作为自动执行阈值。优先级：
 
-优先级：
-
-1. 同账户、同目标、同归因口径的可比历史；
+1. 同账户、同目标、同归因口径的历史；
 2. 同账户实验 / Holdout；
-3. 同 ASIN / Campaign 可比历史；
+3. 同实体可比历史；
 4. 方法透明的外部可比 Cohort；
 5. 泛行业 Benchmark，仅作方向参考。
 
-详见：`references/benchmark-policy.md`。
-
-固定的 CTR、CVR、ACOS、点击数、预算比例等规则只能作为显式标注的 heuristic，不能单独授权真实广告动作。
+详见 `references/benchmark-policy.md`。
 
 ## 安全模式
 
@@ -173,31 +154,11 @@ Proven scale / Constrained winner / Harvest / Experiment / Hold
 | `Shadow` | 模拟动作、回测、评估 |
 | `Execute` | 只有显式授权并经外部 Connector / Executor 才可执行 |
 
-任何动作建议都应尽量携带：
-
-- entity / scope
-- reason
-- evidence
-- confidence
-- data quality / sample sufficiency
-- guardrails
-- validation window
-- rollback condition
+任何动作建议都应尽量携带：entity/scope、reason、evidence、confidence、data quality、sample sufficiency、guardrails、validation window、rollback condition。
 
 ## 数据接入
 
-Skills 不绑定数据接口，可接：
-
-```text
-Amazon Ads API
-MCP
-领星 MCP
-CSV / Excel 导出
-Data Warehouse
-内部 BI / ETL
-```
-
-推荐架构：
+Skills 不绑定接口，可接 Amazon Ads API、MCP、领星 MCP、CSV/Excel、Data Warehouse 或内部 BI/ETL。
 
 ```text
 Data Sources
@@ -212,7 +173,9 @@ Action Proposal
    ↓
 Policy / Approval
    ↓
-Executor
+External Executor
+   ↓
+Optimization Event
 ```
 
 ## 仓库结构
@@ -234,6 +197,9 @@ amazon-ads-skills/
 │   ├── growth-opportunity-finder/
 │   │   ├── SKILL.md
 │   │   └── references/opportunity-evaluation.md
+│   ├── post-change-review/
+│   │   ├── SKILL.md
+│   │   └── references/post-change-evaluation.md
 │   ├── search-term-analysis/
 │   ├── keyword-optimization/
 │   ├── bid-optimization/
@@ -250,67 +216,46 @@ amazon-ads-skills/
 │   ├── benchmark-policy.md
 │   └── data-schema.md
 ├── schemas/
+│   ├── optimization-action.json
+│   └── optimization-event.json
 ├── examples/
-└── docs/
-    ├── SOURCES.md
-    └── superpowers/
+└── docs/SOURCES.md
 ```
 
 ## Skill 开发规范
 
-新增或重构 Skill 时：
-
-- 一个 Skill 解决一个清晰的运营问题；
-- `SKILL.md` 尽量保持精简；
-- 复杂算法、判断树、案例、长期知识放到 `references/`；
+- 一个 Skill 解决一个清晰运营问题；
+- `SKILL.md` 尽量精简，复杂判断放 `references/`；
 - 只在命中场景时加载对应 reference；
-- 区分 Fact / Observation / Hypothesis / Cause / Action；
+- 区分 Fact / Observation / Hypothesis / Cause / Action / Outcome；
 - 不编造缺失数据；
 - 不把固定经验阈值伪装成 Amazon 官方规则；
 - 不直接执行真实账户写入；
-- 需要真实写入时，必须经过边界检查和外部 Executor。
+- 对同实体的新动作，优先检查最近尚未完成验证的旧动作；
+- 需要真实写入时必须经过边界检查和外部 Executor。
 
 ## 外部项目借鉴与许可证
 
-本项目会持续研究公开的 Amazon Ads / PPC / Agent Skills 项目，但不会直接大段复制第三方 Skill 文本。
+本项目持续研究公开 Amazon Ads / PPC / Agent Skills 项目，但不直接大段复制第三方文本。采用流程：发现优秀方法 → 提炼通用思想 → 检查许可证 → Amazon Ads 化 → 独立重写 → 加安全边界 → 拆成按需加载 references/playbooks。
 
-采用流程：
+已审阅来源及采用原则见 `docs/SOURCES.md`。
 
-```text
-发现优秀方法
-  ↓
-提炼通用思想
-  ↓
-检查许可证和适用边界
-  ↓
-Amazon Ads 化
-  ↓
-独立重写
-  ↓
-加入安全边界
-  ↓
-拆为按需加载 references/playbooks
-```
-
-已审阅的重要来源及采用原则见 `docs/SOURCES.md`。
-
-## 当前重点 Roadmap
+## Roadmap
 
 - [x] Codex / Claude Code / WorkBuddy 统一 Skill 根目录
-- [x] 账户审计 / 监控 / Bid / Budget / Placement / Search Term / Negative / Profitability
-- [x] 统一安全边界与 action schema
-- [x] 业绩突降因果诊断
-- [x] Mixed-ASIN action safety
+- [x] 基础 Audit / Monitor / Search Term / Bid / Budget / Placement / Negative / Profitability
+- [x] 业绩突降因果诊断 + Mixed-ASIN safety
 - [x] Contextual benchmark policy
 - [x] Growth Opportunity Finder
-- [ ] 将其余较厚 `SKILL.md` 逐步拆成薄入口 + references
+- [x] Post-change Review
+- [x] Optimization Event schema
+- [ ] 将其余较厚 `SKILL.md` 继续拆成薄入口 + references
 - [ ] Weekly Review playbook
 - [ ] Experiment Planner
-- [ ] Post-change Review
-- [ ] Action history / optimization memory schema
+- [ ] Optimization Memory / entity history reference
 - [ ] Historical replay / eval fixtures
 - [ ] Amazon Ads API / 自研 Connector 示例
 
 ## Disclaimer
 
-本项目是独立的开源 Amazon Ads AI Agent Skills 项目，与 Amazon 官方无隶属或背书关系。Amazon、Amazon Ads、Sponsored Products、Sponsored Brands、Sponsored Display 等名称归其各自权利人所有。
+本项目是独立开源 Amazon Ads AI Agent Skills 项目，与 Amazon 官方无隶属或背书关系。Amazon、Amazon Ads、Sponsored Products、Sponsored Brands、Sponsored Display 等名称归其各自权利人所有。
