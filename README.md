@@ -1,90 +1,67 @@
 # amazon-ads-skills
 
-亚马逊广告 AI Agent 技能库，用于广告监控、因果诊断、增长机会发现、受控实验、变更后复盘、优化记忆与安全优化。
+Amazon Ads AI Agent 技能库：监控、因果诊断、增长机会、受控实验、变更后复盘、优化记忆与安全优化。
 
-> 当前版本：`v0.6.0`  
+> 当前版本：`v0.7.0`  
 > 默认模式：`Suggest`  
-> 真实 Amazon Ads 写入由外部 Connector / Executor 负责，本仓库不直接修改账户。
+> 本仓库不直接修改真实 Amazon Ads 账户；写入由外部 Connector / Executor 负责。
 
-## 决策闭环
+## 核心闭环
 
 ```text
-Data
-  ↓
-Validate freshness / attribution / scope / economics
-  ↓
-Read relevant entity history when available
-  ↓
-Diagnose problem or find opportunity
-  ↓
-Evidence strong? ── yes ─→ Action proposal
-  │
-  no / uncertain
-  ↓
-Experiment Planner → Suggest / Shadow
-  ↓
+Data → Validate → Read relevant history
+  → Diagnose / Find Opportunity
+  → Action-safe? ─ yes → Suggest
+         │
+         no
+         ↓
+      Experiment / Shadow
+         ↓
 External Executor (optional, authorized)
-  ↓
-Readback → Observe → Post-change Review
-  ↓
-Keep / Monitor / Rollback Candidate / Repeat
-  ↓
-Append Optimization Event → Refresh Entity History
+  → Readback → Post-change Review
+  → Keep / Monitor / Rollback Candidate
+  → Append event → Refresh entity history
 ```
 
-这套结构避免把“ACOS 高就降 Bid”“预算跑满就加预算”，或“上轮还没验证完就再次反向调参”当成自动规则。
+## Progressive Loading
 
-## Progressive Loading：节省 Token
+目标是只加载当前决策需要的内容：
 
 ```text
-薄 SKILL.md
-   ↓
-只在命中具体问题时
-   ↓
-skill-local references
-   ↓
-必要时 shared references / schemas
-   ↓
-只取同实体的有限历史切片
+薄 SKILL.md / playbook
+        ↓
+命中具体问题
+        ↓
+skill-local reference
+        ↓
+必要时 shared reference / schema
+        ↓
+只读取相关实体的有限历史切片
 ```
 
-示例：
+例如：
 
 ```text
 “为什么突然掉量？”
 → performance-drop-diagnosis
-→ references/causal-drop-diagnosis.md
+→ causal-drop-diagnosis.md
 
 “哪里还能增长？”
 → growth-opportunity-finder
-→ references/opportunity-evaluation.md
+→ opportunity-evaluation.md
 
-“这个机会证据不够，怎么安全验证？”
+“这个方向有可能，但不确定？”
 → experiment-planner
-→ references/experiment-design.md
-→ schemas/experiment-plan.json
+→ experiment-design.md
 
-“昨天改的 Bid 到底有没有效果？”
+“上周调的 Bid 有效果吗？”
 → post-change-review
-→ references/post-change-evaluation.md
-→ schemas/optimization-event.json
+→ post-change-evaluation.md
 
-“这个 Target 最近是不是已经调过？”
-→ references/optimization-memory.md
-→ schemas/entity-history.json
-→ 只读取同实体/同控制维度的近期事件
+“做每周广告复盘”
+→ playbooks/weekly-review.md
+→ 只按发现的问题调用必要 Skills
 ```
-
-## Agent 兼容
-
-| Runtime | 入口 |
-|---|---|
-| OpenAI Codex | `.codex-plugin/plugin.json` + `skills/` + `AGENTS.md` |
-| Claude Code | `.claude-plugin/plugin.json` + `skills/` + `CLAUDE.md` |
-| WorkBuddy | `.workbuddy-plugin/plugin.json` + `skills/` |
-| 其他 Agent Skills Runtime | `skills/<name>/SKILL.md` |
-
-所有 Runtime 共用一份 canonical Skills，不复制业务逻辑。
 
 ## Skills
 
@@ -94,9 +71,9 @@ skill-local references
 | `campaign-health-monitor` | Campaign 健康监控 |
 | `performance-drop-diagnosis` | 业绩突降因果诊断 |
 | `growth-opportunity-finder` | 增长机会与 Headroom |
-| `experiment-planner` | 假设、Control/Holdout、Primary Metric、Guardrail、验证窗口 |
+| `experiment-planner` | 受控实验设计 |
 | `post-change-review` | Readback 与优化后效果复盘 |
-| `search-term-analysis` | Search Term 赢家、收割与流量质量 |
+| `search-term-analysis` | Search Term 赢家、收割、流量质量 |
 | `keyword-optimization` | Keyword/Target 生命周期与结构 |
 | `bid-optimization` | Bid/CPC 建议 |
 | `budget-optimization` | Budget pacing、重分配与扩量 |
@@ -104,27 +81,52 @@ skill-local references
 | `negative-targeting` | Negative 与误杀保护 |
 | `profitability-analysis` | Break-even ACOS、贡献利润、TACOS |
 | `anomaly-detection` | 历史基线异常检测 |
-| `amazon-ads-optimizer` | 总调度、历史检查、去重、冲突消解与优先级 |
+| `amazon-ads-optimizer` | 总调度、记忆检查、去重与冲突消解 |
+
+当前保持 **15 个 Skills**。如果一个新能力只是“把已有 Skills 按固定运营节奏组合起来”，优先增加 `playbooks/`，而不是继续拆成新的常驻 Skill。
+
+## Weekly Review Playbook
+
+`playbooks/weekly-review.md` 用于周期性账户复盘。
+
+它不是固定阈值表，而是：
+
+```text
+Comparable windows
+→ Business-first scorecard
+→ Recent-action / memory checkpoint
+→ Contribution triage
+→ Campaign + ASIN review
+→ Search term / target review
+→ Budget / bid / placement review
+→ Retail / event confounders
+→ Protect / Recover / Optimize / Grow / Experiment / Hold
+→ P0-P4 action packet
+→ Next-review contract
+```
+
+核心原则：
+
+- 不用固定 ACOS/CTR/CVR 阈值给 Campaign 强行红黄绿；
+- 不因预算跑满就自动加预算；
+- 不因 Search Term 暂时 0 单就自动否定；
+- 不在上一动作尚未成熟时反向叠加新动作；
+- Weekly Review 只识别和排序问题，复杂根因交给专业 Skill；
+- 输出必须包含 `Hold` 列表，而不是每周强行改所有实体。
 
 ## Optimization Memory
 
-`references/optimization-memory.md` 是跨 Skill 的共享记忆合同，不单独增加一个常驻大 Skill。
-
-核心设计：
+`references/optimization-memory.md` 采用：
 
 ```text
-Append-first Event Ledger
-          ↓
-optimization-event.json
-          ↓
-Derived compact entity history
-          ↓
-entity-history.json
-          ↓
-Read-before-recommend gate
+Append-first event ledger
+→ schemas/optimization-event.json
+→ derived compact entity history
+→ schemas/entity-history.json
+→ read-before-recommend gate
 ```
 
-它要求明确区分：
+明确区分：
 
 ```text
 proposed ≠ applied
@@ -133,79 +135,68 @@ readback confirmed ≠ worked
 rollback proposed ≠ rolled back
 ```
 
-在给同一实体新的 Bid / Budget / Placement / Negative / State 建议前，若历史可用，应优先检查：
-
-- 最近一次同控制维度动作；
-- 是否仍处于 validation window；
-- 是否缺少 Readback；
-- application 是否 `Unknown` / `Drifted`；
-- 是否有 active experiment；
-- 是否存在 parent/child 并发修改；
-- 是否触发 rollback / safety guardrail；
-- memory 是否 local-only / partial / stale。
-
-若上一动作尚未成熟，默认倾向 `Hold`、`Experiment Only` 或 `Manual Review`，而不是继续叠加修改。严重超支、不可购买、Listing suppression、库存风险等安全条件可触发例外，但应记录 override 原因。
-
-历史事件是证据，不是当前真相。需要当前状态时仍应从可信数据源重新 Readback。
+历史是证据，不是当前事实。当前 Bid/Budget/State 等状态仍应从可信数据源 Readback。
 
 ## Experiment Planner
 
-`experiment-planner` 用于“有合理假设，但证据不足以直接修改”的场景。
+不确定但可验证的优化优先进入实验，而不是伪装成高置信动作。
 
-它要求预先定义：
+实验应预声明：decision question、falsifiable hypothesis、treatment、control/holdout 设计、一个 primary metric、guardrails、attribution-mature window、contamination risk、stop/rollback rule。
 
-- decision question；
-- falsifiable hypothesis；
-- treatment scope；
-- holdout / matched control / phased rollout / switchback / historical baseline；
-- **一个** primary metric；
-- diagnostic metrics；
-- profitability / volume / inventory / Buy Box 等 guardrails；
-- attribution-mature observation window；
-- contamination / Mixed-ASIN / concurrent-change risk；
-- stop / rollback rules。
+固定点击数、订单数或预算倍数不作为通用实验标准；缺少统计输入时不伪造 power/MDE。
 
-固定点击数、订单数或百分比不会被当成 Amazon 通用实验标准。若缺少 variance、baseline rate、allocation 等统计输入，不会伪造 power/MDE 精度。
+结构化合同：`schemas/experiment-plan.json`。
 
-结构化实验计划使用 `schemas/experiment-plan.json`。
-
-## 安全模式
+## Safety
 
 | Mode | 行为 |
 |---|---|
-| `Read-only` | 读取与解释 |
+| `Read-only` | 读取和解释 |
 | `Suggest` | 生成建议；默认 |
-| `Shadow` | 模拟、回测、实验设计 |
+| `Shadow` | 模拟、回测、实验 |
 | `Execute` | 仅显式授权并交给外部 Executor |
 
-任何可操作建议都应尽量携带 evidence、confidence、data quality、sample sufficiency、guardrails、validation window 与 rollback condition。
+建议应尽量携带：evidence、confidence、data quality、sample sufficiency、guardrails、validation window、rollback condition。
 
-## Benchmark 原则
+## Benchmark Policy
 
-外部 Benchmark 不作为自动执行阈值。优先使用：
+外部 benchmark 不作为自动执行阈值。优先顺序：
 
 1. 同账户、同目标、同归因口径历史；
 2. 同账户实验 / Holdout；
 3. 同实体可比历史；
-4. 方法透明的外部 Cohort；
-5. 泛行业 Benchmark，仅作方向参考。
+4. 方法透明的外部 cohort；
+5. 泛行业 benchmark，仅作方向参考。
 
 详见 `references/benchmark-policy.md`。
 
-## 结构
+## Multi-Agent Compatibility
+
+| Runtime | 入口 |
+|---|---|
+| OpenAI Codex | `.codex-plugin/plugin.json` + `skills/` + `AGENTS.md` |
+| Claude Code | `.claude-plugin/plugin.json` + `skills/` + `CLAUDE.md` |
+| WorkBuddy | `.workbuddy-plugin/plugin.json` + `skills/` |
+| 其他 Agent Skills Runtime | `skills/<name>/SKILL.md` |
+
+三套 Runtime 共用同一个 canonical `skills/` 树，不复制 Amazon Ads 业务逻辑。
+
+## Structure
 
 ```text
 amazon-ads-skills/
 ├── skills/
+│   ├── amazon-ads-optimizer/
 │   ├── performance-drop-diagnosis/
 │   ├── growth-opportunity-finder/
 │   ├── experiment-planner/
-│   │   ├── SKILL.md
-│   │   └── references/experiment-design.md
 │   ├── post-change-review/
 │   └── ...
+├── playbooks/
+│   └── weekly-review.md
 ├── references/
 │   ├── optimization-memory.md
+│   ├── benchmark-policy.md
 │   └── ...
 ├── schemas/
 │   ├── optimization-action.json
@@ -220,24 +211,31 @@ amazon-ads-skills/
 └── .workbuddy-plugin/
 ```
 
-## 开发规范
+## Development Rules
 
-- 一个 Skill 解决一个清晰运营问题；
-- `SKILL.md` 尽量薄，复杂知识进入按需 references；
+- 一个 Skill 解决一个清晰决策问题；
+- 组合型运营节奏优先使用 playbook；
+- `SKILL.md` 保持薄，详细知识按需加载；
 - 区分 Fact / Observation / Hypothesis / Cause / Action / Outcome；
 - 不编造缺失数据或历史；
 - 不把固定经验阈值伪装成官方规则；
-- 不直接执行真实账户写入；
-- 对同实体的新动作，先检查尚未完成验证的旧动作；
-- 事件尽量 append-first，实体摘要是可重建派生视图，不覆盖历史事实；
-- 历史状态过期时重新 Readback，不把旧 memory 当当前配置；
-- 不确定但可验证的结论优先变成受控实验，而不是高置信动作。
+- 对同实体新动作先检查未完成验证的旧动作；
+- 事件尽量 append-first，实体摘要可重建；
+- stale memory 不等于当前状态；
+- 不确定但可验证的结论优先进入实验；
+- 默认 Suggest/Shadow，不直接写真实账户。
 
-## 外部资料与许可证
+## Sources & Licenses
 
-项目持续研究公开 Amazon Ads / PPC / Agent Skills 项目，但不直接大段复制第三方文本。流程：方法发现 → License 检查 → 通用思想提炼 → Amazon Ads 化 → 独立重写 → Safety Gate → Progressive Loading。
+项目持续研究公开 Amazon Ads / PPC / Agent Skills 项目。采用流程：
 
-已审阅来源见 `docs/SOURCES.md`。
+```text
+discover → license check → extract generic idea
+→ independently rewrite → Amazon Ads adaptation
+→ safety gate → progressive loading
+```
+
+不会把第三方受版权保护的大段文本、固定阈值或私有接口实现直接搬入仓库。已审阅来源见 `docs/SOURCES.md`。
 
 ## Roadmap
 
@@ -245,11 +243,11 @@ amazon-ads-skills/
 - [x] 基础 Audit / Monitor / Search Term / Bid / Budget / Placement / Negative / Profitability
 - [x] Performance Drop Diagnosis + Mixed-ASIN safety
 - [x] Growth Opportunity Finder
-- [x] Experiment Planner + experiment schema
-- [x] Post-change Review + optimization event schema
-- [x] Optimization Memory + entity history schema
-- [x] Contextual benchmark policy
-- [ ] Weekly Review playbook
+- [x] Experiment Planner
+- [x] Post-change Review
+- [x] Optimization Memory + Entity History
+- [x] Contextual Benchmark Policy
+- [x] Weekly Review Playbook
 - [ ] Historical replay / eval fixtures
 - [ ] 继续拆薄旧版较厚 Skills
 - [ ] Amazon Ads API / 自研 Connector 示例
