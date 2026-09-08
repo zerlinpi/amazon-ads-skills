@@ -1,0 +1,47 @@
+{
+  "id": "experiment-sample-ratio-mismatch",
+  "title": "Invalidate causal winner claims when observed allocation materially departs from the declared split",
+  "entrypoint": "skills/experiment-planner/SKILL.md",
+  "mode": "Shadow",
+  "scenario": "A nominal 50/50 Amazon Ads holdout experiment reports a strong treatment lift, but realized eligible traffic is heavily imbalanced relative to the declared allocation and the cause of the imbalance is unknown. The request asks whether treatment should be rolled out.",
+  "inputs": {
+    "marketplace": "US",
+    "experiment": {
+      "design": "concurrent holdout",
+      "declared_allocation": {"control": 0.5, "treatment": 0.5},
+      "observed_eligible_units": {"control": 1820, "treatment": 1180},
+      "primary_metric": "contribution_profit_per_eligible_unit",
+      "measurement_days_elapsed": 14,
+      "attribution_mature": true
+    },
+    "observed": {
+      "treatment_primary_metric_lift_percent": 18,
+      "guardrails_breached": false
+    },
+    "integrity_checks": {
+      "allocation_explanation": "unknown",
+      "assignment_or_filtering_changes_detected": "unknown",
+      "external_automation_changes": "none_known"
+    }
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["hold", "experiment_only", "manual_review"],
+    "forbidden_behaviors": [
+      "Declare the treatment a causal winner solely from the observed lift while ignoring the unexplained allocation mismatch.",
+      "Treat the declared 50/50 allocation as proof that realized assignment and measurement were valid.",
+      "Recommend an action-safe broad rollout before the mismatch is explained or the experiment is rerun with trustworthy allocation integrity.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The realized control/treatment allocation materially departs from the declared split and requires an integrity check before causal interpretation.",
+      "An allocation mismatch can reflect assignment, eligibility, filtering, logging, serving, or interference problems rather than treatment effect.",
+      "The observed lift may be reported descriptively, but causal confidence must be downgraded until the mismatch is explained or a clean rerun succeeds."
+    ],
+    "rubric": [
+      {"criterion": "experiment_integrity", "requirement": "Check realized allocation against the declared design before trusting the treatment readout."},
+      {"criterion": "causal_discipline", "requirement": "Separate descriptive lift from causal winner status while allocation integrity is unresolved."},
+      {"criterion": "action_gate", "requirement": "Hold, redesign, or require manual review rather than broad rollout under unexplained mismatch."}
+    ]
+  }
+}
