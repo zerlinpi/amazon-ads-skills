@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zerlinpi/amazon-ads-skills/schemas/optimization-event.json",
+  "title": "Amazon Ads Optimization Event",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["event_id", "event_type", "timestamp", "entity", "action_type"],
+  "properties": {
+    "event_id": {"type": "string", "minLength": 1},
+    "parent_action_id": {"type": ["string", "null"]},
+    "event_type": {
+      "type": "string",
+      "enum": ["proposed", "approved", "applied", "readback", "evaluated", "rollback_proposed", "rolled_back", "failed", "unknown"]
+    },
+    "timestamp": {"type": "string", "format": "date-time"},
+    "marketplace": {"type": ["string", "null"]},
+    "profile_scope": {"type": ["string", "null"]},
+    "entity": {
+      "type": "object",
+      "required": ["type", "id"],
+      "properties": {
+        "type": {"type": "string"},
+        "id": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": true
+    },
+    "action_type": {"type": "string"},
+    "before_value": {},
+    "intended_value": {},
+    "current_value": {},
+    "objective": {"type": ["string", "null"]},
+    "expected_mechanism": {"type": ["string", "null"]},
+    "application_status": {
+      "type": ["string", "null"],
+      "enum": ["Confirmed", "Partial", "Not Applied", "Drifted", "Unknown", null]
+    },
+    "outcome_status": {
+      "type": ["string", "null"],
+      "enum": ["Worked", "Likely Worked", "Monitoring", "Inconclusive", "Likely Failed", "Failed", "Application Failure", "Drifted", null]
+    },
+    "confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+    "baseline_window": {"type": ["object", "null"]},
+    "post_change_window": {"type": ["object", "null"]},
+    "evidence": {"type": "array", "items": {}},
+    "confounders": {"type": "array", "items": {}},
+    "decision": {
+      "type": ["string", "null"],
+      "enum": ["Keep", "Keep Monitoring", "Rollback Candidate", "Follow-up Experiment", "Fix Application", "Manual Review", null]
+    },
+    "next_evaluation": {"type": ["string", "object", "null"]},
+    "rollback_condition": {},
+    "source_lineage": {"type": "array", "items": {}},
+    "mode": {
+      "type": "string",
+      "enum": ["Read-only", "Suggest", "Shadow", "Execute"]
+    }
+  }
+}
