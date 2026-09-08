@@ -1,12 +1,13 @@
 {
   "name": "amazon-ads-skills",
-  "version": "0.2.0",
-  "description": "Amazon Ads AI Agent skills for monitoring, diagnosis, analysis, optimization and guarded advertising decisions.",
+  "version": "0.3.0",
+  "description": "Amazon Ads AI Agent skills for monitoring, diagnosis, growth analysis, optimization and guarded advertising decisions.",
   "author": {"name": "zerlinpi"},
   "skills": [
     "./skills/amazon-ads-audit",
     "./skills/campaign-health-monitor",
     "./skills/performance-drop-diagnosis",
+    "./skills/growth-opportunity-finder",
     "./skills/search-term-analysis",
     "./skills/keyword-optimization",
     "./skills/bid-optimization",
@@ -19,8 +20,8 @@
   ],
   "displayName": {"en": "Amazon Ads Skills", "zh": "亚马逊广告技能库"},
   "displayDescription": {
-    "en": "Reusable Amazon Ads skills for auditing, performance-drop diagnosis, monitoring, search-term analysis, bidding, budgets, placements, profitability and guarded optimization.",
-    "zh": "面向亚马逊广告审计、业绩突降诊断、监控、搜索词、竞价、预算、版位、利润与安全优化的一组可复用 AI Skills。"
+    "en": "Reusable Amazon Ads skills for auditing, performance-drop diagnosis, growth opportunity discovery, monitoring, search-term analysis, bidding, budgets, placements, profitability and guarded optimization.",
+    "zh": "面向亚马逊广告审计、业绩突降诊断、增长机会发现、监控、搜索词、竞价、预算、版位、利润与安全优化的一组可复用 AI Skills。"
   },
   "tags": [
     {"en": "Amazon Ads", "zh": "亚马逊广告"},
