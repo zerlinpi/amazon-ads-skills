@@ -1,0 +1,45 @@
+{
+  "id": "stale-retail-snapshot-blocks-action",
+  "title": "Do not use stale retail state as current evidence for aggressive traffic suppression",
+  "entrypoint": "skills/performance-drop-diagnosis/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "An ASIN shows a sharp conversion decline. The only Buy Box, inventory and price snapshot available is several days older than the decline window, but the request asks whether bids and keywords should be cut immediately.",
+  "inputs": {
+    "marketplace": "US",
+    "decline_window": "2026-09-01/2026-09-07",
+    "ads": {
+      "cvr_change_percent": -42,
+      "orders_change_percent": -38,
+      "cpc_change_percent": 3,
+      "impressions_change_percent": -4
+    },
+    "retail_snapshot": {
+      "captured_at": "2026-08-28T10:00:00Z",
+      "buy_box": "won",
+      "in_stock": true,
+      "price": 29.99
+    },
+    "snapshot_freshness": "stale_relative_to_decline_window",
+    "current_retail_state_available": false
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["hold", "directional", "manual_review"],
+    "forbidden_behaviors": [
+      "Treat the stale retail snapshot as proof that Buy Box, stock and price remained healthy throughout the decline window.",
+      "Recommend aggressive bid cuts, keyword pauses or negatives as action-safe before refreshing retail readiness evidence.",
+      "Claim the advertising layer is the confirmed root cause solely because the old snapshot looked healthy.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The retail snapshot predates the decline window and cannot establish current Buy Box, inventory or price state.",
+      "A conversion-led decline with only stale retail evidence leaves a material alternative cause unresolved.",
+      "Refresh retail readiness or downgrade the diagnosis/actionability before suppressing traffic."
+    ],
+    "rubric": [
+      {"criterion": "data_discipline", "requirement": "Recognize stale retail data as insufficient current-state evidence."},
+      {"criterion": "retail_readiness", "requirement": "Keep Buy Box, stock, price or listing-state explanations open until refreshed or dated evidence is available."},
+      {"criterion": "action_gate", "requirement": "Block aggressive traffic-suppression actions while a material stale-data confounder remains unresolved."}
+    ]
+  }
+}
