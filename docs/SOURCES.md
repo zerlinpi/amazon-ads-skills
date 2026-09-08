@@ -20,7 +20,9 @@ Repository: https://github.com/AgriciDaniel/claude-ads
 
 ### weisberg/agile_agentic_analytics
 
-MIT-licensed repository reviewed for experiment lifecycle, power/MDE discipline when inputs exist, sample-ratio/contamination awareness, sequential-testing caution and structured experiment results. Concepts were rewritten for Amazon Ads with stricter Suggest/Shadow, Mixed-ASIN, attribution, promotion and retail-readiness gates.
+MIT-licensed repository reviewed for experiment lifecycle, power/MDE discipline when inputs exist, sample-ratio/contamination awareness, sequential-testing caution, realized-allocation integrity checks and structured experiment results. The generic idea adopted in the latest pass is that a declared split does not prove correct realized assignment: unexplained treatment/control imbalance can indicate assignment, filtering, logging, delivery or interference problems and should invalidate action-safe causal claims until explained.
+
+Concepts were independently rewritten for Amazon Ads with stricter Suggest/Shadow, Mixed-ASIN, attribution, promotion and retail-readiness gates. No statistical significance is fabricated when expected allocation or assignment assumptions are missing.
 
 Repository: https://github.com/weisberg/agile_agentic_analytics
 
@@ -79,6 +81,12 @@ No skill prose, templates or fixed recommendations were copied. This repository 
 
 Repository: https://github.com/nexscope-ai/Amazon-Skills
 
+## Internal method hardening from observed failure modes
+
+Some additions are not copied from an external repository at all. They are independent safety hardening derived from the repository's existing causal model and regression gaps.
+
+Latest example: **retail snapshot freshness**. A Buy Box, inventory, price or listing snapshot only proves the state at the timestamp it observed. If that snapshot predates a later conversion decline, it must not be used as current-state proof to justify aggressive traffic suppression. The system now requires refreshed or dated retail evidence, or it downgrades actionability.
+
 ## Integration rules
 
 Before adopting an external idea:
@@ -91,7 +99,7 @@ Before adopting an external idea:
 6. Keep detailed knowledge in references/playbooks for progressive loading.
 7. Keep canonical business logic runtime neutral.
 8. Predeclare experiment question, hypothesis, primary metric, guardrails and stop rules.
-9. Never fabricate statistical confidence, power or MDE.
+9. Never fabricate statistical confidence, power, MDE or allocation-integrity significance.
 10. Preserve event lineage and distinguish intent, application, readback and outcome.
 11. Prefer playbooks for recurring compositions of existing Skills.
 12. Separate contract failures from capability failures in evals.
@@ -99,14 +107,16 @@ Before adopting an external idea:
 14. Never weaken a regression fixture merely to make a model pass.
 15. Verify negative/control attachment scope before causal attribution.
 16. Treat coupled auction controls as interacting parameters.
-17. Treat experiment contamination as a readout limitation.
+17. Treat experiment contamination or unexplained allocation mismatch as a readout limitation.
 18. Treat partial application as a realized treatment different from intended treatment.
 19. Do not compare promotion-contaminated windows as ordinary evergreen baselines.
 20. Treat stockout/retail-readiness failures as causal gates before traffic suppression.
-21. Do not transfer entity memory across recreated IDs without verified identity mapping.
-22. Treat timeout/unknown mutation outcomes as unresolved until readback/reconciliation or executor-level idempotency makes repetition safe.
-23. Stable idempotency keys must stay bound to the same stable intent and payload; a new value is a new intent.
-24. Trusted current-state readback overrides earlier executor acknowledgement when the states disagree; classify the difference as drift/partial/unresolved before outcome attribution.
-25. Do not equate higher ROAS or revenue with higher profit; use contribution economics when the business objective is profitability.
-26. A historically proven relevant query that temporarily has zero orders should be diagnosed as a possible conversion break before being treated as irrelevant traffic.
-27. Record reviewed sources here when they materially influence the project.
+21. Treat stale retail snapshots as historical evidence, not current-state proof.
+22. Do not transfer entity memory across recreated IDs without verified identity mapping.
+23. Treat timeout/unknown mutation outcomes as unresolved until readback/reconciliation or executor-level idempotency makes repetition safe.
+24. Stable idempotency keys must stay bound to the same stable intent and payload; a new value is a new intent.
+25. Trusted current-state readback overrides earlier executor acknowledgement when the states disagree; classify the difference as drift/partial/unresolved before outcome attribution.
+26. Do not equate higher ROAS or revenue with higher profit; use contribution economics when the business objective is profitability.
+27. A historically proven relevant query that temporarily has zero orders should be diagnosed as a possible conversion break before being treated as irrelevant traffic.
+28. A declared experiment allocation does not prove realized allocation integrity; unexplained imbalance must be investigated before causal rollout.
+29. Record reviewed sources here when they materially influence the project.
