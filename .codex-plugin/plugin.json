@@ -1,6 +1,6 @@
 {
   "name": "amazon-ads-skills",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "Amazon Ads AI Agent skills, playbooks and eval fixtures for auditing, monitoring, causal diagnosis, growth discovery, experiments, weekly reviews, post-change evaluation, optimization memory and guarded decisions.",
   "author": {
     "name": "zerlinpi",
