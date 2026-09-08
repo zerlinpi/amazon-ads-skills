@@ -1,8 +1,8 @@
 # amazon-ads-skills
 
-亚马逊广告 AI Agent 技能库，用于广告监控、因果诊断、增长机会发现、受控实验、变更后复盘与安全优化。
+亚马逊广告 AI Agent 技能库，用于广告监控、因果诊断、增长机会发现、受控实验、变更后复盘、优化记忆与安全优化。
 
-> 当前版本：`v0.5.0`  
+> 当前版本：`v0.6.0`  
 > 默认模式：`Suggest`  
 > 真实 Amazon Ads 写入由外部 Connector / Executor 负责，本仓库不直接修改账户。
 
@@ -12,6 +12,8 @@
 Data
   ↓
 Validate freshness / attribution / scope / economics
+  ↓
+Read relevant entity history when available
   ↓
 Diagnose problem or find opportunity
   ↓
@@ -27,10 +29,10 @@ Readback → Observe → Post-change Review
   ↓
 Keep / Monitor / Rollback Candidate / Repeat
   ↓
-Optimization Event / History
+Append Optimization Event → Refresh Entity History
 ```
 
-这套结构避免把“ACOS 高就降 Bid”“预算跑满就加预算”当成自动规则。
+这套结构避免把“ACOS 高就降 Bid”“预算跑满就加预算”，或“上轮还没验证完就再次反向调参”当成自动规则。
 
 ## Progressive Loading：节省 Token
 
@@ -42,6 +44,8 @@ Optimization Event / History
 skill-local references
    ↓
 必要时 shared references / schemas
+   ↓
+只取同实体的有限历史切片
 ```
 
 示例：
@@ -64,6 +68,11 @@ skill-local references
 → post-change-review
 → references/post-change-evaluation.md
 → schemas/optimization-event.json
+
+“这个 Target 最近是不是已经调过？”
+→ references/optimization-memory.md
+→ schemas/entity-history.json
+→ 只读取同实体/同控制维度的近期事件
 ```
 
 ## Agent 兼容
@@ -95,7 +104,49 @@ skill-local references
 | `negative-targeting` | Negative 与误杀保护 |
 | `profitability-analysis` | Break-even ACOS、贡献利润、TACOS |
 | `anomaly-detection` | 历史基线异常检测 |
-| `amazon-ads-optimizer` | 总调度、去重、冲突消解与优先级 |
+| `amazon-ads-optimizer` | 总调度、历史检查、去重、冲突消解与优先级 |
+
+## Optimization Memory
+
+`references/optimization-memory.md` 是跨 Skill 的共享记忆合同，不单独增加一个常驻大 Skill。
+
+核心设计：
+
+```text
+Append-first Event Ledger
+          ↓
+optimization-event.json
+          ↓
+Derived compact entity history
+          ↓
+entity-history.json
+          ↓
+Read-before-recommend gate
+```
+
+它要求明确区分：
+
+```text
+proposed ≠ applied
+applied ≠ readback confirmed
+readback confirmed ≠ worked
+rollback proposed ≠ rolled back
+```
+
+在给同一实体新的 Bid / Budget / Placement / Negative / State 建议前，若历史可用，应优先检查：
+
+- 最近一次同控制维度动作；
+- 是否仍处于 validation window；
+- 是否缺少 Readback；
+- application 是否 `Unknown` / `Drifted`；
+- 是否有 active experiment；
+- 是否存在 parent/child 并发修改；
+- 是否触发 rollback / safety guardrail；
+- memory 是否 local-only / partial / stale。
+
+若上一动作尚未成熟，默认倾向 `Hold`、`Experiment Only` 或 `Manual Review`，而不是继续叠加修改。严重超支、不可购买、Listing suppression、库存风险等安全条件可触发例外，但应记录 override 原因。
+
+历史事件是证据，不是当前真相。需要当前状态时仍应从可信数据源重新 Readback。
 
 ## Experiment Planner
 
@@ -154,9 +205,12 @@ amazon-ads-skills/
 │   ├── post-change-review/
 │   └── ...
 ├── references/
+│   ├── optimization-memory.md
+│   └── ...
 ├── schemas/
 │   ├── optimization-action.json
 │   ├── optimization-event.json
+│   ├── entity-history.json
 │   └── experiment-plan.json
 ├── docs/SOURCES.md
 ├── AGENTS.md
@@ -171,10 +225,12 @@ amazon-ads-skills/
 - 一个 Skill 解决一个清晰运营问题；
 - `SKILL.md` 尽量薄，复杂知识进入按需 references；
 - 区分 Fact / Observation / Hypothesis / Cause / Action / Outcome；
-- 不编造缺失数据；
+- 不编造缺失数据或历史；
 - 不把固定经验阈值伪装成官方规则；
 - 不直接执行真实账户写入；
 - 对同实体的新动作，先检查尚未完成验证的旧动作；
+- 事件尽量 append-first，实体摘要是可重建派生视图，不覆盖历史事实；
+- 历史状态过期时重新 Readback，不把旧 memory 当当前配置；
 - 不确定但可验证的结论优先变成受控实验，而不是高置信动作。
 
 ## 外部资料与许可证
@@ -191,9 +247,9 @@ amazon-ads-skills/
 - [x] Growth Opportunity Finder
 - [x] Experiment Planner + experiment schema
 - [x] Post-change Review + optimization event schema
+- [x] Optimization Memory + entity history schema
 - [x] Contextual benchmark policy
 - [ ] Weekly Review playbook
-- [ ] Optimization Memory / entity history reference
 - [ ] Historical replay / eval fixtures
 - [ ] 继续拆薄旧版较厚 Skills
 - [ ] Amazon Ads API / 自研 Connector 示例
