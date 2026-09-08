@@ -1,0 +1,57 @@
+# Methodology sources
+
+This repository does not copy third-party skill text wholesale. External repositories are used to discover useful patterns, operating concepts, and documentation structures. Reusable ideas are rewritten for this project, checked against the repository's safety model, and adapted to Amazon Ads.
+
+## Reviewed repositories
+
+### nospicyplease/amazon-ppc-advanced-skills
+
+Useful patterns reviewed:
+
+- one operator job per skill;
+- concise `SKILL.md` with detailed logic moved to `references/`;
+- performance-drop diagnosis based on exact windows, contribution analysis, retail context, control-change timelines, and mixed-ASIN safety;
+- explicit distinction between facts, hypotheses, missing data, confidence, and actionability;
+- approval-gated mutation design.
+
+Adopted here as independently rewritten concepts, especially in `skills/performance-drop-diagnosis/` and related references.
+
+Repository: https://github.com/nospicyplease/amazon-ppc-advanced-skills
+
+### AgriciDaniel/claude-ads
+
+Useful patterns reviewed:
+
+- thin platform-specific skill entrypoints;
+- progressive loading of measurement, benchmark, budget, bidding, policy and other references;
+- contextual rather than universal benchmarks;
+- marginal-return thinking for budget allocation;
+- clear separation between observation, diagnosis, recommendation and mutation.
+
+Repository: https://github.com/AgriciDaniel/claude-ads
+
+### noique/cross-border-ecommerce-skills
+
+Useful high-level workflow ideas reviewed:
+
+- weekly Amazon PPC operating rhythm;
+- current vs prior-period comparison;
+- campaign triage;
+- search-term harvesting and negative review;
+- prioritized action lists.
+
+The project uses CC BY-NC 4.0 and includes fixed heuristic thresholds that are not suitable as universal automation rules. Its text and thresholds are therefore not copied into this MIT repository; only general workflow ideas may inform independently rewritten playbooks.
+
+Repository: https://github.com/noique/cross-border-ecommerce-skills
+
+## Integration rules
+
+Before adopting an external idea:
+
+1. Prefer generic methodology over vendor-specific APIs.
+2. Do not copy substantial third-party prose.
+3. Do not import client/account data or private examples.
+4. Treat fixed thresholds as optional heuristics unless backed by account-specific evidence.
+5. Preserve this repository's `Read-only / Suggest / Shadow / Execute` safety model.
+6. Put detailed reusable knowledge in references/playbooks so Skills load progressively.
+7. Record important reviewed sources here when they materially influence the project.
