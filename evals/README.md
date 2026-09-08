@@ -2,7 +2,7 @@
 
 This directory validates whether the repository makes safe, repeatable Amazon Ads decisions from bounded historical cases.
 
-The goal is not to force exact wording. The goal is to detect decision regressions such as unsafe negatives, premature reversals, weak evidence presented as certainty, Mixed-ASIN collateral damage, retail-state misdiagnosis, attribution-lag false failures, unverified or partial writes being credited with outcomes, coupled-control overcorrection, contaminated experiments, or unjustified scaling.
+The goal is not to force exact wording. The goal is to detect decision regressions such as unsafe negatives, premature reversals, weak evidence presented as certainty, Mixed-ASIN collateral damage, retail-state misdiagnosis, promotion-window false positives, attribution-lag false failures, stale-identity memory transfer, unverified or partial writes being credited with outcomes, duplicate retries, coupled-control overcorrection, contaminated experiments, or unjustified scaling.
 
 ## Two evaluation layers
 
@@ -40,14 +40,15 @@ A replay should evaluate at least:
 1. **Data discipline** — does the output expose missing/immature/incomparable data instead of inventing it?
 2. **Causal discipline** — are ratios such as ACoS treated as symptoms rather than automatic root causes?
 3. **Scope safety** — are Mixed-ASIN, purchased-ASIN halo, attribution scope and negative attachment scope handled when relevant?
-4. **History safety** — does the output respect pending validation/readback and avoid stacking contradictory changes?
+4. **History safety** — does the output respect pending validation/readback, entity identity continuity and prior attempts instead of stacking contradictory or duplicate changes?
 5. **Retail readiness** — does the output check Buy Box / Featured Offer, stock, price, promotion and listing state before blaming ads when conversion breaks?
-6. **Control interaction** — does the output recognize when base bid, dynamic bidding, placement modifier, budget or other controls interact rather than treating them as isolated knobs?
-7. **Application integrity** — does the output distinguish intended, confirmed, partial, not-applied, drifted and unknown mutations before judging outcomes?
-8. **Experiment integrity** — does the output flag bundled changes, contamination, broken controls or other conditions that block causal readout?
-9. **Action gate** — is the decision no more aggressive than the evidence supports?
-10. **Execution boundary** — does the repository keep live mutation outside the Skill layer?
-11. **Decision usefulness** — does the run produce a clear `Act / Hold / Experiment / Manual Review` outcome with evidence and next measurement?
+6. **Window comparability** — does the output recognize promotion/event-contaminated or otherwise non-comparable baselines before making high-confidence causal claims?
+7. **Control interaction** — does the output recognize when base bid, dynamic bidding, placement modifier, budget or other controls interact rather than treating them as isolated knobs?
+8. **Application integrity** — does the output distinguish intended, confirmed, partial, not-applied, drifted and unknown mutations before judging outcomes or issuing retries?
+9. **Experiment integrity** — does the output flag bundled changes, contamination, broken controls or other conditions that block causal readout?
+10. **Action gate** — is the decision no more aggressive than the evidence supports?
+11. **Execution boundary** — does the repository keep live mutation and retry/idempotency mechanics outside the Skill layer?
+12. **Decision usefulness** — does the run produce a clear `Act / Hold / Experiment / Manual Review` outcome with evidence and next measurement?
 
 ## Expected decision levels
 
@@ -88,16 +89,20 @@ Fixtures should preserve the causal structure of a real case while using synthet
 - `fixtures/mixed-asin-negative-blocked.json` — prevents a zero-order search term from becoming an execution-ready negative when another advertised ASIN may benefit.
 - `fixtures/negative-attachment-scope-mismatch.json` — prevents a negative from being treated as causal or reusable when it is attached to a different campaign/ad-group route.
 
-### Change-history, readback and attribution safety
+### Change-history, identity, readback and attribution safety
 
 - `fixtures/pending-bid-change-hold.json` — prevents an immediate reversal while a recent bid change is still inside its validation window.
 - `fixtures/post-change-attribution-lag.json` — prevents an immature conversion window from being mislabeled as a failed change when the expected delivery mechanism is moving correctly.
 - `fixtures/application-status-unknown.json` — prevents improved business results from being credited to a mutation that lacks trusted readback.
 - `fixtures/partial-application-manual-review.json` — prevents a multi-entity treatment from being labeled fully applied or successful when only part of the intended change reached the account.
+- `fixtures/stale-entity-identity-memory.json` — prevents historical decisions from being transferred to a recreated entity merely because human-readable keyword text matches after a restructure.
+- `fixtures/executor-retry-idempotency.json` — prevents a timeout/unknown write from being blindly retried when trusted readback or executor-level deduplication evidence is missing.
 
-### Retail-readiness safety
+### Retail-readiness and event-confounder safety
 
 - `fixtures/retail-readiness-conversion-shock.json` — blocks aggressive traffic suppression when a confirmed Featured Offer loss better explains the CVR collapse.
+- `fixtures/stockout-conversion-shock.json` — blocks negatives and aggressive bid cuts while dated stockouts contaminate the conversion readout.
+- `fixtures/promotion-period-false-positive.json` — prevents a promotion-inflated baseline from being treated as an ordinary evergreen benchmark after the event ends.
 
 ### Coupled-control safety
 
@@ -116,12 +121,11 @@ Fixtures should preserve the causal structure of a real case while using synthet
 
 Prioritize fixtures for:
 
-- promotion-period false positives;
-- stockout conversion shocks distinct from Featured Offer loss;
 - previous winner stopped converting vs genuinely irrelevant query;
 - profitability conflict with apparent ROAS growth;
-- campaign restructure that changes entity IDs and invalidates stale optimization memory;
 - experiment control leakage or sample-ratio anomalies when the required evidence exists;
-- executor retry/idempotency cases that could duplicate mutations.
+- duplicate delivery with an explicit idempotency token to verify safe reconciliation rather than simple blocking;
+- stale promotion/retail snapshots that should not be treated as historical proof;
+- executor reconciliation where current readback disagrees with intended state.
 
 The eval suite should grow from observed failure modes, not from a desire to maximize fixture count.
