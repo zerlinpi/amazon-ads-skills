@@ -7,7 +7,15 @@ description: Evaluate whether an Amazon Ads optimization change was actually app
 
 Use this Skill after a proposed or externally executed optimization action. It closes the loop between `action -> observe -> evaluate -> rollback/keep`.
 
-Load `references/post-change-evaluation.md` when detailed classification, timing, counterfactual or rollback logic is needed.
+## Progressive loading
+
+Load only what the case needs:
+
+- detailed outcome/counterfactual/rollback logic: `references/post-change-evaluation.md`;
+- source, semantic-version or backfill comparability: `../../references/data-lineage.md`;
+- prior optimization state/history conflicts: `../../references/optimization-memory.md`.
+
+Do not load data-lineage for a clean single-source comparison whose snapshots use the same maturity policy.
 
 ## Required inputs
 
@@ -15,52 +23,52 @@ Gather what is available and label missing fields:
 
 - original action/proposal and reason;
 - entity type and stable entity ID when available;
-- before value/state;
-- approved or intended after value/state;
-- action timestamp and marketplace/timezone;
+- before value/state and intended after value/state;
+- action timestamp plus marketplace/profile/timezone;
 - validation metric(s), expected mechanism, validation window and rollback condition;
-- current live state or post-change export;
+- current trusted state or post-change export;
 - comparable pre-change performance window;
+- source/snapshot metadata when baseline and post windows differ in extraction, semantic version, completeness or backfill maturity;
 - promotions, price, inventory, Featured Offer/Buy Box, listing and competitor context that could confound the result.
 
 ## Workflow
 
-1. **Readback first.** Confirm whether the intended change is actually present in current state before judging performance.
-2. Classify implementation as `Confirmed`, `Partial`, `Not Applied`, `Drifted`, or `Unknown`.
-3. Define observation windows using completed, attribution-mature periods; do not compare partial current-day data with complete historical days.
-4. Compare the post-change metrics to the best available baseline and to the action's expected mechanism.
-5. Separate delivery effects from business outcome effects. Example: a bid increase may restore impressions before orders mature.
-6. Check confounders and concurrent changes. If multiple material controls changed together, reduce causal confidence.
+1. **Readback first** — verify whether the intended change is actually present.
+2. Classify application as `Confirmed`, `Partial`, `Not Applied`, `Drifted`, or `Unknown`.
+3. **Measurement gate** — require completed, attribution-mature, definitionally comparable windows; when history can restate, verify baseline/post backfill parity before outcome attribution.
+4. Compare the post-change metrics to the best available baseline and to the expected mechanism.
+5. Separate delivery effects from downstream conversion/profit effects.
+6. Check retail, market, concurrent-control and measurement confounders.
 7. Classify the outcome using the detailed reference.
-8. Recommend one of: `Keep`, `Keep Monitoring`, `Rollback Candidate`, `Follow-up Experiment`, `Fix Application`, or `Manual Review`.
-9. Do not execute rollback. Return a guarded proposal for an external executor only when evidence supports it.
+8. Recommend `Keep`, `Keep Monitoring`, `Rollback Candidate`, `Follow-up Experiment`, `Fix Application`, or `Manual Review`.
+9. Never execute rollback; any mutation remains external and explicitly authorized.
 
 ## Key rules
 
-- Never call an action successful if readback shows it was not applied.
+- `proposed != applied != readback confirmed != worked`.
 - Never call an action failed merely because early attributed orders have not matured.
+- Never call an action worked when baseline and post windows use materially different semantic definitions or asymmetric backfill maturity.
 - Do not optimize on ACOS/ROAS alone; evaluate the mechanism the action was supposed to change.
-- Distinguish expected short-term movement from durable business impact.
-- Treat promotion, price, stock, Buy Box/Featured Offer, listing, demand and competitor shocks as possible alternative explanations.
-- If multiple changes overlap the same entity/window, downgrade single-action causal claims.
-- If a previous winner deteriorates after a change, compare against entity history before recommending another aggressive edit.
+- Treat promotion, price, stock, Buy Box/Featured Offer, listing, demand and competitor shocks as alternative explanations.
+- If multiple material changes overlap the entity/window, downgrade single-action causal claims.
+- If a previous winner deteriorates after a change, check entity history before proposing another aggressive edit.
 
 ## Output
 
 Return:
 
-1. **Readback status** — intended vs current state.
-2. **Evaluation windows** — exact baseline/post-change dates and attribution maturity.
-3. **Expected mechanism** — what the action was supposed to change first and downstream.
-4. **Observed evidence** — delivery, conversion, sales/profit and retail context.
-5. **Confounders / concurrent changes**.
-6. **Outcome classification** — with confidence.
-7. **Decision** — Keep / Monitor / Rollback Candidate / Follow-up Experiment / Fix Application / Manual Review.
-8. **Next check** — metric, date/window, minimum evidence needed.
-9. **Memory event** — when structured output is requested, emit a record compatible with `../../schemas/optimization-event.json`.
+1. readback/application status;
+2. evaluation windows, attribution maturity and measurement comparability;
+3. expected mechanism;
+4. observed delivery, conversion, sales/profit and retail evidence;
+5. confounders/concurrent changes;
+6. outcome classification with confidence;
+7. decision;
+8. next check and evidence needed;
+9. structured memory event when requested (`../../schemas/optimization-event.json`).
 
 ## Safety
 
 Default mode is `Suggest`.
 
-`Rollback Candidate` means “evidence supports preparing a rollback proposal,” not “perform rollback now.” Any real account mutation remains outside this repository and requires explicit authorization plus the external Connector / Executor layer.
+`Rollback Candidate` means evidence supports preparing a rollback proposal, not performing it. Any real account mutation requires explicit authorization plus an external Connector / Executor.
