@@ -65,38 +65,37 @@ Historical Replay / Eval Fixtures
 
 `evals/README.md` 定义 Contract checks + Capability replay。Capability Eval 使用 `met / not_met / insufficient_evidence`，比较决策行为而不是 exact wording。
 
-当前 regression pack 已覆盖 **33 类关键安全风险**：Mixed-ASIN 误否词、Negative attachment 错层级、Previous Winner 短期 0 单、Data-source lineage drift、Semantic metric-version drift、Pending Change 反复调参、Bid×Placement 联动、Featured Offer / Buy Box 冲击、Stockout 转化冲击、stale retail snapshot、parent-level retail shock、Promotion baseline 假异常、Attribution Lag 假失败、Unknown Application 错误归因、Partial Application、未验证 stale entity identity、cross-profile identity collision、verified deliberate entity migration、verified cross-profile deliberate migration、blind retry、显式 idempotency safe retry、readback 与 intended state 不一致、Experiment contamination、Sample Ratio / Allocation Integrity 异常、control-group treatment leakage、auction interference / traffic displacement、shared-budget experiment starvation、parent/child ASIN substitution、long-test control-boundary drift、portfolio fixed-budget local optimum conflict、Proven Winner 合理扩量、Budget exhausted 但无 marginal headroom、ROAS 增长但贡献利润恶化。
+当前 regression pack 已覆盖 **36 类关键安全风险**，本轮新增：
 
-执行完整性原则：
+- Cross-marketplace predecessor evidence portability limits；
+- Asymmetric backfill 导致的 Post-change false lift；
+- Audit overlapping-grain double counting / ratio aggregation error。
+
+其余覆盖继续包括 Mixed-ASIN、Negative scope、Previous Winner、source/semantic drift、retail shock、application/readback/retry、experiment leakage/interference、portfolio conflict、profitability conflict 等关键风险。
+
+关键原则：
 
 ```text
 timeout ≠ failed write
 executor success ≠ trusted current state
-same intended value ≠ retry is automatically safe
-same idempotency key + same stable intent + explicit dedup contract → transport retry may be safe
 safe retry ≠ application confirmed
-same keyword text ≠ same optimization identity
 same entity id/name across profiles ≠ same optimization identity
 verified cross-profile migration → bounded predecessor context, not state cloning
+verified cross-marketplace mapping ≠ portable bid/performance conclusion
 same metric name/table path ≠ same measurement definition
-semantic version cutover ≠ business break
+same source + same semantic version ≠ same backfill maturity
 extracted_at ≠ available_through
+profile/campaign/keyword/search-term/placement views ≠ additive spend pools
+average(row ACOS/ROAS/CVR) ≠ account ratio
 higher ROAS ≠ higher contribution profit
-recent zero orders ≠ irrelevant query
 stale retail snapshot ≠ current retail state
-child-level CVR drop ≠ ad inefficiency when family retail shift explains substitution
-declared experiment split ≠ realized allocation integrity
-launch-time clean control ≠ full-window clean control
-control received treatment-like exposure ≠ clean control
-campaign-local lift ≠ incremental value when cohorts share auctions/demand
-shared pool capacity shift ≠ independent control response
-child-ASIN lift ≠ family-level incrementality when sibling substitution exists
+campaign-local lift ≠ incremental value when cohorts share demand/resources
 campaign-local optimum ≠ portfolio optimum
 ```
 
 ## Data Lineage
 
-统一数据模型见 `references/data-schema.md`。当 baseline/comparison 来自不同 API、MCP、CSV、Warehouse、BI、刷新路径，或同一数据集发生 metric semantic-version 变化时，按需加载 `references/data-lineage.md`。
+统一数据模型见 `references/data-schema.md`。当 baseline/comparison 来自不同 API、MCP、CSV、Warehouse、BI、刷新路径、metric semantic version，或历史快照成熟度不一致时，按需加载 `references/data-lineage.md`。
 
 至少区分：
 
@@ -110,9 +109,27 @@ filters / scope
 dataset semantic version
 per-metric definition ID / semantic version
 completeness / backfill status
+snapshot/backfill maturity
 ```
 
-比较可标记为 `Comparable / Reconcilable / Directional / Not Comparable / Unknown`。如果 apparent break 与 source switch 或 metric-version cutover 同期发生，优先 same-source/same-version replay 或 overlap reconciliation，再做高置信广告动作。
+比较可标记为 `Comparable / Reconcilable / Directional / Not Comparable / Unknown`。如果 apparent break/lift 与 source switch、semantic cutover 或不对称 backfill 同期发生，先 replay/reconcile，再做高置信动作或 Post-change 结论。
+
+## Account Audit Integrity
+
+`amazon-ads-audit` 已改为薄入口，详细流程按需加载：
+
+`skills/amazon-ads-audit/references/account-audit-framework.md`
+
+账户体检现在明确：
+
+```text
+选择一个 canonical additive grain
+profile total ↔ complete campaign aggregate 做 reconciliation
+keyword / search term / placement 等用于分解，不重复累加
+先汇总 impressions/clicks/spend/orders/sales，再重新计算 CTR/CPC/CVR/ACOS/ROAS
+```
+
+缺失行不自动等于 0；profile/campaign 总量不一致时先查 coverage、truncation、filters、freshness 或 lineage，而不是直接评分。
 
 ## Weekly Review Playbook
 
@@ -129,17 +146,13 @@ schemas/optimization-event.json
 → read-before-recommend gate
 ```
 
-明确区分 `proposed ≠ applied`、`applied ≠ readback confirmed`、`readback confirmed ≠ worked`。历史是证据，不是当前事实。
-
-Memory 检索先验证：
+Memory identity：
 
 ```text
 marketplace + profile/account scope + entity type + entity id + control dimension
 ```
 
-如果 scope 为 `Incomplete / Ambiguous / Collision Detected`，禁止把不同 Marketplace/Profile 的历史合并为同一实体结论。
-
-Deliberate migration 只有在明确、可审计的 predecessor → successor mapping 下才能继承有限成熟历史。现在区分：
+Deliberate migration 区分：
 
 ```text
 same_scope
@@ -147,7 +160,9 @@ cross_profile_same_marketplace
 cross_marketplace
 ```
 
-经过验证的同 Marketplace 跨 Profile 迁移可以继承 bounded predecessor evidence；successor 当前 Bid/Budget/State/Readback 仍必须来自 successor-specific trusted readback。跨 Marketplace 默认更保守，历史结果通常只能作为 Directional context。
+Verified 同 Marketplace 跨 Profile 迁移可以继承 bounded mature evidence，但 successor 当前 Bid/Budget/State/Readback 必须独立读取。
+
+跨 Marketplace 默认 `Partial / Directional Only`：相关性、业务意图、失败模式可以作为假设；Bid、CPC、CVR、ACOS/ROAS、预算、版位倍率、利润阈值和验证时钟不能直接迁移为 action-safe 证据。
 
 ## Budget Pool / Portfolio Conflicts
 
@@ -161,15 +176,26 @@ cross_marketplace
 protected spend / business role → 不能被局部效率排序静默覆盖
 ```
 
-预算调整不再采用通用固定百分比；幅度由 marginal headroom、数据成熟度、库存、业务角色、预算池空间、最近变更和可逆性共同约束。
-
 ## Experiment Planner
 
 证据不足但可验证的优化优先进入 Experiment / Shadow。实验应预声明 decision question、hypothesis、treatment、control/holdout、primary metric、guardrails、attribution-mature window、contamination risk、allocation integrity、control integrity 与 stop/rollback rule。
 
 当 treatment/control 可能共享 query、target、ASIN、variation family、budget pool、routing、placement、auction 或 automation 时，按需加载 `skills/experiment-planner/references/interference-and-leakage.md`。
 
-长周期实验把 Control Integrity 视为随时间变化的状态。新增 Keyword/Target、Negative、Automation、Migration、Budget Pool 或 Variation Scope 变化后，需要重新验证边界；启动当天 `Clean` 不能证明完整实验窗口始终 `Clean`。
+长周期实验发生 Keyword/Target、Negative、Automation、Migration、Budget Pool 或 Variation Scope 变化后，需要重新验证 Control Boundary。
+
+## Post-change Review
+
+`post-change-review` 现在除 Readback/Attribution 外，还检查 measurement parity：
+
+```text
+baseline D+1 frozen
+post window D+7 mature
+historical rows mutable
+→ 不可直接把差异归因给优化动作
+```
+
+优先重新抽取同成熟度 baseline/post、使用一致 snapshot policy，或对 backfill revision 做 reconciliation。
 
 ## Safety
 
@@ -198,20 +224,16 @@ protected spend / business role → 不能被局部效率排序静默覆盖
 - `SKILL.md` 保持薄，详细知识按需加载；
 - 不把固定经验阈值伪装成官方规则或默认动作幅度；
 - 区分 Fact / Observation / Hypothesis / Cause / Action / Outcome；
-- 跨来源/跨语义版本趋势先检查 lineage、available-through、attribution、metric definition 和 filter comparability；
+- 跨来源/语义版本/快照成熟度趋势先检查 lineage comparability；
+- 聚合 base metrics 后再重算 ratio，禁止把重叠 entity grains 累加为账户总量；
 - 同实体新动作先检查未完成验证和可信 readback；
 - memory 检索先匹配 marketplace/profile scope，scope 不完整或冲突时 fail closed；
+- deliberate migration 需要显式 lineage mapping；跨 Marketplace 性能证据默认不直接迁移；
 - stale memory / stale identity / stale retail snapshot 不等于当前状态；
-- child-ASIN 变化存在 parent/variation-family retail shock 时先看 family/sibling/purchased-ASIN 证据；
-- deliberate entity migration 需要显式 lineage mapping；跨 Profile 迁移保留 predecessor 原始 scope，不能改写成 successor 原生历史；
 - Executor 的 unknown/timeout 结果先 reconcile，再决定 retry；
-- 幂等重试必须保持 stable intent、相同 key 与相同 mutation payload；
 - ROAS/ACoS 不能替代贡献利润和业务目标；
 - 固定预算池先做 portfolio reconciliation，再给单 Campaign 预算动作；
-- 历史赢家短期 0 单先诊断 conversion break，不自动否定；
-- 实验先验证 realized allocation、control integrity、leakage / interference，再解释 treatment lift；
-- 长周期实验发生 scope-changing event 后重新验证 Control Boundary；
-- 当 treatment 可能挤占 control 的流量、预算或 sibling-ASIN demand 时，优先看 combined / pool / family outcome；
+- 实验先验证 allocation、control integrity、leakage/interference；
 - Eval 判断行为而不是 exact wording；
 - 默认 Suggest/Shadow，不直接写真实账户。
 
@@ -231,16 +253,13 @@ protected spend / business role → 不能被局部效率排序静默覆盖
 - [x] Contextual Benchmark Policy
 - [x] Weekly Review Playbook
 - [x] Historical replay / regression fixtures
-- [x] Previous Winner / profitability conflict / reconciliation / retry / stale retail / allocation integrity fixtures
-- [x] Portfolio-level budget conflict + verified entity migration continuity evals
-- [x] Treatment/control leakage + auction interference / displacement evals
-- [x] Shared-budget starvation + parent/child ASIN substitution evals
-- [x] Long-test control-boundary drift + cross-profile identity collision evals
-- [x] Data-source lineage drift + parent-level retail shock evals
-- [x] Semantic metric-version drift + verified cross-profile deliberate migration evals
-- [x] Slim `performance-drop-diagnosis` entrypoint while keeping detailed logic in references
+- [x] Source lineage + semantic metric-version drift
+- [x] Cross-profile + cross-marketplace migration safety
+- [x] Asymmetric backfill measurement-parity eval
+- [x] Slim `performance-drop-diagnosis` and `amazon-ads-audit` entrypoints
+- [x] Audit aggregation-integrity eval
 - [ ] 继续拆薄其他旧版较厚 Skills
-- [ ] 扩展 cross-marketplace portability / asymmetric backfill evals
+- [ ] 扩展 historical-restatement-after-decision / truncated-audit-coverage evals
 - [ ] Amazon Ads API / 自研 Connector 示例
 
 ## Disclaimer
