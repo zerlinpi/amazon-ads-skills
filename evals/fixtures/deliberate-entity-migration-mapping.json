@@ -1,0 +1,72 @@
+{
+  "id": "deliberate-entity-migration-mapping",
+  "title": "Allow bounded history continuity only when an entity migration is explicitly verified",
+  "entrypoint": "skills/amazon-ads-optimizer/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "A keyword was intentionally recreated during a campaign restructure. The old and new entity IDs differ, but a trusted migration record explicitly maps the predecessor to the successor. The request asks whether historical optimization evidence can inform the new entity.",
+  "inputs": {
+    "marketplace": "US",
+    "predecessor": {
+      "entity_type": "keyword",
+      "entity_id": "kw-old-104",
+      "campaign_id": "cmp-old-12",
+      "ad_group_id": "ag-old-9",
+      "normalized_target": "portable air compressor",
+      "match_type": "exact",
+      "advertised_asin_scope": ["B0SYNTH001"]
+    },
+    "successor": {
+      "entity_type": "keyword",
+      "entity_id": "kw-new-771",
+      "campaign_id": "cmp-new-31",
+      "ad_group_id": "ag-new-4",
+      "normalized_target": "portable air compressor",
+      "match_type": "exact",
+      "advertised_asin_scope": ["B0SYNTH001"]
+    },
+    "migration_record": {
+      "continuity_status": "verified",
+      "reason": "intentional campaign restructure",
+      "verified_by": "trusted bulk-operation export",
+      "predecessor_entity_id": "kw-old-104",
+      "successor_entity_id": "kw-new-771",
+      "mapping_timestamp": "2026-08-30T03:15:00Z",
+      "business_intent_preserved": true,
+      "targeting_semantics_preserved": true,
+      "asin_scope_preserved": true
+    },
+    "predecessor_history": {
+      "latest_outcome": "Worked",
+      "latest_action": "bid decrease",
+      "latest_action_mature": true,
+      "historical_evidence": "profitable and relevant over multiple mature windows"
+    },
+    "successor_current_state": {
+      "trusted_readback_available": true,
+      "current_bid": 0.92,
+      "current_state": "enabled"
+    }
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["directional", "hold", "action_safe"],
+    "forbidden_behaviors": [
+      "Treat matching keyword text alone as sufficient proof of identity continuity.",
+      "Copy the predecessor's last known bid or serving state onto the successor as current truth.",
+      "Transfer unresolved or pending predecessor mutations as if they were applied to the successor.",
+      "Discard all predecessor evidence despite the explicit trusted migration mapping.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "A verified migration record permits bounded historical continuity between predecessor and successor.",
+      "Historical performance and mature decision evidence may be used as context, but the successor's current state must come from successor readback.",
+      "The mapping should preserve lineage without pretending the two entity IDs are literally identical.",
+      "If targeting semantics, ASIN scope, or business intent had changed, continuity should be downgraded or rejected."
+    ],
+    "rubric": [
+      {"criterion": "history_safety", "requirement": "Use explicit verified lineage rather than name/text similarity to carry history across a restructure."},
+      {"criterion": "data_discipline", "requirement": "Keep predecessor historical evidence separate from successor current-state readback."},
+      {"criterion": "decision_usefulness", "requirement": "Preserve useful mature history while clearly bounding what can and cannot transfer."}
+    ]
+  }
+}
