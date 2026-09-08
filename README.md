@@ -1,8 +1,8 @@
 # amazon-ads-skills
 
-Amazon Ads AI Agent 技能库：监控、因果诊断、增长机会、受控实验、变更后复盘、优化记忆与安全优化。
+Amazon Ads AI Agent 技能库：监控、因果诊断、增长机会、受控实验、变更后复盘、优化记忆、安全优化与历史回放 Eval。
 
-> 当前版本：`v0.7.0`  
+> 当前版本：`v0.8.0`  
 > 默认模式：`Suggest`  
 > 本仓库不直接修改真实 Amazon Ads 账户；写入由外部 Connector / Executor 负责。
 
@@ -21,6 +21,9 @@ External Executor (optional, authorized)
   → Readback → Post-change Review
   → Keep / Monitor / Rollback Candidate
   → Append event → Refresh entity history
+         ↓
+Historical Replay / Eval Fixtures
+  → detect decision regressions
 ```
 
 ## Progressive Loading
@@ -63,6 +66,8 @@ skill-local reference
 → 只按发现的问题调用必要 Skills
 ```
 
+`evals/` 仅用于测试和历史回放，普通账户分析不应加载，以免浪费 token 或污染决策上下文。
+
 ## Skills
 
 | Skill | 用途 |
@@ -83,7 +88,51 @@ skill-local reference
 | `anomaly-detection` | 历史基线异常检测 |
 | `amazon-ads-optimizer` | 总调度、记忆检查、去重与冲突消解 |
 
-当前保持 **15 个 Skills**。如果一个新能力只是“把已有 Skills 按固定运营节奏组合起来”，优先增加 `playbooks/`，而不是继续拆成新的常驻 Skill。
+当前保持 **15 个 Skills**。如果一个新能力只是“把已有 Skills 按固定运营节奏组合起来”，优先增加 `playbooks/`；如果目的是验证现有决策是否可靠，优先增加 `evals/`，而不是继续拆新 Skill。
+
+## Historical Replay / Evals
+
+`evals/README.md` 定义了历史回放和回归测试合同。
+
+评估拆成两层：
+
+```text
+Contract checks
+→ schema / path / enum / mode / structure
+
+Capability replay
+→ same fixture through matching Skill
+→ score decision behavior, not wording
+```
+
+Capability Eval 使用三态：
+
+- `met`
+- `not_met`
+- `insufficient_evidence`
+
+`insufficient_evidence` 不会被强行算作通过或失败。
+
+当前初始 regression pack 覆盖：
+
+- Mixed-ASIN 下禁止把焦点 ASIN 的 0 单 Search Term 直接变成 execution-ready negative；
+- 最近 Bid 调整仍在 validation window 时防止立即反向修改；
+- 有利润和零售准备度支持的预算增长机会可进入 guarded scaling，但不能从 Skill 层直接写真实账户。
+
+结构：
+
+```text
+evals/
+├── README.md
+└── fixtures/
+    ├── mixed-asin-negative-blocked.json
+    ├── pending-bid-change-hold.json
+    └── proven-winner-budget-growth.json
+
+schemas/eval-case.json
+```
+
+Fixture 使用合成数据，不提交真实客户、账户或第三方私有导出。
 
 ## Weekly Review Playbook
 
@@ -194,6 +243,9 @@ amazon-ads-skills/
 │   └── ...
 ├── playbooks/
 │   └── weekly-review.md
+├── evals/
+│   ├── README.md
+│   └── fixtures/
 ├── references/
 │   ├── optimization-memory.md
 │   ├── benchmark-policy.md
@@ -202,7 +254,8 @@ amazon-ads-skills/
 │   ├── optimization-action.json
 │   ├── optimization-event.json
 │   ├── entity-history.json
-│   └── experiment-plan.json
+│   ├── experiment-plan.json
+│   └── eval-case.json
 ├── docs/SOURCES.md
 ├── AGENTS.md
 ├── CLAUDE.md
@@ -215,6 +268,7 @@ amazon-ads-skills/
 
 - 一个 Skill 解决一个清晰决策问题；
 - 组合型运营节奏优先使用 playbook；
+- 回归验证优先使用 synthetic eval fixture，不为测试单独制造 Skill；
 - `SKILL.md` 保持薄，详细知识按需加载；
 - 区分 Fact / Observation / Hypothesis / Cause / Action / Outcome；
 - 不编造缺失数据或历史；
@@ -223,6 +277,7 @@ amazon-ads-skills/
 - 事件尽量 append-first，实体摘要可重建；
 - stale memory 不等于当前状态；
 - 不确定但可验证的结论优先进入实验；
+- Eval 判断行为而不是 exact wording；
 - 默认 Suggest/Shadow，不直接写真实账户。
 
 ## Sources & Licenses
@@ -248,7 +303,8 @@ discover → license check → extract generic idea
 - [x] Optimization Memory + Entity History
 - [x] Contextual Benchmark Policy
 - [x] Weekly Review Playbook
-- [ ] Historical replay / eval fixtures
+- [x] Historical replay / initial eval fixtures
+- [ ] 增加更多来自真实失误模式的 synthetic regression fixtures
 - [ ] 继续拆薄旧版较厚 Skills
 - [ ] Amazon Ads API / 自研 Connector 示例
 
