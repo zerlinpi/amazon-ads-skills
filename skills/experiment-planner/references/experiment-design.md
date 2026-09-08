@@ -103,7 +103,27 @@ Duration should account for:
 
 A low-volume experiment can remain `Directional` or `Inconclusive` rather than being forced into a winner/loser classification.
 
-## 7. Contamination and interference
+## 7. Allocation integrity and sample-ratio checks
+
+When an experiment declares an expected traffic or entity split, compare that design with realized eligible allocation before trusting the outcome.
+
+An unexplained mismatch can indicate:
+
+- assignment/routing errors;
+- eligibility filters applied differently across arms;
+- logging or data-loss problems;
+- serving constraints;
+- external automation changing one cohort;
+- interference or contamination;
+- an implementation that differs from the declared experiment.
+
+Do not treat a nominal 50/50 design as proof that realized treatment/control exposure was valid.
+
+If sufficient counts and a valid probabilistic assignment model exist, a formal sample-ratio mismatch test may be used. If the expected allocation, assignment process, or eligible population is unclear, do not fabricate a p-value; classify allocation integrity as unresolved and downgrade causal confidence.
+
+A strong observed lift under unexplained allocation mismatch is still an observation, not an action-safe causal result. Prefer `Hold`, `Redesign`, `Experiment Only`, or `Manual Review` until the mismatch is explained or a clean rerun succeeds.
+
+## 8. Contamination and interference
 
 Check whether treatment can affect the comparison group through:
 
@@ -119,7 +139,7 @@ Check whether treatment can affect the comparison group through:
 
 Record contamination risk as `Low`, `Moderate`, `High`, or `Unknown`. High/Unknown risk should reduce causal confidence or trigger redesign.
 
-## 8. Pre-test freeze and lineage
+## 9. Pre-test freeze and lineage
 
 Before external execution, capture:
 
@@ -133,7 +153,7 @@ Before external execution, capture:
 
 Avoid changing unrelated controls during the test unless a guardrail/safety issue requires intervention. If another change occurs, record it as a confounder.
 
-## 9. Early stopping
+## 10. Early stopping
 
 Early stopping is allowed for safety, not for opportunistic winner selection.
 
@@ -147,13 +167,13 @@ Valid safety stops include:
 
 Do not repeatedly peek at noisy short-term conversion data and stop as soon as the preferred variant looks ahead. Sequential-testing methods require an explicit method and compatible data; otherwise wait for the declared observation window.
 
-## 10. Result states
+## 11. Result states
 
 Use explicit states:
 
 - `Ready` — design is executable through an authorized external layer.
 - `Shadow Only` — useful for simulation/backtest but not live testing yet.
-- `Redesign` — hypothesis/design has contamination or identification problems.
+- `Redesign` — hypothesis/design has allocation, contamination or identification problems.
 - `Hold` — data/economics/readiness are insufficient.
 
 After execution, evaluation should use `post-change-review` with the experiment plan as context. Recommended outcome labels:
@@ -163,19 +183,21 @@ After execution, evaluation should use `post-change-review` with the experiment 
 - `Inconclusive / Extend or Repeat`;
 - `Loser / Rollback Candidate`;
 - `Application Failure`;
-- `Invalidated by Confounder`.
+- `Invalidated by Confounder`;
+- `Invalidated by Allocation Integrity`.
 
-## 11. Multi-arm and multi-factor caution
+## 12. Multi-arm and multi-factor caution
 
 Do not introduce multiple independent changes just because they are all plausible improvements. Multi-factor experiments need enough traffic and a design that can identify effects/interactions. In normal Amazon PPC operations, sequential small tests are usually easier to interpret and reverse.
 
-## 12. Handoff contract
+## 13. Handoff contract
 
 The planner should hand off:
 
 - experiment ID;
 - hypothesis;
 - treatment and comparison scopes;
+- declared allocation and realized-allocation check when applicable;
 - exact planned changes;
 - primary metric;
 - diagnostic metrics;
