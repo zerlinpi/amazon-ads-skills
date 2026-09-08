@@ -66,6 +66,15 @@
           "type": ["string", "null"],
           "enum": ["Verified", "Partial", "Rejected", "Unknown", null]
         },
+        "scope_transition_type": {
+          "type": ["string", "null"],
+          "enum": ["same_scope", "cross_profile_same_marketplace", "cross_marketplace", "unknown", null]
+        },
+        "scope_transition_verified": {"type": ["boolean", "null"]},
+        "predecessor_evidence_portability": {
+          "type": ["string", "null"],
+          "enum": ["Bounded", "Directional Only", "Rejected", "Unknown", null]
+        },
         "predecessor_entities": {
           "type": "array",
           "items": {
