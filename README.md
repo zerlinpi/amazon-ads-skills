@@ -1,8 +1,8 @@
 # amazon-ads-skills
 
-亚马逊广告 AI Agent 技能库，用于广告监控、数据分析、因果诊断、安全优化与智能决策。
+亚马逊广告 AI Agent 技能库，用于广告监控、数据分析、因果诊断、增长机会发现、安全优化与智能决策。
 
-> 当前版本：`v0.2.0`  
+> 当前版本：`v0.3.0`  
 > 默认模式：`Suggest`  
 > 真实 Amazon Ads 写入由外部 Connector / Executor 负责，本仓库不直接执行账户修改。
 
@@ -17,11 +17,11 @@
   ↓
 完整性 / 归因 / 时间窗口校验
   ↓
-诊断问题与根因
+诊断问题 / 发现机会
   ↓
 动作候选
   ↓
-样本、利润、库存、Mixed-ASIN、促销等风险检查
+样本、利润、库存、Mixed-ASIN、促销、增量性等风险检查
   ↓
 Suggest / Shadow
   ↓
@@ -42,7 +42,7 @@ Observe / Evaluate / Rollback
 references / shared references
 ```
 
-Agent 不应一次加载整个仓库。例如用户问“为什么这个 ASIN 这周突然掉量”：
+例如用户问“为什么这个 ASIN 这周突然掉量”：
 
 ```text
 amazon-ads-optimizer
@@ -50,6 +50,16 @@ amazon-ads-optimizer
 performance-drop-diagnosis/SKILL.md
   ↓
 performance-drop-diagnosis/references/causal-drop-diagnosis.md
+```
+
+用户问“哪里还能继续扩量”：
+
+```text
+amazon-ads-optimizer
+  ↓
+growth-opportunity-finder/SKILL.md
+  ↓
+growth-opportunity-finder/references/opportunity-evaluation.md
 ```
 
 只有涉及外部 benchmark 时，才额外读取 `references/benchmark-policy.md`。
@@ -72,6 +82,7 @@ performance-drop-diagnosis/references/causal-drop-diagnosis.md
 | `amazon-ads-audit` | 账户级体检、结构、浪费与增长机会 |
 | `campaign-health-monitor` | Campaign 日常健康监控与告警 |
 | `performance-drop-diagnosis` | 业绩突降因果诊断：断点、贡献、Retail、控制变更、Mixed-ASIN 安全 |
+| `growth-opportunity-finder` | 增长机会发现：验证赢家、Headroom、Incrementality、Retail Readiness 与受控扩量 |
 | `search-term-analysis` | Search Term 赢家、Exact 收割、流量质量与否词候选 |
 | `keyword-optimization` | Keyword/Target 生命周期、Match Type 与结构优化 |
 | `bid-optimization` | 基于目标、样本和 Guardrail 的 Bid 建议 |
@@ -82,7 +93,7 @@ performance-drop-diagnosis/references/causal-drop-diagnosis.md
 | `anomaly-detection` | 历史基线异常检测及促销/库存误报过滤 |
 | `amazon-ads-optimizer` | 总调度、意图路由、去重、冲突消解、优先级排序 |
 
-## 突降诊断框架
+## 业绩突降诊断
 
 `performance-drop-diagnosis` 不从“哪个 ACOS 最差”开始，而是从业务损失开始：
 
@@ -106,7 +117,36 @@ Confirmed / Likely / Directional / Rejected / Missing Data
 Action-safe / Directional / Blocked
 ```
 
-核心目的：避免为了降低 ACOS 误伤销售速度、自然排名、品牌防御或其他 ASIN 的有效流量。
+## 增长机会框架
+
+`growth-opportunity-finder` 不把“低 ACoS”直接等同于“应该加预算”。它要求增长候选同时检查：
+
+```text
+Demand evidence
+  + Economics / objective fit
+  + Headroom
+  + Retail readiness
+  + Attribution quality
+  + Incrementality
+  + Reversibility
+  ↓
+Proven scale / Constrained winner / Harvest / Experiment / Hold
+```
+
+典型机会类型包括：
+
+- `scale-proven-winner`
+- `budget-release`
+- `query-harvest`
+- `target-expansion`
+- `placement-opportunity`
+- `asin-investment`
+- `listing-before-spend`
+- `defense-or-protection`
+- `experiment`
+- `hold`
+
+增长建议继续使用 `Action-safe / Directional / Blocked`，并要求验证窗口和 rollback 条件。
 
 ## Benchmark 使用规则
 
@@ -190,8 +230,10 @@ amazon-ads-skills/
 │   ├── campaign-health-monitor/
 │   ├── performance-drop-diagnosis/
 │   │   ├── SKILL.md
-│   │   └── references/
-│   │       └── causal-drop-diagnosis.md
+│   │   └── references/causal-drop-diagnosis.md
+│   ├── growth-opportunity-finder/
+│   │   ├── SKILL.md
+│   │   └── references/opportunity-evaluation.md
 │   ├── search-term-analysis/
 │   ├── keyword-optimization/
 │   ├── bid-optimization/
@@ -260,9 +302,9 @@ Amazon Ads 化
 - [x] 业绩突降因果诊断
 - [x] Mixed-ASIN action safety
 - [x] Contextual benchmark policy
+- [x] Growth Opportunity Finder
 - [ ] 将其余较厚 `SKILL.md` 逐步拆成薄入口 + references
 - [ ] Weekly Review playbook
-- [ ] Growth Opportunity Finder
 - [ ] Experiment Planner
 - [ ] Post-change Review
 - [ ] Action history / optimization memory schema
