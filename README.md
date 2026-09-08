@@ -65,7 +65,7 @@ Historical Replay / Eval Fixtures
 
 `evals/README.md` 定义 Contract checks + Capability replay。Capability Eval 使用 `met / not_met / insufficient_evidence`，比较决策行为而不是 exact wording。
 
-当前 regression pack 已覆盖 **19 类关键安全风险**：Mixed-ASIN 误否词、Negative attachment 错层级、Previous Winner 短期 0 单、Pending Change 反复调参、Bid×Placement 联动、Featured Offer / Buy Box 冲击、Stockout 转化冲击、Promotion baseline 假异常、Attribution Lag 假失败、Unknown Application 错误归因、Partial Application、stale entity identity memory、blind retry、显式 idempotency safe retry、readback 与 intended state 不一致、Experiment contamination、Proven Winner 合理扩量、Budget exhausted 但无 marginal headroom、ROAS 增长但贡献利润恶化。
+当前 regression pack 已覆盖 **21 类关键安全风险**：Mixed-ASIN 误否词、Negative attachment 错层级、Previous Winner 短期 0 单、Pending Change 反复调参、Bid×Placement 联动、Featured Offer / Buy Box 冲击、Stockout 转化冲击、stale retail snapshot、Promotion baseline 假异常、Attribution Lag 假失败、Unknown Application 错误归因、Partial Application、stale entity identity memory、blind retry、显式 idempotency safe retry、readback 与 intended state 不一致、Experiment contamination、Sample Ratio / Allocation Integrity 异常、Proven Winner 合理扩量、Budget exhausted 但无 marginal headroom、ROAS 增长但贡献利润恶化。
 
 执行完整性原则：
 
@@ -78,6 +78,8 @@ safe retry ≠ application confirmed
 same keyword text ≠ same optimization identity
 higher ROAS ≠ higher contribution profit
 recent zero orders ≠ irrelevant query
+stale retail snapshot ≠ current retail state
+declared experiment split ≠ realized allocation integrity
 ```
 
 ## Weekly Review Playbook
@@ -99,7 +101,7 @@ schemas/optimization-event.json
 
 ## Experiment Planner
 
-证据不足但可验证的优化优先进入 Experiment / Shadow。实验应预声明 decision question、hypothesis、treatment、control/holdout、primary metric、guardrails、attribution-mature window、contamination risk 与 stop/rollback rule；缺少统计输入时不伪造 power/MDE。
+证据不足但可验证的优化优先进入 Experiment / Shadow。实验应预声明 decision question、hypothesis、treatment、control/holdout、primary metric、guardrails、attribution-mature window、contamination risk、allocation integrity 与 stop/rollback rule；缺少统计输入时不伪造 power/MDE 或 SRM 显著性。
 
 ## Safety
 
@@ -129,11 +131,12 @@ schemas/optimization-event.json
 - 不把固定经验阈值伪装成官方规则；
 - 区分 Fact / Observation / Hypothesis / Cause / Action / Outcome；
 - 同实体新动作先检查未完成验证和可信 readback；
-- stale memory / stale identity 不等于当前状态；
+- stale memory / stale identity / stale retail snapshot 不等于当前状态；
 - Executor 的 unknown/timeout 结果先 reconcile，再决定 retry；
 - 幂等重试必须保持 stable intent、相同 key 与相同 mutation payload；
 - ROAS/ACoS 不能替代贡献利润和业务目标；
 - 历史赢家短期 0 单先诊断 conversion break，不自动否定；
+- 实验先验证 realized allocation / control integrity，再解释 treatment lift；
 - Eval 判断行为而不是 exact wording；
 - 默认 Suggest/Shadow，不直接写真实账户。
 
@@ -153,7 +156,7 @@ schemas/optimization-event.json
 - [x] Contextual Benchmark Policy
 - [x] Weekly Review Playbook
 - [x] Historical replay / regression fixtures
-- [x] Previous Winner zero-order / profitability conflict / reconciliation disagreement / explicit idempotency retry fixtures
+- [x] Previous Winner / profitability conflict / reconciliation / retry / stale retail / allocation integrity fixtures
 - [ ] 继续拆薄旧版较厚 Skills
 - [ ] 扩展 portfolio-level conflict 与 deliberate entity migration evals
 - [ ] Amazon Ads API / 自研 Connector 示例
