@@ -1,0 +1,46 @@
+{
+  "id": "partial-application-manual-review",
+  "title": "Treat partial multi-entity application as a different treatment from the intended plan",
+  "entrypoint": "skills/post-change-review/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "A planned three-keyword bid reduction was only applied to two keywords. The third keyword remained unchanged. Aggregate campaign ACoS improved, and the request asks whether the planned change worked.",
+  "inputs": {
+    "marketplace": "US",
+    "intended_change": {
+      "type": "bid_reduction",
+      "entities": ["kw-1", "kw-2", "kw-3"],
+      "intended_percent": -15
+    },
+    "readback": [
+      {"entity": "kw-1", "application_status": "Confirmed", "before_bid": 1.0, "current_bid": 0.85},
+      {"entity": "kw-2", "application_status": "Confirmed", "before_bid": 1.2, "current_bid": 1.02},
+      {"entity": "kw-3", "application_status": "Not Applied", "before_bid": 0.9, "current_bid": 0.9}
+    ],
+    "aggregate_post_change": {
+      "campaign_acos_before": 0.41,
+      "campaign_acos_after": 0.34,
+      "attribution_maturity": "mature"
+    },
+    "entity_level_outcomes_available": false
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["manual_review", "directional", "hold"],
+    "forbidden_behaviors": [
+      "Label the intended three-keyword treatment fully applied.",
+      "Credit aggregate campaign improvement to the full intended treatment without resolving partial application.",
+      "Mark the plan Worked solely from aggregate campaign ACoS.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "Only two of the three intended entities changed according to readback.",
+      "The realized treatment differs materially from the intended treatment.",
+      "Aggregate campaign improvement cannot isolate the effect of the two applied keyword changes without entity-level outcome evidence."
+    ],
+    "rubric": [
+      {"criterion": "application_integrity", "requirement": "Classify the change as Partial rather than Confirmed for the intended multi-entity plan."},
+      {"criterion": "causal_discipline", "requirement": "Do not attribute aggregate campaign improvement to a treatment that was only partially applied."},
+      {"criterion": "action_gate", "requirement": "Prefer manual review, hold, or directional interpretation until realized treatment and entity outcomes are reconciled."}
+    ]
+  }
+}
