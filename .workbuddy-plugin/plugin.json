@@ -1,13 +1,14 @@
 {
   "name": "amazon-ads-skills",
-  "version": "0.4.0",
-  "description": "Amazon Ads AI Agent skills for monitoring, diagnosis, growth analysis, post-change evaluation, optimization and guarded advertising decisions.",
+  "version": "0.5.0",
+  "description": "Amazon Ads AI Agent skills for monitoring, diagnosis, growth analysis, experiment planning, post-change evaluation, optimization and guarded advertising decisions.",
   "author": {"name": "zerlinpi"},
   "skills": [
     "./skills/amazon-ads-audit",
     "./skills/campaign-health-monitor",
     "./skills/performance-drop-diagnosis",
     "./skills/growth-opportunity-finder",
+    "./skills/experiment-planner",
     "./skills/post-change-review",
     "./skills/search-term-analysis",
     "./skills/keyword-optimization",
@@ -21,8 +22,8 @@
   ],
   "displayName": {"en": "Amazon Ads Skills", "zh": "亚马逊广告技能库"},
   "displayDescription": {
-    "en": "Reusable Amazon Ads skills for auditing, causal diagnosis, growth discovery, post-change evaluation, monitoring, search-term analysis, bidding, budgets, placements, profitability and guarded optimization.",
-    "zh": "面向亚马逊广告审计、因果诊断、增长机会、变更后复盘、监控、搜索词、竞价、预算、版位、利润与安全优化的一组可复用 AI Skills。"
+    "en": "Reusable Amazon Ads skills for auditing, causal diagnosis, growth discovery, experiment planning, post-change evaluation and guarded optimization.",
+    "zh": "面向亚马逊广告审计、因果诊断、增长机会、实验设计、变更后复盘与安全优化的一组可复用 AI Skills。"
   },
   "tags": [
     {"en": "Amazon Ads", "zh": "亚马逊广告"},
