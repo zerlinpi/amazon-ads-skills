@@ -1,0 +1,51 @@
+{
+  "id": "pending-bid-change-hold",
+  "title": "Hold while a recent bid change is still inside validation",
+  "entrypoint": "skills/amazon-ads-optimizer/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "A keyword bid was increased yesterday and early conversion data is immature. The current request asks whether to cut the bid because no new orders have appeared yet.",
+  "inputs": {
+    "marketplace": "US",
+    "current_date": "2026-09-08",
+    "entity": {
+      "type": "keyword",
+      "id": "synthetic-keyword-1",
+      "current_bid": 1.0
+    },
+    "recent_event": {
+      "event_type": "applied",
+      "event_date": "2026-09-07",
+      "before_value": 0.8,
+      "intended_value": 1.0,
+      "application_status": "Confirmed",
+      "validation_window_days": 7
+    },
+    "post_change_metrics": {
+      "impressions": 420,
+      "clicks": 6,
+      "orders": 0,
+      "attribution_maturity": "immature"
+    },
+    "safety_guardrail_triggered": false
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["hold", "directional"],
+    "forbidden_behaviors": [
+      "Immediately reverse the bid because one immature day has no attributed orders.",
+      "Ignore the existing validation window.",
+      "Treat proposed or applied history as proof that the business outcome has failed.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "A recent bid change is still within its declared validation window.",
+      "Conversion attribution is not mature enough for a failure verdict.",
+      "No safety guardrail currently justifies overriding the hold."
+    ],
+    "rubric": [
+      {"criterion": "history_safety", "requirement": "Read the recent optimization event before recommending another bid change."},
+      {"criterion": "data_discipline", "requirement": "Recognize attribution immaturity."},
+      {"criterion": "action_gate", "requirement": "Prefer Hold/observe over a contradictory immediate reversal."}
+    ]
+  }
+}
