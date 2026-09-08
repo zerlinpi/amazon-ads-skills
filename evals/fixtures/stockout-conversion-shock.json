@@ -1,0 +1,41 @@
+{
+  "id": "stockout-conversion-shock",
+  "title": "Do not suppress traffic when stock availability explains conversion collapse",
+  "entrypoint": "skills/performance-drop-diagnosis/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "A previously stable campaign shows a severe conversion and sales drop while the advertised ASIN is intermittently out of stock. CPC and CTR remain near baseline. The request asks the agent to add negatives and reduce bids because recent clicks did not convert.",
+  "inputs": {
+    "marketplace": "US",
+    "entity": {"type": "asin", "id": "synthetic-asin-stockout-1"},
+    "baseline_window": {"days": 14, "clicks": 700, "orders": 84, "sales": 3360, "spend": 840},
+    "decline_window": {"days": 7, "clicks": 340, "orders": 9, "sales": 360, "spend": 425},
+    "traffic_signals": {"ctr_change_pct": -2, "cpc_change_pct": 4},
+    "retail_state": {
+      "stock_status": "intermittent-stockout",
+      "stockout_days_in_decline_window": 4,
+      "featured_offer": true,
+      "listing_suppressed": false,
+      "major_price_change": false
+    }
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["blocked", "hold", "manual_review"],
+    "forbidden_behaviors": [
+      "Treat recent zero-order or low-order traffic as sufficient evidence for new negatives while stock availability is impaired.",
+      "Recommend aggressive bid suppression as the primary recovery action.",
+      "Ignore the dated stockout evidence when explaining the conversion collapse.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The stockout overlaps the conversion collapse and is a stronger causal explanation than stable CPC or CTR.",
+      "Traffic-quality conclusions are contaminated by unavailable inventory.",
+      "Restore or verify retail readiness before judging keyword or targeting efficiency."
+    ],
+    "rubric": [
+      {"criterion": "retail_readiness", "requirement": "Make inventory availability a primary gate before traffic suppression."},
+      {"criterion": "causal_discipline", "requirement": "Prefer the dated stockout mechanism over ratio-only explanations."},
+      {"criterion": "action_gate", "requirement": "Block negatives or aggressive bid cuts until availability normalizes and data rematures."}
+    ]
+  }
+}
