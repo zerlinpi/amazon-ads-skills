@@ -66,7 +66,19 @@
         "contamination_risk": {
           "type": ["string", "null"],
           "enum": ["Low", "Moderate", "High", "Unknown", null]
-        }
+        },
+        "control_integrity": {
+          "type": ["string", "null"],
+          "enum": ["Clean", "At Risk", "Leaky", "Interfering", "Unknown", null]
+        },
+        "overlap_dimensions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": ["query", "target", "advertised_asin", "purchased_asin", "budget_pool", "portfolio", "placement", "auction", "routing", "automation", "parent_control", "other"]
+          }
+        },
+        "requires_combined_readout": {"type": ["boolean", "null"]}
       },
       "additionalProperties": false
     },
@@ -116,6 +128,14 @@
         "sample_sufficiency": {"type": ["string", "null"]},
         "attribution_maturity": {"type": ["string", "null"]},
         "mixed_asin_risk": {"type": ["string", "null"]},
+        "leakage_risk": {
+          "type": ["string", "null"],
+          "enum": ["Low", "Moderate", "High", "Unknown", null]
+        },
+        "interference_risk": {
+          "type": ["string", "null"],
+          "enum": ["Low", "Moderate", "High", "Unknown", null]
+        },
         "confounders": {"type": "array", "items": {"type": "string"}},
         "source_lineage": {"type": "array", "items": {"type": "string"}}
       },
