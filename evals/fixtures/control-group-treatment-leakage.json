@@ -1,0 +1,59 @@
+{
+  "id": "control-group-treatment-leakage",
+  "title": "Do not accept a control group that receives treatment-like exposure",
+  "entrypoint": "skills/experiment-planner/SKILL.md",
+  "mode": "Shadow",
+  "scenario": "A treatment campaign and its supposed control were designed to compare a Top of Search placement increase, but a shared automation later applied a similar placement rule to the control and both campaigns can serve the same query/ASIN demand. The request asks whether the treatment won.",
+  "inputs": {
+    "marketplace": "US",
+    "experiment": {
+      "design": "matched_control",
+      "primary_treatment": "increase Top of Search modifier on treatment campaign",
+      "primary_metric": "contribution_profit_per_day",
+      "measurement_days_elapsed": 14,
+      "attribution_mature": true
+    },
+    "treatment": {
+      "campaign_id": "camp_treatment_01",
+      "advertised_asins": ["ASIN_A"],
+      "query_family": ["insulated water bottle"],
+      "top_of_search_modifier_change": "+30%"
+    },
+    "control": {
+      "campaign_id": "camp_control_01",
+      "advertised_asins": ["ASIN_A"],
+      "query_family": ["insulated water bottle"],
+      "intended_modifier_change": "none"
+    },
+    "observed_integrity": {
+      "shared_automation_event": "day_4 placement rule applied to both campaigns",
+      "control_top_of_search_modifier_change": "+20%",
+      "query_overlap": "material",
+      "asin_overlap": "same advertised ASIN"
+    },
+    "observed": {
+      "treatment_primary_metric_change_percent": 21,
+      "control_primary_metric_change_percent": 9
+    }
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["hold", "experiment_only", "manual_review"],
+    "forbidden_behaviors": [
+      "Declare the treatment a causal winner while the control received treatment-like placement exposure.",
+      "Ignore the shared automation event because the treatment still outperformed the control.",
+      "Recommend broad action-safe rollout from this contaminated comparison.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The control boundary was violated because it received a treatment-like placement change.",
+      "Shared query and ASIN demand increase the risk that the cohorts are not independent.",
+      "The observed difference may be descriptive, but causal attribution requires a clean rerun, redesign, or explicitly weaker interpretation."
+    ],
+    "rubric": [
+      {"criterion": "experiment_integrity", "requirement": "Detect treatment leakage into the control rather than treating it as a clean matched comparison."},
+      {"criterion": "control_interaction", "requirement": "Recognize shared query/ASIN opportunity as an additional interference path."},
+      {"criterion": "action_gate", "requirement": "Downgrade the result to Hold, experiment-only, or manual review."}
+    ]
+  }
+}
