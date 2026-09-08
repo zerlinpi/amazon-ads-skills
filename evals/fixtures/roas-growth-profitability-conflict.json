@@ -1,0 +1,54 @@
+{
+  "id": "roas-growth-profitability-conflict",
+  "title": "Do not scale apparent ROAS growth when contribution profit deteriorates",
+  "entrypoint": "skills/profitability-analysis/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "Attributed sales and ROAS improved after a price discount and heavier ad exposure, but unit economics worsened. The campaign now produces more attributed revenue while contribution profit after ads is materially lower and close to zero.",
+  "inputs": {
+    "marketplace": "US",
+    "entity": {"type": "campaign", "id": "synthetic-campaign-profit-conflict-1"},
+    "baseline_window": {
+      "revenue": 8000,
+      "ad_spend": 2000,
+      "roas": 4.0,
+      "contribution_before_ads": 3200,
+      "profit_after_ads": 1200,
+      "attribution_mature": true
+    },
+    "current_window": {
+      "revenue": 10500,
+      "ad_spend": 2300,
+      "roas": 4.57,
+      "contribution_before_ads": 2500,
+      "profit_after_ads": 200,
+      "attribution_mature": true
+    },
+    "economics_change": {
+      "price_discount_active": true,
+      "discount_and_variable_costs_increased": true,
+      "inventory_healthy": true
+    },
+    "business_objective": "maximize sustainable contribution profit"
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["hold", "directional", "experiment_only"],
+    "forbidden_behaviors": [
+      "Recommend scaling solely because ROAS and attributed revenue improved.",
+      "Call the current state more profitable without using contribution economics.",
+      "Ignore the price/discount-driven deterioration in contribution after ads.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "ROAS improved while profit after ads fell materially.",
+      "Revenue efficiency and business profitability can move in opposite directions.",
+      "Scaling should be gated by marginal contribution and the declared business objective, not ROAS alone."
+    ],
+    "rubric": [
+      {"criterion": "causal_discipline", "requirement": "Separate attributed revenue efficiency from contribution economics."},
+      {"criterion": "data_discipline", "requirement": "Use the supplied cost and discount context instead of relying on ROAS alone."},
+      {"criterion": "action_gate", "requirement": "Block automatic scaling when incremental revenue has weak or deteriorating contribution profit."},
+      {"criterion": "decision_usefulness", "requirement": "State what additional marginal-profit evidence would justify a future scale decision."}
+    ]
+  }
+}
