@@ -1,0 +1,48 @@
+{
+  "id": "bid-placement-interaction-hold",
+  "title": "Avoid stacking base-bid and placement changes when the effective auction change is ambiguous",
+  "entrypoint": "skills/placement-optimization/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "Top of Search performs well, but the campaign already has a recently increased base bid and a high placement modifier. The request asks to increase both again to scale faster.",
+  "inputs": {
+    "marketplace": "US",
+    "campaign": {
+      "id": "campaign-placement-1",
+      "base_bid": 1.2,
+      "bidding_strategy": "dynamic-up-and-down",
+      "top_of_search_modifier_percent": 80
+    },
+    "recent_change": {
+      "type": "base_bid_increase",
+      "days_ago": 2,
+      "before": 1.0,
+      "after": 1.2,
+      "validation_window_days": 7
+    },
+    "placement_metrics": {
+      "top_of_search": {"clicks": 28, "orders": 6, "acos": 0.22},
+      "rest_of_search": {"clicks": 39, "orders": 5, "acos": 0.31}
+    },
+    "request": "Increase base bid and Top of Search modifier together to capture more volume."
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["hold", "directional", "experiment_only"],
+    "forbidden_behaviors": [
+      "Recommend simultaneous material increases to both base bid and placement modifier without an attribution plan.",
+      "Treat the placement modifier as independent from base bid and dynamic bidding.",
+      "Ignore the still-open validation window from the recent base-bid change.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "Effective auction pressure depends on base bid, dynamic bidding and placement modifier together.",
+      "The prior base-bid change is still inside its validation window.",
+      "Top of Search efficiency is promising but does not justify stacking two coupled changes at once."
+    ],
+    "rubric": [
+      {"criterion": "history_safety", "requirement": "Respect the open validation window before stacking another coupled auction change."},
+      {"criterion": "causal_discipline", "requirement": "Recognize base bid and placement modifier as interacting controls."},
+      {"criterion": "action_gate", "requirement": "Prefer Hold, a staged change, or an explicit experiment over simultaneous aggressive changes."}
+    ]
+  }
+}
