@@ -65,7 +65,7 @@ Historical Replay / Eval Fixtures
 
 `evals/README.md` 定义 Contract checks + Capability replay。Capability Eval 使用 `met / not_met / insufficient_evidence`，比较决策行为而不是 exact wording。
 
-当前 regression pack 已覆盖 **27 类关键安全风险**：Mixed-ASIN 误否词、Negative attachment 错层级、Previous Winner 短期 0 单、Pending Change 反复调参、Bid×Placement 联动、Featured Offer / Buy Box 冲击、Stockout 转化冲击、stale retail snapshot、Promotion baseline 假异常、Attribution Lag 假失败、Unknown Application 错误归因、Partial Application、未验证 stale entity identity、verified deliberate entity migration、blind retry、显式 idempotency safe retry、readback 与 intended state 不一致、Experiment contamination、Sample Ratio / Allocation Integrity 异常、control-group treatment leakage、auction interference / traffic displacement、shared-budget experiment starvation、parent/child ASIN substitution、portfolio fixed-budget local optimum conflict、Proven Winner 合理扩量、Budget exhausted 但无 marginal headroom、ROAS 增长但贡献利润恶化。
+当前 regression pack 已覆盖 **29 类关键安全风险**：Mixed-ASIN 误否词、Negative attachment 错层级、Previous Winner 短期 0 单、Pending Change 反复调参、Bid×Placement 联动、Featured Offer / Buy Box 冲击、Stockout 转化冲击、stale retail snapshot、Promotion baseline 假异常、Attribution Lag 假失败、Unknown Application 错误归因、Partial Application、未验证 stale entity identity、cross-profile identity collision、verified deliberate entity migration、blind retry、显式 idempotency safe retry、readback 与 intended state 不一致、Experiment contamination、Sample Ratio / Allocation Integrity 异常、control-group treatment leakage、auction interference / traffic displacement、shared-budget experiment starvation、parent/child ASIN substitution、long-test control-boundary drift、portfolio fixed-budget local optimum conflict、Proven Winner 合理扩量、Budget exhausted 但无 marginal headroom、ROAS 增长但贡献利润恶化。
 
 执行完整性原则：
 
@@ -76,11 +76,13 @@ same intended value ≠ retry is automatically safe
 same idempotency key + same stable intent + explicit dedup contract → transport retry may be safe
 safe retry ≠ application confirmed
 same keyword text ≠ same optimization identity
+same entity id/name across profiles ≠ same optimization identity
 verified migration lineage → bounded history continuity, not state cloning
 higher ROAS ≠ higher contribution profit
 recent zero orders ≠ irrelevant query
 stale retail snapshot ≠ current retail state
 declared experiment split ≠ realized allocation integrity
+launch-time clean control ≠ full-window clean control
 control received treatment-like exposure ≠ clean control
 campaign-local lift ≠ incremental value when cohorts share auctions/demand
 shared pool capacity shift ≠ independent control response
@@ -105,6 +107,14 @@ schemas/optimization-event.json
 
 明确区分 `proposed ≠ applied`、`applied ≠ readback confirmed`、`readback confirmed ≠ worked`。历史是证据，不是当前事实。
 
+Memory 检索现在先验证：
+
+```text
+marketplace + profile/account scope + entity type + entity id + control dimension
+```
+
+如果 scope 为 `Incomplete / Ambiguous / Collision Detected`，禁止把不同 Marketplace/Profile 的历史合并为同一实体结论，优先 `Hold / Directional / Manual Review`。
+
 对于 deliberate restructure，只有明确、可审计的 predecessor → successor mapping 才允许跨 ID 继承有限的成熟历史证据；successor 当前 Bid/Budget/State/Readback 仍必须独立读取。
 
 ## Budget Pool / Portfolio Conflicts
@@ -127,14 +137,15 @@ protected spend / business role → 不能被局部效率排序静默覆盖
 
 当 treatment/control 可能共享 query、target、ASIN、variation family、budget pool、routing、placement、auction 或 automation 时，按需加载 `skills/experiment-planner/references/interference-and-leakage.md`。
 
-特别防止两种假增量：
+长周期实验把 Control Integrity 视为随时间变化的状态。新增 Keyword/Target、Negative、Automation、Migration、Budget Pool 或 Variation Scope 变化后，需要重新验证边界；启动当天 `Clean` 不能证明完整实验窗口始终 `Clean`。
+
+特别防止三种假增量：
 
 ```text
 Treatment 多花预算 → Control 被同一 fixed pool 饿死
 Treatment child ASIN ↑ → sibling child ↓ → parent-family total 不变
+Treatment/Control 启动时隔离 → 中途 routing/automation 漂移 → final readout 仍假装 clean
 ```
-
-这两种情况下，Treatment 自身指标上涨都不能自动证明增量价值；需要看 combined / pool / family outcome，或者重新设计实验。
 
 缺少统计输入时不伪造 power/MDE/SRM 显著性，也不假装组间独立。
 
@@ -166,6 +177,7 @@ Treatment child ASIN ↑ → sibling child ↓ → parent-family total 不变
 - 不把固定经验阈值伪装成官方规则或默认动作幅度；
 - 区分 Fact / Observation / Hypothesis / Cause / Action / Outcome；
 - 同实体新动作先检查未完成验证和可信 readback；
+- memory 检索先匹配 marketplace/profile scope，scope 不完整或冲突时 fail closed；
 - stale memory / stale identity / stale retail snapshot 不等于当前状态；
 - deliberate entity migration 需要显式 lineage mapping，不能靠名称/文本相似度推断；
 - Executor 的 unknown/timeout 结果先 reconcile，再决定 retry；
@@ -174,6 +186,7 @@ Treatment child ASIN ↑ → sibling child ↓ → parent-family total 不变
 - 固定预算池先做 portfolio reconciliation，再给单 Campaign 预算动作；
 - 历史赢家短期 0 单先诊断 conversion break，不自动否定；
 - 实验先验证 realized allocation、control integrity、leakage / interference，再解释 treatment lift；
+- 长周期实验发生 scope-changing event 后重新验证 Control Boundary；
 - 当 treatment 可能挤占 control 的流量、预算或 sibling-ASIN demand 时，优先看 combined / pool / family outcome；
 - Eval 判断行为而不是 exact wording；
 - 默认 Suggest/Shadow，不直接写真实账户。
@@ -198,8 +211,9 @@ Treatment child ASIN ↑ → sibling child ↓ → parent-family total 不变
 - [x] Portfolio-level budget conflict + verified entity migration continuity evals
 - [x] Treatment/control leakage + auction interference / displacement evals
 - [x] Shared-budget starvation + parent/child ASIN substitution evals
+- [x] Long-test control-boundary drift + cross-profile identity collision evals
 - [ ] 继续拆薄旧版较厚 Skills
-- [ ] 扩展 long-test control-boundary drift 与 cross-marketplace identity evals
+- [ ] 扩展 parent-level retail shock 与 data-source lineage drift evals
 - [ ] Amazon Ads API / 自研 Connector 示例
 
 ## Disclaimer
