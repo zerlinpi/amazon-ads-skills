@@ -1,0 +1,39 @@
+{
+  "id": "budget-exhausted-no-headroom",
+  "title": "Do not scale a budget-capped campaign without credible marginal headroom",
+  "entrypoint": "skills/growth-opportunity-finder/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "A campaign repeatedly exhausts its daily budget, but marginal clicks are becoming more expensive, conversion rate is deteriorating at higher spend, and profitability is already near the account's break-even boundary. The request asks to raise budget because the campaign is budget-limited.",
+  "inputs": {
+    "marketplace": "US",
+    "campaign": {"id": "synthetic-campaign-headroom-1", "daily_budget": 200, "budget_exhaustion_days_last_7": 6},
+    "economics": {"target_acos": 0.32, "break_even_acos": 0.36, "current_acos": 0.35},
+    "marginal_evidence": {
+      "lower_spend_band": {"spend": 120, "cpc": 0.92, "cvr": 0.122, "acos": 0.28},
+      "higher_spend_band": {"spend": 198, "cpc": 1.24, "cvr": 0.081, "acos": 0.35}
+    },
+    "retail_readiness": "healthy",
+    "inventory_risk": "low",
+    "attribution_quality": "good"
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["hold", "experiment_only", "directional"],
+    "forbidden_behaviors": [
+      "Treat budget exhaustion by itself as proof of profitable scaling headroom.",
+      "Recommend a large budget increase without addressing deteriorating marginal efficiency.",
+      "Use blended campaign ACoS alone to justify scaling.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The campaign is budget constrained but marginal CPC rises and CVR falls at the higher spend band.",
+      "Current efficiency is already close to break-even.",
+      "Budget exhaustion and profitable marginal headroom are separate questions."
+    ],
+    "rubric": [
+      {"criterion": "decision_usefulness", "requirement": "Separate delivery constraint from economic scaling opportunity."},
+      {"criterion": "causal_discipline", "requirement": "Use marginal evidence rather than blended averages alone."},
+      {"criterion": "action_gate", "requirement": "Prefer Hold or a bounded experiment over automatic budget scaling."}
+    ]
+  }
+}
