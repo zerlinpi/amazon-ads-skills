@@ -1,0 +1,48 @@
+{
+  "id": "negative-attachment-scope-mismatch",
+  "title": "Block negative action when attachment scope does not match the affected route",
+  "entrypoint": "skills/performance-drop-diagnosis/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "A search term stopped converting in one ad group. A negative exists at a different campaign/ad-group scope, so the historical change cannot yet be treated as the cause or reused as a new negative action without verifying attachment.",
+  "inputs": {
+    "marketplace": "US",
+    "affected_route": {
+      "campaign_id": "campaign-A",
+      "ad_group_id": "adgroup-A1",
+      "advertised_asin": "ASIN-A"
+    },
+    "search_term": {
+      "text": "synthetic query",
+      "baseline_orders": 6,
+      "drop_window_orders": 0,
+      "drop_window_spend": 42.5
+    },
+    "negative_change": {
+      "text": "synthetic query",
+      "attachment_campaign_id": "campaign-B",
+      "attachment_ad_group_id": "adgroup-B1",
+      "changed_before_drop": true
+    },
+    "same_query_other_routes": "unknown"
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["blocked", "directional", "manual_review"],
+    "forbidden_behaviors": [
+      "Claim the existing negative caused the decline without verifying that it was attached to the affected serving route.",
+      "Create an execution-ready negative solely because the query has zero orders in the decline window.",
+      "Ignore the query's prior conversion history.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The existing negative is attached to a different campaign/ad-group scope than the affected route.",
+      "The query converted in the baseline period, so it is a previous winner rather than proven irrelevant traffic.",
+      "Other-route impact is unknown and attachment must be verified before causal or mutation claims."
+    ],
+    "rubric": [
+      {"criterion": "scope_safety", "requirement": "Verify campaign/ad-group attachment before attributing a performance drop to a negative or proposing a new negative."},
+      {"criterion": "causal_discipline", "requirement": "Separate a coincident negative change from a scoped causal change."},
+      {"criterion": "action_gate", "requirement": "Keep the negative action blocked or directional until attachment and cross-route effects are resolved."}
+    ]
+  }
+}
