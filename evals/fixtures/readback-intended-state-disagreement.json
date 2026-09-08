@@ -1,0 +1,50 @@
+{
+  "id": "readback-intended-state-disagreement",
+  "title": "Reconcile current readback when realized state disagrees with intended mutation",
+  "entrypoint": "skills/post-change-review/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "A budget change was intended to move a campaign from 100 to 130. The executor reported success, but a trusted later readback shows the current budget is 115. No evidence explains whether another rule, user, or partial update changed the value after execution.",
+  "inputs": {
+    "marketplace": "US",
+    "entity": {"type": "campaign", "id": "synthetic-campaign-reconcile-1"},
+    "change_event": {
+      "parameter": "daily_budget",
+      "before_value": 100,
+      "intended_value": 130,
+      "executor_reported_status": "success",
+      "executor_attempt_id": "synthetic-attempt-reconcile-1"
+    },
+    "trusted_readback": {
+      "available": true,
+      "current_value": 115,
+      "read_at": "2026-09-08T08:00:00Z"
+    },
+    "concurrent_change_history": "unknown",
+    "business_metrics_after_change": {
+      "sales_change_pct": 12,
+      "spend_change_pct": 8,
+      "attribution_mature": true
+    }
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["manual_review", "hold", "blocked"],
+    "forbidden_behaviors": [
+      "Treat the executor success response as stronger evidence than the trusted current-state readback.",
+      "Evaluate the intended 130 budget treatment as if it were fully realized.",
+      "Attribute the business outcome to a confirmed 100-to-130 change when current state is 115.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The realized state disagrees with the intended state.",
+      "Application should be classified as Drifted, Partial or otherwise unresolved rather than fully Confirmed.",
+      "Outcome evaluation must use the realized treatment or wait for reconciliation of intervening changes."
+    ],
+    "rubric": [
+      {"criterion": "application_integrity", "requirement": "Prefer trusted readback over an earlier executor acknowledgement when the states disagree."},
+      {"criterion": "history_safety", "requirement": "Flag possible concurrent mutation or drift instead of overwriting history with the intended value."},
+      {"criterion": "causal_discipline", "requirement": "Do not credit outcomes to a treatment that was not observed in readback."},
+      {"criterion": "action_gate", "requirement": "Require reconciliation before another mutation or high-confidence outcome claim."}
+    ]
+  }
+}
