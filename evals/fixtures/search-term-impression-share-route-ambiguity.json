@@ -1,0 +1,98 @@
+{
+  "id": "search-term-impression-share-route-ambiguity",
+  "title": "Do not map account-wide search-term impression share directly to one campaign action",
+  "entrypoint": "skills/growth-opportunity-finder/SKILL.md",
+  "mode": "Shadow",
+  "scenario": "A commercially important Sponsored Products query has low account-wide Search Term Impression Share, but the same query is reached through multiple campaigns. One route is profitable while the other routes have incomplete performance and control-state evidence. The analyst is asked to choose the campaign and bid/budget increase needed to capture more share.",
+  "inputs": {
+    "marketplace": "US",
+    "profile_scope": "profile-us-01",
+    "window": "2026-08-15/2026-09-05",
+    "search_term": "portable tire inflator",
+    "sis_report": {
+      "ad_product": "Sponsored Products",
+      "scope": "account-wide",
+      "time_unit": "summary",
+      "impression_share": 0.12,
+      "impression_rank": 8,
+      "window": "2026-08-15/2026-09-05"
+    },
+    "observed_routes": [
+      {
+        "campaign_id": "sp-exact-01",
+        "route": "exact keyword",
+        "clicks": 180,
+        "spend": 270,
+        "sales": 1350,
+        "orders": 45,
+        "attribution_status": "mature",
+        "budget_status": "not known to be constrained"
+      },
+      {
+        "campaign_id": "sp-auto-02",
+        "route": "auto close-match",
+        "clicks": 42,
+        "spend": 70,
+        "sales": null,
+        "orders": null,
+        "attribution_status": "incomplete"
+      },
+      {
+        "campaign_id": "sp-broad-03",
+        "route": "broad keyword",
+        "clicks": 31,
+        "spend": 58,
+        "sales": null,
+        "orders": null,
+        "attribution_status": "unknown"
+      }
+    ],
+    "current_control_state": {
+      "base_bids": "partial",
+      "placement_modifiers": "unknown for two routes",
+      "dynamic_bidding": "mixed across campaigns",
+      "account_budget_headroom": "unknown"
+    },
+    "retail_readiness": {
+      "purchasable": true,
+      "inventory": "healthy",
+      "price_promotion_stability": "unknown"
+    },
+    "requested_output": "Tell me which campaign to raise and by how much so we capture more impression share."
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["directional", "hold", "experiment_only", "manual_review"],
+    "forbidden_behaviors": [
+      "Treat 12 percent account-wide SIS as proof that the exact campaign itself owns 88 percent incremental impression headroom.",
+      "Select a campaign solely because its observed ROAS is good while the same query is routed through other campaigns with incomplete evidence.",
+      "Convert low SIS directly into a fixed bid or budget increase percentage.",
+      "Present additional impressions, clicks, sales, or profit as guaranteed from increasing SIS.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The SIS measurement is account-wide for the search term while the proposed controls are campaign/target scoped, so route attribution must be resolved before assigning share headroom to one campaign.",
+      "The exact route has promising mature economics, but the other routes and their control states are incomplete, so the account-wide share cannot yet identify the binding control.",
+      "Low SIS supports a visibility-headroom hypothesis, not a guaranteed incremental-sales conclusion.",
+      "A next step should reconcile query routing, campaign/control state, budget headroom, retail comparability, and then choose a bounded experiment or contextual action size if evidence becomes sufficient."
+    ],
+    "rubric": [
+      {
+        "criterion": "scope_safety",
+        "requirement": "Preserve the distinction between account-wide SIS and campaign/target-level control scope."
+      },
+      {
+        "criterion": "economic_integrity",
+        "requirement": "Use profitable query evidence as supporting context without treating impression-share headroom as guaranteed marginal profit."
+      },
+      {
+        "criterion": "control_interaction",
+        "requirement": "Resolve which route/control actually constrains visibility before choosing bid, budget, placement, or routing changes."
+      },
+      {
+        "criterion": "action_gate",
+        "requirement": "Keep the recommendation directional/experimental until route, control, budget, and retail evidence are sufficient; do not invent a fixed action percentage."
+      }
+    ]
+  }
+}
