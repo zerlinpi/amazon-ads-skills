@@ -65,8 +65,9 @@ Historical Replay / Eval Fixtures
 
 `evals/README.md` 定义 Contract checks + Capability replay。Capability Eval 使用 `met / not_met / insufficient_evidence`，比较决策行为而不是 exact wording。
 
-当前 regression pack 已覆盖 **41 类关键安全风险**，近期新增：
+当前 regression pack 已覆盖 **42 类关键安全风险**，近期新增：
 
+- Report row-eligibility / selection bias：clicked-only 或 impression-qualified 报表即使完整生成，也不等于完整逻辑总体；禁止把缺失行自动补 0，或把 selected subset 当作全账户 query/target population；
 - Placement coupled-control confounding：Base/target bid、placement modifier、dynamic bidding、schedule/event rules 在同一窗口变化时，不把版位 ROAS lift 归因给单一 modifier；
 - Upstream budget-cap bottleneck：Campaign 提额前先核对 Sponsored Products account-level / portfolio / business cap；平台 estimated missed sales/clicks 只作为模型机会信号，不当作保证增量；
 - Contextual action sizing：禁止在账户没有 sizing policy / calibrated response 时，用仓库默认百分比把方向性 Bid/预算结论伪装成精确动作；
@@ -88,6 +89,9 @@ same metric name/table path ≠ same measurement definition
 same source + same semantic version ≠ same backfill maturity
 latest restated history ≠ evidence that was available at decision time
 extracted_at ≠ available_through
+successful report completion ≠ complete logical population
+clicked-only search-term rows ≠ all query impressions
+missing report row ≠ zero unless the report contract proves it
 first page + nextToken ≠ complete entity population
 raw economic bid/budget anchor ≠ action-safe final magnitude
 no account sizing policy ≠ permission to invent a default ±X%
@@ -105,7 +109,7 @@ campaign-local optimum ≠ portfolio optimum
 
 ## Data Lineage
 
-统一数据模型见 `references/data-schema.md`。当 baseline/comparison 来自不同 API、MCP、CSV、Warehouse、BI、刷新路径、metric semantic version，或历史快照成熟度不一致时，按需加载 `references/data-lineage.md`。
+统一数据模型见 `references/data-schema.md`。当 baseline/comparison 来自不同 API、MCP、CSV、Warehouse、BI、刷新路径、metric semantic version、report row-inclusion / eligibility contract，或历史快照成熟度不一致时，按需加载 `references/data-lineage.md`；当问题依赖“返回行是否代表完整总体”时，再按需加载 `references/report-coverage.md`。
 
 至少区分：
 
@@ -116,13 +120,31 @@ available_through
 attribution definition / maturity
 aggregation grain
 filters / scope
+row-inclusion / eligibility contract
 dataset semantic version
 per-metric definition ID / semantic version
 completeness / backfill status
 snapshot/backfill maturity
 ```
 
-比较可标记为 `Comparable / Reconcilable / Directional / Not Comparable / Unknown`。如果 apparent break/lift 与 source switch、semantic cutover 或不对称 backfill 同期发生，先 replay/reconcile，再做高置信动作或 Post-change 结论。
+比较可标记为 `Comparable / Reconcilable / Directional / Not Comparable / Unknown`。如果 apparent break/lift 与 source switch、semantic cutover、row-eligibility switch 或不对称 backfill 同期发生，先 replay/reconcile，再做高置信动作或 Post-change 结论。
+
+## Report Coverage / Row Eligibility
+
+`references/report-coverage.md` 用于处理“报表成功生成，但逻辑总体并不一定全部出现在行中”的情况。
+
+当前 Amazon Ads 公共文档明确给出一些 outcome-based inclusion contract，例如 Sponsored Products Search Term report 只表示至少产生 1 次广告点击的搜索词，而 Targeting report 则面向至少有 impression 的交付目标。仓库因此要求：
+
+```text
+report complete under its contract
+→ 可以分析 represented population
+
+report complete under its contract
+≠ 可以自动推断 omitted rows = 0
+≠ 可以自动声称 full account/query/target population coverage
+```
+
+Search Term harvest / negative / clicked-query efficiency 仍可使用已表示的 clicked population；但 zero-click query identification、完整 query-impression coverage、全账户 query CTR denominator 或完整 population ranking 需要兼容的额外来源。不同报告之间做 reconciliation 时，要把 row-inclusion / eligibility 视为 measurement identity，而不只看列名或来源系统。
 
 ## Account Audit Integrity
 
@@ -136,12 +158,13 @@ snapshot/backfill maturity
 选择一个 canonical additive grain
 耗尽 nextToken/cursor 或使用可信完整导出
 记录 pages/rows/continuation/truncation 状态
+确认 report row-inclusion / eligibility 是否支持所需总体结论
 profile total ↔ complete campaign aggregate 做 reconciliation
 keyword / search term / placement 等用于分解，不重复累加
 先汇总 impressions/clicks/spend/orders/sales，再重新计算 CTR/CPC/CVR/ACOS/ROAS
 ```
 
-缺失行不自动等于 0；未耗尽分页的结果只能做明确标注的局部/Directional 观察。profile/campaign 总量不一致时先查 coverage、pagination、truncation、filters、freshness 或 lineage，而不是直接评分。
+缺失行不自动等于 0；未耗尽分页的结果只能做明确标注的局部/Directional 观察，clicked-only / delivered-only subset 也只能支持其 represented population 范围内的结论。profile/campaign 总量不一致时先查 coverage、pagination、row eligibility、truncation、filters、freshness 或 lineage，而不是直接评分。
 
 ## Weekly Review Playbook
 
@@ -294,9 +317,10 @@ python scripts/validate_evals.py .
 - 不把固定经验阈值伪装成官方规则或默认动作幅度；
 - monetary-control 建议必须区分 raw anchor 与 final magnitude；无账户级 sizing basis 时不制造默认百分比；
 - 区分 Fact / Observation / Hypothesis / Cause / Action / Outcome；
-- 跨来源/语义版本/快照成熟度趋势先检查 lineage comparability；
+- 跨来源/语义版本/快照成熟度/row-inclusion contract 趋势先检查 lineage comparability；
+- 报表行缺失先检查 row-inclusion / eligibility；除非 report contract 明确支持，否则不自动补 0、不声称完整总体；
 - 可变历史的重要 evaluation 保存 decision-time evidence identity；restatement 用 append-only correction，不 hindsight overwrite；
-- 账户级排名/覆盖结论先验证 pagination/truncation completeness；
+- 账户级排名/覆盖结论先验证 pagination/truncation completeness 与 population-selection contract；
 - 聚合 base metrics 后再重算 ratio，禁止把重叠 entity grains 累加为账户总量；
 - placement optimization 必须区分 configured controls 与 realized exposure；多个 material bidding controls 同窗变化时不做单一 modifier 因果归因；
 - 同实体新动作先检查未完成验证和可信 readback；
@@ -332,6 +356,7 @@ python scripts/validate_evals.py .
 - [x] Weekly Review Playbook
 - [x] Historical replay / regression fixtures
 - [x] Source lineage + semantic metric-version drift
+- [x] Report row-inclusion / eligibility coverage safety
 - [x] Cross-profile + cross-marketplace migration safety
 - [x] Asymmetric backfill measurement-parity eval
 - [x] Slim `performance-drop-diagnosis` and `amazon-ads-audit` entrypoints
