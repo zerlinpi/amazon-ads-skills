@@ -71,11 +71,29 @@ When adding or changing decision logic, prefer adding a focused synthetic replay
 - Prefer synthetic identifiers and values. Never commit client/account secrets or proprietary exports as fixtures.
 - Eval fixtures must remain closed-world by default and must not trigger live Amazon Ads writes.
 
+## Agent Skills frontmatter compatibility
+
+`SKILL.md` frontmatter must stay compatible with the Agent Skills specification and strict reference validators.
+
+Allowed top-level fields are:
+
+- `name` — required and must match the parent directory name;
+- `description` — required and should state both capability and trigger/use case;
+- `license` — optional; repository-owned Skills should normally use `MIT`;
+- `compatibility` — optional, only when environment requirements are material;
+- `metadata` — optional string-to-string map for repository-specific metadata;
+- `allowed-tools` — optional/experimental and should not be used to broaden execution authority.
+
+Do **not** add custom top-level fields such as `display_name`, `display_name_en`, `description_zh`, `description_en`, `version` or `author`. Put repository-specific values under `metadata` instead.
+
+Keep `name` within the Agent Skills naming constraints and `description` within the specification limit. Metadata compatibility is part of multi-agent portability; a Skill that works in one permissive runtime but fails strict validation is not considered portable.
+
 ## Contribution rules
 
 New skills must:
 - use kebab-case directory names;
-- include YAML frontmatter with at least `name` and `description`;
+- include Agent Skills-compatible YAML frontmatter with at least `name` and `description`;
+- keep custom metadata under the `metadata` map rather than inventing top-level fields;
 - keep the core `SKILL.md` concise and progressively load shared references;
 - state required inputs, workflow, output contract, safety checks, and stop conditions;
 - output proposals rather than performing live account mutation.
