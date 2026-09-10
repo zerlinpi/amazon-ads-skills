@@ -53,5 +53,30 @@ class ReportCoveragePolicyTests(unittest.TestCase):
         self.assertIn("report-coverage.md", text)
 
 
+class SkillEffectivenessPolicyTests(unittest.TestCase):
+    def read(self, relative_path: str) -> str:
+        return (ROOT / relative_path).read_text(encoding="utf-8")
+
+    def test_skill_effectiveness_guide_exists(self):
+        self.assertTrue(
+            (ROOT / "evals/SKILL-EFFECTIVENESS.md").is_file(),
+            "repository needs a repeatable with-skill vs without-skill effectiveness protocol",
+        )
+
+    def test_eval_index_distinguishes_capability_replay_from_effectiveness_measurement(self):
+        text = self.read("evals/README.md")
+        self.assertIn("with-skill", text)
+        self.assertIn("without-skill", text)
+        self.assertIn("negative control", text)
+        self.assertIn("repeated", text)
+
+    def test_effectiveness_guide_covers_discovery_and_forced_invocation(self):
+        text = self.read("evals/SKILL-EFFECTIVENESS.md")
+        self.assertIn("Discovery", text)
+        self.assertIn("Forced invocation", text)
+        self.assertIn("without-skill", text)
+        self.assertIn("pass@k", text)
+
+
 if __name__ == "__main__":
     unittest.main()
