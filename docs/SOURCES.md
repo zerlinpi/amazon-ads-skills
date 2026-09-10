@@ -155,6 +155,8 @@ MIT-licensed multi-agent-compatible Amazon skill collection reviewed for public 
 
 No skill prose/templates/fixed thresholds were copied. Generic ideas retained: allocation reflects objective/economics, and cross-campaign decisions should not reduce to one campaign's historical ACoS/ROAS.
 
+A later review of its PPC Skill found useful examples of why fixed thresholds should remain local examples rather than repository defaults: the public Skill contains concrete order/click timing and bid-adjustment heuristics. Those values were **not** imported. Instead, this repository added a regression that explicitly rejects transferring third-party example percentages/thresholds into action-safe account recommendations without account-specific calibration.
+
 Repository: https://github.com/nexscope-ai/Amazon-Skills
 
 ### MicrosoftDocs/Advertising
@@ -164,6 +166,25 @@ Official Microsoft Advertising docs repository reviewed only for a vendor-neutra
 No Microsoft-specific behavior is asserted as Amazon Ads behavior. The generic concept was independently rewritten as budget-pool/external-pacing conflict logic.
 
 Repository: https://github.com/MicrosoftDocs/Advertising
+
+## Reviewed public Amazon Ads documentation
+
+### Amazon Ads budget and bidding rules
+
+Public Amazon Ads documentation was reviewed for current platform behavior, not as an open-source code source. Relevant public pages describe schedule/event-based bid rules, performance/schedule-based budget rules, advertiser-selected ROAS guardrails, dynamic bidding strategies, placement adjustments, and the use of time/performance context for automated control changes.
+
+These factual platform capabilities support a narrow repository conclusion: Amazon Ads control behavior is contextual to campaign configuration, performance goals and timing; a percentage shown in a guide/UI example is not evidence for one universal manual action magnitude across accounts.
+
+No Amazon documentation prose, UI assets or examples were copied into Skills. The repository independently rewrote the principle as `references/action-sizing.md`, which requires account/caller policy, calibrated response evidence, marginal headroom, or a declared experiment basis before a directional estimate becomes a precise proposed value.
+
+Public references reviewed:
+
+- https://advertising.amazon.com/library/guides/budget-rules
+- https://advertising.amazon.com/resources/whats-new/event-based-bid-rules-for-sponsored-products-advertisers
+- https://advertising.amazon.com/resources/whats-new/schedule-based-bid-rules-available-for-sponsored-products
+- https://advertising.amazon.com/library/guides/sponsored-products-best-practices
+
+Licensing/adoption note: these are public vendor documentation pages, not relicensed source code. Only factual platform behavior and generic control-design implications were independently paraphrased; no copyrighted prose, images, API examples or proprietary implementation was imported.
 
 ## Internal method hardening from observed failure modes
 
@@ -176,6 +197,7 @@ Some additions are independent safety hardening rather than adaptations of a sin
 - **Historical restatement after decision** — mutable history must not rewrite what evidence was available at decision time; preserve snapshot identity and append a correction/re-evaluation when latest data materially changes the outcome interpretation.
 - **Audit aggregation integrity** — profile/campaign/keyword/search-term/placement views overlap; choose one canonical additive grain, reconcile complete parent/child totals, and recompute ratio metrics from additive components.
 - **Audit population completeness** — API pagination, connector row caps and context truncation are separate failure modes; preserve continuation metadata and do not claim whole-population rank from a partial slice.
+- **Contextual action sizing** — raw economic/directional estimates do not prove the final allowed change magnitude; without account policy, calibrated response, marginal headroom or declared experiment constraints, preserve direction instead of inventing a repository-global percentage/damping constant.
 - **Agent Skills metadata compatibility** — runtime portability requires strict frontmatter compliance; repository-specific metadata belongs under the spec-defined `metadata` map instead of arbitrary top-level YAML keys.
 - **Deterministic Skill packaging validation** — progressive loading is only reliable when entrypoints and referenced support files remain mechanically resolvable; structural validation should fail before runtime discovery when packaging drifts.
 - **Parent/variation-family retail shock** — child conversion can move because family structure/sibling retail/purchased-ASIN mix changed.
@@ -220,22 +242,23 @@ Before adopting an external idea:
 25. Preserve decision-time evidence identity when later historical restatement can change an optimization outcome.
 26. Aggregate compatible base metrics first; recompute ratios; never sum overlapping entity grains as separate account traffic.
 27. Exhaust pagination or verify equivalent complete coverage before whole-population audit rankings.
-28. Keep Skill frontmatter within the Agent Skills allowed top-level field set; custom metadata belongs under `metadata`.
-29. Run deterministic structural validation after Skill/reference/schema/playbook changes; packaging confidence and capability confidence are separate gates.
-30. Treat source/reporting switches near apparent breaks as competing explanations.
-31. Treat parent/variation-family retail changes as upstream causal candidates.
-32. Partial application is a realized treatment different from intended treatment.
-33. Do not use promotion-contaminated windows as ordinary evergreen controls.
-34. Retail-readiness failures are causal gates before traffic suppression.
-35. Stale retail snapshots are historical evidence, not current proof.
-36. Resolve marketplace + profile/account scope before merging memory.
-37. Verified same-marketplace cross-profile migrations may carry bounded mature evidence but never clone current state.
-38. Cross-marketplace migration defaults to directional evidence portability for performance/economic conclusions.
-39. Timeout/unknown writes remain unresolved until reconciliation/idempotency makes repetition safe.
-40. Stable idempotency keys stay bound to the same stable intent/payload.
-41. Trusted current-state readback overrides earlier executor acknowledgement when they disagree.
-42. Higher ROAS/revenue is not automatically higher profit.
-43. A previous winner temporarily at zero orders needs conversion-break diagnosis before negative treatment.
-44. Declared experiment allocation does not prove realized allocation integrity.
-45. Fixed budget pools require source/destination opportunity-cost reconciliation.
-46. Record reviewed sources here when they materially influence the project.
+28. Separate raw monetary-control anchors from final allowed action magnitude; do not invent repository-global bid/budget percentages or damping constants when account-specific sizing evidence is absent.
+29. Keep Skill frontmatter within the Agent Skills allowed top-level field set; custom metadata belongs under `metadata`.
+30. Run deterministic structural validation after Skill/reference/schema/playbook changes; packaging confidence and capability confidence are separate gates.
+31. Treat source/reporting switches near apparent breaks as competing explanations.
+32. Treat parent/variation-family retail changes as upstream causal candidates.
+33. Partial application is a realized treatment different from intended treatment.
+34. Do not use promotion-contaminated windows as ordinary evergreen controls.
+35. Retail-readiness failures are causal gates before traffic suppression.
+36. Stale retail snapshots are historical evidence, not current proof.
+37. Resolve marketplace + profile/account scope before merging memory.
+38. Verified same-marketplace cross-profile migrations may carry bounded mature evidence but never clone current state.
+39. Cross-marketplace migration defaults to directional evidence portability for performance/economic conclusions.
+40. Timeout/unknown writes remain unresolved until reconciliation/idempotency makes repetition safe.
+41. Stable idempotency keys stay bound to the same stable intent/payload.
+42. Trusted current-state readback overrides earlier executor acknowledgement when they disagree.
+43. Higher ROAS/revenue is not automatically higher profit.
+44. A previous winner temporarily at zero orders needs conversion-break diagnosis before negative treatment.
+45. Declared experiment allocation does not prove realized allocation integrity.
+46. Fixed budget pools require source/destination opportunity-cost reconciliation.
+47. Record reviewed sources here when they materially influence the project.
