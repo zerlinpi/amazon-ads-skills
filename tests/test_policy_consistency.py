@@ -53,6 +53,26 @@ class ReportCoveragePolicyTests(unittest.TestCase):
         self.assertIn("report-coverage.md", text)
 
 
+class SearchTermImpressionSharePolicyTests(unittest.TestCase):
+    def read(self, relative_path: str) -> str:
+        return (ROOT / relative_path).read_text(encoding="utf-8")
+
+    def test_shared_impression_share_reference_exists(self):
+        self.assertTrue(
+            (ROOT / "references/search-term-impression-share.md").is_file(),
+            "query growth decisions need a shared impression-share evidence policy",
+        )
+
+    def test_search_term_skill_routes_share_of_voice_analysis_to_shared_reference(self):
+        text = self.read("skills/search-term-analysis/SKILL.md")
+        self.assertIn("search-term-impression-share.md", text)
+        self.assertIn("impression share", text.lower())
+
+    def test_growth_skill_routes_query_headroom_to_impression_share_policy(self):
+        text = self.read("skills/growth-opportunity-finder/SKILL.md")
+        self.assertIn("search-term-impression-share.md", text)
+
+
 class SkillEffectivenessPolicyTests(unittest.TestCase):
     def read(self, relative_path: str) -> str:
         return (ROOT / relative_path).read_text(encoding="utf-8")
