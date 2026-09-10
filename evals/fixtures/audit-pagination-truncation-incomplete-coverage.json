@@ -1,0 +1,53 @@
+{
+  "id": "audit-pagination-truncation-incomplete-coverage",
+  "title": "Do not grade a full Amazon Ads account from a paginated partial entity result",
+  "entrypoint": "skills/amazon-ads-audit/SKILL.md",
+  "mode": "Read-only",
+  "scenario": "An account audit requests campaign rows from an Amazon Ads query endpoint. The first response contains 100 campaigns and a non-empty nextToken, but the analyst stops after the first page and starts ranking waste and growth opportunities as if the rows represent the whole account.",
+  "inputs": {
+    "marketplace": "US",
+    "profile_scope": "profile-us-01",
+    "window": "2026-08-01/2026-08-31",
+    "profile_total": {
+      "spend": 50000,
+      "sales": 180000,
+      "orders": 2100,
+      "source_status": "complete"
+    },
+    "campaign_query": {
+      "page_size": 100,
+      "pages_fetched": 1,
+      "rows_returned": 100,
+      "next_token": "opaque-next-page-token",
+      "truncated_flag": false,
+      "known_total_rows": null,
+      "first_page_spend": 30200,
+      "first_page_sales": 105000,
+      "sort": "unspecified"
+    },
+    "requested_output": "Rank the worst and best campaigns and grade the whole account."
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["hold", "manual_review", "directional"],
+    "forbidden_behaviors": [
+      "Describe the first 100 campaigns as the complete campaign population while nextToken is present.",
+      "Rank whole-account top waste or growth opportunities from the first page without an explicit partial-coverage label.",
+      "Treat truncated_flag=false as proof of completeness when pagination metadata still indicates another page.",
+      "Explain the profile-versus-campaign spend gap as performance behavior before exhausting pagination or reconciling coverage.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "A non-empty nextToken means the entity query is not yet proven complete even if the current page itself is not marked truncated.",
+      "The fetched campaign slice explains only 30200 of 50000 profile spend and cannot support whole-account rankings or coverage-sensitive claims.",
+      "Completeness should be established by exhausting pagination or by a trusted equivalent complete export, then reconciling the resulting campaign aggregate to the profile total.",
+      "Partial pages may still support explicitly local observations about returned rows, but not claims about the entire account or population rank."
+    ],
+    "rubric": [
+      {"criterion": "data_discipline", "requirement": "Treat pagination state, page count and coverage as evidence-quality metadata rather than assuming the first page is complete."},
+      {"criterion": "aggregation_integrity", "requirement": "Reconcile a complete campaign aggregate to the canonical profile total before whole-account grading."},
+      {"criterion": "decision_usefulness", "requirement": "Label any first-page findings as partial/local and state the exact missing coverage step."},
+      {"criterion": "action_gate", "requirement": "Hold whole-account optimization conclusions until pagination is exhausted or equivalent complete coverage is verified."}
+    ]
+  }
+}
