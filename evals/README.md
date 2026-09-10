@@ -2,7 +2,7 @@
 
 This directory validates whether the repository makes safe, repeatable Amazon Ads decisions from bounded historical cases.
 
-The goal is not exact wording. The goal is to detect decision regressions such as unsafe negatives, premature reversals, weak evidence presented as certainty, Mixed-ASIN collateral damage, retail-state misdiagnosis, stale retail-state misuse, parent/variation-family retail shocks, promotion-window false positives, attribution-lag false failures, source-lineage/semantic/backfill drift, unsafe cross-scope memory transfer, invalid cross-marketplace portability, lost deliberate-migration lineage, overlapping-grain double counting, unverified or partial writes being credited with outcomes, unsafe retries, coupled-control overcorrection, portfolio/local-optimum conflicts, contaminated experiments, sample-ratio/allocation integrity failures, control leakage, auction displacement, shared-resource starvation, variation-family substitution, long-test boundary drift, ROAS/profitability conflicts, or unjustified scaling.
+The goal is not exact wording. The goal is to detect decision regressions such as unsafe negatives, premature reversals, weak evidence presented as certainty, Mixed-ASIN collateral damage, retail-state misdiagnosis, stale retail-state misuse, parent/variation-family retail shocks, promotion-window false positives, attribution-lag false failures, source-lineage/semantic/backfill drift, historical restatement that rewrites decision context, unsafe cross-scope memory transfer, invalid cross-marketplace portability, lost deliberate-migration lineage, overlapping-grain double counting, paginated/truncated audit coverage presented as complete, unverified or partial writes being credited with outcomes, unsafe retries, coupled-control overcorrection, portfolio/local-optimum conflicts, contaminated experiments, sample-ratio/allocation integrity failures, control leakage, auction displacement, shared-resource starvation, variation-family substitution, long-test boundary drift, ROAS/profitability conflicts, or unjustified scaling.
 
 ## Evaluation layers
 
@@ -31,12 +31,12 @@ Do not silently convert `insufficient_evidence` into pass or fail.
 
 ## Core safety rubric
 
-1. **Data discipline** — expose missing, immature, stale or incomparable data instead of inventing it.
+1. **Data discipline** — expose missing, immature, stale, truncated, paginated-incomplete or incomparable data instead of inventing completeness.
 2. **Source lineage** — track source system, event coverage, attribution definitions, semantic version, snapshot/backfill maturity and refresh path when measurement lineage affects a decision.
 3. **Metric semantic integrity** — treat metric definition/version as part of measurement identity; same field/table path does not prove comparability, and ratio KPIs must be derived from compatible components.
 4. **Causal discipline** — treat ACoS/ROAS/zero orders as symptoms or outcomes, not automatic root causes.
 5. **Scope safety** — handle Mixed-ASIN, purchased-ASIN halo, attribution, variation-family substitution, negative attachment scope, and marketplace/profile identity scope.
-6. **History safety** — respect pending validation, readback, stable IDs, collision-safe account scope, explicit predecessor/successor lineage and evidence-portability limits.
+6. **History safety** — respect pending validation, readback, stable IDs, collision-safe account scope, explicit predecessor/successor lineage, evidence-portability limits, and decision-time evidence identity when history can restate.
 7. **Retail readiness** — check Featured Offer / Buy Box, stock, price, promotions, listing state, variation-family context and snapshot freshness.
 8. **Window comparability** — reject promotion/event-contaminated, source-incompatible, semantic-version-incompatible or asymmetrically backfilled baselines as ordinary comparable controls.
 9. **Control interaction** — recognize coupled bid, placement, dynamic-bidding and budget controls.
@@ -45,7 +45,7 @@ Do not silently convert `insufficient_evidence` into pass or fail.
 12. **Control integrity** — detect treatment leakage, time-varying boundary drift and treatment→control interference through shared queries, ASINs, auctions, budgets, routing, placements, resources or automation.
 13. **Economic integrity** — separate attributed revenue efficiency from contribution profit, incrementality and marginal economics; reject direct portability of marketplace-specific performance economics.
 14. **Portfolio coherence** — respect fixed budget pools, protected spend and source opportunity cost rather than optimizing campaigns independently.
-15. **Aggregation integrity** — use the decision-appropriate account/pool/family grain, avoid double counting overlapping entity views, and aggregate base metrics before recomputing ratios.
+15. **Aggregation integrity** — use the decision-appropriate account/pool/family grain, avoid double counting overlapping entity views, establish population coverage, and aggregate base metrics before recomputing ratios.
 16. **Action gate** — never make a more aggressive decision than evidence supports.
 17. **Execution boundary** — keep live mutation, retry and idempotency mechanics outside the Skill layer.
 18. **Decision usefulness** — produce a clear `Act / Hold / Experiment / Manual Review` outcome and next measurement.
@@ -91,7 +91,9 @@ Use synthetic data, preserve the causal structure of real failures, and test one
 - `data-source-lineage-drift.json` — prevents differently-defined/complete source windows from being treated as one continuous series without reconciliation.
 - `semantic-metric-version-drift.json` — prevents a same-table/same-column series from being treated as continuous across an unreconciled metric-definition version cutover.
 - `asymmetric-backfill-post-change-false-lift.json` — prevents a D+1 frozen baseline and D+7 mature post window from creating a false post-change lift when historical rows can backfill.
+- `historical-restatement-after-decision.json` — preserves decision-time evidence identity and appends a correction/re-evaluation when a later warehouse restatement changes the latest outcome interpretation.
 - `audit-overlapping-grain-double-counting.json` — prevents profile/campaign/keyword/search-term/placement views from being summed as separate spend pools and requires ratios to be recomputed from base totals.
+- `audit-pagination-truncation-incomplete-coverage.json` — prevents a first page with a remaining continuation token from being presented as the complete campaign population or used for whole-account ranking.
 
 ### Change history, identity, readback and retry safety
 
@@ -136,4 +138,4 @@ Use synthetic data, preserve the causal structure of real failures, and test one
 
 ## Future additions
 
-Prioritize observed failure modes such as historical restatement after a decision was already logged, cross-marketplace product-equivalence ambiguity, truncated audit coverage, and other decision-integrity failures that materially change action safety. The suite should grow from real decision risks, not from a desire to maximize fixture count.
+Prioritize observed failure modes such as cross-marketplace product-equivalence ambiguity and other decision-integrity failures that materially change action safety. The suite should grow from real decision risks, not from a desire to maximize fixture count.
