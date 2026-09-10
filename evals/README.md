@@ -8,14 +8,19 @@ The goal is not exact wording. The goal is to detect decision regressions such a
 
 ### Contract checks
 
-Deterministic checks for repository structure and machine-readable outputs:
+Deterministic checks for repository structure and machine-readable outputs are implemented by `scripts/validate_evals.py` and run in CI alongside the Skill validator.
 
-- fixture conforms to `schemas/eval-case.json`;
-- referenced Skill/playbook exists;
-- required input and expected-decision fields exist;
-- enum values are valid;
-- no fixture requires live Amazon Ads mutation;
-- expected behavior stays inside `Read-only`, `Suggest`, or `Shadow` unless explicitly testing authorization boundaries.
+The gate checks that:
+
+- every fixture parses as JSON;
+- required/allowed fixture fields stay within the closed-world contract represented by `schemas/eval-case.json`;
+- `mode` remains `Read-only`, `Suggest`, or `Shadow`;
+- `acceptable_decisions` stays within the declared decision enum;
+- fixture `id` matches its filename and does not collide with another fixture;
+- referenced Skill/playbook entrypoint exists inside the repository;
+- rubric and required-observation contracts do not positively require live Amazon Ads mutation.
+
+The validator is intentionally dependency-free. It checks the repository's deterministic contract invariants; it does not claim to replace a full JSON Schema implementation or a semantic capability replay.
 
 ### Capability replay
 
@@ -78,6 +83,14 @@ A more conservative result is acceptable only when the run explains the missing 
 ## Fixture design rules
 
 Use synthetic data, preserve the causal structure of real failures, and test one failure mode at a time. Never store account credentials, real customer secrets, private profile IDs, or proprietary third-party exports.
+
+Before committing fixtures, run:
+
+```bash
+python -m unittest discover -s tests -v
+python scripts/validate_skills.py .
+python scripts/validate_evals.py .
+```
 
 ## Regression pack
 
