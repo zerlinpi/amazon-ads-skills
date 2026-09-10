@@ -7,7 +7,12 @@ from scripts.validate_evals import validate_repository
 
 
 class EvalValidatorTests(unittest.TestCase):
-    def make_repo(self, fixture: dict, entrypoint: str = "skills/sample-skill/SKILL.md"):
+    def make_repo(
+        self,
+        fixture: dict,
+        entrypoint: str = "skills/sample-skill/SKILL.md",
+        filename: str | None = None,
+    ):
         td = tempfile.TemporaryDirectory()
         self.addCleanup(td.cleanup)
         root = Path(td.name)
@@ -15,7 +20,8 @@ class EvalValidatorTests(unittest.TestCase):
         skill = root / entrypoint
         skill.parent.mkdir(parents=True, exist_ok=True)
         skill.write_text("---\nname: sample-skill\ndescription: sample\n---\n", encoding="utf-8")
-        (root / "evals" / "fixtures" / "case.json").write_text(
+        fixture_filename = filename or f"{fixture.get('id', 'case')}.json"
+        (root / "evals" / "fixtures" / fixture_filename).write_text(
             json.dumps(fixture), encoding="utf-8"
         )
         return root
@@ -85,7 +91,7 @@ class EvalValidatorTests(unittest.TestCase):
 
     def test_rejects_fixture_id_filename_mismatch(self):
         fixture = self.valid_fixture()
-        root = self.make_repo(fixture)
+        root = self.make_repo(fixture, filename="case.json")
         errors = validate_repository(root)
         self.assertTrue(any("id 'sample-case' must match filename 'case'" in e for e in errors))
 
