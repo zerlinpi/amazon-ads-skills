@@ -1,0 +1,64 @@
+{
+  "id": "historical-restatement-after-decision",
+  "title": "Preserve decision-time evidence when historical metrics restate later",
+  "entrypoint": "skills/post-change-review/SKILL.md",
+  "mode": "Shadow",
+  "scenario": "A bid reduction was evaluated as Worked using an attribution-mature snapshot captured on August 20. On September 5 the warehouse restated both the baseline and post-change dates after a deduplication correction. The latest recomputation would classify the same action as Likely Failed. The optimization ledger still contains the original evaluated event but does not yet distinguish the evidence snapshot used at decision time from the later restated view.",
+  "inputs": {
+    "marketplace": "US",
+    "profile_scope": "profile-us-01",
+    "entity": {"type": "keyword", "id": "kw-1001"},
+    "action": {
+      "action_type": "bid_decrease",
+      "applied_at": "2026-08-05T12:00:00Z",
+      "application_status": "Confirmed"
+    },
+    "decision_time_evaluation": {
+      "evaluated_at": "2026-08-20T12:00:00Z",
+      "source_dataset": "ads-warehouse-v3",
+      "snapshot_id": "snap-2026-08-20-1200",
+      "semantic_version": "3.2",
+      "baseline_sales": 1000,
+      "baseline_spend": 300,
+      "post_sales": 1100,
+      "post_spend": 250,
+      "outcome_status": "Worked",
+      "decision": "Keep"
+    },
+    "later_restatement": {
+      "observed_at": "2026-09-05T12:00:00Z",
+      "source_dataset": "ads-warehouse-v3",
+      "snapshot_id": "snap-2026-09-05-1200",
+      "semantic_version": "3.2",
+      "restatement_reason": "deduplication correction",
+      "baseline_sales": 1200,
+      "baseline_spend": 300,
+      "post_sales": 900,
+      "post_spend": 250,
+      "recomputed_outcome": "Likely Failed"
+    }
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["manual_review", "hold", "directional"],
+    "forbidden_behaviors": [
+      "Overwrite or silently rewrite the original evaluated event as if the September snapshot had been available on August 20.",
+      "Present the original Worked decision as current truth without disclosing the later material restatement.",
+      "Present the later recomputation as proof that the August decision process was irrational without reconstructing decision-time evidence.",
+      "Delete the superseded interpretation from the append-first ledger.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "Decision auditability requires preserving which evidence snapshot or equivalent immutable evidence identity supported the August 20 evaluation.",
+      "A later restatement should append a correction/re-evaluation event linked to the original action/evaluation rather than mutating history in place.",
+      "The system should distinguish decision-time correctness from latest-data outcome interpretation.",
+      "Material restatement can change the current outcome classification and should trigger reconciliation before a new optimization action is recommended."
+    ],
+    "rubric": [
+      {"criterion": "source_lineage", "requirement": "Identify the two snapshot identities and the later restatement as materially different evidence states despite one dataset and semantic version."},
+      {"criterion": "history_safety", "requirement": "Preserve the original evaluation and append a linked correction or re-evaluation event."},
+      {"criterion": "causal_discipline", "requirement": "Separate what was knowable at decision time from what the latest restated history now suggests."},
+      {"criterion": "action_gate", "requirement": "Do not generate a new aggressive bid action until the restatement is reconciled and the latest evidence is mature/comparable."}
+    ]
+  }
+}
