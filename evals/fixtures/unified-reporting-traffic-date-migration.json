@@ -1,0 +1,54 @@
+{
+  "id": "unified-reporting-traffic-date-migration",
+  "title": "Do not splice legacy conversion-date reporting into unified traffic-date reporting as one continuous trend",
+  "entrypoint": "skills/amazon-ads-audit/SKILL.md",
+  "mode": "Read-only",
+  "scenario": "A longitudinal Amazon Ads review compares a legacy reporting export for a legacy Sponsored Brands/DSP-like workflow with a Unified Reporting export after migration. Both files contain columns named clicks, spend, purchases and sales, but the legacy workflow grouped conversions on conversion date while Unified Reporting groups conversions on traffic date. The analyst sees an apparent early-flight ROAS lift after migration and wants to scale budgets immediately.",
+  "inputs": {
+    "marketplace": "US",
+    "profile_scope": "profile-us-01",
+    "legacy_window": {
+      "source_dataset": "legacy-sponsored-ads-report",
+      "date_range": "2026-07-01/2026-07-31",
+      "conversion_date_semantics": "conversion_date",
+      "metric_names": ["clicks", "spend", "purchases", "sales", "roas"],
+      "daily_data_history_available": true
+    },
+    "unified_window": {
+      "source_dataset": "unified-reporting",
+      "date_range": "2026-08-01/2026-08-31",
+      "conversion_date_semantics": "traffic_date",
+      "metric_names": ["clicks", "spend", "purchases", "sales", "roas"],
+      "daily_data_history_available": true
+    },
+    "observed_claim": "Early-flight ROAS increased 24% after the reporting migration, therefore increase budget now.",
+    "migration_context": {
+      "legacy_reports_sunset_date": "2026-12-31",
+      "unified_reporting_standardizes_metric_names": true,
+      "unified_reporting_history_limits_vary_by_grain_and_dimension": true
+    }
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["hold", "directional", "manual_review"],
+    "forbidden_behaviors": [
+      "Treat the legacy conversion-date series and Unified Reporting traffic-date series as one definitionally continuous daily trend merely because the column names match.",
+      "Attribute the apparent early-flight ROAS lift to advertising performance before reconciling date-attribution semantics.",
+      "Scale budget from the 24% apparent lift without a compatible replay or bridge.",
+      "Assume standardized metric naming proves historical equivalence across the reporting migration.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "Traffic-date reporting reallocates conversions to the date of the ad interaction, so daily timing patterns can differ materially from conversion-date reporting even when total conversions over a mature full window are similar.",
+      "The reporting migration is a measurement-lineage boundary and must be represented in source/semantic metadata.",
+      "A safe comparison should replay both windows under one compatible reporting/date-attribution definition when possible, or use an overlap/bridge period and label unresolved differences Directional.",
+      "Unified Reporting historical availability limits must be checked before assuming a requested replay range is complete."
+    ],
+    "rubric": [
+      {"criterion": "source_lineage", "requirement": "Identify the legacy-to-unified reporting migration and conversion-date-to-traffic-date attribution as a material lineage/semantic boundary."},
+      {"criterion": "metric_semantic_integrity", "requirement": "Do not infer equivalence from matching metric names; preserve date-attribution semantics as part of metric identity."},
+      {"criterion": "window_comparability", "requirement": "Require a compatible replay, overlap bridge, or downgraded directional interpretation before comparing daily ROAS patterns across the cutover."},
+      {"criterion": "action_gate", "requirement": "Block budget scaling based on the unreconciled 24% apparent lift."}
+    ]
+  }
+}
