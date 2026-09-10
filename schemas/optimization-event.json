@@ -8,9 +8,10 @@
   "properties": {
     "event_id": {"type": "string", "minLength": 1},
     "parent_action_id": {"type": ["string", "null"]},
+    "supersedes_event_id": {"type": ["string", "null"]},
     "event_type": {
       "type": "string",
-      "enum": ["proposed", "approved", "applied", "readback", "evaluated", "rollback_proposed", "rolled_back", "failed", "unknown"]
+      "enum": ["proposed", "approved", "applied", "readback", "evaluated", "corrected", "rollback_proposed", "rolled_back", "failed", "unknown"]
     },
     "timestamp": {"type": "string", "format": "date-time"},
     "marketplace": {"type": ["string", "null"]},
@@ -42,6 +43,31 @@
     "baseline_window": {"type": ["object", "null"]},
     "post_change_window": {"type": ["object", "null"]},
     "evidence": {"type": "array", "items": {}},
+    "evidence_snapshot": {
+      "type": ["object", "null"],
+      "description": "Decision-time evidence identity for reproducibility when reporting history can restate.",
+      "properties": {
+        "snapshot_id": {"type": ["string", "null"]},
+        "source_dataset": {"type": ["string", "null"]},
+        "semantic_version": {"type": ["string", "null"]},
+        "captured_at": {"type": ["string", "null"], "format": "date-time"},
+        "available_through": {"type": ["string", "null"]},
+        "maturity": {"type": ["string", "null"]},
+        "evidence_hash": {"type": ["string", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "restatement": {
+      "type": ["object", "null"],
+      "properties": {
+        "detected_at": {"type": ["string", "null"], "format": "date-time"},
+        "reason": {"type": ["string", "null"]},
+        "prior_snapshot_id": {"type": ["string", "null"]},
+        "replacement_snapshot_id": {"type": ["string", "null"]},
+        "material_to_outcome": {"type": ["boolean", "null"]}
+      },
+      "additionalProperties": true
+    },
     "confounders": {"type": "array", "items": {}},
     "decision": {
       "type": ["string", "null"],
