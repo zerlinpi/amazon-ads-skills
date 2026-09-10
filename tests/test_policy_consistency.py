@@ -32,5 +32,26 @@ class ActionSizingPolicyTests(unittest.TestCase):
         self.assertIn("action-sizing.md", text)
 
 
+class ReportCoveragePolicyTests(unittest.TestCase):
+    def read(self, relative_path: str) -> str:
+        return (ROOT / relative_path).read_text(encoding="utf-8")
+
+    def test_shared_report_coverage_reference_exists(self):
+        self.assertTrue(
+            (ROOT / "references/report-coverage.md").is_file(),
+            "report row-inclusion and eligibility rules need one shared coverage policy",
+        )
+
+    def test_search_term_skill_routes_coverage_sensitive_claims_to_shared_policy(self):
+        text = self.read("skills/search-term-analysis/SKILL.md")
+        self.assertIn("report-coverage.md", text)
+        self.assertIn("row-inclusion", text)
+
+    def test_data_lineage_treats_row_eligibility_as_measurement_identity(self):
+        text = self.read("references/data-lineage.md")
+        self.assertIn("row-inclusion", text)
+        self.assertIn("report-coverage.md", text)
+
+
 if __name__ == "__main__":
     unittest.main()
