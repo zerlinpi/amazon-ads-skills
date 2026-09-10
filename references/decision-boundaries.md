@@ -32,18 +32,25 @@
 
 Skill 本身仍只输出动作；真实写入由外部执行器完成。
 
-## 默认保守 Guardrails
+## 动作幅度 Guardrails
 
-这些是仓库默认值，调用方可以用更严格的业务规则覆盖：
+仓库不定义通用的固定 bid/budget/placement 单次调整百分比。需要把方向性建议转成具体数值时，按需加载：
 
-- 单次 bid 调整建议：通常不超过当前值的 ±20%；样本不足时更小或不调整。
-- 单次 daily budget 调整建议：通常不超过当前值的 ±25%。
-- 不把 campaign budget 降至会立即中断核心品牌/防御投放的水平。
-- 不因短周期 0 订单直接否定高价值品牌词、核心类目词或已验证历史赢家。
-- 不对同一实体在一个验证窗口内反复调整同一参数。
-- 不将不同币种或 Marketplace 的金额直接聚合。
+- `action-sizing.md`
 
-以上不是 Amazon 官方限制，而是本仓库的默认风险控制建议。
+动作幅度应由当前账户的目标、样本/归因成熟度、可信 current state、历史响应、边际 headroom、业务角色、库存/活动、耦合控制、下行风险、可逆性和显式 caller/account policy 共同约束。
+
+如果缺少能够证明数值幅度安全的账户级约束或校准证据，不要用仓库经验百分比补齐精度；优先输出 Directional、Probe/Experiment、Hold 或 Manual Review。
+
+以下仍属于通用保护原则：
+
+- 不把 campaign budget 降至会立即中断核心品牌/防御投放的水平；
+- 不因短周期 0 订单直接否定高价值品牌词、核心类目词或已验证历史赢家；
+- 不对同一实体在一个验证窗口内反复调整同一参数；
+- 不将不同币种或 Marketplace 的金额直接聚合；
+- caller/account 提供的 max change、protected floor、spend-at-risk 等限制只作为约束，不作为性能结论。
+
+以上不是 Amazon 官方限制，而是本仓库的风险控制原则。
 
 ## 硬停止条件
 
@@ -68,7 +75,7 @@ Skill 本身仍只输出动作；真实写入由外部执行器完成。
 
 ## 预算保护
 
-预算不足不等于应该加预算。只有当受限 campaign 的边际效率、业务目标和库存承载都支持扩量时才建议增预算。
+预算不足不等于应该加预算。只有当受限 campaign 的边际效率、业务目标和库存承载都支持扩量时才建议增预算。若存在固定预算池，还必须说明新增预算来源及来源机会成本。
 
 ## 审计要求
 
@@ -76,7 +83,8 @@ Skill 本身仍只输出动作；真实写入由外部执行器完成。
 - timestamp
 - profile/marketplace（非敏感标识可脱敏）
 - entity type/id
-- before/after
+- before/after（如数值幅度可被证据支持）
+- raw/directional anchor 与 sizing basis（如适用）
 - reason/evidence
 - confidence
 - policy/guardrail results
