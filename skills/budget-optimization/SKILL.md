@@ -23,7 +23,11 @@ metadata:
 
 - `references/portfolio-budget-conflicts.md`
 
-普通单 Campaign 预算诊断不加载该 reference。
+只有方向性预算结论需要转成具体金额时，再加载：
+
+- `../../references/action-sizing.md`
+
+普通单 Campaign 预算诊断若不需要具体动作幅度，不加载这些 reference。
 
 ## 输入
 
@@ -89,7 +93,7 @@ metadata:
 
 ## 变更幅度 Guardrail
 
-不使用通用固定百分比作为默认预算调整幅度。建议幅度应由以下因素共同约束：
+不使用通用固定百分比作为默认预算调整幅度。需要给出具体预算金额时，使用 `../../references/action-sizing.md`，并让建议幅度受以下因素共同约束：
 
 - 可用的 marginal headroom 证据；
 - 数据量和归因成熟度；
@@ -97,9 +101,10 @@ metadata:
 - 预算池可移动空间；
 - Campaign 的业务角色和 protected floor；
 - 最近是否存在未完成验证的 Bid / Placement / Budget / Structure 变更；
-- 动作可逆性与潜在损失上限。
+- 动作可逆性与潜在损失上限；
+- caller/account 显式提供的 max change、spend-at-risk 或其他政策限制。
 
-证据弱时优先小范围、Shadow、Experiment 或 Hold，而不是套用固定比例。
+证据弱时优先 Directional、Probe/Shadow、Experiment 或 Hold，而不是套用固定比例。无法证明具体 `proposed_value` 时保留方向和缺失约束，不制造精确金额。
 
 ## 输出
 
@@ -114,7 +119,8 @@ metadata:
 
 ### Reallocation plan
 列出来源 campaign → 目标 campaign，以及：
-- 预算前后；
+- 预算前后（仅当具体幅度可被证据支持）；
+- action class / sizing basis；
 - pool total reconciliation；
 - 证据；
 - 来源机会成本；
@@ -131,4 +137,5 @@ metadata:
 - 不从高效品牌防御或其他 protected Campaign 抽走关键预算而不提示风险；
 - 不在库存紧张时建议大幅扩量；
 - 不同时大幅改 budget、bid、placement 而没有分阶段验证计划；
+- 不把第三方/平台示例百分比直接当作本账户默认预算动作幅度；
 - 不引入未经授权的真实账户写入。
