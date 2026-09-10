@@ -1,0 +1,38 @@
+name: Validate Agent Skills
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "skills/**"
+      - "references/**"
+      - "schemas/**"
+      - "playbooks/**"
+      - "scripts/validate_skills.py"
+      - "tests/test_validate_skills.py"
+      - ".github/workflows/validate-skills.yml"
+  pull_request:
+    paths:
+      - "skills/**"
+      - "references/**"
+      - "schemas/**"
+      - "playbooks/**"
+      - "scripts/validate_skills.py"
+      - "tests/test_validate_skills.py"
+      - ".github/workflows/validate-skills.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run validator unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Validate repository skills
+        run: python scripts/validate_skills.py .
