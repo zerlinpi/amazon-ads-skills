@@ -36,6 +36,14 @@ No SDK code, models, examples or API wrapper implementation were copied. The gen
 
 Repository: https://github.com/LittleAksMax/amazon-ads-api-sdk-go
 
+### agentskills/agentskills
+
+Apache-2.0 Agent Skills specification and reference validator reviewed for cross-runtime skill packaging compatibility. The specification defines `name` and `description` as required frontmatter and allows only `license`, `compatibility`, `metadata`, and experimental `allowed-tools` as additional top-level fields. The reference validator explicitly rejects unknown top-level fields.
+
+No specification prose or validator implementation was copied. The repository was independently normalized so repository-specific fields such as display names, localized descriptions, author and version live under the allowed `metadata` map; repository-owned Skills also declare `license: MIT`. This is a packaging/compatibility change only and does not broaden execution authority or alter Amazon Ads decision logic.
+
+Repository: https://github.com/agentskills/agentskills
+
 ### weisberg/agile_agentic_analytics
 
 MIT-licensed repository reviewed for experiment lifecycle, power/MDE discipline when inputs exist, sample-ratio/contamination awareness, sequential-testing caution, realized-allocation integrity, holdout/control integrity and advertising-market interference.
@@ -152,6 +160,7 @@ Some additions are independent safety hardening rather than adaptations of a sin
 - **Historical restatement after decision** — mutable history must not rewrite what evidence was available at decision time; preserve snapshot identity and append a correction/re-evaluation when latest data materially changes the outcome interpretation.
 - **Audit aggregation integrity** — profile/campaign/keyword/search-term/placement views overlap; choose one canonical additive grain, reconcile complete parent/child totals, and recompute ratio metrics from additive components.
 - **Audit population completeness** — API pagination, connector row caps and context truncation are separate failure modes; preserve continuation metadata and do not claim whole-population rank from a partial slice.
+- **Agent Skills metadata compatibility** — runtime portability requires strict frontmatter compliance; repository-specific metadata belongs under the spec-defined `metadata` map instead of arbitrary top-level YAML keys.
 - **Parent/variation-family retail shock** — child conversion can move because family structure/sibling retail/purchased-ASIN mix changed.
 - **Verified migration lineage** — explicit predecessor→successor mappings may preserve bounded historical context but never clone current state.
 - **Verified cross-profile migration** — explicit same-marketplace profile moves are distinct from accidental cross-profile collisions.
@@ -194,20 +203,21 @@ Before adopting an external idea:
 25. Preserve decision-time evidence identity when later historical restatement can change an optimization outcome.
 26. Aggregate compatible base metrics first; recompute ratios; never sum overlapping entity grains as separate account traffic.
 27. Exhaust pagination or verify equivalent complete coverage before whole-population audit rankings.
-28. Treat source/reporting switches near apparent breaks as competing explanations.
-29. Treat parent/variation-family retail changes as upstream causal candidates.
-30. Partial application is a realized treatment different from intended treatment.
-31. Do not use promotion-contaminated windows as ordinary evergreen controls.
-32. Retail-readiness failures are causal gates before traffic suppression.
-33. Stale retail snapshots are historical evidence, not current proof.
-34. Resolve marketplace + profile/account scope before merging memory.
-35. Verified same-marketplace cross-profile migrations may carry bounded mature evidence but never clone current state.
-36. Cross-marketplace migration defaults to directional evidence portability for performance/economic conclusions.
-37. Timeout/unknown writes remain unresolved until reconciliation/idempotency makes repetition safe.
-38. Stable idempotency keys stay bound to the same stable intent/payload.
-39. Trusted current-state readback overrides earlier executor acknowledgement when they disagree.
-40. Higher ROAS/revenue is not automatically higher profit.
-41. A previous winner temporarily at zero orders needs conversion-break diagnosis before negative treatment.
-42. Declared experiment allocation does not prove realized allocation integrity.
-43. Fixed budget pools require source/destination opportunity-cost reconciliation.
-44. Record reviewed sources here when they materially influence the project.
+28. Keep Skill frontmatter within the Agent Skills allowed top-level field set; custom metadata belongs under `metadata`.
+29. Treat source/reporting switches near apparent breaks as competing explanations.
+30. Treat parent/variation-family retail changes as upstream causal candidates.
+31. Partial application is a realized treatment different from intended treatment.
+32. Do not use promotion-contaminated windows as ordinary evergreen controls.
+33. Retail-readiness failures are causal gates before traffic suppression.
+34. Stale retail snapshots are historical evidence, not current proof.
+35. Resolve marketplace + profile/account scope before merging memory.
+36. Verified same-marketplace cross-profile migrations may carry bounded mature evidence but never clone current state.
+37. Cross-marketplace migration defaults to directional evidence portability for performance/economic conclusions.
+38. Timeout/unknown writes remain unresolved until reconciliation/idempotency makes repetition safe.
+39. Stable idempotency keys stay bound to the same stable intent/payload.
+40. Trusted current-state readback overrides earlier executor acknowledgement when they disagree.
+41. Higher ROAS/revenue is not automatically higher profit.
+42. A previous winner temporarily at zero orders needs conversion-break diagnosis before negative treatment.
+43. Declared experiment allocation does not prove realized allocation integrity.
+44. Fixed budget pools require source/destination opportunity-cost reconciliation.
+45. Record reviewed sources here when they materially influence the project.
