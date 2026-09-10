@@ -28,6 +28,14 @@ A repository-level license was not found during this review. Therefore no Arcana
 
 Repository: https://github.com/Ecom-Wizards-Agency/Arcana
 
+### LittleAksMax/amazon-ads-api-sdk-go
+
+MIT-licensed public Amazon Ads SDK reviewed for a narrow, implementation-neutral reporting/query lesson: Amazon Ads entity-query surfaces can use `nextToken` pagination, while Reporting API v3 follows an asynchronous request → poll/fetch → download lifecycle. The repository itself explicitly describes its coverage as partial and Sponsored Products-oriented.
+
+No SDK code, models, examples or API wrapper implementation were copied. The generic pagination lesson was independently adapted into the audit completeness gate: a returned page is not the full entity population while a continuation token remains, and whole-account ranking should wait for exhausted pagination or an equivalent trusted complete export.
+
+Repository: https://github.com/LittleAksMax/amazon-ads-api-sdk-go
+
 ### weisberg/agile_agentic_analytics
 
 MIT-licensed repository reviewed for experiment lifecycle, power/MDE discipline when inputs exist, sample-ratio/contamination awareness, sequential-testing caution, realized-allocation integrity, holdout/control integrity and advertising-market interference.
@@ -141,7 +149,9 @@ Some additions are independent safety hardening rather than adaptations of a sin
 - **Source-lineage drift** — same metric name can hide different attribution, refresh, filters, grain or semantic meaning.
 - **Semantic metric-version drift** — one stable table/column can change meaning across a semantic cutover.
 - **Asymmetric backfill drift** — same source + same metric version can still be incomparable when a frozen baseline is D+1 while a post window is D+7 and historical rows restate.
+- **Historical restatement after decision** — mutable history must not rewrite what evidence was available at decision time; preserve snapshot identity and append a correction/re-evaluation when latest data materially changes the outcome interpretation.
 - **Audit aggregation integrity** — profile/campaign/keyword/search-term/placement views overlap; choose one canonical additive grain, reconcile complete parent/child totals, and recompute ratio metrics from additive components.
+- **Audit population completeness** — API pagination, connector row caps and context truncation are separate failure modes; preserve continuation metadata and do not claim whole-population rank from a partial slice.
 - **Parent/variation-family retail shock** — child conversion can move because family structure/sibling retail/purchased-ASIN mix changed.
 - **Verified migration lineage** — explicit predecessor→successor mappings may preserve bounded historical context but never clone current state.
 - **Verified cross-profile migration** — explicit same-marketplace profile moves are distinct from accidental cross-profile collisions.
@@ -181,21 +191,23 @@ Before adopting an external idea:
 22. Longitudinal comparisons must verify source, available-through, attribution, scope, grain, filters, metric semantics and snapshot/backfill maturity.
 23. Same table/column is not proof of same metric definition.
 24. Same source/semantic version is not proof of same snapshot maturity when history can restate.
-25. Aggregate compatible base metrics first; recompute ratios; never sum overlapping entity grains as separate account traffic.
-26. Treat source/reporting switches near apparent breaks as competing explanations.
-27. Treat parent/variation-family retail changes as upstream causal candidates.
-28. Partial application is a realized treatment different from intended treatment.
-29. Do not use promotion-contaminated windows as ordinary evergreen controls.
-30. Retail-readiness failures are causal gates before traffic suppression.
-31. Stale retail snapshots are historical evidence, not current proof.
-32. Resolve marketplace + profile/account scope before merging memory.
-33. Verified same-marketplace cross-profile migrations may carry bounded mature evidence but never clone current state.
-34. Cross-marketplace migration defaults to directional evidence portability for performance/economic conclusions.
-35. Timeout/unknown writes remain unresolved until reconciliation/idempotency makes repetition safe.
-36. Stable idempotency keys stay bound to the same stable intent/payload.
-37. Trusted current-state readback overrides earlier executor acknowledgement when they disagree.
-38. Higher ROAS/revenue is not automatically higher profit.
-39. A previous winner temporarily at zero orders needs conversion-break diagnosis before negative treatment.
-40. Declared experiment allocation does not prove realized allocation integrity.
-41. Fixed budget pools require source/destination opportunity-cost reconciliation.
-42. Record reviewed sources here when they materially influence the project.
+25. Preserve decision-time evidence identity when later historical restatement can change an optimization outcome.
+26. Aggregate compatible base metrics first; recompute ratios; never sum overlapping entity grains as separate account traffic.
+27. Exhaust pagination or verify equivalent complete coverage before whole-population audit rankings.
+28. Treat source/reporting switches near apparent breaks as competing explanations.
+29. Treat parent/variation-family retail changes as upstream causal candidates.
+30. Partial application is a realized treatment different from intended treatment.
+31. Do not use promotion-contaminated windows as ordinary evergreen controls.
+32. Retail-readiness failures are causal gates before traffic suppression.
+33. Stale retail snapshots are historical evidence, not current proof.
+34. Resolve marketplace + profile/account scope before merging memory.
+35. Verified same-marketplace cross-profile migrations may carry bounded mature evidence but never clone current state.
+36. Cross-marketplace migration defaults to directional evidence portability for performance/economic conclusions.
+37. Timeout/unknown writes remain unresolved until reconciliation/idempotency makes repetition safe.
+38. Stable idempotency keys stay bound to the same stable intent/payload.
+39. Trusted current-state readback overrides earlier executor acknowledgement when they disagree.
+40. Higher ROAS/revenue is not automatically higher profit.
+41. A previous winner temporarily at zero orders needs conversion-break diagnosis before negative treatment.
+42. Declared experiment allocation does not prove realized allocation integrity.
+43. Fixed budget pools require source/destination opportunity-cost reconciliation.
+44. Record reviewed sources here when they materially influence the project.
