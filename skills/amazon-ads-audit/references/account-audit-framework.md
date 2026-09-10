@@ -15,11 +15,27 @@ Resolve before grading performance:
 - source freshness/completeness;
 - promotion/event context;
 - retail readiness where conversion is material to the conclusion;
-- truncation, missing entity levels, or partial coverage.
+- truncation, pagination state, missing entity levels, or partial coverage.
 
 If multiple source paths or metric versions are involved, load `../../../references/data-lineage.md`.
 
-Do not infer missing rows as zero. A missing entity can mean no delivery, filtering, truncation, unavailable coverage, or omitted zero-impression data depending on the source.
+Do not infer missing rows as zero. A missing entity can mean no delivery, filtering, truncation, unavailable coverage, omitted zero-impression data, or an unfetched page depending on the source.
+
+### Pagination and truncation gate
+
+A page of rows is not automatically a population. When a source exposes `nextToken`, cursor, page number, row limit, total-count metadata, truncation warnings, or equivalent continuation state, preserve that metadata with the extracted slice.
+
+Before calling an entity-level dataset complete for an account audit:
+
+1. exhaust the continuation path, or use a trusted equivalent complete export;
+2. record pages/rows fetched and whether a continuation token remains;
+3. detect hard row caps or tool/context truncation independently of API pagination;
+4. reconcile the completed additive aggregate to the canonical parent/profile total when one exists;
+5. explain material residual gaps before population-wide ranking or grading.
+
+A response-level `truncated=false` does not prove population completeness if a non-empty continuation token still exists. Likewise, `100 rows returned` is not evidence that only 100 rows exist.
+
+If coverage is incomplete, local observations about returned rows may still be useful, but label them `Partial / Directional`. Do not claim `top`, `bottom`, concentration share, long-tail coverage, account-wide waste, or whole-population rank unless the relevant population is complete or the ranking guarantee is explicit and trustworthy.
 
 ## 2. Canonical totals and aggregation integrity
 
@@ -39,7 +55,7 @@ If they disagree materially, investigate before grading the account:
 - source/refresh mismatch;
 - date or timezone mismatch;
 - state/filter inclusion differences;
-- truncation/pagination;
+- incomplete pagination, truncation, or hard row caps;
 - partial ad-product coverage;
 - attribution/semantic differences.
 
@@ -178,7 +194,7 @@ Include an explicit Hold/Need-more-data set. A useful audit does not force an ac
 
 A full audit should contain:
 
-1. scope and data confidence;
+1. scope and data confidence, including coverage/pagination status when relevant;
 2. executive verdict;
 3. canonical account scorecard;
 4. driver/contribution analysis;
