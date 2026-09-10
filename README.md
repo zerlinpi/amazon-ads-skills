@@ -65,13 +65,12 @@ Historical Replay / Eval Fixtures
 
 `evals/README.md` 定义 Contract checks + Capability replay。Capability Eval 使用 `met / not_met / insufficient_evidence`，比较决策行为而不是 exact wording。
 
-当前 regression pack 已覆盖 **36 类关键安全风险**，本轮新增：
+当前 regression pack 已覆盖 **38 类关键安全风险**，本轮新增：
 
-- Cross-marketplace predecessor evidence portability limits；
-- Asymmetric backfill 导致的 Post-change false lift；
-- Audit overlapping-grain double counting / ratio aggregation error。
+- Historical restatement after decision：保留 decision-time evidence snapshot，并用 correction/re-evaluation 追加最新解释；
+- Audit pagination/truncation：未耗尽 `nextToken/cursor` 的实体结果不得伪装成完整账户覆盖或用于全量排名。
 
-其余覆盖继续包括 Mixed-ASIN、Negative scope、Previous Winner、source/semantic drift、retail shock、application/readback/retry、experiment leakage/interference、portfolio conflict、profitability conflict 等关键风险。
+其余覆盖继续包括 Mixed-ASIN、Negative scope、Previous Winner、source/semantic/backfill drift、aggregation integrity、retail shock、application/readback/retry、experiment leakage/interference、portfolio conflict、profitability conflict 等关键风险。
 
 关键原则：
 
@@ -84,7 +83,9 @@ verified cross-profile migration → bounded predecessor context, not state clon
 verified cross-marketplace mapping ≠ portable bid/performance conclusion
 same metric name/table path ≠ same measurement definition
 same source + same semantic version ≠ same backfill maturity
+latest restated history ≠ evidence that was available at decision time
 extracted_at ≠ available_through
+first page + nextToken ≠ complete entity population
 profile/campaign/keyword/search-term/placement views ≠ additive spend pools
 average(row ACOS/ROAS/CVR) ≠ account ratio
 higher ROAS ≠ higher contribution profit
@@ -124,12 +125,14 @@ snapshot/backfill maturity
 
 ```text
 选择一个 canonical additive grain
+耗尽 nextToken/cursor 或使用可信完整导出
+记录 pages/rows/continuation/truncation 状态
 profile total ↔ complete campaign aggregate 做 reconciliation
 keyword / search term / placement 等用于分解，不重复累加
 先汇总 impressions/clicks/spend/orders/sales，再重新计算 CTR/CPC/CVR/ACOS/ROAS
 ```
 
-缺失行不自动等于 0；profile/campaign 总量不一致时先查 coverage、truncation、filters、freshness 或 lineage，而不是直接评分。
+缺失行不自动等于 0；未耗尽分页的结果只能做明确标注的局部/Directional 观察。profile/campaign 总量不一致时先查 coverage、pagination、truncation、filters、freshness 或 lineage，而不是直接评分。
 
 ## Weekly Review Playbook
 
@@ -151,6 +154,8 @@ Memory identity：
 ```text
 marketplace + profile/account scope + entity type + entity id + control dimension
 ```
+
+对于会 restate 的历史数据，material `evaluated` event 应尽量保存 decision-time `evidence_snapshot`（snapshot/report/export identity、capture time、available-through、maturity 等）。后续 restatement 如果改变结论，不覆盖旧事件，而是追加 `corrected/evaluated` 事件并链接原事件；derived summary 同时区分当时结论与 latest-data interpretation。
 
 Deliberate migration 区分：
 
@@ -195,7 +200,7 @@ historical rows mutable
 → 不可直接把差异归因给优化动作
 ```
 
-优先重新抽取同成熟度 baseline/post、使用一致 snapshot policy，或对 backfill revision 做 reconciliation。
+优先重新抽取同成熟度 baseline/post、使用一致 snapshot policy，或对 backfill revision 做 reconciliation。若历史在评估落账后发生 material restatement，则同时保留 decision-time snapshot 与 latest restated snapshot，避免 hindsight rewrite。
 
 ## Safety
 
@@ -225,6 +230,8 @@ historical rows mutable
 - 不把固定经验阈值伪装成官方规则或默认动作幅度；
 - 区分 Fact / Observation / Hypothesis / Cause / Action / Outcome；
 - 跨来源/语义版本/快照成熟度趋势先检查 lineage comparability；
+- 可变历史的重要 evaluation 保存 decision-time evidence identity；restatement 用 append-only correction，不 hindsight overwrite；
+- 账户级排名/覆盖结论先验证 pagination/truncation completeness；
 - 聚合 base metrics 后再重算 ratio，禁止把重叠 entity grains 累加为账户总量；
 - 同实体新动作先检查未完成验证和可信 readback；
 - memory 检索先匹配 marketplace/profile scope，scope 不完整或冲突时 fail closed；
@@ -258,8 +265,9 @@ historical rows mutable
 - [x] Asymmetric backfill measurement-parity eval
 - [x] Slim `performance-drop-diagnosis` and `amazon-ads-audit` entrypoints
 - [x] Audit aggregation-integrity eval
+- [x] Historical-restatement-after-decision eval
+- [x] Truncated/paginated audit coverage eval
 - [ ] 继续拆薄其他旧版较厚 Skills
-- [ ] 扩展 historical-restatement-after-decision / truncated-audit-coverage evals
 - [ ] Amazon Ads API / 自研 Connector 示例
 
 ## Disclaimer
