@@ -171,11 +171,16 @@ Repository: https://github.com/MicrosoftDocs/Advertising
 
 ### Amazon Ads budget and bidding rules
 
-Public Amazon Ads documentation was reviewed for current platform behavior, not as an open-source code source. Relevant public pages describe schedule/event-based bid rules, performance/schedule-based budget rules, advertiser-selected ROAS guardrails, dynamic bidding strategies, placement adjustments, and the use of time/performance context for automated control changes.
+Public Amazon Ads documentation was reviewed for current platform behavior, not as an open-source code source. Relevant public pages describe schedule/event-based bid rules, performance/schedule-based budget rules, advertiser-selected ROAS guardrails, dynamic bidding strategies, placement adjustments, account/portfolio budget controls, and modeled budget-opportunity metrics.
 
-These factual platform capabilities support a narrow repository conclusion: Amazon Ads control behavior is contextual to campaign configuration, performance goals and timing; a percentage shown in a guide/UI example is not evidence for one universal manual action magnitude across accounts.
+Two current support-center details materially hardened the budget workflow:
 
-No Amazon documentation prose, UI assets or examples were copied into Skills. The repository independently rewrote the principle as `references/action-sizing.md`, which requires account/caller policy, calibrated response evidence, marginal headroom, or a declared experiment basis before a directional estimate becomes a precise proposed value.
+- **Edit your Sponsored ads campaign budget**, updated September 2, 2026, documents a Sponsored Products account-level daily budget cap for Sellers and points non-Sellers toward portfolio budget caps. This establishes a real upstream constraint that can bind even when an individual campaign budget is raised.
+- **Performance metrics**, updated June 30, 2026, describes estimated missed clicks/impressions/sales as estimates based on historical/similar-campaign signals rather than realized outcomes. The current **Optimize your campaign** page, updated August 11, 2026, also defines `Average time in budget` as a serving-coverage signal and surfaces estimated missed opportunity metrics.
+
+These facts support two narrow repository conclusions: budget feasibility must be evaluated across campaign → portfolio/account/business/external constraints, and platform missed-opportunity estimates are useful directional evidence but not guaranteed incrementality.
+
+No Amazon documentation prose, UI assets or examples were copied into Skills. The repository independently rewrote the principles into `skills/budget-optimization/SKILL.md`, its on-demand `references/portfolio-budget-conflicts.md`, and a synthetic regression fixture.
 
 Public references reviewed:
 
@@ -183,6 +188,9 @@ Public references reviewed:
 - https://advertising.amazon.com/resources/whats-new/event-based-bid-rules-for-sponsored-products-advertisers
 - https://advertising.amazon.com/resources/whats-new/schedule-based-bid-rules-available-for-sponsored-products
 - https://advertising.amazon.com/library/guides/sponsored-products-best-practices
+- https://advertising.amazon.com/help/GVYUKBJQFPH7ZQ2L
+- https://advertising.amazon.com/help/GG44RFW942U9F6F5
+- https://advertising.amazon.com/help/GJHF6GB7WZUMPYJ6
 
 Licensing/adoption note: these are public vendor documentation pages, not relicensed source code. Only factual platform behavior and generic control-design implications were independently paraphrased; no copyrighted prose, images, API examples or proprietary implementation was imported.
 
@@ -198,6 +206,7 @@ Some additions are independent safety hardening rather than adaptations of a sin
 - **Audit aggregation integrity** — profile/campaign/keyword/search-term/placement views overlap; choose one canonical additive grain, reconcile complete parent/child totals, and recompute ratio metrics from additive components.
 - **Audit population completeness** — API pagination, connector row caps and context truncation are separate failure modes; preserve continuation metadata and do not claim whole-population rank from a partial slice.
 - **Contextual action sizing** — raw economic/directional estimates do not prove the final allowed change magnitude; without account policy, calibrated response, marginal headroom or declared experiment constraints, preserve direction instead of inventing a repository-global percentage/damping constant.
+- **Upstream budget-cap feasibility** — campaign-level headroom is not independently actionable when an account/portfolio/business cap binds; modeled missed-opportunity metrics remain directional until pool feasibility and marginal economics are reconciled.
 - **Agent Skills metadata compatibility** — runtime portability requires strict frontmatter compliance; repository-specific metadata belongs under the spec-defined `metadata` map instead of arbitrary top-level YAML keys.
 - **Deterministic Skill packaging validation** — progressive loading is only reliable when entrypoints and referenced support files remain mechanically resolvable; structural validation should fail before runtime discovery when packaging drifts.
 - **Parent/variation-family retail shock** — child conversion can move because family structure/sibling retail/purchased-ASIN mix changed.
@@ -243,22 +252,23 @@ Before adopting an external idea:
 26. Aggregate compatible base metrics first; recompute ratios; never sum overlapping entity grains as separate account traffic.
 27. Exhaust pagination or verify equivalent complete coverage before whole-population audit rankings.
 28. Separate raw monetary-control anchors from final allowed action magnitude; do not invent repository-global bid/budget percentages or damping constants when account-specific sizing evidence is absent.
-29. Keep Skill frontmatter within the Agent Skills allowed top-level field set; custom metadata belongs under `metadata`.
-30. Run deterministic structural validation after Skill/reference/schema/playbook changes; packaging confidence and capability confidence are separate gates.
-31. Treat source/reporting switches near apparent breaks as competing explanations.
-32. Treat parent/variation-family retail changes as upstream causal candidates.
-33. Partial application is a realized treatment different from intended treatment.
-34. Do not use promotion-contaminated windows as ordinary evergreen controls.
-35. Retail-readiness failures are causal gates before traffic suppression.
-36. Stale retail snapshots are historical evidence, not current proof.
-37. Resolve marketplace + profile/account scope before merging memory.
-38. Verified same-marketplace cross-profile migrations may carry bounded mature evidence but never clone current state.
-39. Cross-marketplace migration defaults to directional evidence portability for performance/economic conclusions.
-40. Timeout/unknown writes remain unresolved until reconciliation/idempotency makes repetition safe.
-41. Stable idempotency keys stay bound to the same stable intent/payload.
-42. Trusted current-state readback overrides earlier executor acknowledgement when they disagree.
-43. Higher ROAS/revenue is not automatically higher profit.
-44. A previous winner temporarily at zero orders needs conversion-break diagnosis before negative treatment.
-45. Declared experiment allocation does not prove realized allocation integrity.
-46. Fixed budget pools require source/destination opportunity-cost reconciliation.
-47. Record reviewed sources here when they materially influence the project.
+29. Reconcile campaign, portfolio, account/business and external budget constraints before treating a campaign-level increase as independently deliverable; keep estimated missed-opportunity metrics labeled as modeled evidence.
+30. Keep Skill frontmatter within the Agent Skills allowed top-level field set; custom metadata belongs under `metadata`.
+31. Run deterministic structural validation after Skill/reference/schema/playbook changes; packaging confidence and capability confidence are separate gates.
+32. Treat source/reporting switches near apparent breaks as competing explanations.
+33. Treat parent/variation-family retail changes as upstream causal candidates.
+34. Partial application is a realized treatment different from intended treatment.
+35. Do not use promotion-contaminated windows as ordinary evergreen controls.
+36. Retail-readiness failures are causal gates before traffic suppression.
+37. Stale retail snapshots are historical evidence, not current proof.
+38. Resolve marketplace + profile/account scope before merging memory.
+39. Verified same-marketplace cross-profile migrations may carry bounded mature evidence but never clone current state.
+40. Cross-marketplace migration defaults to directional evidence portability for performance/economic conclusions.
+41. Timeout/unknown writes remain unresolved until reconciliation/idempotency makes repetition safe.
+42. Stable idempotency keys stay bound to the same stable intent/payload.
+43. Trusted current-state readback overrides earlier executor acknowledgement when they disagree.
+44. Higher ROAS/revenue is not automatically higher profit.
+45. A previous winner temporarily at zero orders needs conversion-break diagnosis before negative treatment.
+46. Declared experiment allocation does not prove realized allocation integrity.
+47. Fixed budget pools require source/destination opportunity-cost reconciliation.
+48. Record reviewed sources here when they materially influence the project.
