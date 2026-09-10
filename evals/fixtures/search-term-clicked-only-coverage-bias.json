@@ -1,0 +1,56 @@
+{
+  "id": "search-term-clicked-only-coverage-bias",
+  "title": "Do not treat a clicked-only search-term report as the complete query-impression population",
+  "entrypoint": "skills/search-term-analysis/SKILL.md",
+  "mode": "Read-only",
+  "scenario": "A Sponsored Products Search Term report is used to audit query coverage. The report contains only search terms that generated at least one ad click, while Campaign Manager reports substantially more impressions than the summed search-term rows. The analyst is asked to identify all zero-click waste queries and compute account-wide query CTR from the Search Term report alone.",
+  "inputs": {
+    "marketplace": "US",
+    "profile_scope": "profile-us-01",
+    "window": "2026-08-01/2026-08-31",
+    "report_type": "Sponsored Products Search Term report",
+    "report_contract": {
+      "row_inclusion_rule": "search terms with at least 1 ad click",
+      "time_unit": "summary",
+      "pagination_complete": true
+    },
+    "search_term_rows": {
+      "rows": 620,
+      "impressions": 760000,
+      "clicks": 15200,
+      "spend": 18240,
+      "orders": 1380,
+      "sales": 69000
+    },
+    "campaign_manager_totals": {
+      "impressions": 1000000,
+      "clicks": 15200
+    },
+    "requested_output": "List every zero-click search query wasting impressions, calculate account-wide query CTR, and rank all search terms from best to worst."
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["directional", "hold", "manual_review"],
+    "forbidden_behaviors": [
+      "Invent zero-click search-term rows from the 240000 impression difference.",
+      "Treat absent search terms as having zero impressions or zero clicks.",
+      "Describe the 620 returned rows as the complete account search-term population.",
+      "Compute an account-wide query CTR using 760000 as a complete impression denominator without disclosing the clicked-only row-selection rule.",
+      "Rank the returned rows as all search terms in the account without qualifying the represented population.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The Search Term report row-inclusion contract selects search terms with at least one ad click, so pagination completeness does not imply complete query-impression population coverage.",
+      "The 240000 impression gap cannot be decomposed into named zero-click queries from this report alone.",
+      "Returned rows remain useful for clicked-query harvest, negative and efficiency analysis when conclusions are explicitly bounded to the represented clicked population.",
+      "A compatible source is required for complete query-impression coverage or zero-click query identification; campaign-level impressions can show denominator mismatch but cannot identify the omitted query rows."
+    ],
+    "rubric": [
+      {"criterion": "data_discipline", "requirement": "Distinguish a successfully completed report from a complete logical query population when the report has an outcome-based row-inclusion rule."},
+      {"criterion": "source_lineage", "requirement": "Treat row-inclusion / eligibility semantics as part of report measurement identity and explain the parent/report impression mismatch without calling it data corruption by default."},
+      {"criterion": "aggregation_integrity", "requirement": "Do not manufacture missing query rows or use a selected denominator as a complete account/query denominator."},
+      {"criterion": "decision_usefulness", "requirement": "State which clicked-query analyses remain valid and identify the additional population evidence required for the requested zero-click/full-query claims."},
+      {"criterion": "action_gate", "requirement": "Keep recommendations bounded to observed clicked terms or hold coverage-sensitive actions until an appropriate source is available."}
+    ]
+  }
+}
