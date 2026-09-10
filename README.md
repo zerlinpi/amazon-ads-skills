@@ -224,10 +224,24 @@ historical rows mutable
 
 三套 Runtime 共用同一个 canonical `skills/` 树，不复制 Amazon Ads 业务逻辑。`SKILL.md` frontmatter 对齐 Agent Skills 规范：顶层仅使用 `name`、`description` 及规范允许的可选字段；作者、版本、双语显示名等仓库自定义信息统一放入 `metadata`，避免在严格 validator/runtime 下因未知顶层字段加载失败。
 
+## Deterministic Skill Validation
+
+为避免后续吸收第三方方法时引入“某个 Runtime 能读、另一个 Runtime 加载失败”的静默漂移，仓库现在提供纯 Python 标准库校验器：
+
+```bash
+python -m unittest discover -s tests -v
+python scripts/validate_skills.py .
+```
+
+校验范围包括：`skills/*/SKILL.md` 必须存在、`name/description` 必填、顶层 frontmatter 字段白名单、`name` 与目录一致、禁止 nested `SKILL.md`、以及 `SKILL.md` 中相对 Markdown 引用必须留在仓库内且真实存在。`.github/workflows/validate-skills.yml` 在 GitHub Actions 可用时对相关 Push/PR 运行相同 gate。
+
+该结构校验只证明 packaging/reference integrity；Amazon Ads 决策质量仍由 `evals/` 的 capability replay 验证，二者不能互相替代。
+
 ## Development Rules
 
 - `SKILL.md` 保持薄，详细知识按需加载；
 - `SKILL.md` 顶层 frontmatter 保持 Agent Skills spec-compatible，自定义字段进入 `metadata`；
+- 修改 Skill/reference/schema/playbook 后运行 deterministic validator + unit tests；
 - 不把固定经验阈值伪装成官方规则或默认动作幅度；
 - 区分 Fact / Observation / Hypothesis / Cause / Action / Outcome；
 - 跨来源/语义版本/快照成熟度趋势先检查 lineage comparability；
@@ -253,6 +267,7 @@ historical rows mutable
 
 - [x] Codex / Claude Code / WorkBuddy 共用 Skill 根目录
 - [x] Agent Skills strict frontmatter compatibility（custom metadata nested under `metadata`）
+- [x] Deterministic Skill validator + unit tests + CI gate
 - [x] Audit / Monitor / Search Term / Bid / Budget / Placement / Negative / Profitability
 - [x] Performance Drop Diagnosis + Mixed-ASIN safety
 - [x] Growth Opportunity Finder
