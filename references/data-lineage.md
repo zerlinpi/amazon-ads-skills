@@ -1,8 +1,10 @@
 # Data lineage and comparability
 
-Load this shared reference only when a decision compares, joins, or reconciles metrics from different exports, APIs, MCPs, warehouses, dashboards, caches, refresh schedules, metric-definition versions, or snapshots with different backfill maturity.
+Load this shared reference only when a decision compares, joins, or reconciles metrics from different exports, APIs, MCPs, warehouses, dashboards, caches, refresh schedules, metric-definition versions, report row-inclusion rules, or snapshots with different backfill maturity.
 
-The goal is to prevent a source, measurement-definition, or historical-restatement change from being mistaken for a business change.
+The goal is to prevent a source, measurement-definition, coverage-selection, or historical-restatement change from being mistaken for a business change.
+
+If a decision depends on whether returned rows represent the full logical population, load `report-coverage.md` for row-inclusion / eligibility handling.
 
 ## 1. Same metric name does not guarantee the same measurement
 
@@ -13,7 +15,7 @@ Two fields both named `orders`, `sales`, `spend`, `ACOS`, or `ROAS` may differ b
 - timezone/day boundary;
 - currency conversion timing;
 - aggregation grain;
-- filters, entity scope, or status inclusion;
+- filters, entity scope, status inclusion, or report row-inclusion / eligibility rules;
 - deduplication/backfill behavior;
 - data availability lag;
 - semantic/model version;
@@ -30,6 +32,7 @@ metric name
 + attribution definition
 + aggregation grain
 + scope/filter contract
++ row-inclusion / eligibility contract
 ```
 
 The table path or dashboard label alone is not metric identity.
@@ -46,6 +49,7 @@ When lineage matters, capture when available:
 - marketplace, profile/account scope, currency and timezone;
 - attribution window/model or `unknown`;
 - aggregation grain and filters;
+- report `row_inclusion_rule` / eligibility contract when returned rows are selected by clicks, impressions, delivery, state or another condition;
 - semantic/report version when known;
 - per-metric definition/version when a dataset can evolve individual metrics independently;
 - completeness/backfill status;
@@ -58,10 +62,10 @@ Missing lineage is not proof that two sources are equivalent.
 
 Classify a comparison as:
 
-- `Comparable` — material definitions, scope, maturity and time boundaries align;
+- `Comparable` — material definitions, scope, coverage, maturity and time boundaries align;
 - `Reconcilable` — differences exist but can be calibrated or normalized with evidence;
 - `Directional` — useful for broad direction only; exact deltas/causal claims are unsafe;
-- `Not Comparable` — measurement differences can plausibly explain the apparent movement;
+- `Not Comparable` — measurement or population-selection differences can plausibly explain the apparent movement;
 - `Unknown` — required lineage is missing.
 
 A recommendation must not be more confident than the comparability state.
@@ -79,9 +83,10 @@ Examples:
 - a connector changes attribution/report definition mid-series;
 - historical rows were recomputed under a new semantic version but recent rows were not;
 - one source excludes paused/archived entities while another includes them;
+- one report is clicked-only while another includes impression-qualified rows;
 - source timezone or currency treatment changes between windows.
 
-Treat a source switch near the apparent break point as a competing cause until reconciled.
+Treat a source or row-eligibility switch near the apparent break point as a competing cause until reconciled.
 
 ## 5. Detect semantic metric-version drift
 
@@ -94,7 +99,7 @@ Flag semantic drift when the same metric name changes materially in any of these
 - order/sales deduplication logic;
 - purchased-ASIN or halo inclusion;
 - currency or timezone normalization;
-- aggregation or filtering contract;
+- aggregation, filtering, or row-inclusion contract;
 - backfill behavior;
 - business-semantic transformation;
 - calculation formula for a derived metric.
@@ -121,14 +126,14 @@ Do not invent a conversion factor from one noisy day or infer semantic equivalen
 
 When a source or semantic change is unavoidable:
 
-1. identify the canonical decision metric and required scope;
-2. identify the metric definition/version used in each window;
+1. identify the canonical decision metric and required population/scope;
+2. identify the metric definition/version and row-inclusion rule used in each window;
 3. find an overlap window where both measurement paths report the same dates/entities when possible;
 4. compare totals and key components, not only ratios;
-5. explain systematic lag, filtering, attribution or semantic differences;
+5. explain systematic lag, filtering, selection, attribution or semantic differences;
 6. normalize only when the transformation is explicit and defensible;
 7. label unresolved differences and downgrade actionability;
-8. prefer one stable source and one stable semantic version for both windows when possible.
+8. prefer one stable source, one stable semantic version and one stable coverage contract for both windows when possible.
 
 For a semantic-version cutover, prefer replaying history under the current definition over splicing pre-cutover and post-cutover values into one trend.
 
@@ -143,6 +148,8 @@ Track separately:
 - when the dataset was fetched;
 - which event dates are complete;
 - which conversion dates are mature enough for the decision.
+
+Population completeness is separate again: a report can be fresh and complete for its own clicked-only/impression-qualified contract while still not enumerate every logical entity/query. Use `report-coverage.md` when that distinction matters.
 
 ## 8. Backfill parity and mutable history
 
@@ -190,7 +197,7 @@ Do not call a post-change result `Worked` merely because the later window had mo
 
 ## 9. Derived metrics
 
-Ratios inherit the weakest lineage of their components.
+Ratios inherit the weakest lineage of their components and denominator coverage.
 
 For example:
 
@@ -198,9 +205,9 @@ For example:
 ROAS = sales / spend
 ```
 
-If sales and spend come from different source definitions, semantic versions, snapshot maturities, or attribution states, the resulting ROAS should not be treated as clean even when the arithmetic is correct.
+If sales and spend come from different source definitions, semantic versions, snapshot maturities, attribution states, or incompatible selected populations, the resulting ROAS should not be treated as clean even when the arithmetic is correct.
 
-Prefer recomputing derived metrics from compatible components rather than mixing precomputed ratios from different systems, versions, or maturity states.
+Prefer recomputing derived metrics from compatible components rather than mixing precomputed ratios from different systems, versions, maturity states, or row-inclusion contracts.
 
 ## 10. Source precedence
 
@@ -208,9 +215,9 @@ Do not hard-code a universal rule that API always beats warehouse, or warehouse 
 
 Prefer the measurement path that is:
 
-1. correctly scoped to the requested marketplace/profile/entity;
+1. correctly scoped to the requested marketplace/profile/entity and population;
 2. definitionally compatible with the decision;
-3. complete for the required dates;
+3. complete for the required dates and explicit about row eligibility;
 4. attribution-mature enough;
 5. auditable and reproducible;
 6. stable across the compared windows;
@@ -221,12 +228,12 @@ If two trusted paths disagree materially, expose the disagreement rather than si
 
 ## 11. Action gate
 
-When a material performance break or post-change lift aligns with unresolved source-lineage, semantic-version, or asymmetric-backfill drift:
+When a material performance break or post-change lift aligns with unresolved source-lineage, row-eligibility, semantic-version, or asymmetric-backfill drift:
 
 - do not call the movement `Confirmed` business deterioration or `Worked` optimization outcome;
 - do not generate aggressive bid, budget, negative, pause, scaling, or rollback actions from the disputed delta;
 - return `Directional`, `Missing Data`, `Hold`, or `Manual Review` as appropriate;
-- request a same-source/same-version replay, matched-maturity snapshot, or overlap reconciliation.
+- request a same-source/same-version/same-coverage replay, compatible population denominator, matched-maturity snapshot, or overlap reconciliation.
 
 ## 12. Safety boundary
 
