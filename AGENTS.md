@@ -13,6 +13,7 @@ This repository contains reusable Amazon Ads Agent Skills. The canonical busines
 - When the task asks whether a previous optimization worked, route to `skills/post-change-review/SKILL.md` before proposing another edit on the same entity.
 - When prior actions may overlap a new decision, load `references/optimization-memory.md` and retrieve only the bounded relevant entity history.
 - When compared windows come from different APIs, MCPs, exports, warehouses or semantic/report versions, load `references/data-lineage.md` before making high-confidence trend or causal claims.
+- When a bid, budget, placement or other monetary-control Skill must turn a direction/raw estimate into a concrete magnitude, load `references/action-sizing.md`; do not invent a repository-global change percentage or damping constant.
 - Historical replay fixtures under `evals/` are test inputs, not reusable operating instructions; do not load them during ordinary account analysis unless explicitly running an eval.
 - Do not duplicate business logic into this file.
 
@@ -28,15 +29,16 @@ Modes:
 
 ## Safety rules
 
-- Never invent missing advertising data, source lineage, or optimization history.
+- Never invent missing advertising data, source lineage, optimization history, or action-sizing precision.
 - Do not recommend aggressive bid/budget changes when sample size is insufficient.
+- A raw economic or directional estimate is not automatically an action-safe final magnitude; require an explicit account/caller policy, calibrated response, defensible marginal headroom, experiment design, or another auditable sizing basis for a concrete proposed value.
 - Check marketplace, profile/account scope, currency, timezone, attribution window, date range, promotion context, data freshness and source comparability before high-confidence recommendations.
 - Treat `extracted_at` and `available_through` as different concepts; a freshly fetched downstream table may still be incomplete for recent event dates.
 - Treat Prime Day, Best Deal, Lightning Deal, Coupon, Prime-exclusive promotions, stockouts, listing suppression, major price changes, and parent/variation-family retail changes as potential confounders.
 - Before reversing or stacking another action on the same entity, check whether a recent action is still inside its validation window when history is available.
 - Distinguish `proposed`, `applied`, `readback confirmed`, and `worked`; none of these imply the next stage automatically.
 - If history is unavailable or partial, expose that limitation instead of treating the ledger as complete.
-- Prefer `Hold`, `Experiment Only`, or `Manual Review` when application is unknown/drifted, evaluation is still pending, source comparability is unresolved, or a new action would contaminate an active experiment unless a safety guardrail triggered.
+- Prefer `Hold`, `Experiment Only`, or `Manual Review` when application is unknown/drifted, evaluation is still pending, source comparability is unresolved, action magnitude lacks a defensible sizing basis, or a new action would contaminate an active experiment unless a safety guardrail triggered.
 - Weekly reviews must include a hold list; do not force every material entity into an action.
 - Do not place credentials, refresh tokens, client secrets, profile IDs, account IDs, or customer secrets in generated files or logs.
 - Any `Execute` plan must include evidence, confidence, guardrails, validation window, and rollback criteria.
@@ -48,6 +50,7 @@ Modes:
 - Metrics: `references/amazon-ads-metrics.md`
 - Optimization framework: `references/optimization-framework.md`
 - Decision boundaries: `references/decision-boundaries.md`
+- Contextual action sizing: `references/action-sizing.md`
 - Benchmark policy: `references/benchmark-policy.md`
 - Optimization memory: `references/optimization-memory.md`
 - Canonical data model: `references/data-schema.md`
@@ -63,7 +66,8 @@ Modes:
 
 When adding or changing decision logic, prefer adding a focused synthetic replay fixture for material failure modes.
 
-- Keep contract checks separate from capability evals.
+- Keep deterministic contract checks separate from capability evals.
+- Every fixture must remain valid under `scripts/validate_evals.py`: valid JSON, allowed contract fields/enums, collision-free ID, filename/ID alignment, and an existing repository-local entrypoint.
 - Score decision behavior rather than exact prose.
 - Use `met`, `not_met`, or `insufficient_evidence`; do not coerce missing evidence into pass/fail.
 - A fixture may allow multiple conservative outcomes, but must list forbidden unsafe behaviors explicitly.
@@ -90,14 +94,17 @@ Keep `name` within the Agent Skills naming constraints and `description` within 
 
 ## Deterministic repository validation
 
-After changing a Skill, its supporting references, shared references, schemas, playbooks, or the validator itself, run:
+After changing a Skill, its supporting references, shared references, schemas, playbooks, eval fixtures, or validators, run:
 
 ```bash
 python -m unittest discover -s tests -v
 python scripts/validate_skills.py .
+python scripts/validate_evals.py .
 ```
 
-The validator is intentionally dependency-free and checks the repository invariants most likely to break cross-runtime loading:
+The validators are intentionally dependency-free and check repository invariants that should fail before a runtime or eval harness discovers them interactively.
+
+Skill/package validation checks:
 
 - every direct child of `skills/` contains `SKILL.md`;
 - required `name` / `description` frontmatter exists;
@@ -106,7 +113,16 @@ The validator is intentionally dependency-free and checks the repository invaria
 - nested `SKILL.md` files are rejected;
 - relative Markdown references from `SKILL.md` stay inside the repository and resolve to existing paths.
 
-`.github/workflows/validate-skills.yml` runs the same checks for relevant pushes and pull requests when GitHub Actions is enabled. Do not treat a local or CI pass as proof of Amazon Ads decision quality; deterministic structure checks complement, rather than replace, replay/eval behavior checks.
+Eval-contract validation checks:
+
+- every `evals/fixtures/*.json` file parses as JSON;
+- required/allowed fixture and expected-result fields are respected;
+- mode and acceptable-decision values stay within the closed-world schema contract;
+- fixture ID matches filename and does not collide;
+- entrypoint stays inside the repository and exists;
+- rubric/required-observation contracts do not positively require live mutation.
+
+`.github/workflows/validate-skills.yml` runs unit tests plus both validators for relevant pushes and pull requests when GitHub Actions is enabled. Do not treat a local or CI pass as proof of Amazon Ads decision quality; deterministic structure/contract checks complement, rather than replace, capability replay behavior checks.
 
 ## Contribution rules
 
@@ -122,4 +138,4 @@ Add a playbook instead of a new Skill when the new material is primarily a recur
 
 Shared memory/history features should prefer append-first events plus derived compact summaries rather than mutable prose logs.
 
-When a change materially affects source comparability, negatives, bid/budget reversals, retail causality, Mixed-ASIN safety, growth qualification, experiments, readback, or rollback decisions, add or update a replay fixture when practical.
+When a change materially affects source comparability, negatives, bid/budget reversals or sizing, retail causality, Mixed-ASIN safety, growth qualification, experiments, readback, or rollback decisions, add or update a replay fixture when practical.
