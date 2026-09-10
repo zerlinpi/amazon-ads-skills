@@ -65,8 +65,9 @@ Historical Replay / Eval Fixtures
 
 `evals/README.md` 定义 Contract checks + Capability replay。Capability Eval 使用 `met / not_met / insufficient_evidence`，比较决策行为而不是 exact wording。
 
-当前 regression pack 已覆盖 **40 类关键安全风险**，近期新增：
+当前 regression pack 已覆盖 **41 类关键安全风险**，近期新增：
 
+- Placement coupled-control confounding：Base/target bid、placement modifier、dynamic bidding、schedule/event rules 在同一窗口变化时，不把版位 ROAS lift 归因给单一 modifier；
 - Upstream budget-cap bottleneck：Campaign 提额前先核对 Sponsored Products account-level / portfolio / business cap；平台 estimated missed sales/clicks 只作为模型机会信号，不当作保证增量；
 - Contextual action sizing：禁止在账户没有 sizing policy / calibrated response 时，用仓库默认百分比把方向性 Bid/预算结论伪装成精确动作；
 - Historical restatement after decision：保留 decision-time evidence snapshot，并用 correction/re-evaluation 追加最新解释；
@@ -92,6 +93,8 @@ raw economic bid/budget anchor ≠ action-safe final magnitude
 no account sizing policy ≠ permission to invent a default ±X%
 campaign budget headroom ≠ account/portfolio budget headroom
 estimated missed sales/clicks ≠ guaranteed incrementality
+configured bid controls ≠ realized auction exposure
+placement ROAS lift under overlapping control changes ≠ single-modifier causality
 profile/campaign/keyword/search-term/placement views ≠ additive spend pools
 average(row ACOS/ROAS/CVR) ≠ account ratio
 higher ROAS ≠ higher contribution profit
@@ -207,6 +210,23 @@ raw economic / directional anchor
 
 仓库不再提供全账户通用的单次 Bid/预算调整百分比。公开案例、平台 UI 示例、第三方 Skill 阈值和其他账户历史都不能直接成为当前账户的默认幅度。没有账户策略、校准响应、边际 headroom 或明确实验约束时，允许保留方向而不制造 `proposed_value` 的假精度。
 
+## Placement Control Interaction
+
+`placement-optimization` 在 base/target bid、placement adjustment、dynamic bidding、schedule/event bid rules 等可能同时影响版位曝光时，按需加载：
+
+`skills/placement-optimization/references/realized-bid-exposure.md`
+
+核心区分：
+
+```text
+configured controls = intent
+placement delivery / CPC / traffic mix = realized evidence
+```
+
+仓库不会把配置值拼成未经平台行为证实的精确 auction-level effective-bid 公式。多个 material bidding controls 在同一 measurement window 变化时，版位效果应标记为 `Directional / Confounded`，优先重建 control timeline，再选择单一可解释控制、Hold 或 Shadow/Experiment。
+
+历史 Top of Search / Product Pages / Rest of Search ROAS/CVR 只是过去 realized traffic 的证据，不自动证明继续提高 modifier 后仍有同等 marginal efficiency。
+
 ## Experiment Planner
 
 证据不足但可验证的优化优先进入 Experiment / Shadow。实验应预声明 decision question、hypothesis、treatment、control/holdout、primary metric、guardrails、attribution-mature window、contamination risk、allocation integrity、control integrity 与 stop/rollback rule。
@@ -278,6 +298,7 @@ python scripts/validate_evals.py .
 - 可变历史的重要 evaluation 保存 decision-time evidence identity；restatement 用 append-only correction，不 hindsight overwrite；
 - 账户级排名/覆盖结论先验证 pagination/truncation completeness；
 - 聚合 base metrics 后再重算 ratio，禁止把重叠 entity grains 累加为账户总量；
+- placement optimization 必须区分 configured controls 与 realized exposure；多个 material bidding controls 同窗变化时不做单一 modifier 因果归因；
 - 同实体新动作先检查未完成验证和可信 readback；
 - memory 检索先匹配 marketplace/profile scope，scope 不完整或冲突时 fail closed；
 - deliberate migration 需要显式 lineage mapping；跨 Marketplace 性能证据默认不直接迁移；
@@ -292,7 +313,7 @@ python scripts/validate_evals.py .
 
 ## Sources & Licenses
 
-项目持续研究公开 Amazon Ads / PPC / Agent Skills 项目。采用流程：`discover → license check → extract generic idea → independently rewrite → Amazon Ads adaptation → safety gate → progressive loading`。已审阅来源见 `docs/SOURCES.md`。
+项目持续研究公开 Amazon Ads / PPC / Agent Skills 项目。采用流程：`discover → license check → extract generic idea → independently rewrite → Amazon Ads adaptation → safety gate → progressive loading`。已审阅来源见 `docs/SOURCES.md`，单轮专项研究可放在 `docs/research/` 并保持来源与采用边界可追溯。
 
 ## Roadmap
 
@@ -318,6 +339,7 @@ python scripts/validate_evals.py .
 - [x] Historical-restatement-after-decision eval
 - [x] Truncated/paginated audit coverage eval
 - [x] Upstream account/portfolio budget-cap feasibility eval
+- [x] Placement realized-exposure / coupled-control attribution eval
 - [ ] 继续拆薄其他旧版较厚 Skills
 - [ ] Amazon Ads API / 自研 Connector 示例
 
