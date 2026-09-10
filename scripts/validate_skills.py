@@ -16,6 +16,10 @@ ALLOWED_TOP_LEVEL_FIELDS = {
     "allowed-tools",
 }
 REQUIRED_FIELDS = {"name", "description"}
+MAX_SKILL_NAME_LENGTH = 64
+MAX_DESCRIPTION_LENGTH = 1024
+MAX_COMPATIBILITY_LENGTH = 500
+SKILL_NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 LINK_RE = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
 TOP_LEVEL_KEY_RE = re.compile(r"^([A-Za-z0-9_-]+):(?:\s|$)")
 
@@ -48,6 +52,36 @@ def _frontmatter(text: str, path: Path) -> tuple[dict[str, str], list[str]]:
     return values, errors
 
 
+def _validate_metadata_constraints(meta: dict[str, str], skill_file: Path) -> list[str]:
+    errors: list[str] = []
+    name = meta.get("name", "")
+    description = meta.get("description", "")
+    compatibility = meta.get("compatibility", "")
+
+    if name:
+        if len(name) > MAX_SKILL_NAME_LENGTH:
+            errors.append(
+                f"{skill_file}: name must be at most {MAX_SKILL_NAME_LENGTH} characters"
+            )
+        if not SKILL_NAME_RE.fullmatch(name):
+            errors.append(
+                f"{skill_file}: name must use lowercase letters, numbers, and hyphens only; "
+                "it must not start or end with a hyphen"
+            )
+
+    if description and len(description) > MAX_DESCRIPTION_LENGTH:
+        errors.append(
+            f"{skill_file}: description must be at most {MAX_DESCRIPTION_LENGTH} characters"
+        )
+
+    if compatibility and len(compatibility) > MAX_COMPATIBILITY_LENGTH:
+        errors.append(
+            f"{skill_file}: compatibility must be at most {MAX_COMPATIBILITY_LENGTH} characters"
+        )
+
+    return errors
+
+
 def _local_links(skill_file: Path, text: str) -> list[Path]:
     paths: list[Path] = []
     for raw in LINK_RE.findall(text):
@@ -74,6 +108,8 @@ def validate_skill(skill_dir: Path, repository_root: Path) -> list[str]:
     for field in sorted(REQUIRED_FIELDS):
         if not meta.get(field):
             errors.append(f"{skill_file}: required frontmatter field '{field}' is missing or empty")
+
+    errors.extend(_validate_metadata_constraints(meta, skill_file))
 
     if meta.get("name") and meta["name"] != skill_dir.name:
         errors.append(
