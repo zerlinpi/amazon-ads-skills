@@ -65,7 +65,7 @@ Historical Replay / Eval Fixtures
 
 `evals/README.md` 定义 Contract checks + Capability replay。Capability Eval 使用 `met / not_met / insufficient_evidence`，比较决策行为而不是 exact wording。
 
-当前 regression pack 已覆盖 **38 类关键安全风险**，本轮新增：
+当前 regression pack 已覆盖 **38 类关键安全风险**，近期新增：
 
 - Historical restatement after decision：保留 decision-time evidence snapshot，并用 correction/re-evaluation 追加最新解释；
 - Audit pagination/truncation：未耗尽 `nextToken/cursor` 的实体结果不得伪装成完整账户覆盖或用于全量排名。
@@ -222,11 +222,12 @@ historical rows mutable
 | WorkBuddy | `.workbuddy-plugin/plugin.json` + `skills/` |
 | 其他 Agent Skills Runtime | `skills/<name>/SKILL.md` |
 
-三套 Runtime 共用同一个 canonical `skills/` 树，不复制 Amazon Ads 业务逻辑。
+三套 Runtime 共用同一个 canonical `skills/` 树，不复制 Amazon Ads 业务逻辑。`SKILL.md` frontmatter 对齐 Agent Skills 规范：顶层仅使用 `name`、`description` 及规范允许的可选字段；作者、版本、双语显示名等仓库自定义信息统一放入 `metadata`，避免在严格 validator/runtime 下因未知顶层字段加载失败。
 
 ## Development Rules
 
 - `SKILL.md` 保持薄，详细知识按需加载；
+- `SKILL.md` 顶层 frontmatter 保持 Agent Skills spec-compatible，自定义字段进入 `metadata`；
 - 不把固定经验阈值伪装成官方规则或默认动作幅度；
 - 区分 Fact / Observation / Hypothesis / Cause / Action / Outcome；
 - 跨来源/语义版本/快照成熟度趋势先检查 lineage comparability；
@@ -251,6 +252,7 @@ historical rows mutable
 ## Roadmap
 
 - [x] Codex / Claude Code / WorkBuddy 共用 Skill 根目录
+- [x] Agent Skills strict frontmatter compatibility（custom metadata nested under `metadata`）
 - [x] Audit / Monitor / Search Term / Bid / Budget / Placement / Negative / Profitability
 - [x] Performance Drop Diagnosis + Mixed-ASIN safety
 - [x] Growth Opportunity Finder
