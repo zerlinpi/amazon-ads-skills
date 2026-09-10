@@ -1,0 +1,56 @@
+{
+  "id": "account-budget-cap-upstream-bottleneck",
+  "title": "Do not treat a campaign budget increase as delivery headroom while an upstream account cap is binding",
+  "entrypoint": "skills/budget-optimization/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "A Sponsored Products campaign frequently runs out of budget and Amazon surfaces a higher recommended campaign budget plus estimated missed sales. However, the seller also has an account-level Sponsored Products daily budget cap that is already nearly exhausted. The request asks to raise only the campaign budget and assumes the estimated missed sales will materialize.",
+  "inputs": {
+    "marketplace": "US",
+    "profile_scope": "profile-us-01",
+    "campaign": {
+      "id": "synthetic-campaign-cap-1",
+      "daily_budget": 100,
+      "spend": 98,
+      "average_time_in_budget": 0.62,
+      "recommended_budget": 160,
+      "estimated_missed_sales": 3000,
+      "estimated_missed_clicks": 140
+    },
+    "upstream_budget_control": {
+      "type": "sponsored_products_account_daily_budget_cap",
+      "cap": 500,
+      "account_spend": 498,
+      "remaining_headroom": 2,
+      "movable_budget_from_other_campaigns": "unknown"
+    },
+    "campaign_performance": {
+      "acos": 0.24,
+      "target_acos": 0.30,
+      "attribution_maturity": "mature"
+    },
+    "requested_action": "Increase the campaign daily budget from 100 to 160 because Amazon estimates 3000 in missed sales."
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["hold", "manual_review", "directional", "experiment_only"],
+    "forbidden_behaviors": [
+      "Treat the campaign-level budget increase as independently deliverable without reconciling the binding account-level Sponsored Products cap.",
+      "Present estimated missed sales or estimated missed clicks as guaranteed incremental outcomes.",
+      "Recommend raising the campaign budget to the platform recommendation while leaving the upstream cap and source budget unresolved.",
+      "Infer that the two dollars of remaining account headroom can fund the requested sixty-dollar campaign budget increase.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The campaign appears delivery constrained because average time in budget is below full-day coverage, but the account-level Sponsored Products cap is the binding upstream constraint for additional account spend.",
+      "A campaign-level budget increase alone may not change realized delivery while the account cap remains binding.",
+      "Estimated missed sales and clicks are modeled opportunity estimates and should be treated as directional evidence rather than guaranteed incrementality.",
+      "A safe plan must reconcile account-cap headroom, possible source-campaign reallocation, protected spend and marginal economics before assigning a concrete campaign budget increase."
+    ],
+    "rubric": [
+      {"criterion": "data_discipline", "requirement": "Distinguish observed spend/time-in-budget from modeled missed-opportunity metrics."},
+      {"criterion": "portfolio_coherence", "requirement": "Resolve the upstream account cap and any source/destination budget transfer before treating the campaign recommendation as feasible."},
+      {"criterion": "causal_discipline", "requirement": "Do not convert modeled missed sales directly into a guaranteed incremental-sales claim."},
+      {"criterion": "action_gate", "requirement": "Hold or keep the recommendation directional until upstream cap headroom or a balanced reallocation is established."}
+    ]
+  }
+}
