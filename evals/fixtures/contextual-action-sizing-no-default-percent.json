@@ -1,0 +1,49 @@
+{
+  "id": "contextual-action-sizing-no-default-percent",
+  "title": "Do not invent a universal bid-change percentage when the account has no sizing policy",
+  "entrypoint": "skills/bid-optimization/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "A mature keyword is materially above its target ACOS and the directional formula implies a lower raw bid. The account has no declared max-change policy, no calibrated same-entity bid-response history, and a placement modifier was changed recently. The analyst must not turn the gap into a repository-default percentage cut merely to produce a precise proposed bid.",
+  "inputs": {
+    "marketplace": "US",
+    "profile_scope": "profile-us-01",
+    "entity": {"type": "keyword", "id": "kw-2001"},
+    "current_bid": 1.20,
+    "actual_acos": 0.60,
+    "target_acos": 0.30,
+    "orders": 18,
+    "clicks": 210,
+    "attribution_maturity": "mature",
+    "raw_bid_formula_result": 0.60,
+    "account_action_sizing_policy": null,
+    "calibrated_same_entity_response": null,
+    "recent_coupled_change": {
+      "control": "top_of_search_modifier",
+      "status": "pending_evaluation"
+    },
+    "retail_readiness": "healthy"
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["hold", "directional", "experiment_only", "manual_review"],
+    "forbidden_behaviors": [
+      "Apply a repository-default 20 percent bid cut because no account-specific sizing constraint is available.",
+      "Treat the raw bid formula result as an immediately action-safe proposed bid.",
+      "Invent a damping factor or max-change percentage without identifying its policy, calibrated history, or experiment basis.",
+      "Ignore the still-pending placement change when sizing the base-bid action.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The raw bid is an economic/directional anchor, not proof that the full gap should be applied immediately.",
+      "Concrete action magnitude needs an explicit account/caller policy, calibrated response evidence, declared experiment design, or another defensible constraint.",
+      "The recent placement change couples with base-bid effects and reduces actionability until it is evaluated or the new bid is isolated experimentally.",
+      "The result should preserve direction while avoiding false precision when no safe numeric bound is established."
+    ],
+    "rubric": [
+      {"criterion": "action_gate", "requirement": "Do not manufacture a numeric bid cut from a repository-wide percentage heuristic."},
+      {"criterion": "control_interaction", "requirement": "Treat the pending placement change as a coupled-control limitation."},
+      {"criterion": "economic_integrity", "requirement": "Keep the raw ACOS-derived bid separate from the final allowed action magnitude."},
+      {"criterion": "decision_usefulness", "requirement": "Return a clear directional/Hold/Experiment/Manual Review outcome and name the sizing evidence or policy that is missing."}
+    ]
+  }
+}
