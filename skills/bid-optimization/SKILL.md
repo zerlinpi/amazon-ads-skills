@@ -17,6 +17,14 @@ metadata:
 
 `Suggest`。任何 bid 变化均为 proposal，不直接写入账户。
 
+## Progressive loading
+
+只有当方向性结论需要转成具体 bid 数值时，再加载：
+
+- `../../references/action-sizing.md`
+
+不要为了普通诊断预加载该 reference。
+
 ## 必需上下文
 
 尽量获取：
@@ -52,13 +60,12 @@ metadata:
 
 `raw_bid = current_bid * target_acos / actual_acos`
 
-这只是方向性基准，不能直接执行。必须：
-- 做 damping；
-- 应用单次变更上限；
+这只是方向性/经济性基准，不能直接执行。必须：
+- 将 `raw_bid` 与最终 `proposed_value` 分开记录；
 - 检查 placement modifier 和 dynamic bidding；
-- 检查业务阶段。
-
-默认单次建议通常限制在当前 bid 的 ±20% 内，见 `../../references/decision-boundaries.md`。
+- 检查业务阶段、历史变更和可逆性；
+- 只有账户策略、校准历史响应、实验设计或其他可信约束支持时才做数值 damping/截断；
+- 数值幅度按 `../../references/action-sizing.md`，不使用仓库级固定百分比。
 
 ### 基于 CVR 的可承受 CPC
 
@@ -110,16 +117,21 @@ metadata:
   "entity_type": "keyword",
   "entity_id": "...",
   "current_value": 1.20,
-  "proposed_value": 1.05,
+  "raw_value": 1.00,
+  "proposed_value": 1.10,
+  "action_class": "Bounded Adjust",
+  "sizing_basis": "account policy + mature same-entity history",
   "reason": "...",
   "evidence": ["..."],
   "confidence": 0.0,
   "mode": "Suggest",
-  "guardrails": ["single_change_pct <= 20%"],
+  "constraints_applied": ["..."],
   "validation_window": "...",
   "rollback_condition": "..."
 }
 ```
+
+如果无法证明具体 `proposed_value` 的幅度合理，保留 `raw_value`/方向，说明缺失的 sizing constraint，输出 `Probe`、`Hold` 或 `Manual Review`，不要伪造精确 bid。
 
 ## 排序
 
@@ -134,4 +146,5 @@ metadata:
 - 不用一次大幅降 bid 代替 Search Term/Listing 根因分析；
 - 不连续短周期调整同一实体；
 - 不在不知道币种/业务目标时输出“最优 bid”；
+- 不把第三方示例百分比、其他账户动作幅度或平台 UI 示例直接当作本账户默认调整幅度；
 - 不声称算法可以保证排名、销售或 ACOS。
