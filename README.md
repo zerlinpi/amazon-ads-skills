@@ -65,8 +65,9 @@ Historical Replay / Eval Fixtures
 
 `evals/README.md` 定义 Contract checks + Capability replay。Capability Eval 使用 `met / not_met / insufficient_evidence`，比较决策行为而不是 exact wording。
 
-当前 regression pack 已覆盖 **42 类关键安全风险**，近期新增：
+当前 regression pack 已覆盖 **43 类关键安全风险**，近期新增：
 
+- Search Term Impression Share route ambiguity：SIS 是 query 的 account-wide visibility/share 证据，不把低 SIS 直接映射成某一个 Campaign 的 bid/budget headroom，也不把份额差额当成保证增量；
 - Report row-eligibility / selection bias：clicked-only 或 impression-qualified 报表即使完整生成，也不等于完整逻辑总体；禁止把缺失行自动补 0，或把 selected subset 当作全账户 query/target population；
 - Placement coupled-control confounding：Base/target bid、placement modifier、dynamic bidding、schedule/event rules 在同一窗口变化时，不把版位 ROAS lift 归因给单一 modifier；
 - Upstream budget-cap bottleneck：Campaign 提额前先核对 Sponsored Products account-level / portfolio / business cap；平台 estimated missed sales/clicks 只作为模型机会信号，不当作保证增量；
@@ -93,6 +94,8 @@ successful report completion ≠ complete logical population
 clicked-only search-term rows ≠ all query impressions
 missing report row ≠ zero unless the report contract proves it
 first page + nextToken ≠ complete entity population
+account-wide SIS ≠ campaign-specific headroom
+low SIS ≠ guaranteed incremental clicks/sales/profit
 raw economic bid/budget anchor ≠ action-safe final magnitude
 no account sizing policy ≠ permission to invent a default ±X%
 campaign budget headroom ≠ account/portfolio budget headroom
@@ -145,6 +148,24 @@ report complete under its contract
 ```
 
 Search Term harvest / negative / clicked-query efficiency 仍可使用已表示的 clicked population；但 zero-click query identification、完整 query-impression coverage、全账户 query CTR denominator 或完整 population ranking 需要兼容的额外来源。不同报告之间做 reconciliation 时，要把 row-inclusion / eligibility 视为 measurement identity，而不只看列名或来源系统。
+
+## Search Term Impression Share / Query Headroom
+
+当 `search-term-analysis` 或 `growth-opportunity-finder` 使用 Search Term Impression Share (SIS) / Impression Rank 判断 share-of-voice 或 query growth headroom 时，按需加载 `references/search-term-impression-share.md`。
+
+Amazon 当前公开 Sponsored Products 文档把 SIS 描述为 search term 的 account-wide paid-impression share / rank，因此仓库要求先区分**份额信号的 account scope**和**实际可修改的 campaign/target control scope**：
+
+```text
+low account-wide SIS
+→ 可形成 visibility-headroom hypothesis
+
+low account-wide SIS
+≠ 某个 campaign 独占剩余 share headroom
+≠ 自动选择 bid / budget / placement 作为 binding control
+≠ 保证增加 clicks / sales / profit
+```
+
+只有在 query 商业价值、report/window 可比性、routing、retail readiness、budget headroom 和实际 binding control 都足够清晰时，才把 share 信号升级为具体增长动作；否则保持 `Directional / Experiment / Hold`。具体数值仍走 contextual action sizing，不从 SIS 生成仓库默认增幅。
 
 ## Skill Effectiveness Evaluation
 
@@ -336,6 +357,7 @@ python scripts/validate_evals.py .
 - 区分 Fact / Observation / Hypothesis / Cause / Action / Outcome；
 - 跨来源/语义版本/快照成熟度/row-inclusion contract 趋势先检查 lineage comparability；
 - 报表行缺失先检查 row-inclusion / eligibility；除非 report contract 明确支持，否则不自动补 0、不声称完整总体；
+- Search Term Impression Share 先保留 account-wide scope；没有 routing/binding-control 证据时不映射成单 Campaign 的 bid/budget headroom，也不把低 SIS 当增量保证；
 - 可变历史的重要 evaluation 保存 decision-time evidence identity；restatement 用 append-only correction，不 hindsight overwrite；
 - 账户级排名/覆盖结论先验证 pagination/truncation completeness 与 population-selection contract；
 - 聚合 base metrics 后再重算 ratio，禁止把重叠 entity grains 累加为账户总量；
@@ -375,6 +397,7 @@ python scripts/validate_evals.py .
 - [x] Historical replay / regression fixtures
 - [x] Source lineage + semantic metric-version drift
 - [x] Report row-inclusion / eligibility coverage safety
+- [x] Search Term Impression Share / account-wide query-headroom safety
 - [x] Cross-profile + cross-marketplace migration safety
 - [x] Asymmetric backfill measurement-parity eval
 - [x] Slim `performance-drop-diagnosis` and `amazon-ads-audit` entrypoints
