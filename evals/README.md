@@ -2,7 +2,7 @@
 
 This directory validates whether the repository makes safe, repeatable Amazon Ads decisions from bounded historical cases.
 
-The goal is not exact wording. The goal is to detect decision regressions such as unsafe negatives, premature reversals, weak evidence presented as certainty, Mixed-ASIN collateral damage, retail-state misdiagnosis, stale retail-state misuse, parent/variation-family retail shocks, promotion-window false positives, attribution-lag false failures, source-lineage/semantic/backfill drift, historical restatement that rewrites decision context, unsafe cross-scope memory transfer, invalid cross-marketplace portability, lost deliberate-migration lineage, overlapping-grain double counting, paginated/truncated audit coverage presented as complete, repository-default action percentages used as false precision, modeled missed-budget opportunities presented as guaranteed incrementality, campaign budget changes proposed despite binding upstream caps, unverified or partial writes being credited with outcomes, unsafe retries, coupled-control overcorrection, portfolio/local-optimum conflicts, contaminated experiments, sample-ratio/allocation integrity failures, control leakage, auction displacement, shared-resource starvation, variation-family substitution, long-test boundary drift, ROAS/profitability conflicts, or unjustified scaling.
+The goal is not exact wording. The goal is to detect decision regressions such as unsafe negatives, premature reversals, weak evidence presented as certainty, Mixed-ASIN collateral damage, retail-state misdiagnosis, stale retail-state misuse, parent/variation-family retail shocks, promotion-window false positives, attribution-lag false failures, source-lineage/semantic/backfill drift, historical restatement that rewrites decision context, unsafe cross-scope memory transfer, invalid cross-marketplace portability, lost deliberate-migration lineage, overlapping-grain double counting, paginated/truncated audit coverage presented as complete, repository-default action percentages used as false precision, modeled missed-budget opportunities presented as guaranteed incrementality, campaign budget changes proposed despite binding upstream caps, unverified or partial writes being credited with outcomes, unsafe retries, coupled-control overcorrection, placement lift misattributed under overlapping bid controls, portfolio/local-optimum conflicts, contaminated experiments, sample-ratio/allocation integrity failures, control leakage, auction displacement, shared-resource starvation, variation-family substitution, long-test boundary drift, ROAS/profitability conflicts, or unjustified scaling.
 
 ## Evaluation layers
 
@@ -44,7 +44,7 @@ Do not silently convert `insufficient_evidence` into pass or fail.
 6. **History safety** — respect pending validation, readback, stable IDs, collision-safe account scope, explicit predecessor/successor lineage, evidence-portability limits, and decision-time evidence identity when history can restate.
 7. **Retail readiness** — check Featured Offer / Buy Box, stock, price, promotions, listing state, variation-family context and snapshot freshness.
 8. **Window comparability** — reject promotion/event-contaminated, source-incompatible, semantic-version-incompatible or asymmetrically backfilled baselines as ordinary comparable controls.
-9. **Control interaction** — recognize coupled bid, placement, dynamic-bidding and budget controls.
+9. **Control interaction** — recognize coupled base/target bid, placement modifier, dynamic-bidding, bid-rule and budget controls; separate configured controls from realized exposure and do not invent unsupported exact effective-bid formulas.
 10. **Application integrity** — distinguish intended, confirmed, partial, drifted, not-applied and unknown mutations.
 11. **Experiment integrity** — flag contamination, bundled changes, allocation/sample-ratio anomalies and broken controls.
 12. **Control integrity** — detect treatment leakage, time-varying boundary drift and treatment→control interference through shared queries, ASINs, auctions, budgets, routing, placements, resources or automation.
@@ -135,6 +135,7 @@ python scripts/validate_evals.py .
 ### Coupled-control and experiment safety
 
 - `bid-placement-interaction-hold.json` — blocks overlapping material bid and placement changes while one change is still being validated.
+- `placement-coupled-controls-confounded-lift.json` — prevents a Top of Search ROAS lift from being credited to one placement modifier when target bid, dynamic bidding strategy and an event rule changed in the same measurement window; requires a control timeline and realized-exposure reasoning.
 - `experiment-contamination-hold.json` — blocks causal winner claims after concurrent budget, price and placement changes.
 - `experiment-sample-ratio-mismatch.json` — blocks causal rollout when realized treatment/control allocation materially departs from the declared split and the mismatch is unexplained.
 - `control-group-treatment-leakage.json` — rejects a control that receives treatment-like exposure through shared automation and overlapping query/ASIN demand.
