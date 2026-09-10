@@ -8,9 +8,9 @@ The goal is not to create a generic long-term memory system. It is to preserve e
 
 Treat optimization memory as an append-first event ledger plus derived entity summaries.
 
-- Events record what was proposed, approved, applied, read back, evaluated, failed, rolled back, or became unknown.
+- Events record what was proposed, approved, applied, read back, evaluated, failed, rolled back, corrected, or became unknown.
 - Entity summaries are derived views for fast retrieval. They are not the source of truth.
-- Never overwrite historical events merely because a later conclusion changed.
+- Never overwrite historical events merely because a later conclusion or historical dataset changed.
 - A new event may supersede or correct an earlier interpretation while preserving the original record.
 
 Use `schemas/optimization-event.json` for event records and `schemas/entity-history.json` for the derived entity-history view.
@@ -25,7 +25,8 @@ Before recommending a new bid, budget, placement, negative, target-state, campai
 4. the latest readback state;
 5. the latest outcome classification;
 6. active rollback/stop conditions;
-7. concurrent actions on parent/child entities that can contaminate attribution.
+7. concurrent actions on parent/child entities that can contaminate attribution;
+8. material evidence restatements that supersede a prior evaluation.
 
 If no memory source exists, say `history unavailable` rather than assuming there was no prior action.
 
@@ -251,6 +252,34 @@ Before presenting a stored state as current, refresh from a trusted live/exporte
 
 A stale memory item may explain why an action happened, but it cannot prove the entity is still configured that way.
 
+## Decision-time evidence and historical restatement
+
+Mutable reporting history creates two different questions:
+
+1. **Decision-time auditability** — what evidence was available when the recommendation/evaluation was made?
+2. **Latest-data interpretation** — what does the most mature/restated history say now?
+
+Do not collapse them into one mutable answer.
+
+For material `evaluated` events, preserve an immutable evidence identity when available, for example:
+
+- snapshot/report/export ID;
+- source dataset and semantic/report version;
+- snapshot capture timestamp;
+- available-through date and attribution/backfill maturity;
+- baseline/post window definitions;
+- compact evidence hash or immutable artifact reference when the runtime supports it.
+
+If history later restates enough to change the outcome classification:
+
+- do not overwrite the original evaluation event;
+- append a correction/re-evaluation event linked to the original action/evaluation;
+- record the new evidence snapshot identity and restatement reason when known;
+- update the derived entity summary to expose the latest interpretation while retaining the decision-time interpretation;
+- require reconciliation before using the changed outcome to drive another aggressive optimization.
+
+A later restatement can show that the latest outcome differs from what was knowable earlier. It does not retroactively make unavailable data part of the original decision context.
+
 ## Local-only / partial-memory warnings
 
 If the runtime has multiple machines, agents, connectors, or write paths, memory can be incomplete.
@@ -266,7 +295,8 @@ Expose warnings such as:
 - `identity scope incomplete`;
 - `cross-profile collision detected`;
 - `migration mapping partial`;
-- `cross-marketplace portability limited`.
+- `cross-marketplace portability limited`;
+- `historical evidence restated`.
 
 Do not silently treat a partial ledger as complete account history.
 
@@ -277,7 +307,8 @@ When newer evidence changes the interpretation of an older event:
 - keep the old event immutable;
 - append a new evaluation/correction event;
 - link it through `parent_action_id` or related event IDs;
-- mark the derived entity summary with the newest decision state.
+- mark the derived entity summary with the newest decision state;
+- preserve the evidence identity for both the original and superseding interpretation when history is mutable.
 
 For mutually conflicting events, prefer current trusted readback for state, but preserve historical intent and outcome separately.
 
@@ -307,7 +338,7 @@ A derived summary should answer:
 - What was the last material action and why?
 - Did it actually apply?
 - Is evaluation complete?
-- What was the outcome?
+- What was the outcome at decision time and has later restatement changed the latest interpretation?
 - Is a rollback condition active?
 - Is there a verified predecessor/successor lineage or scope transition?
 - If marketplace changed, which predecessor facts are actually portable?
@@ -345,6 +376,7 @@ When memory materially affects a recommendation, include:
 - application/readback status;
 - validation maturity;
 - latest outcome;
+- decision-time evidence identity and latest restatement status when material;
 - identity-lineage and scope-transition status when migration is relevant;
 - predecessor scope and portability status when predecessor evidence is used;
 - unresolved conflicts or warnings;
