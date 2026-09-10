@@ -2,7 +2,7 @@
 
 This directory validates whether the repository makes safe, repeatable Amazon Ads decisions from bounded historical cases.
 
-The goal is not exact wording. The goal is to detect decision regressions such as unsafe negatives, premature reversals, weak evidence presented as certainty, Mixed-ASIN collateral damage, retail-state misdiagnosis, stale retail-state misuse, parent/variation-family retail shocks, promotion-window false positives, attribution-lag false failures, source-lineage/semantic/backfill drift, historical restatement that rewrites decision context, unsafe cross-scope memory transfer, invalid cross-marketplace portability, lost deliberate-migration lineage, overlapping-grain double counting, paginated/truncated audit coverage presented as complete, unverified or partial writes being credited with outcomes, unsafe retries, coupled-control overcorrection, portfolio/local-optimum conflicts, contaminated experiments, sample-ratio/allocation integrity failures, control leakage, auction displacement, shared-resource starvation, variation-family substitution, long-test boundary drift, ROAS/profitability conflicts, or unjustified scaling.
+The goal is not exact wording. The goal is to detect decision regressions such as unsafe negatives, premature reversals, weak evidence presented as certainty, Mixed-ASIN collateral damage, retail-state misdiagnosis, stale retail-state misuse, parent/variation-family retail shocks, promotion-window false positives, attribution-lag false failures, source-lineage/semantic/backfill drift, historical restatement that rewrites decision context, unsafe cross-scope memory transfer, invalid cross-marketplace portability, lost deliberate-migration lineage, overlapping-grain double counting, paginated/truncated audit coverage presented as complete, repository-default action percentages used as false precision, unverified or partial writes being credited with outcomes, unsafe retries, coupled-control overcorrection, portfolio/local-optimum conflicts, contaminated experiments, sample-ratio/allocation integrity failures, control leakage, auction displacement, shared-resource starvation, variation-family substitution, long-test boundary drift, ROAS/profitability conflicts, or unjustified scaling.
 
 ## Evaluation layers
 
@@ -46,9 +46,10 @@ Do not silently convert `insufficient_evidence` into pass or fail.
 13. **Economic integrity** — separate attributed revenue efficiency from contribution profit, incrementality and marginal economics; reject direct portability of marketplace-specific performance economics.
 14. **Portfolio coherence** — respect fixed budget pools, protected spend and source opportunity cost rather than optimizing campaigns independently.
 15. **Aggregation integrity** — use the decision-appropriate account/pool/family grain, avoid double counting overlapping entity views, establish population coverage, and aggregate base metrics before recomputing ratios.
-16. **Action gate** — never make a more aggressive decision than evidence supports.
-17. **Execution boundary** — keep live mutation, retry and idempotency mechanics outside the Skill layer.
-18. **Decision usefulness** — produce a clear `Act / Hold / Experiment / Manual Review` outcome and next measurement.
+16. **Action sizing integrity** — separate raw economic/directional estimates from final allowed magnitude; do not invent repository-global percentages, damping constants or numeric precision when account-specific sizing evidence is missing.
+17. **Action gate** — never make a more aggressive decision than evidence supports.
+18. **Execution boundary** — keep live mutation, retry and idempotency mechanics outside the Skill layer.
+19. **Decision usefulness** — produce a clear `Act / Hold / Experiment / Manual Review` outcome and next measurement.
 
 ## Expected decision levels
 
@@ -113,7 +114,7 @@ Use synthetic data, preserve the causal structure of real failures, and test one
 ### Retail and event-confounder safety
 
 - `retail-readiness-conversion-shock.json` — blocks traffic suppression when Featured Offer loss better explains CVR collapse.
-- `stale-retail-snapshot-blocks-action.json` — prevents an old Buy Box/stock/price snapshot from being treated as current-state proof during a later conversion decline.
+- `stale-retail-snapshot-blocks-action.json` — prevents an old Buy Box/stock/price/listing snapshot from being treated as current-state proof during a later conversion decline.
 - `stockout-conversion-shock.json` — blocks negatives/aggressive bid cuts during dated stockout contamination.
 - `promotion-period-false-positive.json` — prevents promotion-inflated baseline misuse.
 - `parent-level-retail-shock.json` — prevents stable ad traffic from being blamed when a dated variation-family restructure, sibling retail shift and purchased-ASIN crossover better explain the child conversion break.
@@ -129,8 +130,9 @@ Use synthetic data, preserve the causal structure of real failures, and test one
 - `parent-child-asin-substitution.json` — prevents a sibling child-ASIN mix shift from being called incremental demand when parent-family totals stay flat and purchased-ASIN crossover exists.
 - `long-test-control-boundary-drift.json` — prevents launch-time control cleanliness from being treated as full-window proof after mid-test routing/automation/negative scope changes.
 
-### Portfolio allocation, growth and economics safety
+### Portfolio allocation, action sizing, growth and economics safety
 
+- `contextual-action-sizing-no-default-percent.json` — prevents a raw ACoS-derived bid anchor from being converted into a repository-default percentage cut when no account sizing policy/calibrated response exists and another coupled control is still pending.
 - `portfolio-budget-local-optimum-conflict.json` — prevents incompatible independent budget increases inside a fixed pool and requires marginal headroom plus source opportunity-cost reasoning.
 - `proven-winner-budget-growth.json` — allows guarded scaling when demand, economics and headroom align.
 - `budget-exhausted-no-headroom.json` — blocks budget-exhaustion-as-growth-proof when marginal efficiency deteriorates.
