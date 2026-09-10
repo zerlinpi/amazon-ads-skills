@@ -65,8 +65,9 @@ Historical Replay / Eval Fixtures
 
 `evals/README.md` 定义 Contract checks + Capability replay。Capability Eval 使用 `met / not_met / insufficient_evidence`，比较决策行为而不是 exact wording。
 
-当前 regression pack 已覆盖 **39 类关键安全风险**，近期新增：
+当前 regression pack 已覆盖 **40 类关键安全风险**，近期新增：
 
+- Upstream budget-cap bottleneck：Campaign 提额前先核对 Sponsored Products account-level / portfolio / business cap；平台 estimated missed sales/clicks 只作为模型机会信号，不当作保证增量；
 - Contextual action sizing：禁止在账户没有 sizing policy / calibrated response 时，用仓库默认百分比把方向性 Bid/预算结论伪装成精确动作；
 - Historical restatement after decision：保留 decision-time evidence snapshot，并用 correction/re-evaluation 追加最新解释；
 - Audit pagination/truncation：未耗尽 `nextToken/cursor` 的实体结果不得伪装成完整账户覆盖或用于全量排名。
@@ -89,6 +90,8 @@ extracted_at ≠ available_through
 first page + nextToken ≠ complete entity population
 raw economic bid/budget anchor ≠ action-safe final magnitude
 no account sizing policy ≠ permission to invent a default ±X%
+campaign budget headroom ≠ account/portfolio budget headroom
+estimated missed sales/clicks ≠ guaranteed incrementality
 profile/campaign/keyword/search-term/placement views ≠ additive spend pools
 average(row ACOS/ROAS/CVR) ≠ account ratio
 higher ROAS ≠ higher contribution profit
@@ -174,15 +177,19 @@ Verified 同 Marketplace 跨 Profile 迁移可以继承 bounded mature evidence�
 
 ## Budget Pool / Portfolio Conflicts
 
-当多个 Campaign 竞争固定业务预算、portfolio cap 或外部 pacing pool 时，`budget-optimization` 按需加载 `skills/budget-optimization/references/portfolio-budget-conflicts.md`。
+当多个 Campaign 竞争固定业务预算、portfolio cap、Sponsored Products account-level daily budget cap 或外部 pacing pool 时，`budget-optimization` 按需加载 `skills/budget-optimization/references/portfolio-budget-conflicts.md`。
 
 核心约束：
 
 ```text
 平均历史 ROAS ≠ 下一单位预算的边际回报
+campaign budget increase ≠ deliverable extra spend when an upstream cap is binding
+estimated missed opportunity = modeled directional evidence, not guaranteed incrementality
 固定总预算 → destination gain 必须同时计算 source opportunity cost
 protected spend / business role → 不能被局部效率排序静默覆盖
 ```
+
+预算诊断现在区分 observed serving evidence（spend、budget、average time in budget、cap utilization）与 modeled opportunity evidence（estimated missed impressions/clicks/sales、recommended budget）。上游 cap 无足够 headroom 时，要么给出 source → destination 的平衡重分配，要么把上游 cap 变更作为单独业务预算决策；不能只提高 Campaign 数值后假定 delivery 会增加。
 
 ## Contextual Action Sizing
 
@@ -277,6 +284,7 @@ python scripts/validate_evals.py .
 - stale memory / stale identity / stale retail snapshot 不等于当前状态；
 - Executor 的 unknown/timeout 结果先 reconcile，再决定 retry；
 - ROAS/ACoS 不能替代贡献利润和业务目标；
+- 预算优化先解析 campaign → portfolio → account/business/external constraint hierarchy；平台 missed-opportunity estimate 不当作保证增量；
 - 固定预算池先做 portfolio reconciliation，再给单 Campaign 预算动作；
 - 实验先验证 allocation、control integrity、leakage/interference；
 - Eval 判断行为而不是 exact wording；
@@ -309,6 +317,7 @@ python scripts/validate_evals.py .
 - [x] Audit aggregation-integrity eval
 - [x] Historical-restatement-after-decision eval
 - [x] Truncated/paginated audit coverage eval
+- [x] Upstream account/portfolio budget-cap feasibility eval
 - [ ] 继续拆薄其他旧版较厚 Skills
 - [ ] Amazon Ads API / 自研 Connector 示例
 
