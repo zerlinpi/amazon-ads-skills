@@ -1,12 +1,14 @@
 ---
 name: anomaly-detection
-display_name: 亚马逊广告异常检测
-display_name_en: Amazon Ads Anomaly Detection
 description: 基于历史基线检测 Amazon Ads 的展示、点击、CPC、CVR、花费、订单、销售、ACOS/ROAS 和预算异常，并区分真实异常、业务事件与正常波动。适用于自动监控、告警和根因排查。
-description_zh: 用历史基线检测广告异常并减少大促、价格和库存事件造成的误报。
-description_en: Detect Amazon Ads anomalies against historical baselines while separating true issues from promotions, inventory, pricing events and normal variance.
-version: 0.1.0
-author: zerlinpi
+license: MIT
+metadata:
+  author: "zerlinpi"
+  version: "0.1.0"
+  display_name_zh: "亚马逊广告异常检测"
+  display_name_en: "Amazon Ads Anomaly Detection"
+  description_zh: "用历史基线检测广告异常并减少大促、价格和库存事件造成的误报。"
+  description_en: "Detect Amazon Ads anomalies against historical baselines while separating true issues from promotions, inventory, pricing events and normal variance."
 ---
 
 # Anomaly Detection

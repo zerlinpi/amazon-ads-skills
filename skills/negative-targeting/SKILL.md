@@ -1,12 +1,14 @@
 ---
 name: negative-targeting
-display_name: 否词与否定投放优化
-display_name_en: Negative Targeting
 description: 从 Amazon Ads Search Term/Targeting 数据中生成安全的 Negative Exact、Negative Phrase 或否定商品投放候选，重点防止误杀品牌词、核心词和历史赢家。适用于否词、浪费控制和流量净化。
-description_zh: 识别否词/否定投放候选，并通过误杀保护规则降低流量损失风险。
-description_en: Generate guarded negative keyword/product-targeting candidates while protecting brand terms, strategic traffic and historical winners.
-version: 0.1.0
-author: zerlinpi
+license: MIT
+metadata:
+  author: "zerlinpi"
+  version: "0.1.0"
+  display_name_zh: "否词与否定投放优化"
+  display_name_en: "Negative Targeting"
+  description_zh: "识别否词/否定投放候选，并通过误杀保护规则降低流量损失风险。"
+  description_en: "Generate guarded negative keyword/product-targeting candidates while protecting brand terms, strategic traffic and historical winners."
 ---
 
 # Negative Targeting

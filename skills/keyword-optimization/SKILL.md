@@ -1,12 +1,14 @@
 ---
 name: keyword-optimization
-display_name: 关键词优化
-display_name_en: Keyword Optimization
 description: 优化 Amazon Ads keyword/target 的结构、匹配类型、状态和流量分工，识别扩量、收割、观察、降权或暂停候选。适用于关键词复盘、匹配类型治理、重复争抢和关键词分层。
-description_zh: 优化关键词和投放目标的结构、匹配类型与生命周期管理。
-description_en: Optimize Amazon Ads keywords and targets across structure, match types, lifecycle, traffic ownership and performance tiers.
-version: 0.1.0
-author: zerlinpi
+license: MIT
+metadata:
+  author: "zerlinpi"
+  version: "0.1.0"
+  display_name_zh: "关键词优化"
+  display_name_en: "Keyword Optimization"
+  description_zh: "优化关键词和投放目标的结构、匹配类型与生命周期管理。"
+  description_en: "Optimize Amazon Ads keywords and targets across structure, match types, lifecycle, traffic ownership and performance tiers."
 ---
 
 # Keyword Optimization

@@ -1,12 +1,14 @@
 ---
 name: search-term-analysis
-display_name: 搜索词分析
-display_name_en: Search Term Analysis
 description: 分析 Amazon Ads Search Term 数据，识别赢家词、扩词/Exact 收割候选、浪费词、否词候选和流量意图偏移。适用于搜索词报告、扩词、否词、流量质量诊断。
-description_zh: 从搜索词数据中发现扩词、收割、否词与流量质量机会。
-description_en: Analyze Amazon Ads search terms to find winners, harvest candidates, waste, negative-targeting candidates and traffic-intent shifts.
-version: 0.1.0
-author: zerlinpi
+license: MIT
+metadata:
+  author: "zerlinpi"
+  version: "0.1.0"
+  display_name_zh: "搜索词分析"
+  display_name_en: "Search Term Analysis"
+  description_zh: "从搜索词数据中发现扩词、收割、否词与流量质量机会。"
+  description_en: "Analyze Amazon Ads search terms to find winners, harvest candidates, waste, negative-targeting candidates and traffic-intent shifts."
 ---
 
 # Search Term Analysis

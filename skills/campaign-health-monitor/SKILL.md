@@ -1,12 +1,14 @@
 ---
 name: campaign-health-monitor
-display_name: 广告活动健康监控
-display_name_en: Campaign Health Monitor
 description: 监控 Amazon Ads campaign 的流量、花费、转化、预算和效率变化，基于历史基线识别 Healthy、Watch、Critical 状态并给出根因方向。适用于日常巡检、异常告警、周趋势监控。
-description_zh: 基于历史基线监控广告活动健康度和异常变化。
-description_en: Monitor Amazon Ads campaign health across traffic, spend, conversion, budget and efficiency using historical baselines.
-version: 0.1.0
-author: zerlinpi
+license: MIT
+metadata:
+  author: "zerlinpi"
+  version: "0.1.0"
+  display_name_zh: "广告活动健康监控"
+  display_name_en: "Campaign Health Monitor"
+  description_zh: "基于历史基线监控广告活动健康度和异常变化。"
+  description_en: "Monitor Amazon Ads campaign health across traffic, spend, conversion, budget and efficiency using historical baselines."
 ---
 
 # Campaign Health Monitor

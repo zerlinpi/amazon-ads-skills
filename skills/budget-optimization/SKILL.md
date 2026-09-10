@@ -1,12 +1,14 @@
 ---
 name: budget-optimization
-display_name: 预算优化
-display_name_en: Budget Optimization
 description: 分析 Amazon Ads campaign 的预算受限、花费节奏、边际效率和预算分配，生成增预算、降预算、重分配或保持建议。适用于预算不足、预算分配、日预算治理和扩量判断。
-description_zh: 在效率、库存和业务目标约束下优化广告预算分配。
-description_en: Optimize Amazon Ads budgets using budget constraints, pacing, marginal efficiency, inventory and business goals.
-version: 0.1.0
-author: zerlinpi
+license: MIT
+metadata:
+  author: "zerlinpi"
+  version: "0.1.0"
+  display_name_zh: "预算优化"
+  display_name_en: "Budget Optimization"
+  description_zh: "在效率、库存和业务目标约束下优化广告预算分配。"
+  description_en: "Optimize Amazon Ads budgets using budget constraints, pacing, marginal efficiency, inventory and business goals."
 ---
 
 # Budget Optimization

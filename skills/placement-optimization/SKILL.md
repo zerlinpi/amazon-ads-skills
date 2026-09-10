@@ -1,12 +1,14 @@
 ---
 name: placement-optimization
-display_name: 广告版位优化
-display_name_en: Placement Optimization
 description: 分析 Amazon Ads Sponsored Products 等广告的 Top of Search、Product Pages、Rest of Search 版位表现与 modifier，识别高效版位、浪费和竞价放大风险。适用于 placement 调整和流量结构优化。
-description_zh: 分析不同广告版位效率并生成安全的 placement modifier 建议。
-description_en: Analyze Amazon Ads placement performance and modifiers across Top of Search, Product Pages and Rest of Search.
-version: 0.1.0
-author: zerlinpi
+license: MIT
+metadata:
+  author: "zerlinpi"
+  version: "0.1.0"
+  display_name_zh: "广告版位优化"
+  display_name_en: "Placement Optimization"
+  description_zh: "分析不同广告版位效率并生成安全的 placement modifier 建议。"
+  description_en: "Analyze Amazon Ads placement performance and modifiers across Top of Search, Product Pages and Rest of Search."
 ---
 
 # Placement Optimization

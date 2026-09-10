@@ -1,12 +1,14 @@
 ---
 name: amazon-ads-audit
-display_name: 亚马逊广告账户体检
-display_name_en: Amazon Ads Audit
 description: 对 Amazon Ads 账户、广告活动与投放结构进行系统体检，识别数据质量、浪费、预算、转化、结构和增长机会。适用于广告体检、账户诊断、周/月复盘、接手新账户等场景。
-description_zh: 系统审计亚马逊广告账户，输出问题、证据、优先级和优化建议。
-description_en: Audit Amazon Ads accounts for data quality, structure, efficiency, waste, budget constraints, conversion issues and growth opportunities.
-version: 0.1.0
-author: zerlinpi
+license: MIT
+metadata:
+  author: "zerlinpi"
+  version: "0.1.0"
+  display_name_zh: "亚马逊广告账户体检"
+  display_name_en: "Amazon Ads Audit"
+  description_zh: "系统审计亚马逊广告账户，输出问题、证据、优先级和优化建议。"
+  description_en: "Audit Amazon Ads accounts for data quality, structure, efficiency, waste, budget constraints, conversion issues and growth opportunities."
 ---
 
 # Amazon Ads Audit

@@ -1,12 +1,14 @@
 ---
 name: profitability-analysis
-display_name: 广告利润分析
-display_name_en: Advertising Profitability Analysis
 description: 将 Amazon Ads 花费、销售与商品成本、Amazon fees、履约、折扣等结合，计算盈亏平衡 ACOS、广告后贡献利润和可扩量空间。适用于利润优化、目标 ACOS 设定、ASIN 盈亏分析。
-description_zh: 从利润而非单一 ACOS 角度评估亚马逊广告。
-description_en: Evaluate Amazon Ads using break-even ACOS, contribution margin and profit-after-ads rather than ACOS alone.
-version: 0.1.0
-author: zerlinpi
+license: MIT
+metadata:
+  author: "zerlinpi"
+  version: "0.1.0"
+  display_name_zh: "广告利润分析"
+  display_name_en: "Advertising Profitability Analysis"
+  description_zh: "从利润而非单一 ACOS 角度评估亚马逊广告。"
+  description_en: "Evaluate Amazon Ads using break-even ACOS, contribution margin and profit-after-ads rather than ACOS alone."
 ---
 
 # Profitability Analysis

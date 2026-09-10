@@ -1,12 +1,14 @@
 ---
 name: bid-optimization
-display_name: 竞价优化
-display_name_en: Bid Optimization
 description: 基于目标 ACOS/ROAS、历史 CVR、CPC、样本量、placement 与业务阶段，为 Amazon Ads keyword/target 生成保守可验证的 bid 调整建议。适用于降 ACOS、扩量、竞价治理和批量出价建议。
-description_zh: 在样本和风险边界约束下生成亚马逊广告竞价调整建议。
-description_en: Generate guarded Amazon Ads bid recommendations using targets, conversion data, CPC, sample sufficiency, placement and business context.
-version: 0.1.0
-author: zerlinpi
+license: MIT
+metadata:
+  author: "zerlinpi"
+  version: "0.1.0"
+  display_name_zh: "竞价优化"
+  display_name_en: "Bid Optimization"
+  description_zh: "在样本和风险边界约束下生成亚马逊广告竞价调整建议。"
+  description_en: "Generate guarded Amazon Ads bid recommendations using targets, conversion data, CPC, sample sufficiency, placement and business context."
 ---
 
 # Bid Optimization

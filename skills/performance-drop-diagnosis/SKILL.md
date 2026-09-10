@@ -1,10 +1,12 @@
 ---
 name: performance-drop-diagnosis
 description: Diagnose sudden or sustained Amazon Ads performance declines by tracing the break point from account to ASIN, campaign, target, search term, placement, retail readiness, measurement lineage, and recent control changes. Use when sales, orders, ROAS, ACOS, TACOS, traffic, conversion, rank, or campaign performance dropped and the user wants a causal diagnosis rather than generic optimization advice.
-description_zh: 诊断亚马逊广告销量、订单、ROAS、ACOS、TACOS、流量、转化、排名或 Campaign 表现突然或持续下降的根因。
-description_en: Causal diagnosis for Amazon Ads performance declines with mixed-ASIN, data-lineage, and actionability gates.
-version: 0.1.0
-author: zerlinpi
+license: MIT
+metadata:
+  author: "zerlinpi"
+  version: "0.1.0"
+  description_zh: "诊断亚马逊广告销量、订单、ROAS、ACOS、TACOS、流量、转化、排名或 Campaign 表现突然或持续下降的根因。"
+  description_en: "Causal diagnosis for Amazon Ads performance declines with mixed-ASIN, data-lineage, and actionability gates."
 ---
 
 # Performance Drop Diagnosis
