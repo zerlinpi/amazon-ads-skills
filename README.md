@@ -65,8 +65,9 @@ Historical Replay / Eval Fixtures
 
 `evals/README.md` 定义 Contract checks + Capability replay。Capability Eval 使用 `met / not_met / insufficient_evidence`，比较决策行为而不是 exact wording。
 
-当前 regression pack 已覆盖 **38 类关键安全风险**，近期新增：
+当前 regression pack 已覆盖 **39 类关键安全风险**，近期新增：
 
+- Contextual action sizing：禁止在账户没有 sizing policy / calibrated response 时，用仓库默认百分比把方向性 Bid/预算结论伪装成精确动作；
 - Historical restatement after decision：保留 decision-time evidence snapshot，并用 correction/re-evaluation 追加最新解释；
 - Audit pagination/truncation：未耗尽 `nextToken/cursor` 的实体结果不得伪装成完整账户覆盖或用于全量排名。
 
@@ -86,6 +87,8 @@ same source + same semantic version ≠ same backfill maturity
 latest restated history ≠ evidence that was available at decision time
 extracted_at ≠ available_through
 first page + nextToken ≠ complete entity population
+raw economic bid/budget anchor ≠ action-safe final magnitude
+no account sizing policy ≠ permission to invent a default ±X%
 profile/campaign/keyword/search-term/placement views ≠ additive spend pools
 average(row ACOS/ROAS/CVR) ≠ account ratio
 higher ROAS ≠ higher contribution profit
@@ -181,6 +184,22 @@ Verified 同 Marketplace 跨 Profile 迁移可以继承 bounded mature evidence�
 protected spend / business role → 不能被局部效率排序静默覆盖
 ```
 
+## Contextual Action Sizing
+
+当 `bid-optimization`、`budget-optimization` 或其他 monetary-control Skill 需要把方向性结论转成具体金额/百分比时，按需加载 `references/action-sizing.md`。
+
+核心顺序：
+
+```text
+raw economic / directional anchor
+→ evidence strength + current-state confidence
+→ downside exposure + reversibility + coupled controls
+→ explicit account/caller policy or calibrated response
+→ proposed value / Probe / Hold / Experiment
+```
+
+仓库不再提供全账户通用的单次 Bid/预算调整百分比。公开案例、平台 UI 示例、第三方 Skill 阈值和其他账户历史都不能直接成为当前账户的默认幅度。没有账户策略、校准响应、边际 headroom 或明确实验约束时，允许保留方向而不制造 `proposed_value` 的假精度。
+
 ## Experiment Planner
 
 证据不足但可验证的优化优先进入 Experiment / Shadow。实验应预声明 decision question、hypothesis、treatment、control/holdout、primary metric、guardrails、attribution-mature window、contamination risk、allocation integrity、control integrity 与 stop/rollback rule。
@@ -211,7 +230,7 @@ historical rows mutable
 | `Shadow` | 模拟、回测、实验 |
 | `Execute` | 仅显式授权并交给外部 Executor |
 
-建议应尽量携带 evidence、confidence、data quality、sample sufficiency、guardrails、validation window、rollback condition。
+建议应尽量携带 evidence、confidence、data quality、sample sufficiency、guardrails、validation window、rollback condition。数值动作还应携带 raw/directional anchor、sizing basis 和 applied constraints；缺少可靠 sizing basis 时不强制输出精确动作幅度。
 
 ## Multi-Agent Compatibility
 
@@ -243,6 +262,7 @@ python scripts/validate_skills.py .
 - `SKILL.md` 顶层 frontmatter 保持 Agent Skills spec-compatible，自定义字段进入 `metadata`；
 - 修改 Skill/reference/schema/playbook 后运行 deterministic validator + unit tests；
 - 不把固定经验阈值伪装成官方规则或默认动作幅度；
+- monetary-control 建议必须区分 raw anchor 与 final magnitude；无账户级 sizing basis 时不制造默认百分比；
 - 区分 Fact / Observation / Hypothesis / Cause / Action / Outcome；
 - 跨来源/语义版本/快照成熟度趋势先检查 lineage comparability；
 - 可变历史的重要 evaluation 保存 decision-time evidence identity；restatement 用 append-only correction，不 hindsight overwrite；
@@ -275,6 +295,7 @@ python scripts/validate_skills.py .
 - [x] Post-change Review + Reconciliation
 - [x] Optimization Memory + Entity History
 - [x] Contextual Benchmark Policy
+- [x] Contextual action sizing / no universal default change percentage
 - [x] Weekly Review Playbook
 - [x] Historical replay / regression fixtures
 - [x] Source lineage + semantic metric-version drift
