@@ -19,6 +19,8 @@ Search Term 是真实用户查询，不等同 keyword/target。先分析查询�
 
 如果结论依赖“报表是否代表完整搜索词总体”、缺失行、impression/CTR coverage、全账户 Top/Bottom 排名或跨报表 reconciliation，按需加载 `../../references/report-coverage.md`。先确认 report 的 `row-inclusion` / eligibility contract，再解释缺失行或总体覆盖。
 
+如果问题涉及 Search Term Impression Share (SIS)、Impression Rank、share-of-voice、竞争可见度或 query growth headroom，按需加载 `../../references/search-term-impression-share.md`。SIS 用作市场可见度/份额证据，不单独证明增量销量或应该提高 bid/budget。
+
 ## 默认模式
 
 `Suggest`。禁止自动添加 negative keyword/target。
@@ -33,6 +35,7 @@ Search Term 是真实用户查询，不等同 keyword/target。先分析查询�
 - 日期、币种、Marketplace；
 - Target ACOS/ROAS 或业务目标；
 - 可选：report_type、row-inclusion / eligibility 规则、分页/完整性状态；
+- 可选：Search Term Impression Share、Impression Rank、对应窗口/time unit 和 account scope；
 - 可选：历史窗口、品牌词列表、核心类目词、商品价格/利润。
 
 ## 覆盖边界
@@ -60,7 +63,7 @@ Search Term 是真实用户查询，不等同 keyword/target。先分析查询�
 
 ### Growth candidate
 
-表现好但曝光/点击样本偏少。建议增加观察、提高可控性或测试扩量，不急于做大幅调整。
+表现好但曝光/点击样本偏少。建议增加观察、提高可控性或测试扩量，不急于做大幅调整。若同时存在 SIS，则先判断 share headroom 与实际 binding constraint，再决定是 bid、budget、placement、routing 还是仅继续观察。
 
 ### Explore
 
@@ -106,7 +109,8 @@ Search Term 是真实用户查询，不等同 keyword/target。先分析查询�
 - spend / sales / orders；
 - top winning terms；
 - top waste concentration；
-- intent shifts。
+- intent shifts；
+- SIS / Impression Rank 与 share-headroom classification（如果提供）。
 
 ### Harvest candidates
 每项：search term、现有来源、证据、建议目标结构、confidence。
@@ -126,4 +130,5 @@ Search Term 是真实用户查询，不等同 keyword/target。先分析查询�
 - 不把所有高 ACOS search term 都否定；
 - 不在不知道品牌/核心词保护清单时批量输出可执行否词；
 - 不把 clicked-only / delivered-only 报表的缺失行自动补成 0；
-- 不把 selected report subset 无标注地描述成完整账户搜索词总体。
+- 不把 selected report subset 无标注地描述成完整账户搜索词总体；
+- 不把低 impression share 单独解释为保证存在可盈利增量，也不从 SIS 直接推导固定 bid/budget 增幅。
