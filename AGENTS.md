@@ -88,6 +88,26 @@ Do **not** add custom top-level fields such as `display_name`, `display_name_en`
 
 Keep `name` within the Agent Skills naming constraints and `description` within the specification limit. Metadata compatibility is part of multi-agent portability; a Skill that works in one permissive runtime but fails strict validation is not considered portable.
 
+## Deterministic repository validation
+
+After changing a Skill, its supporting references, shared references, schemas, playbooks, or the validator itself, run:
+
+```bash
+python -m unittest discover -s tests -v
+python scripts/validate_skills.py .
+```
+
+The validator is intentionally dependency-free and checks the repository invariants most likely to break cross-runtime loading:
+
+- every direct child of `skills/` contains `SKILL.md`;
+- required `name` / `description` frontmatter exists;
+- top-level frontmatter stays within the Agent Skills allowed field set;
+- Skill `name` matches its folder name;
+- nested `SKILL.md` files are rejected;
+- relative Markdown references from `SKILL.md` stay inside the repository and resolve to existing paths.
+
+`.github/workflows/validate-skills.yml` runs the same checks for relevant pushes and pull requests when GitHub Actions is enabled. Do not treat a local or CI pass as proof of Amazon Ads decision quality; deterministic structure checks complement, rather than replace, replay/eval behavior checks.
+
 ## Contribution rules
 
 New skills must:
