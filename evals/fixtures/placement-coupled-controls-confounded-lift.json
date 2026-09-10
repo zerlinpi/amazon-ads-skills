@@ -1,0 +1,68 @@
+{
+  "id": "placement-coupled-controls-confounded-lift",
+  "title": "Do not credit placement lift to one modifier when bidding controls changed together",
+  "entrypoint": "skills/placement-optimization/SKILL.md",
+  "mode": "Shadow",
+  "scenario": "A Sponsored Products campaign shows a strong Top of Search ROAS improvement after a placement adjustment. During the same measurement window, the target bid increased, the campaign switched from fixed bidding to dynamic up-and-down, and an event-based bid rule became active. The analyst wants to credit the lift to the Top of Search modifier and increase it again.",
+  "inputs": {
+    "marketplace": "US",
+    "profile_scope": "profile-us-01",
+    "campaign_id": "sp-campaign-201",
+    "window": "2026-08-20/2026-09-05",
+    "objective": "profitable growth",
+    "before": {
+      "target_bid": 1.0,
+      "top_of_search_modifier_percent": 40,
+      "bidding_strategy": "fixed",
+      "event_bid_rule": "inactive",
+      "top_of_search": {
+        "impressions": 50000,
+        "clicks": 900,
+        "spend": 900,
+        "sales": 2700,
+        "orders": 45
+      }
+    },
+    "changes": [
+      {"timestamp": "2026-08-21T00:00:00Z", "control": "top_of_search_modifier_percent", "from": 40, "to": 80},
+      {"timestamp": "2026-08-22T00:00:00Z", "control": "target_bid", "from": 1.0, "to": 1.25},
+      {"timestamp": "2026-08-23T00:00:00Z", "control": "bidding_strategy", "from": "fixed", "to": "dynamic-up-and-down"},
+      {"timestamp": "2026-08-25T00:00:00Z", "control": "event_bid_rule", "from": "inactive", "to": "active"}
+    ],
+    "after": {
+      "top_of_search": {
+        "impressions": 76000,
+        "clicks": 1500,
+        "spend": 1500,
+        "sales": 6000,
+        "orders": 90
+      },
+      "query_mix_comparability": "unknown",
+      "retail_state_comparability": "unknown"
+    },
+    "requested_action": "Increase Top of Search modifier again because ROAS improved from 3.0 to 4.0."
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["hold", "experiment_only", "directional", "manual_review"],
+    "forbidden_behaviors": [
+      "Attribute the Top of Search ROAS lift solely to the placement modifier despite overlapping target-bid, bidding-strategy, and event-rule changes.",
+      "Recommend another precise placement modifier increase without resolving the coupled-control state and sizing basis.",
+      "Invent an exact auction-level effective bid by multiplying configured controls without evidence for the platform's exact composition/order.",
+      "Treat historical Top of Search ROAS improvement as guaranteed marginal efficiency for additional exposure.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The measurement window contains multiple material bidding-control changes, so causal attribution to the placement modifier is confounded.",
+      "Configured bids/modifiers are control intent while placement delivery and CPC are realized outcomes; they should not be collapsed into an unsupported deterministic effective-bid formula.",
+      "The analyst should reconstruct the control timeline and verify current target bid, placement modifier, bidding strategy, active rule state, query/target mix, and retail comparability before another material change.",
+      "A clean next step is Hold or a bounded Shadow/Experiment plan that changes one interpretable control at a time and defines a validation window."
+    ],
+    "rubric": [
+      {"criterion": "control_interaction", "requirement": "Recognize target bid, placement modifier, bidding strategy and event rules as coupled controls."},
+      {"criterion": "causal_discipline", "requirement": "Downgrade the apparent placement lift to Directional/Confounded rather than crediting one control."},
+      {"criterion": "action_sizing_integrity", "requirement": "Do not emit a precise new modifier without an account-specific sizing basis and resolved current control state."},
+      {"criterion": "action_gate", "requirement": "Prefer Hold/Experiment/Manual Review while the overlapping changes cannot be separated."}
+    ]
+  }
+}
