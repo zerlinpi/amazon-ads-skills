@@ -23,10 +23,16 @@ metadata:
 - placement name；
 - impressions、clicks、spend、orders、sales；
 - CPC、CVR、ACOS/ROAS；
-- current base bid；
+- current base/target bid；
 - current placement modifier；
 - campaign bidding strategy；
+- active schedule/event bid rules or other material modifiers；
+- material control-change timestamps；
 - 日期窗口和目标。
+
+当 recommendation 依赖 base bid、placement modifier、dynamic bidding、schedule/event rules 等控制的交互时，按需加载：
+
+`references/realized-bid-exposure.md`
 
 ## 分析思路
 
@@ -37,25 +43,36 @@ metadata:
 - CPC；
 - CVR；
 - ACOS/ROAS；
-- 样本量。
+- 样本量；
+- query/target/product mix 是否可比。
 
-### 2. 看增量潜力
+### 2. 区分配置控制与 realized exposure
+
+Base/target bid、placement adjustment、campaign bidding strategy、schedule/event rule 都是配置控制；placement report 中的实际流量、CPC、CVR 和效率是 realized outcome。
+
+不要从配置值自行发明一个精确 auction-level effective bid。控制组合与 Amazon 的 auction-time logic 共同影响实际 exposure，应该通过控制时间线 + placement delivery/CPC 来诊断。
+
+### 3. 看增量潜力
 
 高效 Top of Search 不代表应该立即大幅提高 modifier。需要判断：
 - 当前 impression/click 规模；
 - base bid 是否本身偏低/偏高；
 - modifier 提升可能带来的边际 CPC；
-- 目标是否偏增长还是利润。
+- dynamic bidding / bid rules 是否已经改变 exposure；
+- 目标是否偏增长还是利润；
+- 是否存在可解释的 marginal headroom，而不只是历史平均 ROAS/ACOS 好看。
 
-### 3. 识别放大风险
+### 4. 识别放大与归因风险
 
-base bid、dynamic bidding 和 placement modifier 共同影响实际竞价。不要把 modifier 当作独立旋钮。
+Base bid、dynamic bidding、placement modifier、schedule/event rules 可能共同影响实际竞价。不要把 modifier 当作独立旋钮。
+
+如果多个 material controls 在同一 attribution/measurement window 内变化，placement 结果只能 `Directional / Confounded`，除非有额外设计能分离影响。
 
 ## 常见状态
 
 ### High-efficiency / underexposed
 
-可考虑小幅提高 modifier 或保持 modifier、先优化 base bid，需判断哪一个更可解释。
+可考虑提高 modifier、调整 base bid 或设计实验，但需判断哪一个控制最可解释，并确认没有重叠的 pending control change。
 
 ### High-efficiency / already dominant
 
@@ -63,28 +80,40 @@ base bid、dynamic bidding 和 placement modifier 共同影响实际竞价。不
 
 ### Low-efficiency / high-spend
 
-检查 query mix 和 CVR 根因后，可建议降低 modifier。
+检查 query mix、CVR、retail state 和 coupled controls 后，再判断降低 modifier、base bid 或其他控制。
 
 ### Low-volume
 
 样本不足，不做强结论。
 
+### Coupled / confounded
+
+多个竞价控制或规则同时变化，或当前 control state 不完整。优先 `Hold / Shadow / Experiment`，不要输出假精度 modifier。
+
 ## 变更原则
 
-- 一次只做可归因的小步调整；
+- 一次只做可归因的单一/最小控制变化，除非实验明确设计组合 treatment；
 - 若同时需要改 base bid 和 placement，优先分阶段；
-- 设验证窗口，避免一天后再反向调整；
-- 大促期单独解释。
+- 已有 base bid / placement / bidding-strategy / bid-rule 变化 pending evaluation 时，不叠加同一路由上的另一个 material change；
+- 数值幅度需要账户策略、校准响应或明确实验约束；必要时加载 `../../references/action-sizing.md`；
+- 设验证窗口，避免短期反向调整；
+- 大促、event rule active window、零售状态变化需要单独解释。
 
 ## 输出
 
 每个 placement：
 - current modifier；
+- current base/target bid；
+- bidding strategy / active bid-rule state；
+- control state as-of / material change timeline；
 - spend share / sales share；
 - CPC/CVR/ACOS；
 - baseline comparison；
-- recommendation: increase/decrease/hold/investigate；
-- proposed modifier（如证据充分）；
+- interaction risk；
+- causal attribution: Supported / Directional / Confounded / Unknown；
+- recommendation: increase/decrease/hold/investigate/experiment；
+- recommended control；
+- proposed modifier（仅证据和 sizing basis 充分时）；
 - confidence；
 - evidence；
 - guardrails；
@@ -93,7 +122,10 @@ base bid、dynamic bidding 和 placement modifier 共同影响实际竞价。不
 
 ## 禁止
 
-- 不因为 Top of Search CVR 高就默认提高到极端 modifier；
-- 不忽略 dynamic bids strategy；
+- 不因为 Top of Search CVR/ROAS 高就默认提高 modifier；
+- 不忽略 dynamic bids strategy、schedule/event rules 或其他 material bidding controls；
+- 不把配置值拼成未经平台行为证实的精确 effective-bid 公式；
+- 不把历史 placement 平均效率当成增加 modifier 后的保证边际效率；
 - 不在 placement 样本很小的时候做大幅动作；
-- 不同时大改多个竞价层造成无法归因。
+- 不同时大改多个竞价层造成无法归因；
+- 不在 material control state 缺失/过期时输出 action-safe 精确 modifier。
