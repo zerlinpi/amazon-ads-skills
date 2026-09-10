@@ -8,8 +8,8 @@ on:
       - "references/**"
       - "schemas/**"
       - "playbooks/**"
-      - "scripts/validate_skills.py"
-      - "tests/test_validate_skills.py"
+      - "scripts/**"
+      - "tests/**"
       - ".github/workflows/validate-skills.yml"
   pull_request:
     paths:
@@ -17,8 +17,8 @@ on:
       - "references/**"
       - "schemas/**"
       - "playbooks/**"
-      - "scripts/validate_skills.py"
-      - "tests/test_validate_skills.py"
+      - "scripts/**"
+      - "tests/**"
       - ".github/workflows/validate-skills.yml"
 
 permissions:
@@ -32,7 +32,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Run validator unit tests
+      - name: Run repository unit tests
         run: python -m unittest discover -s tests -v
       - name: Validate repository skills
         run: python scripts/validate_skills.py .
