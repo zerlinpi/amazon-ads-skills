@@ -15,11 +15,11 @@ metadata:
 
 ## 核心原则
 
-“预算花完”不是自动加预算信号；“预算没花完”也不等于 campaign 有问题。预算动作必须结合边际效率、业务目标和预算池约束。
+“预算花完”不是自动加预算信号；“预算没花完”也不等于 campaign 有问题。预算动作必须结合边际效率、业务目标和预算池约束。Campaign 预算只是约束层级之一；账户级、portfolio 或外部预算 cap 可能才是真正瓶颈。
 
 ## Progressive loading
 
-只有多个 Campaign 竞争同一个业务预算、portfolio cap 或外部 pacing pool 时，再加载：
+存在多个 Campaign 竞争同一个业务预算、portfolio cap、Sponsored Products account-level daily budget cap、外部 pacing pool，或其他上游 spend constraint 时，再加载：
 
 - `references/portfolio-budget-conflicts.md`
 
@@ -32,7 +32,7 @@ metadata:
 ## 输入
 
 需要：
-- daily budget；
+- daily/lifetime budget；
 - spend；
 - budget status / budget utilization（如有）；
 - campaign performance；
@@ -40,6 +40,10 @@ metadata:
 - 时间窗口。
 
 推荐：
+- average time in budget / out-of-budget coverage；
+- estimated missed impressions/clicks/sales（如平台提供，按模型估计处理）；
+- platform recommended budget（如有，作为参考而非默认动作）；
+- Sponsored Products account-level daily budget cap / portfolio cap / business budget；
 - 小时级 pacing；
 - placement；
 - inventory；
@@ -56,19 +60,31 @@ metadata:
 - 是否已有足够规模；
 - 预算增加后边际流量是否可能明显变差；
 - 大促是否即将结束；
+- 是否存在更上游的 account/portfolio/business cap；
 - 如果总预算固定，新增预算从哪里来以及来源 Campaign 的机会成本。
+
+`average time in budget < 100%`、out-of-budget status 或稳定日内提前耗尽可支持“delivery constrained”的判断，但不自动证明“profitable headroom”。
 
 ### Inefficient and budget constrained
 
-不能因为花完预算就增加。先解决 keyword/search term/bid/placement 效率。
+不能因为花完预算就增加。先解决 keyword/search term/bid/placement/retail efficiency。
 
 ### Efficient and not spending
 
-预算不是瓶颈。检查 bid、流量规模、相关性、排名、广告状态。
+预算不是主要瓶颈。检查 bid、流量规模、相关性、排名、广告状态和 targeting coverage。
 
 ### Inefficient and not spending
 
 低优先级；可能需要结构整改而非预算动作。
+
+## Modeled opportunity evidence
+
+平台提供的 estimated missed impressions/clicks/sales、recommended budget 等可作为有用的机会信号，但必须与观测数据分开：
+
+- spend / budget / average time in budget 属于 serving/current-state 证据；
+- missed opportunity / recommended budget 属于模型估计或推荐；
+- 模型估计不等于保证增量，不替代利润、库存、重叠流量和上游 cap 检查；
+- 无法解释估计方法、范围或适用窗口时，降低 confidence，而不是把预测值当成事实。
 
 ## Pacing
 
@@ -76,9 +92,20 @@ metadata:
 - 是否上午过早耗尽；
 - 高转化时段是否没有预算；
 - 是否存在大促导致的临时加速；
-- 日内波动是否只是单天随机性。
+- 日内波动是否只是单天随机性；
+- account/portfolio cap 是否在相同时间窗口先于 campaign budget 成为瓶颈。
 
 没有小时数据时，不声称可以精确做 dayparting。
+
+## 上游预算约束
+
+当存在 account-level / portfolio / business / external cap 时：
+
+1. 先识别实际 constraint hierarchy；
+2. 记录每层 cap、当前 spend 与可信 remaining headroom；
+3. 若上游 cap 已绑定，不能把单 Campaign 提额写成“可独立获得更多 delivery”；
+4. 要么给出平衡的 source → destination 重分配，要么把上游 cap 变更作为单独的业务预算决策；
+5. 若 headroom/source budget 不清楚，输出 Directional / Hold / Manual Review。
 
 ## 预算重分配
 
@@ -98,6 +125,7 @@ metadata:
 - 可用的 marginal headroom 证据；
 - 数据量和归因成熟度；
 - 库存与促销窗口；
+- 账户/portfolio/business cap 的真实可用 headroom；
 - 预算池可移动空间；
 - Campaign 的业务角色和 protected floor；
 - 最近是否存在未完成验证的 Bid / Placement / Budget / Structure 变更；
@@ -111,7 +139,10 @@ metadata:
 ### Budget map
 每个 campaign 标记：
 - constrained/not constrained；
+- constraint level：campaign / portfolio / account / business / external / unknown；
 - efficient/inefficient；
+- average time in budget / serving coverage（如有）；
+- observed vs modeled headroom evidence；
 - role/priority；
 - marginal headroom；
 - pool constraint / protected floor（如适用）；
@@ -120,9 +151,10 @@ metadata:
 ### Reallocation plan
 列出来源 campaign → 目标 campaign，以及：
 - 预算前后（仅当具体幅度可被证据支持）；
+- active upstream caps / remaining headroom；
 - action class / sizing basis；
 - pool total reconciliation；
-- 证据；
+- 观测证据与模型估计分栏；
 - 来源机会成本；
 - 预计目的；
 - confidence；
@@ -132,6 +164,9 @@ metadata:
 ## 禁止
 
 - 不把预算增长当作销售增长保证；
+- 不把 estimated missed sales/clicks/impressions 当成保证增量；
+- 不把 platform recommended budget 当成无需校验即可执行的默认值；
+- 不在上游 account/portfolio cap 已绑定时，把单 Campaign 提额描述为独立可实现的 delivery 增长；
 - 不把平均 ROAS/ACOS 当作下一单位预算的边际回报；
 - 不在固定总预算池下对所有受限 Campaign 同时给出无法调和的增预算建议；
 - 不从高效品牌防御或其他 protected Campaign 抽走关键预算而不提示风险；
