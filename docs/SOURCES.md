@@ -44,6 +44,22 @@ No specification prose or validator implementation was copied. The repository wa
 
 Repository: https://github.com/agentskills/agentskills
 
+### sensein/agent_skills
+
+Apache-2.0 public Agent Skills repository reviewed for deterministic portability checks around a canonical `skills/` tree. The useful generic lesson is that skill-format validation, broken-supporting-file detection and CI smoke checks can catch packaging regressions before an agent runtime discovers them interactively.
+
+No validator code, installer implementation, test fixture or prose was copied. This repository independently implemented a small Python-stdlib validator focused on its own invariants: required/allowed frontmatter, folder-name identity, nested-skill rejection and repository-local relative Markdown references.
+
+Repository: https://github.com/sensein/agent_skills
+
+### ruicore/codex-skills
+
+Apache-2.0 public Codex Skills repository reviewed for the broader operating principle `validation before confidence`: skill libraries benefit from explicit machine-readable/structural gates and repeatable validation commands rather than relying only on manual review or a single permissive runtime.
+
+No registry schema, scripts, workflow code, skill prose or repository conventions were copied. The idea was independently adapted as a narrow deterministic validation layer that complements, rather than replaces, Amazon Ads capability replay/evals.
+
+Repository: https://github.com/ruicore/codex-skills
+
 ### weisberg/agile_agentic_analytics
 
 MIT-licensed repository reviewed for experiment lifecycle, power/MDE discipline when inputs exist, sample-ratio/contamination awareness, sequential-testing caution, realized-allocation integrity, holdout/control integrity and advertising-market interference.
@@ -161,6 +177,7 @@ Some additions are independent safety hardening rather than adaptations of a sin
 - **Audit aggregation integrity** — profile/campaign/keyword/search-term/placement views overlap; choose one canonical additive grain, reconcile complete parent/child totals, and recompute ratio metrics from additive components.
 - **Audit population completeness** — API pagination, connector row caps and context truncation are separate failure modes; preserve continuation metadata and do not claim whole-population rank from a partial slice.
 - **Agent Skills metadata compatibility** — runtime portability requires strict frontmatter compliance; repository-specific metadata belongs under the spec-defined `metadata` map instead of arbitrary top-level YAML keys.
+- **Deterministic Skill packaging validation** — progressive loading is only reliable when entrypoints and referenced support files remain mechanically resolvable; structural validation should fail before runtime discovery when packaging drifts.
 - **Parent/variation-family retail shock** — child conversion can move because family structure/sibling retail/purchased-ASIN mix changed.
 - **Verified migration lineage** — explicit predecessor→successor mappings may preserve bounded historical context but never clone current state.
 - **Verified cross-profile migration** — explicit same-marketplace profile moves are distinct from accidental cross-profile collisions.
@@ -204,20 +221,21 @@ Before adopting an external idea:
 26. Aggregate compatible base metrics first; recompute ratios; never sum overlapping entity grains as separate account traffic.
 27. Exhaust pagination or verify equivalent complete coverage before whole-population audit rankings.
 28. Keep Skill frontmatter within the Agent Skills allowed top-level field set; custom metadata belongs under `metadata`.
-29. Treat source/reporting switches near apparent breaks as competing explanations.
-30. Treat parent/variation-family retail changes as upstream causal candidates.
-31. Partial application is a realized treatment different from intended treatment.
-32. Do not use promotion-contaminated windows as ordinary evergreen controls.
-33. Retail-readiness failures are causal gates before traffic suppression.
-34. Stale retail snapshots are historical evidence, not current proof.
-35. Resolve marketplace + profile/account scope before merging memory.
-36. Verified same-marketplace cross-profile migrations may carry bounded mature evidence but never clone current state.
-37. Cross-marketplace migration defaults to directional evidence portability for performance/economic conclusions.
-38. Timeout/unknown writes remain unresolved until reconciliation/idempotency makes repetition safe.
-39. Stable idempotency keys stay bound to the same stable intent/payload.
-40. Trusted current-state readback overrides earlier executor acknowledgement when they disagree.
-41. Higher ROAS/revenue is not automatically higher profit.
-42. A previous winner temporarily at zero orders needs conversion-break diagnosis before negative treatment.
-43. Declared experiment allocation does not prove realized allocation integrity.
-44. Fixed budget pools require source/destination opportunity-cost reconciliation.
-45. Record reviewed sources here when they materially influence the project.
+29. Run deterministic structural validation after Skill/reference/schema/playbook changes; packaging confidence and capability confidence are separate gates.
+30. Treat source/reporting switches near apparent breaks as competing explanations.
+31. Treat parent/variation-family retail changes as upstream causal candidates.
+32. Partial application is a realized treatment different from intended treatment.
+33. Do not use promotion-contaminated windows as ordinary evergreen controls.
+34. Retail-readiness failures are causal gates before traffic suppression.
+35. Stale retail snapshots are historical evidence, not current proof.
+36. Resolve marketplace + profile/account scope before merging memory.
+37. Verified same-marketplace cross-profile migrations may carry bounded mature evidence but never clone current state.
+38. Cross-marketplace migration defaults to directional evidence portability for performance/economic conclusions.
+39. Timeout/unknown writes remain unresolved until reconciliation/idempotency makes repetition safe.
+40. Stable idempotency keys stay bound to the same stable intent/payload.
+41. Trusted current-state readback overrides earlier executor acknowledgement when they disagree.
+42. Higher ROAS/revenue is not automatically higher profit.
+43. A previous winner temporarily at zero orders needs conversion-break diagnosis before negative treatment.
+44. Declared experiment allocation does not prove realized allocation integrity.
+45. Fixed budget pools require source/destination opportunity-cost reconciliation.
+46. Record reviewed sources here when they materially influence the project.
