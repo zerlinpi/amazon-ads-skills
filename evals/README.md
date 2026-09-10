@@ -2,7 +2,7 @@
 
 This directory validates whether the repository makes safe, repeatable Amazon Ads decisions from bounded historical cases.
 
-The goal is not exact wording. The goal is to detect decision regressions such as unsafe negatives, premature reversals, weak evidence presented as certainty, Mixed-ASIN collateral damage, retail-state misdiagnosis, stale retail-state misuse, parent/variation-family retail shocks, promotion-window false positives, attribution-lag false failures, source-lineage/semantic/backfill drift, historical restatement that rewrites decision context, unsafe cross-scope memory transfer, invalid cross-marketplace portability, lost deliberate-migration lineage, overlapping-grain double counting, paginated/truncated audit coverage presented as complete, repository-default action percentages used as false precision, unverified or partial writes being credited with outcomes, unsafe retries, coupled-control overcorrection, portfolio/local-optimum conflicts, contaminated experiments, sample-ratio/allocation integrity failures, control leakage, auction displacement, shared-resource starvation, variation-family substitution, long-test boundary drift, ROAS/profitability conflicts, or unjustified scaling.
+The goal is not exact wording. The goal is to detect decision regressions such as unsafe negatives, premature reversals, weak evidence presented as certainty, Mixed-ASIN collateral damage, retail-state misdiagnosis, stale retail-state misuse, parent/variation-family retail shocks, promotion-window false positives, attribution-lag false failures, source-lineage/semantic/backfill drift, historical restatement that rewrites decision context, unsafe cross-scope memory transfer, invalid cross-marketplace portability, lost deliberate-migration lineage, overlapping-grain double counting, paginated/truncated audit coverage presented as complete, repository-default action percentages used as false precision, modeled missed-budget opportunities presented as guaranteed incrementality, campaign budget changes proposed despite binding upstream caps, unverified or partial writes being credited with outcomes, unsafe retries, coupled-control overcorrection, portfolio/local-optimum conflicts, contaminated experiments, sample-ratio/allocation integrity failures, control leakage, auction displacement, shared-resource starvation, variation-family substitution, long-test boundary drift, ROAS/profitability conflicts, or unjustified scaling.
 
 ## Evaluation layers
 
@@ -36,10 +36,10 @@ Do not silently convert `insufficient_evidence` into pass or fail.
 
 ## Core safety rubric
 
-1. **Data discipline** — expose missing, immature, stale, truncated, paginated-incomplete or incomparable data instead of inventing completeness.
+1. **Data discipline** — expose missing, immature, stale, truncated, paginated-incomplete or incomparable data instead of inventing completeness; distinguish observed serving state from modeled opportunity estimates.
 2. **Source lineage** — track source system, event coverage, attribution definitions, semantic version, snapshot/backfill maturity and refresh path when measurement lineage affects a decision.
 3. **Metric semantic integrity** — treat metric definition/version as part of measurement identity; same field/table path does not prove comparability, and ratio KPIs must be derived from compatible components.
-4. **Causal discipline** — treat ACoS/ROAS/zero orders as symptoms or outcomes, not automatic root causes.
+4. **Causal discipline** — treat ACoS/ROAS/zero orders as symptoms or outcomes, not automatic root causes; do not treat estimated missed sales/clicks/impressions as realized incrementality.
 5. **Scope safety** — handle Mixed-ASIN, purchased-ASIN halo, attribution, variation-family substitution, negative attachment scope, and marketplace/profile identity scope.
 6. **History safety** — respect pending validation, readback, stable IDs, collision-safe account scope, explicit predecessor/successor lineage, evidence-portability limits, and decision-time evidence identity when history can restate.
 7. **Retail readiness** — check Featured Offer / Buy Box, stock, price, promotions, listing state, variation-family context and snapshot freshness.
@@ -49,7 +49,7 @@ Do not silently convert `insufficient_evidence` into pass or fail.
 11. **Experiment integrity** — flag contamination, bundled changes, allocation/sample-ratio anomalies and broken controls.
 12. **Control integrity** — detect treatment leakage, time-varying boundary drift and treatment→control interference through shared queries, ASINs, auctions, budgets, routing, placements, resources or automation.
 13. **Economic integrity** — separate attributed revenue efficiency from contribution profit, incrementality and marginal economics; reject direct portability of marketplace-specific performance economics.
-14. **Portfolio coherence** — respect fixed budget pools, protected spend and source opportunity cost rather than optimizing campaigns independently.
+14. **Portfolio coherence** — respect campaign/portfolio/account/business budget constraints, protected spend and source opportunity cost rather than optimizing campaigns independently.
 15. **Aggregation integrity** — use the decision-appropriate account/pool/family grain, avoid double counting overlapping entity views, establish population coverage, and aggregate base metrics before recomputing ratios.
 16. **Action sizing integrity** — separate raw economic/directional estimates from final allowed magnitude; do not invent repository-global percentages, damping constants or numeric precision when account-specific sizing evidence is missing.
 17. **Action gate** — never make a more aggressive decision than evidence supports.
@@ -145,6 +145,7 @@ python scripts/validate_evals.py .
 
 ### Portfolio allocation, action sizing, growth and economics safety
 
+- `account-budget-cap-upstream-bottleneck.json` — prevents a campaign-level budget recommendation from being treated as independently deliverable when a Sponsored Products account-level cap is already binding, and keeps estimated missed sales/clicks as modeled rather than guaranteed outcomes.
 - `contextual-action-sizing-no-default-percent.json` — prevents a raw ACoS-derived bid anchor from being converted into a repository-default percentage cut when no account sizing policy/calibrated response exists and another coupled control is still pending.
 - `portfolio-budget-local-optimum-conflict.json` — prevents incompatible independent budget increases inside a fixed pool and requires marginal headroom plus source opportunity-cost reasoning.
 - `proven-winner-budget-growth.json` — allows guarded scaling when demand, economics and headroom align.
