@@ -146,6 +146,22 @@ report complete under its contract
 
 Search Term harvest / negative / clicked-query efficiency 仍可使用已表示的 clicked population；但 zero-click query identification、完整 query-impression coverage、全账户 query CTR denominator 或完整 population ranking 需要兼容的额外来源。不同报告之间做 reconciliation 时，要把 row-inclusion / eligibility 视为 measurement identity，而不只看列名或来源系统。
 
+## Skill Effectiveness Evaluation
+
+`evals/SKILL-EFFECTIVENESS.md` 在现有 Contract checks + Capability replay 之外，增加 **with-skill vs without-skill** 的增量效果验证。
+
+对重要的新 Skill 或大改版，优先区分：
+
+```text
+Discovery       → 自然任务能否正确触发 Skill
+Forced invocation → Skill 已加载后方法是否有效
+Negative control  → 相邻任务是否避免误触发
+Ablation          → with-skill 是否优于 without-skill baseline
+Repeated trials   → 改善是否具有基本重复性
+```
+
+这套评估不把“文案更长”或“单次跑通”当作有效证明。任务、fixture、model/harness、工具权限和证据应尽量保持一致；机械可检查的 decision/safety 条件优先用 deterministic assertions，只有语义质量再交给 rubric/judge。对随机运行报告实际 trial count、pass rate / `pass@k` 等，但不把小样本差异伪装成统计显著性。
+
 ## Account Audit Integrity
 
 `amazon-ads-audit` 已改为薄入口，详细流程按需加载：
@@ -314,6 +330,7 @@ python scripts/validate_evals.py .
 - `SKILL.md` 保持薄，详细知识按需加载；
 - `SKILL.md` 顶层 frontmatter 保持 Agent Skills spec-compatible，自定义字段进入 `metadata`；
 - 修改 Skill/reference/schema/playbook/eval 后运行 unit tests + Skill/Eval deterministic validators；
+- 新增/大改 Skill 时，重要场景优先做 Discovery / Forced invocation / Negative control / without-skill ablation；随机运行需要效果结论时记录 repeated trial count，而不是依赖单次 best run；
 - 不把固定经验阈值伪装成官方规则或默认动作幅度；
 - monetary-control 建议必须区分 raw anchor 与 final magnitude；无账户级 sizing basis 时不制造默认百分比；
 - 区分 Fact / Observation / Hypothesis / Cause / Action / Outcome；
@@ -345,6 +362,7 @@ python scripts/validate_evals.py .
 - [x] Agent Skills strict frontmatter compatibility（custom metadata nested under `metadata`）
 - [x] Deterministic Skill validator + unit tests + CI gate
 - [x] Deterministic Eval fixture validator + CI gate
+- [x] Skill effectiveness / with-skill vs without-skill evaluation protocol
 - [x] Audit / Monitor / Search Term / Bid / Budget / Placement / Negative / Profitability
 - [x] Performance Drop Diagnosis + Mixed-ASIN safety
 - [x] Growth Opportunity Finder
