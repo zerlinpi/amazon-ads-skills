@@ -72,6 +72,18 @@ class SearchTermImpressionSharePolicyTests(unittest.TestCase):
         text = self.read("skills/growth-opportunity-finder/SKILL.md")
         self.assertIn("search-term-impression-share.md", text)
 
+    def test_sis_policy_records_acquisition_channel_and_does_not_treat_missing_connector_field_as_zero(self):
+        text = self.read("references/search-term-impression-share.md")
+        self.assertIn("acquisition_channel", text)
+        self.assertIn("missing from the active connector", text)
+        self.assertIn("not evidence that SIS is zero", text)
+
+    def test_data_lineage_distinguishes_source_system_from_acquisition_channel(self):
+        text = self.read("references/data-lineage.md")
+        self.assertIn("acquisition_channel", text)
+        self.assertIn("available in the product", text)
+        self.assertIn("available through the active connector", text)
+
 
 class SkillEffectivenessPolicyTests(unittest.TestCase):
     def read(self, relative_path: str) -> str:
