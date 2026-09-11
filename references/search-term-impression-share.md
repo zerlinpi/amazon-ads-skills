@@ -17,7 +17,7 @@ Treat these fields as useful for questions such as:
 
 SIS is not the same thing as conversion rate, profitability, total consumer demand, organic share, sales share, or incrementality.
 
-## 2. Scope contract
+## 2. Scope and acquisition contract
 
 Before joining SIS to search-term performance, capture when available:
 
@@ -28,9 +28,21 @@ Before joining SIS to search-term performance, capture when available:
 - report lookback availability;
 - account scope represented by the SIS report;
 - search-term report row-inclusion / eligibility contract;
-- source/reporting generation and extraction timestamp.
+- source/reporting generation and extraction timestamp;
+- `acquisition_channel` — advertising console download, Amazon Ads API, MCP/connector, warehouse import, manual export, or another concrete path;
+- `channel_capability_status` — verified available, unavailable, unsupported, unknown, or transformed downstream.
 
-Amazon's current public Sponsored Products help documentation describes SIS as an **account-wide** search-term measure and documents a 90-day lookback with summary or daily time units. Treat those limits as source/report characteristics, not universal constants for every ad product, marketplace, API version, or future reporting generation.
+Amazon's current public Sponsored Products help documentation describes SIS as an **account-wide** search-term measure and documents a 90-day lookback with summary or daily time units. Treat those limits as source/report characteristics, not universal constants for every ad product, marketplace, API version, connector, or future reporting generation.
+
+A metric being available in the Amazon Ads product or report center does not prove that the active API, MCP, connector, or warehouse path exposes the same field. Conversely, a field missing from the active connector is not evidence that SIS is zero, unavailable to the advertiser, or absent from Amazon Ads entirely.
+
+When SIS is decision-relevant but the current acquisition path does not expose it:
+
+1. record the metric as `Unavailable via active channel` or `Capability unknown`;
+2. do not coerce missing SIS/rank to zero;
+3. do not infer `100% remaining share` from a null/missing value;
+4. use other evidence only for claims it can actually support;
+5. request or route to a verified compatible acquisition path if the decision materially depends on SIS.
 
 ## 3. Join safety
 
@@ -43,7 +55,8 @@ Before combining the two, verify:
 3. same normalized search term identity;
 4. compatible date window/time grain;
 5. compatible reporting generation/date semantics;
-6. no unresolved row-eligibility or truncation issue.
+6. no unresolved row-eligibility or truncation issue;
+7. acquisition channels preserve compatible metric semantics and scope.
 
 A successful string join is not evidence that the measurements describe the same population.
 
@@ -92,7 +105,8 @@ Check:
 - budget and pacing constraints;
 - placement/base-bid/dynamic-bidding changes;
 - promotion, retail readiness and seasonality;
-- whether the reporting windows are comparable.
+- whether the reporting windows are comparable;
+- whether both windows were acquired through channels with equivalent SIS semantics and coverage.
 
 A share increase that reduces contribution economics, steals traffic from another profitable route, or occurs during a confounded control window is not automatically a positive outcome.
 
@@ -101,9 +115,11 @@ A share increase that reduces contribution economics, steals traffic from anothe
 When a query has low SIS but action-driving evidence is incomplete:
 
 - keep the conclusion at `Directional` / `Experiment` / `Hold`;
-- request the missing economics, routing, budget/headroom, and retail evidence;
+- request the missing economics, routing, budget/headroom, retail, or acquisition-path evidence;
 - do not output a repository-default bid/budget percentage;
 - if sizing becomes appropriate, use `action-sizing.md` and the relevant bid/budget/placement Skill.
+
+When SIS is missing from the active connector, do not convert absence into a low-share signal. Treat it as a data-capability limitation until another verified source supplies the metric.
 
 This reference never authorizes a live Amazon Ads write.
 
@@ -115,6 +131,8 @@ Include when useful:
 - `sis_window` / time unit;
 - `impression_share`;
 - `impression_rank`;
+- `acquisition_channel`;
+- `channel_capability_status`;
 - `scope_status`;
 - `join/comparability_status`;
 - `commercial_value_evidence`;
