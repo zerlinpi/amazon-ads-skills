@@ -65,8 +65,9 @@ Historical Replay / Eval Fixtures
 
 `evals/README.md` 定义 Contract checks + Capability replay。Capability Eval 使用 `met / not_met / insufficient_evidence`，比较决策行为而不是 exact wording。
 
-当前 regression pack 已覆盖 **45 类关键安全风险**，近期新增：
+当前 regression pack 已覆盖 **46 类关键安全风险**，近期新增：
 
+- Attribution-variant cutover：Amazon Store ads 的 standard/default conversion metrics 与 `all views` metrics 可同时存在且方法不同；同属 Purchases/Sales/ROAS metric family 不代表可直接拼接，归因方法切换与 apparent performance break 同期时先做 lineage reconciliation；
 - Platform-managed delivery-surface confounding：没有人工 Campaign control change 不等于 delivery conditions 未变化；当 Amazon 自动把 eligible existing campaigns 接入新 surface/ad experience 时，先核对 rollout eligibility 与 realized surface-level traffic，再做因果归因或 traffic suppression；
 - Search Term origin semantics：Sponsored Products Search Term row 可能是 literal shopper query，也可能是 non-search context 的 inferred best match；后者不能仅按显示字符串机械转成 Exact harvest / Negative keyword；
 - Search Term Impression Share route ambiguity：SIS 是 query 的 account-wide visibility/share 证据，不把低 SIS 直接映射成某一个 Campaign 的 bid/budget headroom，也不把份额差额当成保证增量；
@@ -89,6 +90,7 @@ same entity id/name across profiles ≠ same optimization identity
 verified cross-profile migration → bounded predecessor context, not state cloning
 verified cross-marketplace mapping ≠ portable bid/performance conclusion
 same metric name/table path ≠ same measurement definition
+same conversion metric family + different attribution variant ≠ comparable series
 same source + same semantic version ≠ same backfill maturity
 latest restated history ≠ evidence that was available at decision time
 extracted_at ≠ available_through
@@ -116,15 +118,17 @@ campaign-local optimum ≠ portfolio optimum
 
 ## Data Lineage
 
-统一数据模型见 `references/data-schema.md`。当 baseline/comparison 来自不同 API、MCP、CSV、Warehouse、BI、刷新路径、metric semantic version、report row-inclusion / eligibility contract，或历史快照成熟度不一致时，按需加载 `references/data-lineage.md`；当问题依赖“返回行是否代表完整总体”时，再按需加载 `references/report-coverage.md`。
+统一数据模型见 `references/data-schema.md`。当 baseline/comparison 来自不同 API、MCP、CSV、Warehouse、BI、刷新路径、attribution variant、metric semantic version、report row-inclusion / eligibility contract，或历史快照成熟度不一致时，按需加载 `references/data-lineage.md`；当问题依赖“返回行是否代表完整总体”时，再按需加载 `references/report-coverage.md`。
 
 至少区分：
 
 ```text
 source system / dataset
+acquisition channel
 extracted_at
 available_through
-attribution definition / maturity
+attribution definition / variant / maturity
+date-attribution semantics
 aggregation grain
 filters / scope
 row-inclusion / eligibility contract
@@ -134,7 +138,9 @@ completeness / backfill status
 snapshot/backfill maturity
 ```
 
-比较可标记为 `Comparable / Reconcilable / Directional / Not Comparable / Unknown`。如果 apparent break/lift 与 source switch、semantic cutover、row-eligibility switch 或不对称 backfill 同期发生，先 replay/reconcile，再做高置信动作或 Post-change 结论。
+比较可标记为 `Comparable / Reconcilable / Directional / Not Comparable / Unknown`。如果 apparent break/lift 与 source switch、attribution-methodology cutover、semantic cutover、row-eligibility switch 或不对称 backfill 同期发生，先 replay/reconcile，再做高置信动作或 Post-change 结论。
+
+对于 Amazon Store ads 2026-01-01 的 view-attribution 更新，仓库把 standard/default Purchases/Sales/ROAS 与 eligible `all views` conversion metrics 视为不同 `attribution_variant`。Amazon 对该特定更新说明 click-based attribution 未变化，但这只可作为兼容 click-side evidence 的辅助线索，不能把未受影响的 click semantics 推广成 conversion variants 已可比，也不能把变更范围推广到未列入 eligibility 的 Campaign/Inventory。
 
 ## Report Coverage / Row Eligibility
 
@@ -359,7 +365,8 @@ python scripts/validate_evals.py .
 - 不把固定经验阈值伪装成官方规则或默认动作幅度；
 - monetary-control 建议必须区分 raw anchor 与 final magnitude；无账户级 sizing basis 时不制造默认百分比；
 - 区分 Fact / Observation / Hypothesis / Cause / Action / Outcome；
-- 跨来源/语义版本/快照成熟度/row-inclusion contract 趋势先检查 lineage comparability；
+- 跨来源/归因变体/语义版本/快照成熟度/row-inclusion contract 趋势先检查 lineage comparability；
+- standard/default conversion metrics 与 `all views` conversion metrics 不因为 metric family 相同就直接拼接；attribution methodology cutover 与 performance break 同期时先做 reconciliation；
 - 报表行缺失先检查 row-inclusion / eligibility；除非 report contract 明确支持，否则不自动补 0、不声称完整总体；
 - Search Term row 在做意图、Exact 收割或 Negative 推理前先检查 `term_origin`；inferred non-search / unknown origin 不按显示字符串默认解释为 literal shopper query；
 - Search Term Impression Share 先保留 account-wide scope；没有 routing/binding-control 证据时不映射成单 Campaign 的 bid/budget headroom，也不把低 SIS 当增量保证；
@@ -402,6 +409,7 @@ python scripts/validate_evals.py .
 - [x] Weekly Review Playbook
 - [x] Historical replay / regression fixtures
 - [x] Source lineage + semantic metric-version drift
+- [x] Attribution-variant / methodology-cutover measurement safety
 - [x] Report row-inclusion / eligibility coverage safety
 - [x] Search Term origin / inferred non-search semantic safety
 - [x] Search Term Impression Share / account-wide query-headroom safety
