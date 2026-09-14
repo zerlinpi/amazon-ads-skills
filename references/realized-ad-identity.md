@@ -102,6 +102,50 @@ If a material platform-managed realization shift overlaps the validation window:
 - reconcile surface/product/creative-level evidence where reportable;
 - otherwise classify the result `Directional`, `Confounded`, `Keep Monitoring`, or `Manual Review` rather than inventing certainty.
 
+## Derived-history projection semantics
+
+A compact entity-history view must distinguish **what was last observed** from **whether realization is observable now**.
+
+Keep these concepts separate:
+
+- `last observed realization` — the most recent bounded realization state for which material shopper-facing dimensions were actually observed;
+- `observed_at` — when that known realization was captured;
+- `observation freshness` — whether that observation is recent enough for the current decision, based on the decision horizon and source behavior rather than a repository-wide fixed age threshold;
+- `current observability` — whether the latest acquisition attempt can currently observe the material realization dimensions;
+- `comparability status` — whether the last observed realization can safely be compared with the decision/evaluation window.
+
+The projection is intentionally not simple last-write-wins.
+
+Example:
+
+```text
+t1: realization observed, coverage = Complete, identity = A
+t2: newer acquisition attempt, coverage = Unavailable
+```
+
+The newer unavailable observation **must not erase** the bounded evidence captured at `t1`. Preserve `t1` as the last observed realization and separately record that current observability became `Unavailable` at `t2`.
+
+At the same time, the last observed realization **must not be presented as current truth** merely because no newer known identity is available. Its timestamp/freshness and the newer observability result must travel with the derived summary.
+
+Therefore:
+
+```text
+newer Unknown/Unavailable
+!= realized identity became null/zero
+!= prior observed identity still current
+```
+
+Projection rules:
+
+1. Advance `last_observed_realization` only from an event/snapshot that contains bounded observed realization evidence; an observability failure does not replace it with null/zero.
+2. Advance `current_realization_observability` from the newest relevant observation attempt, including `Complete`, `Partial`, `Unavailable`, or `Unknown`.
+3. Preserve separate timestamps for the last observed identity and the latest observability check. Event recency is not the same as realization observation recency.
+4. Do not label the last observed identity `Current` solely because it is the newest known identity. Derive observation freshness from the current decision horizon, acquisition cadence, platform behavior, and explicit warnings.
+5. When current observability is `Unavailable`/`Unknown`, or the last observed identity is stale for the decision, downgrade current-state claims and causal attribution to `Directional`, `Hold`, or `Manual Review` as appropriate.
+6. Historical replay may still use the older bounded snapshot for the historical window it actually represents; lack of current observability does not retroactively invalidate valid historical evidence.
+
+These rules are designed for deterministic derived summaries while keeping the append-first event ledger as the source of truth.
+
 ## Acquisition-channel safety
 
 A realization dimension may exist in Ads Console or a specialized report while being unavailable through the active API/MCP/connector.
