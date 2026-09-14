@@ -10,18 +10,21 @@ SCRIPT = ROOT / "scripts/project_realization_history.py"
 
 
 class RealizationProjectorTests(unittest.TestCase):
-    def invoke_projector(self, events):
+    def invoke_projector(self, events, expected_scope=None):
+        payload = {"events": events}
+        if expected_scope is not None:
+            payload["expected_scope"] = expected_scope
         return subprocess.run(
             [sys.executable, str(SCRIPT)],
-            input=json.dumps({"events": events}),
+            input=json.dumps(payload),
             text=True,
             capture_output=True,
             cwd=ROOT,
             check=False,
         )
 
-    def run_projector(self, events):
-        result = self.invoke_projector(events)
+    def run_projector(self, events, expected_scope=None):
+        result = self.invoke_projector(events, expected_scope=expected_scope)
         self.assertEqual(
             result.returncode,
             0,
@@ -146,6 +149,84 @@ class RealizationProjectorTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 2)
         self.assertIn("single entity scope", result.stderr.lower())
+
+    def test_expected_scope_rejects_missing_event_scope(self):
+        result = self.invoke_projector(
+            [
+                {
+                    "event_id": "e1",
+                    "timestamp": "2026-09-14T08:00:00Z",
+                    "realization_snapshot": {
+                        "captured_at": "2026-09-14T08:00:00Z",
+                        "realized_surfaces": ["shopping_results"],
+                        "coverage_status": "Complete",
+                    },
+                }
+            ],
+            expected_scope={
+                "marketplace": "US",
+                "profile_scope": "profile-a",
+                "entity_type": "campaign",
+                "entity_id": "campaign-1",
+            },
+        )
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("scope", result.stderr.lower())
+
+    def test_expected_scope_rejects_wrong_profile_even_when_entity_id_matches(self):
+        result = self.invoke_projector(
+            [
+                {
+                    "event_id": "e1",
+                    "timestamp": "2026-09-14T08:00:00Z",
+                    "marketplace": "US",
+                    "profile_scope": "profile-b",
+                    "entity": {"type": "campaign", "id": "campaign-1"},
+                    "realization_snapshot": {
+                        "captured_at": "2026-09-14T08:00:00Z",
+                        "realized_surfaces": ["shopping_results"],
+                        "coverage_status": "Complete",
+                    },
+                }
+            ],
+            expected_scope={
+                "marketplace": "US",
+                "profile_scope": "profile-a",
+                "entity_type": "campaign",
+                "entity_id": "campaign-1",
+            },
+        )
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("scope", result.stderr.lower())
+
+    def test_expected_scope_accepts_complete_matching_identity(self):
+        projected = self.run_projector(
+            [
+                {
+                    "event_id": "e1",
+                    "timestamp": "2026-09-14T08:00:00Z",
+                    "marketplace": "US",
+                    "profile_scope": "profile-a",
+                    "entity": {"type": "campaign", "id": "campaign-1"},
+                    "realization_snapshot": {
+                        "snapshot_id": "r1",
+                        "captured_at": "2026-09-14T08:00:00Z",
+                        "realized_surfaces": ["shopping_results"],
+                        "coverage_status": "Complete",
+                    },
+                }
+            ],
+            expected_scope={
+                "marketplace": "US",
+                "profile_scope": "profile-a",
+                "entity_type": "campaign",
+                "entity_id": "campaign-1",
+            },
+        )
+
+        self.assertEqual(projected["last_observed_realization"]["snapshot_id"], "r1")
 
 
 if __name__ == "__main__":
