@@ -53,6 +53,30 @@ class ReportCoveragePolicyTests(unittest.TestCase):
         self.assertIn("report-coverage.md", text)
 
 
+class BenchmarkPolicyTests(unittest.TestCase):
+    def read(self, relative_path: str) -> str:
+        return (ROOT / relative_path).read_text(encoding="utf-8")
+
+    def test_amazon_benchmark_policy_preserves_peer_group_semantics(self):
+        text = self.read("references/benchmark-policy.md")
+        self.assertIn("peer group", text.lower())
+        self.assertIn("minimum of 5 brands", text.lower())
+        self.assertIn("25th", text)
+        self.assertIn("75th", text)
+
+    def test_missing_amazon_benchmark_is_not_interpreted_as_zero_or_failure(self):
+        text = self.read("references/benchmark-policy.md")
+        self.assertIn("missing benchmark", text.lower())
+        self.assertIn("not evidence", text.lower())
+        self.assertIn("zero", text.lower())
+
+    def test_campaign_health_routes_peer_comparisons_to_shared_benchmark_policy(self):
+        text = self.read("skills/campaign-health-monitor/SKILL.md")
+        self.assertIn("benchmark-policy.md", text)
+        self.assertIn("peer", text.lower())
+        self.assertIn("not", text.lower())
+
+
 class SearchTermImpressionSharePolicyTests(unittest.TestCase):
     def read(self, relative_path: str) -> str:
         return (ROOT / relative_path).read_text(encoding="utf-8")
