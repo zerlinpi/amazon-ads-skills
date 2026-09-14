@@ -26,9 +26,9 @@ Treat efficiency ratios as symptoms. Decompose sales loss through the observable
 - impressions and eligible traffic;
 - CTR and clicks;
 - CPC and spend;
-- CVR and orders;
+- orders/CVR;
 - AOV/ASP and attributed sales;
-- placement/query mix;
+- placement/query/ad-experience mix;
 - budget or serving constraints.
 
 For each step, report baseline, decline-window value, absolute delta, relative delta, contribution and confidence.
@@ -42,6 +42,7 @@ Primary driver labels:
 - `aov-loss`
 - `query-mix-shift`
 - `placement-mix-shift`
+- `delivery-surface-mix-shift`
 - `budget-or-serving-constraint`
 - `control-change`
 - `retail-readiness`
@@ -65,7 +66,7 @@ A tiny target with extreme ACOS should not outrank a large previous winner that 
 
 Do not rank contribution from disputed cross-source deltas as high-confidence until source comparability is established.
 
-## 4. Control-change timeline
+## 4. Control and delivery-surface timeline
 
 For the period before and during the break, inspect changes to:
 
@@ -76,11 +77,14 @@ For the period before and during the break, inspect changes to:
 - negative keywords and negative product targets;
 - keyword/target creation or removal;
 - advertised-ASIN mapping;
-- bulk edits, rules or external automation.
+- bulk edits, rules or external automation;
+- platform-managed ad experiences, delivery surfaces, or auto-enrollment that can alter where/how an existing campaign serves without an advertiser-initiated campaign edit.
 
 For each candidate change capture:
 
-`timestamp -> entity -> previous value -> new value -> affected route -> timing relation -> plausible mechanism`
+`timestamp -> source of change -> entity/surface -> previous state -> new state -> affected route -> timing relation -> plausible mechanism`
+
+Use `source of change` values such as `advertiser`, `external automation`, `platform-managed`, or `unknown` when the distinction matters.
 
 Timing relation:
 
@@ -90,6 +94,30 @@ Timing relation:
 - `unknown`
 
 Only changes that precede or overlap the decline can plausibly be root causes. Post-break changes belong in the recovery timeline.
+
+### Platform-managed delivery surfaces
+
+Do not make this inference:
+
+```text
+no manual control change
+→ campaign delivery conditions were unchanged
+```
+
+No manual control change **does not prove** unchanged delivery conditions when Amazon introduces or auto-enrolls existing campaigns into a new platform-managed ad experience or delivery surface.
+
+Current public Amazon Ads documentation provides one concrete example: Sponsored Products prompts and Sponsored Brands prompts became generally available in the U.S. in March 2026, with eligible existing campaigns automatically enrolled. Amazon states that prompts use existing campaign parameters, can appear in shopping results and product detail pages, participate in CPC bidding/billing, and expose prompt-level performance reporting. Treat those facts as an example of the generic confounder, not as a permanent assumption about every marketplace, ad product, or future feature.
+
+When such a rollout overlaps an apparent performance break:
+
+1. identify rollout/eligibility dates and marketplace/ad-product scope;
+2. check whether the affected campaign was eligible or actually received traffic from the new surface;
+3. obtain surface/format-level impressions, clicks, spend, orders/sales when available;
+4. compare the pre/post traffic mix before attributing the break to bid, budget, keyword, target, placement, or retail changes;
+5. keep the cause `Directional` / `Missing Data` if the new surface plausibly changed mix but surface-level evidence is unavailable;
+6. do not assume that pausing/suppressing another control fixes a platform-surface problem.
+
+A platform feature announcement alone is not proof that a specific account was affected. Evidence must connect rollout eligibility and actual delivery to the scoped campaign/account.
 
 ## 5. Retail-readiness gate
 
@@ -146,7 +174,7 @@ Use when the route is sufficiently attributable to the affected ASIN and the pro
 
 ### Directional
 
-Use when evidence suggests a problem but mixed-ASIN, halo, low-volume, attribution uncertainty, family substitution, or source-lineage uncertainty could materially change the decision. Recommend further segmentation or observation rather than immediate mutation.
+Use when evidence suggests a problem but mixed-ASIN, halo, low-volume, attribution uncertainty, family substitution, source-lineage uncertainty, or platform-managed delivery-surface changes could materially change the decision. Recommend further segmentation or observation rather than immediate mutation.
 
 ### Blocked
 
@@ -166,7 +194,7 @@ Use explicit labels:
 
 Keep facts separate from hypotheses. A recommendation should never be more confident than the cause supporting it.
 
-Unresolved source lineage, stale retail state, or family-level substitution evidence can cap an otherwise strong-looking ad diagnosis at `Directional` or `Missing Data`.
+Unresolved source lineage, stale retail state, family-level substitution evidence, or a plausible but unmeasured platform-managed delivery-surface shift can cap an otherwise strong-looking ad diagnosis at `Directional` or `Missing Data`.
 
 ## 8. Negative-targeting protection
 
@@ -179,7 +207,7 @@ Before recommending a negative in a drop investigation:
 - verify attachment scope;
 - verify whether the search term served another ASIN profitably;
 - distinguish `new waste` from `previous winner stopped converting`;
-- consider attribution lag, promotion periods and variation-family retail shifts.
+- consider attribution lag, promotion periods, variation-family retail shifts, and delivery-surface/traffic-mix changes.
 
 ## 9. Recovery design
 
@@ -198,7 +226,7 @@ Every proposal should carry:
 - rollback trigger;
 - mode: `Suggest` or `Shadow` unless explicitly authorized externally.
 
-When source lineage is unresolved, the recovery action may simply be `same-source replay / reconcile data`. When a family-level retail shock is more plausible than ad inefficiency, prioritize retail/family investigation before suppressing traffic.
+When source lineage is unresolved, the recovery action may simply be `same-source replay / reconcile data`. When a family-level retail shock is more plausible than ad inefficiency, prioritize retail/family investigation before suppressing traffic. When a platform-managed surface plausibly changed traffic mix, prefer surface-level reconciliation before changing unrelated campaign controls.
 
 ## 10. Monitoring cadence
 
