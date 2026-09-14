@@ -85,6 +85,28 @@ class SearchTermImpressionSharePolicyTests(unittest.TestCase):
         self.assertIn("available through the active connector", text)
 
 
+class SearchTermOriginPolicyTests(unittest.TestCase):
+    def read(self, relative_path: str) -> str:
+        return (ROOT / relative_path).read_text(encoding="utf-8")
+
+    def test_search_term_skill_does_not_define_every_row_as_literal_user_query(self):
+        text = self.read("skills/search-term-analysis/SKILL.md")
+        self.assertNotIn("Search Term 是真实用户查询", text)
+        self.assertIn("inferred", text.lower())
+        self.assertIn("non-search", text.lower())
+
+    def test_search_term_skill_guards_harvest_and_negative_actions_when_origin_is_uncertain(self):
+        text = self.read("skills/search-term-analysis/SKILL.md")
+        self.assertIn("term_origin", text)
+        self.assertIn("literal shopper query", text.lower())
+        self.assertIn("manual review", text.lower())
+
+    def test_negative_targeting_requires_origin_check_for_search_term_rows(self):
+        text = self.read("skills/negative-targeting/SKILL.md")
+        self.assertIn("term_origin", text)
+        self.assertIn("inferred", text.lower())
+
+
 class SkillEffectivenessPolicyTests(unittest.TestCase):
     def read(self, relative_path: str) -> str:
         return (ROOT / relative_path).read_text(encoding="utf-8")
