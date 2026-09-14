@@ -65,8 +65,9 @@ Historical Replay / Eval Fixtures
 
 `evals/README.md` 定义 Contract checks + Capability replay。Capability Eval 使用 `met / not_met / insufficient_evidence`，比较决策行为而不是 exact wording。
 
-当前 regression pack 已覆盖 **43 类关键安全风险**，近期新增：
+当前 regression pack 已覆盖 **44 类关键安全风险**，近期新增：
 
+- Search Term origin semantics：Sponsored Products Search Term row 可能是 literal shopper query，也可能是 non-search context 的 inferred best match；后者不能仅按显示字符串机械转成 Exact harvest / Negative keyword；
 - Search Term Impression Share route ambiguity：SIS 是 query 的 account-wide visibility/share 证据，不把低 SIS 直接映射成某一个 Campaign 的 bid/budget headroom，也不把份额差额当成保证增量；
 - Report row-eligibility / selection bias：clicked-only 或 impression-qualified 报表即使完整生成，也不等于完整逻辑总体；禁止把缺失行自动补 0，或把 selected subset 当作全账户 query/target population；
 - Placement coupled-control confounding：Base/target bid、placement modifier、dynamic bidding、schedule/event rules 在同一窗口变化时，不把版位 ROAS lift 归因给单一 modifier；
@@ -92,6 +93,7 @@ latest restated history ≠ evidence that was available at decision time
 extracted_at ≠ available_through
 successful report completion ≠ complete logical population
 clicked-only search-term rows ≠ all query impressions
+displayed search-term text ≠ literal shopper query when origin is inferred/unknown
 missing report row ≠ zero unless the report contract proves it
 first page + nextToken ≠ complete entity population
 account-wide SIS ≠ campaign-specific headroom
@@ -357,6 +359,7 @@ python scripts/validate_evals.py .
 - 区分 Fact / Observation / Hypothesis / Cause / Action / Outcome；
 - 跨来源/语义版本/快照成熟度/row-inclusion contract 趋势先检查 lineage comparability；
 - 报表行缺失先检查 row-inclusion / eligibility；除非 report contract 明确支持，否则不自动补 0、不声称完整总体；
+- Search Term row 在做意图、Exact 收割或 Negative 推理前先检查 `term_origin`；inferred non-search / unknown origin 不按显示字符串默认解释为 literal shopper query；
 - Search Term Impression Share 先保留 account-wide scope；没有 routing/binding-control 证据时不映射成单 Campaign 的 bid/budget headroom，也不把低 SIS 当增量保证；
 - 可变历史的重要 evaluation 保存 decision-time evidence identity；restatement 用 append-only correction，不 hindsight overwrite；
 - 账户级排名/覆盖结论先验证 pagination/truncation completeness 与 population-selection contract；
@@ -397,6 +400,7 @@ python scripts/validate_evals.py .
 - [x] Historical replay / regression fixtures
 - [x] Source lineage + semantic metric-version drift
 - [x] Report row-inclusion / eligibility coverage safety
+- [x] Search Term origin / inferred non-search semantic safety
 - [x] Search Term Impression Share / account-wide query-headroom safety
 - [x] Cross-profile + cross-marketplace migration safety
 - [x] Asymmetric backfill measurement-parity eval
