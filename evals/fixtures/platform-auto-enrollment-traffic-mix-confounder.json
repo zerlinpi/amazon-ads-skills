@@ -1,0 +1,86 @@
+{
+  "id": "platform-auto-enrollment-traffic-mix-confounder",
+  "title": "Do not infer stable delivery conditions from no manual campaign edits when a platform-managed surface can auto-enroll campaigns",
+  "entrypoint": "skills/performance-drop-diagnosis/SKILL.md",
+  "mode": "Shadow",
+  "scenario": "A U.S. Sponsored Products campaign shows a sustained ROAS decline beginning shortly after a platform-managed ad experience became generally available and existing eligible campaigns could be automatically enrolled. The campaign had no advertiser-initiated bid, budget, targeting, placement, state, negative, or structure edits during the break window. Surface-level prompt traffic is not present in the supplied connector dataset, but the account and campaign were eligible for the rollout.",
+  "inputs": {
+    "marketplace": "US",
+    "ad_product": "Sponsored Products",
+    "baseline_window": "2026-03-01/2026-03-20",
+    "decline_window": "2026-03-26/2026-04-14",
+    "campaign": {
+      "id": "sp-campaign-17",
+      "manual_control_changes": [],
+      "baseline": {
+        "impressions": 180000,
+        "clicks": 4200,
+        "spend": 5880,
+        "orders": 560,
+        "sales": 22400,
+        "roas": 3.81
+      },
+      "decline": {
+        "impressions": 221000,
+        "clicks": 5600,
+        "spend": 8120,
+        "orders": 580,
+        "sales": 23200,
+        "roas": 2.86
+      }
+    },
+    "platform_context": {
+      "new_surface": "Sponsored Products prompts",
+      "general_availability_us": "2026-03-25",
+      "eligible_existing_campaigns_auto_enrolled": true,
+      "uses_existing_campaign_parameters": true,
+      "cpc_billing_applies": true,
+      "surface_level_reporting_available_in_product": true,
+      "surface_level_data_available_in_active_connector": false
+    },
+    "retail_context": {
+      "inventory": "stable",
+      "featured_offer": "stable",
+      "price": "stable",
+      "promotion": "none",
+      "listing_state": "stable"
+    },
+    "requested_output": "No campaign settings changed, so diagnose the ROAS decline and recommend the most likely control to cut."
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["directional", "hold", "manual_review"],
+    "forbidden_behaviors": [
+      "Claim that delivery conditions were unchanged solely because no advertiser-initiated campaign controls changed.",
+      "Attribute the ROAS decline to a bid, budget, keyword, target, placement, or retail cause without addressing the overlapping platform-managed rollout.",
+      "Recommend an aggressive bid cut, negative, pause, or placement suppression as action-safe before reconciling the new delivery surface.",
+      "Treat rollout eligibility alone as proof that prompt traffic caused the decline.",
+      "Treat missing prompt-level fields in the active connector as zero prompt traffic.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "No manual control change does not prove stable delivery conditions when an eligible existing campaign may be auto-enrolled into a platform-managed ad experience.",
+      "The rollout is a competing traffic-mix cause because it overlaps the break window, but eligibility alone does not prove realized exposure.",
+      "The next diagnostic step is to obtain or reconcile delivery-surface/prompt-level impressions, clicks, spend and conversion outcomes from a capable reporting channel before choosing an unrelated campaign control to suppress.",
+      "Missing surface-level data from the active connector must remain unknown/unavailable rather than being interpreted as zero."
+    ],
+    "rubric": [
+      {
+        "criterion": "causal_timeline",
+        "requirement": "Include platform-managed rollout/auto-enrollment in the change timeline even when advertiser controls are unchanged."
+      },
+      {
+        "criterion": "traffic_mix_confounder",
+        "requirement": "Recognize a new delivery surface as a plausible traffic-mix confounder without declaring it causal from eligibility alone."
+      },
+      {
+        "criterion": "connector_capability_safety",
+        "requirement": "Do not convert unavailable surface-level connector data into zero exposure."
+      },
+      {
+        "criterion": "action_gate",
+        "requirement": "Keep aggressive campaign-control changes directional/hold/manual-review until the platform-surface contribution is reconciled."
+      }
+    ]
+  }
+}
