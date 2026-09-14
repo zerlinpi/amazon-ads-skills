@@ -10,8 +10,8 @@ SCRIPT = ROOT / "scripts/project_realization_history.py"
 
 
 class RealizationProjectorTests(unittest.TestCase):
-    def run_projector(self, events):
-        result = subprocess.run(
+    def invoke_projector(self, events):
+        return subprocess.run(
             [sys.executable, str(SCRIPT)],
             input=json.dumps({"events": events}),
             text=True,
@@ -19,6 +19,9 @@ class RealizationProjectorTests(unittest.TestCase):
             cwd=ROOT,
             check=False,
         )
+
+    def run_projector(self, events):
+        result = self.invoke_projector(events)
         self.assertEqual(
             result.returncode,
             0,
@@ -110,6 +113,39 @@ class RealizationProjectorTests(unittest.TestCase):
             projected["current_realization_observability"]["material_dimensions"],
             ["surface", "creative_or_message"],
         )
+
+    def test_mixed_entity_event_slice_fails_closed(self):
+        result = self.invoke_projector(
+            [
+                {
+                    "event_id": "e1",
+                    "timestamp": "2026-09-14T08:00:00Z",
+                    "marketplace": "US",
+                    "profile_scope": "profile-a",
+                    "entity": {"type": "campaign", "id": "campaign-1"},
+                    "realization_snapshot": {
+                        "captured_at": "2026-09-14T08:00:00Z",
+                        "realized_surfaces": ["shopping_results"],
+                        "coverage_status": "Complete",
+                    },
+                },
+                {
+                    "event_id": "e2",
+                    "timestamp": "2026-09-14T09:00:00Z",
+                    "marketplace": "US",
+                    "profile_scope": "profile-a",
+                    "entity": {"type": "campaign", "id": "campaign-2"},
+                    "realization_snapshot": {
+                        "captured_at": "2026-09-14T09:00:00Z",
+                        "realized_surfaces": ["product_detail_page"],
+                        "coverage_status": "Complete",
+                    },
+                },
+            ]
+        )
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("single entity scope", result.stderr.lower())
 
 
 if __name__ == "__main__":
