@@ -20,12 +20,13 @@ Default mode: `Read-only` or `Suggest`. Never mutate a live account.
 Read this file first. Load only what is needed:
 
 - Detailed causal workflow and Mixed-ASIN safety: `references/causal-drop-diagnosis.md`
+- Platform-managed surface/product/creative realization: `../../references/realized-ad-identity.md`
 - Cross-source, freshness, or metric-version reconciliation: `../../references/data-lineage.md`
 - Metric definitions: `../../references/amazon-ads-metrics.md`
 - Shared decision boundaries: `../../references/decision-boundaries.md`
 - General optimization logic: `../../references/optimization-framework.md`
 
-Do not load `data-lineage.md` for a single stable measurement path whose source, completeness and metric definitions are already known to be comparable.
+Do not load `data-lineage.md` for a single stable measurement path whose source, completeness and metric definitions are already known to be comparable. Load `realized-ad-identity.md` only when the ad product can change delivery surface, product mix, creative/message realization, or another shopper-visible experience independently of ordinary manual campaign edits.
 
 ## Required context
 
@@ -39,6 +40,7 @@ Collect or explicitly mark missing:
 - campaign/ad group/keyword/target/search-term/placement data;
 - budget, bid, state, negative-targeting and structure-change history;
 - platform-managed delivery-surface / ad-experience changes when the marketplace may auto-enroll existing campaigns into a new format or surface;
+- realized product/creative/message mix when the selected ad format can dynamically choose among eligible products or shopper-facing realizations;
 - retail context when available: stock, Featured Offer/Buy Box, price, coupon/deal, listing suppression, reviews, delivery promise, variation-family changes;
 - timestamp/freshness for retail snapshots;
 - total retail sales when making TACOS or organic-momentum claims.
@@ -51,7 +53,7 @@ Collect or explicitly mark missing:
 4. **Decompose the bridge** — impressions -> clicks -> CPC/spend -> orders/CVR -> sales/AOV -> ACOS/ROAS.
 5. **Rank contributors** — prioritize ASINs, campaigns, targets, search terms and placements by lost business contribution, not noisy percentages.
 6. **Check retail/market confounders** — inventory, Buy Box, price, promotion, listing, reviews, delivery, demand, competitor and parent/variation-family changes.
-7. **Audit controllable and platform-managed changes** — bids, budgets, placements, states, negatives, product-ad mapping, launches, pauses, automation or bulk edits, plus auto-enrolled delivery surfaces/ad experiences that can change traffic mix without a manual campaign edit.
+7. **Audit controllable and platform-managed changes** — bids, budgets, placements, states, negatives, product-ad mapping, launches, pauses, automation or bulk edits, plus auto-enrolled delivery surfaces/ad experiences and dynamic product/creative realization that can change traffic or conversion mix without a manual campaign edit.
 8. **Run Mixed-ASIN safety** — distinguish clean routes from halo-heavy or mixed-ASIN routes before target-level actions.
 9. **Assign causality** — `Confirmed`, `Likely`, `Directional`, `Rejected`, or `Missing Data`.
 10. **Propose recovery** — only actions that pass the actionability gate, with validation and rollback criteria.
@@ -64,7 +66,7 @@ Return:
 2. executive verdict and exact windows;
 3. KPI bridge and primary driver;
 4. ranked ASIN/campaign/target contribution;
-5. retail and control-change findings, including family-level and platform-managed delivery-surface effects when relevant;
+5. retail and control-change findings, including family-level and platform-managed realization effects when relevant;
 6. Mixed-ASIN safety labels;
 7. facts vs hypotheses vs missing data;
 8. prioritized recovery proposals with confidence;
@@ -74,12 +76,14 @@ Return:
 
 - Do not infer causality from correlation alone.
 - Same source/table/metric name does not prove comparability when attribution, completeness, filters, grain or metric semantic version changed.
-- No manual control change does not prove that delivery conditions stayed constant when Amazon can auto-enroll existing campaigns into a platform-managed delivery surface or ad experience.
+- No manual control change does not prove that delivery conditions stayed constant when Amazon can auto-enroll existing campaigns into a platform-managed delivery surface or dynamically realize different products/creative experiences.
+- Configured eligible products are not the same thing as the realized product mix when a format supports platform-managed selection.
+- Missing realized product/creative/surface fields from the active connector are not evidence that realization was unchanged or zero.
 - Do not recommend bid cuts, pauses or negatives solely because a row has poor ACOS.
 - Do not call a target `waste` without sufficient evidence and compatible attribution maturity.
 - If purchased-ASIN attribution or Mixed-ASIN scope is unclear, downgrade target-level actions to `Directional` or `Blocked`.
 - A change made after the decline began is a possible fix, not a root cause.
 - A stale retail snapshot cannot prove Buy Box, inventory, price or listing health during a later decline window.
 - A child-ASIN conversion decline is not isolated ad inefficiency when parent/variation-family or sibling retail changes plausibly explain substitution.
-- When missing/stale retail state, family-level retail shock, source-lineage drift, metric-version drift, or a platform-managed delivery-surface change can materially explain the break, downgrade aggressive traffic suppression until reconciled.
+- When missing/stale retail state, family-level retail shock, source-lineage drift, metric-version drift, or a platform-managed realization change can materially explain the break, downgrade aggressive traffic suppression until reconciled.
 - Every recommendation must state evidence, confidence, expected effect, validation window and rollback trigger before it can ever reach an external executor.
