@@ -21,6 +21,7 @@ MATERIAL_DIMENSIONS = (
 )
 BOUNDED_COVERAGE = {"Complete", "Partial"}
 OBSERVABILITY_STATUSES = {"Complete", "Partial", "Unavailable", "Unknown"}
+SCOPE_FIELDS = ("marketplace", "profile_scope", "entity_type", "entity_id")
 
 
 def _parse_timestamp(value: Any, *, field: str) -> datetime:
@@ -76,6 +77,33 @@ def _event_scope(event: dict[str, Any]) -> tuple[Any, Any, Any, Any] | None:
     )
 
 
+def _normalize_expected_scope(value: Any) -> tuple[str, str, str, str] | None:
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        raise ValueError("expected_scope must be an object or null")
+    normalized: list[str] = []
+    for field in SCOPE_FIELDS:
+        item = value.get(field)
+        if not isinstance(item, str) or not item:
+            raise ValueError(f"expected_scope.{field} must be a non-empty string")
+        normalized.append(item)
+    return tuple(normalized)  # type: ignore[return-value]
+
+
+def _validate_scope(
+    event_scope: tuple[Any, Any, Any, Any] | None,
+    expected_scope: tuple[str, str, str, str] | None,
+) -> tuple[Any, Any, Any, Any] | None:
+    if expected_scope is None:
+        return event_scope
+    if event_scope is None or any(not isinstance(item, str) or not item for item in event_scope):
+        raise ValueError("realization event scope is incomplete for the requested expected scope")
+    if event_scope != expected_scope:
+        raise ValueError("realization event scope does not match the requested expected scope")
+    return event_scope
+
+
 def _project_last_observed(snapshot: dict[str, Any], observed_at: str) -> dict[str, Any]:
     projected: dict[str, Any] = {
         "snapshot_id": snapshot.get("snapshot_id"),
@@ -108,7 +136,11 @@ def _project_observability(snapshot: dict[str, Any], checked_at: str) -> dict[st
     }
 
 
-def project_realization_history(events: list[dict[str, Any]]) -> dict[str, Any]:
+def project_realization_history(
+    events: list[dict[str, Any]],
+    *,
+    expected_scope: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Return canonical realization projections for a single-entity event slice.
 
     Event order is not trusted. Observation time uses realization_snapshot.captured_at
@@ -117,9 +149,13 @@ def project_realization_history(events: list[dict[str, Any]]) -> dict[str, Any]:
     list order into the primary clock.
 
     When valid optimization-event entity scopes are present, mixed scopes fail closed
-    rather than silently merging realization histories across entities/accounts.
+    rather than silently merging realization histories across entities/accounts. A
+    caller may additionally provide expected_scope to require every realization event
+    to carry the complete marketplace/profile/entity identity and match the requested
+    replay scope exactly.
     """
 
+    normalized_expected_scope = _normalize_expected_scope(expected_scope)
     observations: list[tuple[datetime, int, str, dict[str, Any]]] = []
     observed_scopes: set[tuple[Any, Any, Any, Any]] = set()
 
@@ -132,7 +168,7 @@ def project_realization_history(events: list[dict[str, Any]]) -> dict[str, Any]:
         if not isinstance(snapshot, dict):
             raise ValueError("realization_snapshot must be an object or null")
 
-        scope = _event_scope(event)
+        scope = _validate_scope(_event_scope(event), normalized_expected_scope)
         if scope is not None:
             observed_scopes.add(scope)
             if len(observed_scopes) > 1:
@@ -162,27 +198,32 @@ def project_realization_history(events: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _load_payload() -> list[dict[str, Any]]:
+def _load_payload() -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
     try:
         payload = json.load(sys.stdin)
     except json.JSONDecodeError as exc:
         raise ValueError("stdin must contain valid JSON") from exc
 
+    expected_scope = None
     if isinstance(payload, list):
         events = payload
     elif isinstance(payload, dict):
         events = payload.get("events")
+        expected_scope = payload.get("expected_scope")
     else:
         events = None
 
     if not isinstance(events, list):
         raise ValueError("input must be an event array or an object with an events array")
-    return events
+    if expected_scope is not None and not isinstance(expected_scope, dict):
+        raise ValueError("expected_scope must be an object or null")
+    return events, expected_scope
 
 
 def main() -> int:
     try:
-        projected = project_realization_history(_load_payload())
+        events, expected_scope = _load_payload()
+        projected = project_realization_history(events, expected_scope=expected_scope)
     except ValueError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
