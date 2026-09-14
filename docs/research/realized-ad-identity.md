@@ -41,6 +41,28 @@ The repository independently derives the following safety framework:
 
 This extends the earlier delivery-surface rule without replacing it: delivery surface is one realization dimension; product and creative/message composition are additional dimensions.
 
+## Memory and replay implication
+
+Once realized identity affects both drop diagnosis and post-change review, leaving realization context as unconstrained free-form event fields creates a cross-Agent replay risk: different runtimes can record the same surface/product/creative state under different names, and later history cannot reliably determine whether two evaluation windows were comparable.
+
+The repository therefore adds a **bounded, optional canonical snapshot** rather than making every realization field mandatory:
+
+- `schemas/optimization-event.json` defines `realization_snapshot` for material readback/evaluation/correction events;
+- `schemas/entity-history.json` exposes a compact derived `latest_realization` retrieval view;
+- the event snapshot remains the source of truth, while the derived view is only an index/summary;
+- unavailable realization dimensions stay `Unknown` / `Unavailable` instead of being synthesized as zero or unchanged;
+- compact identifiers/hashes are preferred to persisting full prompt/creative payloads or large product lists.
+
+This keeps the schema backward-compatible and runtime-neutral while giving Codex, Claude Code, WorkBuddy and other agents a shared vocabulary for replay.
+
+## Adjacent agent-memory research reviewed
+
+A fresh scan also reviewed `riponcm/projectmem` and its 2026 PROJECTMEM paper. The project is MIT licensed and independently demonstrates an append-only event log with deterministic projections into compact summaries plus pre-action memory gates. Those high-level properties are consistent with this repository's existing append-first optimization-memory architecture.
+
+No ProjectMem source code, schema, prompts, CLI, MCP implementation, or file layout was copied. The project was used only as corroborating evidence that typed append-only events plus derived summaries are a practical multi-agent memory pattern; the Amazon Ads realization snapshot fields and decision semantics here were designed independently for this repository.
+
+A second replay-oriented memory project, Mneme, was reviewed but not adopted because its repository currently states the license as TBD/pre-release. Its concepts therefore were not used as an implementation source.
+
 ## Sources
 
 Primary public vendor sources:
@@ -49,16 +71,23 @@ Primary public vendor sources:
 - Amazon Ads, “Scale product discovery with AI-powered Sponsored Brands collections”, launch announcement dated May 27, 2026.
 - Amazon Ads, “Sponsored Brands collections: Promote related products and reach more shoppers”, public setup guide, retrieved September 2026.
 
+Adjacent open research / implementation reviewed:
+
+- `riponcm/projectmem` / PROJECTMEM (arXiv:2606.12329), MIT license; reviewed for append-only event-log + deterministic derived-summary architecture only.
+- `BrettNye/Mneme`, pre-release with license marked TBD; rejected as an implementation/adaptation source.
+
 ## Copyright / license boundary
 
 Amazon Ads Help, What's New and guide pages are public vendor documentation, not open-source software licensed for redistribution. This repository uses only factual platform behavior and independently rewrites it into a causal/data-governance method. It does not copy Amazon UI, ad creative, report templates, API schemas, proprietary AI selection logic, prompts, screenshots, or substantial source prose.
 
-No third-party source code was adopted in this change, so no new software-license obligations are introduced.
+ProjectMem is MIT licensed, but this change still does not copy its implementation. Mneme's license is unresolved/TBD, so no implementation, schema, prose, prompt, or workflow from it is adopted.
 
 ## Rejected adjacent candidates
 
-A GitHub scan also surfaced general Agent Skills/Claude plugin collections. They were not adopted in this round because the repository already implements thin `SKILL.md`, progressive loading, shared references, deterministic policy checks, capability replay and multi-runtime manifests. No candidate reviewed in this pass provided a non-overlapping method with stronger evidence than the Amazon Ads realization-identity gap.
+General Agent Skills/Claude plugin collections were not adopted because the repository already implements thin `SKILL.md`, progressive loading, shared references, deterministic policy checks, capability replay and multi-runtime manifests. No reviewed skill-layout candidate provided a non-overlapping method with stronger value than making realized-ad memory replay-safe.
+
+Replay/memory systems that focus on generic belief stores were also rejected as direct dependencies: this repository needs a narrow Amazon Ads optimization ledger, not a general-purpose agent memory platform.
 
 ## Safety boundary
 
-The policy changes evidence interpretation only. Live campaign/product/creative mutations remain outside the Skill layer and require an explicitly authorized external Connector / Executor.
+The policy and schema changes govern evidence interpretation and replay only. Live campaign/product/creative mutations remain outside the Skill layer and require an explicitly authorized external Connector / Executor.
