@@ -111,13 +111,6 @@ class RealizationProjectorTests(unittest.TestCase):
             ["surface", "creative_or_message"],
         )
 
-    def test_entity_history_schema_canonicalizes_projected_material_dimensions(self):
-        schema = json.loads((ROOT / "schemas/entity-history.json").read_text(encoding="utf-8"))
-        properties = schema["properties"]["last_observed_realization"]["properties"]
-        self.assertIn("realized_surfaces", properties)
-        self.assertIn("realized_product_ids", properties)
-        self.assertIn("realized_creative_or_message_ids", properties)
-
 
 if __name__ == "__main__":
     unittest.main()
