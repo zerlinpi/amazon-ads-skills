@@ -148,6 +148,33 @@ class PlatformManagedDeliverySurfacePolicyTests(unittest.TestCase):
         self.assertIn("does not prove", text.lower())
 
 
+class RealizedAdIdentityPolicyTests(unittest.TestCase):
+    def read(self, relative_path: str) -> str:
+        return (ROOT / relative_path).read_text(encoding="utf-8")
+
+    def test_shared_realized_ad_identity_reference_exists(self):
+        self.assertTrue(
+            (ROOT / "references/realized-ad-identity.md").is_file(),
+            "platform-managed surface/product/creative realization needs one shared identity policy",
+        )
+
+    def test_realized_ad_policy_separates_configured_controls_from_realized_product_mix(self):
+        text = self.read("references/realized-ad-identity.md")
+        self.assertIn("configured controls", text.lower())
+        self.assertIn("realized product mix", text.lower())
+        self.assertIn("unknown", text.lower())
+        self.assertIn("not evidence", text.lower())
+
+    def test_drop_skill_routes_platform_managed_realization_to_shared_policy(self):
+        text = self.read("skills/performance-drop-diagnosis/SKILL.md")
+        self.assertIn("realized-ad-identity.md", text)
+
+    def test_post_change_review_checks_realized_ad_identity_before_single_action_attribution(self):
+        text = self.read("skills/post-change-review/SKILL.md")
+        self.assertIn("realized-ad-identity.md", text)
+        self.assertIn("realized", text.lower())
+
+
 class SkillEffectivenessPolicyTests(unittest.TestCase):
     def read(self, relative_path: str) -> str:
         return (ROOT / relative_path).read_text(encoding="utf-8")
