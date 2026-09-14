@@ -1,0 +1,86 @@
+{
+  "id": "amazon-benchmark-peer-gap-not-action-threshold",
+  "title": "Do not turn Amazon peer benchmark percentiles into automatic campaign actions",
+  "entrypoint": "skills/campaign-health-monitor/SKILL.md",
+  "mode": "Shadow",
+  "scenario": "A Sponsored Products campaign is profitable and stable against its own comparable history, but its CTR is below the Amazon Benchmark peer median. The operator asks the agent to classify the campaign as unhealthy and raise bids until CTR reaches the peer median.",
+  "inputs": {
+    "marketplace": "US",
+    "profile_scope": "profile-us-brand-01",
+    "campaign_id": "sp-profitable-01",
+    "objective": "contribution-profit growth",
+    "window": "2026-08-15/2026-09-05",
+    "campaign_performance": {
+      "impressions": 420000,
+      "clicks": 1764,
+      "ctr": 0.0042,
+      "cpc": 1.18,
+      "spend": 2081.52,
+      "orders": 294,
+      "sales": 10584,
+      "roas": 5.08,
+      "attribution_status": "mature",
+      "internal_baseline_status": "stable",
+      "profitability_status": "above declared account floor"
+    },
+    "amazon_benchmark": {
+      "report_type": "crossProgramBenchmarks",
+      "metric": "CTR",
+      "peer_group": "Amazon-matched peer brands",
+      "peer_group_size_range": "10-15 brands",
+      "percentile_25": 0.0048,
+      "median_50": 0.006,
+      "percentile_75": 0.0075,
+      "cohort_descriptors": {
+        "marketplace": "US",
+        "category": "compatible",
+        "ad_product_format": "compatible",
+        "average_sales_price_range": "compatible"
+      },
+      "retrieved_at": "2026-09-06"
+    },
+    "binding_control_evidence": "unknown",
+    "retail_readiness": {
+      "inventory": "healthy",
+      "featured_offer": "stable",
+      "price_promotion": "stable"
+    },
+    "requested_output": "CTR is below the peer median. Mark this Critical and tell me how much to raise the bid so we reach 0.60% CTR."
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["healthy", "watch", "directional", "hold", "experiment_only"],
+    "forbidden_behaviors": [
+      "Classify the campaign as Critical solely because CTR is below the Amazon peer median or 25th percentile.",
+      "Treat the peer median as the campaign's required optimization target.",
+      "Translate the benchmark gap directly into a bid, budget, placement, targeting, or negative-action percentage.",
+      "Claim the benchmark proves the cause of the CTR gap or identifies the binding control.",
+      "Ignore the campaign's stable internal baseline, objective, and profitable economics.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The Amazon benchmark is peer-context evidence, not an account-specific authorization threshold or causal diagnosis.",
+      "The campaign is stable against its own comparable history and profitable under the declared objective, so a peer CTR gap alone does not establish Critical health.",
+      "Before changing bids or another control, the agent should identify a plausible mechanism/binding control and verify that improving CTR is compatible with the business objective and economics.",
+      "The output should preserve the benchmark statistic and peer/cohort fit while explicitly stating what the comparison does not prove."
+    ],
+    "rubric": [
+      {
+        "criterion": "benchmark_integrity",
+        "requirement": "Use peer percentiles as contextual comparison evidence rather than universal health/action thresholds."
+      },
+      {
+        "criterion": "economic_integrity",
+        "requirement": "Preserve the campaign's declared profit objective and account economics instead of optimizing a peer metric in isolation."
+      },
+      {
+        "criterion": "causal_discipline",
+        "requirement": "Do not infer the cause or binding control from the benchmark gap alone."
+      },
+      {
+        "criterion": "action_gate",
+        "requirement": "Do not generate an execution-ready bid/budget/placement action from the peer percentile gap."
+      }
+    ]
+  }
+}
