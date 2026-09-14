@@ -109,7 +109,7 @@
     "latest_known_state": {},
     "latest_realization": {
       "type": ["object", "null"],
-      "description": "Latest bounded shopper-facing ad realization summary derived from canonical realization snapshots when available.",
+      "description": "Backward-compatible bounded shopper-facing ad realization summary. New producers should prefer last_observed_realization plus current_realization_observability so known state and current observability are not conflated.",
       "properties": {
         "snapshot_id": {"type": ["string", "null"]},
         "as_of": {"type": ["string", "null"], "format": "date-time"},
@@ -126,6 +126,59 @@
           "enum": ["Comparable", "Reconcilable", "Directional", "Not Comparable", "Unknown", null]
         },
         "identity_hash": {"type": ["string", "null"]},
+        "warnings": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      },
+      "additionalProperties": true
+    },
+    "last_observed_realization": {
+      "type": ["object", "null"],
+      "description": "Most recent bounded realization state actually observed. A newer Unavailable/Unknown observation attempt must not erase this state, but it must not be treated as current truth without freshness and observability context.",
+      "properties": {
+        "snapshot_id": {"type": ["string", "null"]},
+        "observed_at": {"type": ["string", "null"], "format": "date-time"},
+        "realization_mode": {
+          "type": ["string", "null"],
+          "enum": ["manual", "platform_managed", "hybrid", "unknown", null]
+        },
+        "coverage_status": {
+          "type": ["string", "null"],
+          "enum": ["Complete", "Partial", "Unknown", null]
+        },
+        "comparability_status": {
+          "type": ["string", "null"],
+          "enum": ["Comparable", "Reconcilable", "Directional", "Not Comparable", "Unknown", null]
+        },
+        "freshness_status": {
+          "type": ["string", "null"],
+          "enum": ["Current", "Bounded", "Stale", "Unknown", null]
+        },
+        "freshness_basis": {"type": ["string", "null"]},
+        "identity_hash": {"type": ["string", "null"]},
+        "warnings": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      },
+      "additionalProperties": true
+    },
+    "current_realization_observability": {
+      "type": ["object", "null"],
+      "description": "Newest relevant attempt to observe material realization dimensions, kept separate from the last known realized identity.",
+      "properties": {
+        "checked_at": {"type": ["string", "null"], "format": "date-time"},
+        "status": {
+          "type": ["string", "null"],
+          "enum": ["Complete", "Partial", "Unavailable", "Unknown", null]
+        },
+        "source_dataset": {"type": ["string", "null"]},
+        "acquisition_channel": {"type": ["string", "null"]},
+        "material_dimensions": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
         "warnings": {
           "type": "array",
           "items": {"type": "string"}
