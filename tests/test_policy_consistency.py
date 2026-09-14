@@ -53,6 +53,23 @@ class ReportCoveragePolicyTests(unittest.TestCase):
         self.assertIn("report-coverage.md", text)
 
 
+class AttributionVariantPolicyTests(unittest.TestCase):
+    def read(self, relative_path: str) -> str:
+        return (ROOT / relative_path).read_text(encoding="utf-8")
+
+    def test_data_lineage_distinguishes_standard_and_all_views_conversion_metrics(self):
+        text = self.read("references/data-lineage.md")
+        self.assertIn("all views", text.lower())
+        self.assertIn("attribution_variant", text)
+        self.assertIn("shopping-signal", text.lower())
+
+    def test_attribution_variant_gap_does_not_become_business_performance_change(self):
+        text = self.read("references/data-lineage.md")
+        self.assertIn("same conversion metric family", text.lower())
+        self.assertIn("not comparable", text.lower())
+        self.assertIn("click-based attribution", text.lower())
+
+
 class BenchmarkPolicyTests(unittest.TestCase):
     def read(self, relative_path: str) -> str:
         return (ROOT / relative_path).read_text(encoding="utf-8")
