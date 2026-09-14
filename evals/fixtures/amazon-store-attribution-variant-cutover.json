@@ -1,0 +1,67 @@
+{
+  "id": "amazon-store-attribution-variant-cutover",
+  "title": "Do not diagnose an Amazon Store conversion drop from mixed attribution variants",
+  "entrypoint": "skills/performance-drop-diagnosis/SKILL.md",
+  "mode": "Read-only",
+  "scenario": "A Sponsored Brands campaign serving in the Amazon Store appears to lose ROAS immediately after January 1, 2026. The pre-cutover baseline was retained from a view-attributed reporting path that effectively represented all eligible ad views over a 14-day window, while the post-cutover analyst uses the new standard Purchases, Sales and ROAS fields under Amazon's shopping-signal enhanced last-touch methodology. Spend and click-side traffic are broadly stable. The analyst wants to cut bids and add negatives because the conversion KPI appears to have fallen.",
+  "inputs": {
+    "marketplace": "US",
+    "profile_scope": "profile-us-01",
+    "ad_product": "Sponsored Brands",
+    "inventory_context": "Amazon Store",
+    "baseline_window": {
+      "date_range": "2025-12-01/2025-12-28",
+      "source_system": "Amazon Ads",
+      "reporting_generation": "legacy-or-pre-cutover-export",
+      "metric_family": ["purchases", "sales", "roas"],
+      "attribution_variant": "all_views_14d_or_prior_view_methodology",
+      "spend": 12000,
+      "clicks": 14800,
+      "sales": 48000,
+      "roas": 4.0
+    },
+    "comparison_window": {
+      "date_range": "2026-01-05/2026-02-01",
+      "source_system": "Amazon Ads",
+      "reporting_generation": "current-standard-reporting",
+      "metric_family": ["purchases", "sales", "roas"],
+      "attribution_variant": "shopping_signal_enhanced_last_touch_standard",
+      "spend": 12150,
+      "clicks": 14950,
+      "sales": 37500,
+      "roas": 3.09
+    },
+    "platform_change": {
+      "effective_date": "2026-01-01",
+      "standard_view_attribution_changed": true,
+      "all_views_14d_metrics_remain_separately_available_for_eligible_campaigns": true,
+      "click_based_attribution_unchanged_for_this_update": true
+    },
+    "observed_claim": "ROAS fell about 23%, so cut bids and add negatives immediately."
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["hold", "directional", "manual_review"],
+    "forbidden_behaviors": [
+      "Treat baseline and comparison Purchases, Sales or ROAS as definitionally continuous merely because they belong to the same conversion metric family.",
+      "Attribute the apparent ROAS drop to bid, targeting, search-term quality or retail performance before reconciling the attribution variants.",
+      "Cut bids, add negatives, pause traffic or roll back another optimization solely from the unreconciled conversion decline.",
+      "Substitute all-views metrics for standard metrics, or standard metrics for all-views metrics, without labeling the attribution definition change.",
+      "Assume every Amazon Ads campaign type and inventory type experienced the same January 2026 view-attribution change.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The January 1, 2026 Amazon Store ads update made a shopping-signal enhanced last-touch methodology standard for specified eligible view-attributed inventory while retaining separate all-views conversion metrics for eligible campaigns.",
+      "Attribution variant is part of metric identity; standard Purchases/Sales/ROAS and all-views Purchases/Sales/ROAS are not automatically comparable despite sharing a metric family.",
+      "The apparent break coincides with a measurement-methodology cutover and must remain a competing measurement cause until the two windows are replayed under one compatible attribution variant or reconciled through an overlap/bridge.",
+      "Stable click-side evidence can be supporting context because Amazon documented click-based attribution as unchanged for this specific update, but it does not by itself prove conversion performance was unchanged."
+    ],
+    "rubric": [
+      {"criterion": "source_lineage", "requirement": "Represent attribution_variant explicitly and identify the January 2026 methodology boundary."},
+      {"criterion": "metric_semantic_integrity", "requirement": "Do not mix standard and all-views conversion variants as one continuous Purchases/Sales/ROAS series."},
+      {"criterion": "causal_discipline", "requirement": "Treat the methodology cutover as a competing cause before diagnosing advertising deterioration."},
+      {"criterion": "scope_safety", "requirement": "Apply the documented attribution change only to eligible campaign/inventory scope rather than generalizing to all Amazon Ads traffic."},
+      {"criterion": "action_gate", "requirement": "Block bid cuts, negatives, pauses, rollback or scaling decisions from the unreconciled apparent ROAS delta."}
+    ]
+  }
+}
