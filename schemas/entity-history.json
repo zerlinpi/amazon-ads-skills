@@ -107,6 +107,32 @@
       "additionalProperties": true
     },
     "latest_known_state": {},
+    "latest_realization": {
+      "type": ["object", "null"],
+      "description": "Latest bounded shopper-facing ad realization summary derived from canonical realization snapshots when available.",
+      "properties": {
+        "snapshot_id": {"type": ["string", "null"]},
+        "as_of": {"type": ["string", "null"], "format": "date-time"},
+        "realization_mode": {
+          "type": ["string", "null"],
+          "enum": ["manual", "platform_managed", "hybrid", "unknown", null]
+        },
+        "coverage_status": {
+          "type": ["string", "null"],
+          "enum": ["Complete", "Partial", "Unavailable", "Unknown", null]
+        },
+        "comparability_status": {
+          "type": ["string", "null"],
+          "enum": ["Comparable", "Reconcilable", "Directional", "Not Comparable", "Unknown", null]
+        },
+        "identity_hash": {"type": ["string", "null"]},
+        "warnings": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      },
+      "additionalProperties": true
+    },
     "latest_action": {"type": ["object", "null"]},
     "application_status": {
       "type": ["string", "null"],
