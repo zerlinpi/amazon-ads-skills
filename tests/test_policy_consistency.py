@@ -175,6 +175,29 @@ class RealizedAdIdentityPolicyTests(unittest.TestCase):
         self.assertIn("realized", text.lower())
 
 
+class RealizedAdMemoryPolicyTests(unittest.TestCase):
+    def read(self, relative_path: str) -> str:
+        return (ROOT / relative_path).read_text(encoding="utf-8")
+
+    def test_optimization_event_schema_has_canonical_realization_snapshot(self):
+        text = self.read("schemas/optimization-event.json")
+        self.assertIn('"realization_snapshot"', text)
+        self.assertIn('"realization_mode"', text)
+        self.assertIn('"comparability_status"', text)
+
+    def test_entity_history_schema_exposes_latest_realization_state(self):
+        text = self.read("schemas/entity-history.json")
+        self.assertIn('"latest_realization"', text)
+        self.assertIn('"comparability_status"', text)
+
+    def test_memory_contract_requires_realization_context_when_it_affects_attribution(self):
+        text = self.read("references/optimization-memory.md")
+        self.assertIn("realization_snapshot", text)
+        self.assertIn("realized-ad-identity.md", text)
+        self.assertIn("control readback", text.lower())
+        self.assertIn("realization", text.lower())
+
+
 class SkillEffectivenessPolicyTests(unittest.TestCase):
     def read(self, relative_path: str) -> str:
         return (ROOT / relative_path).read_text(encoding="utf-8")
