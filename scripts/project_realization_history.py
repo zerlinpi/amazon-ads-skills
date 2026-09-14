@@ -58,6 +58,24 @@ def _has_bounded_identity(snapshot: dict[str, Any]) -> bool:
     return isinstance(identity_hash, str) and bool(identity_hash)
 
 
+def _event_scope(event: dict[str, Any]) -> tuple[Any, Any, Any, Any] | None:
+    entity = event.get("entity")
+    if not isinstance(entity, dict):
+        return None
+    entity_type = entity.get("type")
+    entity_id = entity.get("id")
+    if not isinstance(entity_type, str) or not entity_type:
+        return None
+    if not isinstance(entity_id, str) or not entity_id:
+        return None
+    return (
+        event.get("marketplace"),
+        event.get("profile_scope"),
+        entity_type,
+        entity_id,
+    )
+
+
 def _project_last_observed(snapshot: dict[str, Any], observed_at: str) -> dict[str, Any]:
     projected: dict[str, Any] = {
         "snapshot_id": snapshot.get("snapshot_id"),
@@ -97,9 +115,14 @@ def project_realization_history(events: list[dict[str, Any]]) -> dict[str, Any]:
     when present and otherwise falls back to the event timestamp. Equal timestamps are
     resolved by later input position, matching append-order semantics without turning
     list order into the primary clock.
+
+    When valid optimization-event entity scopes are present, mixed scopes fail closed
+    rather than silently merging realization histories across entities/accounts.
     """
 
     observations: list[tuple[datetime, int, str, dict[str, Any]]] = []
+    observed_scopes: set[tuple[Any, Any, Any, Any]] = set()
+
     for index, event in enumerate(events):
         if not isinstance(event, dict):
             raise ValueError("each event must be an object")
@@ -108,6 +131,13 @@ def project_realization_history(events: list[dict[str, Any]]) -> dict[str, Any]:
             continue
         if not isinstance(snapshot, dict):
             raise ValueError("realization_snapshot must be an object or null")
+
+        scope = _event_scope(event)
+        if scope is not None:
+            observed_scopes.add(scope)
+            if len(observed_scopes) > 1:
+                raise ValueError("realization projection requires a single entity scope")
+
         parsed_time, raw_time = _observation_time(event, snapshot)
         observations.append((parsed_time, index, raw_time, snapshot))
 
