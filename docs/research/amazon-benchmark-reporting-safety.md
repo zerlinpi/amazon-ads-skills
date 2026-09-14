@@ -35,7 +35,7 @@ The current Amazon reporting behavior was independently adapted into four safety
 3. **Missing benchmark is not zero.** Eligibility, minimum peer population, report configuration, marketplace/ad-format support or connector capability can explain missing data.
 4. **Peer performance is not account economics.** A campaign should not be forced toward a peer metric when doing so conflicts with its objective, profitability, incrementality or retail guardrails.
 
-A synthetic regression case tests the failure mode where a profitable, internally stable campaign has CTR below its Amazon peer median and an operator asks the Agent to treat the peer median as a bid target.
+Deterministic policy tests guard the failure mode where peer percentiles are treated as universal health/action thresholds and require Campaign Health Monitor to route material peer comparisons through the shared benchmark policy. A separate regression fixture was intentionally not retained because these repository-contract invariants are mechanically testable without increasing the fixture pack solely for count.
 
 ## Copyright / license adoption boundary
 
