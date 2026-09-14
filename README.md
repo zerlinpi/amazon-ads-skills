@@ -65,8 +65,9 @@ Historical Replay / Eval Fixtures
 
 `evals/README.md` 定义 Contract checks + Capability replay。Capability Eval 使用 `met / not_met / insufficient_evidence`，比较决策行为而不是 exact wording。
 
-当前 regression pack 已覆盖 **44 类关键安全风险**，近期新增：
+当前 regression pack 已覆盖 **45 类关键安全风险**，近期新增：
 
+- Platform-managed delivery-surface confounding：没有人工 Campaign control change 不等于 delivery conditions 未变化；当 Amazon 自动把 eligible existing campaigns 接入新 surface/ad experience 时，先核对 rollout eligibility 与 realized surface-level traffic，再做因果归因或 traffic suppression；
 - Search Term origin semantics：Sponsored Products Search Term row 可能是 literal shopper query，也可能是 non-search context 的 inferred best match；后者不能仅按显示字符串机械转成 Exact harvest / Negative keyword；
 - Search Term Impression Share route ambiguity：SIS 是 query 的 account-wide visibility/share 证据，不把低 SIS 直接映射成某一个 Campaign 的 bid/budget headroom，也不把份额差额当成保证增量；
 - Report row-eligibility / selection bias：clicked-only 或 impression-qualified 报表即使完整生成，也不等于完整逻辑总体；禁止把缺失行自动补 0，或把 selected subset 当作全账户 query/target population；
@@ -104,6 +105,7 @@ campaign budget headroom ≠ account/portfolio budget headroom
 estimated missed sales/clicks ≠ guaranteed incrementality
 configured bid controls ≠ realized auction exposure
 placement ROAS lift under overlapping control changes ≠ single-modifier causality
+no manual campaign-control change ≠ unchanged delivery conditions under platform-managed auto-enrollment
 profile/campaign/keyword/search-term/placement views ≠ additive spend pools
 average(row ACOS/ROAS/CVR) ≠ account ratio
 higher ROAS ≠ higher contribution profit
@@ -361,6 +363,7 @@ python scripts/validate_evals.py .
 - 报表行缺失先检查 row-inclusion / eligibility；除非 report contract 明确支持，否则不自动补 0、不声称完整总体；
 - Search Term row 在做意图、Exact 收割或 Negative 推理前先检查 `term_origin`；inferred non-search / unknown origin 不按显示字符串默认解释为 literal shopper query；
 - Search Term Impression Share 先保留 account-wide scope；没有 routing/binding-control 证据时不映射成单 Campaign 的 bid/budget headroom，也不把低 SIS 当增量保证；
+- Performance-drop diagnosis 不把“无人工 campaign control change”当作 delivery conditions 未变化的证明；platform-managed auto-enrollment / new delivery surface 与 break 同期时先做 surface-level traffic reconciliation；
 - 可变历史的重要 evaluation 保存 decision-time evidence identity；restatement 用 append-only correction，不 hindsight overwrite；
 - 账户级排名/覆盖结论先验证 pagination/truncation completeness 与 population-selection contract；
 - 聚合 base metrics 后再重算 ratio，禁止把重叠 entity grains 累加为账户总量；
@@ -402,6 +405,7 @@ python scripts/validate_evals.py .
 - [x] Report row-inclusion / eligibility coverage safety
 - [x] Search Term origin / inferred non-search semantic safety
 - [x] Search Term Impression Share / account-wide query-headroom safety
+- [x] Platform-managed delivery-surface / auto-enrollment causal safety
 - [x] Cross-profile + cross-marketplace migration safety
 - [x] Asymmetric backfill measurement-parity eval
 - [x] Slim `performance-drop-diagnosis` and `amazon-ads-audit` entrypoints
