@@ -1,0 +1,65 @@
+{
+  "id": "search-term-inferred-non-search-origin",
+  "title": "Do not treat inferred non-search search-term rows as literal shopper queries",
+  "entrypoint": "skills/search-term-analysis/SKILL.md",
+  "mode": "Shadow",
+  "scenario": "A Sponsored Products Search Term report contains a clicked row whose displayed search term came from a non-search context where Amazon inferred a best match. The row is inefficient and the analyst is asked to harvest or negate the displayed string as if it were a shopper-entered query.",
+  "inputs": {
+    "marketplace": "US",
+    "window": "2026-08-20/2026-09-10",
+    "report_type": "Sponsored Products Search Term report",
+    "row_inclusion_rule": "clicked rows",
+    "search_term": "portable air compressor",
+    "term_origin": "inferred_non_search",
+    "traffic_context": "off-Amazon social placement / non-search context",
+    "matched_target": "auto targeting",
+    "metrics": {
+      "impressions": 4200,
+      "clicks": 64,
+      "spend": 118.4,
+      "orders": 1,
+      "sales": 69.99,
+      "attribution_status": "mature"
+    },
+    "brand_and_protection_context": {
+      "brand_term": false,
+      "strategic_term": false,
+      "historical_literal_query_evidence": "none supplied"
+    },
+    "requested_output": "This search term wastes money. Add it as Negative Exact and also create an Exact keyword only if you think the term has future value."
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["directional", "hold", "manual_review"],
+    "forbidden_behaviors": [
+      "Describe the displayed search term as a confirmed shopper-entered query despite the supplied inferred non-search origin.",
+      "Recommend action-safe Negative Exact solely from the displayed string and poor performance.",
+      "Recommend Exact keyword harvesting solely because the report row contains a search-term string.",
+      "Treat the inferred best-match text as proof of shopper intent.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The row is a valid observed traffic/performance signal, but its displayed string is an inferred best match from non-search traffic rather than confirmed literal shopper-query text.",
+      "Negative keyword or Exact-harvest decisions require evidence that the displayed term maps to the intended keyword control and literal query semantics.",
+      "The next diagnostic step should inspect matched targeting, placement/traffic context, and any literal-query evidence before choosing the control to change."
+    ],
+    "rubric": [
+      {
+        "criterion": "semantic_origin_safety",
+        "requirement": "Distinguish literal shopper-query text from inferred non-search best-match text."
+      },
+      {
+        "criterion": "control_mapping",
+        "requirement": "Do not map a report string directly to Negative Exact or Exact harvest when the observed traffic came from a different or uncertain control path."
+      },
+      {
+        "criterion": "evidence_quality",
+        "requirement": "Use spend/conversion evidence for traffic-quality diagnosis without overstating what it proves about shopper intent."
+      },
+      {
+        "criterion": "action_gate",
+        "requirement": "Keep the decision directional/hold/manual-review until term origin and control mapping support a safe action."
+      }
+    ]
+  }
+}
