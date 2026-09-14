@@ -146,6 +146,39 @@ Projection rules:
 
 These rules are designed for deterministic derived summaries while keeping the append-first event ledger as the source of truth.
 
+### Scope-bound replay
+
+Realization projection must also remain bound to one collision-safe optimization identity. A matching local campaign/ad-group/entity ID is not sufficient when multiple profiles or marketplaces can exist.
+
+For production replay, resolve the requested scope before projection and bind the reducer to the complete expected tuple:
+
+```text
+marketplace
++ profile/account scope
++ entity type
++ entity id
+```
+
+Then require every realization-bearing event in the replay slice to match that tuple. If a relevant event is missing one of those dimensions, or resolves to a different marketplace/profile/entity, fail closed rather than guessing that it belongs to the requested history.
+
+Therefore:
+
+```text
+same entity id + missing profile scope
+!= verified same optimization identity
+```
+
+and:
+
+```text
+mixed or incomplete scope
+→ reject replay / Manual Review
+not
+→ silently merge or assume same entity
+```
+
+The repository projector accepts an optional `expected_scope` input for this purpose. Lightweight historical fixtures can omit it, but production memory retrieval should provide it whenever the ledger can contain more than one marketplace/profile scope. This keeps the projector backward-compatible without weakening the optimization-memory identity gate.
+
 ## Acquisition-channel safety
 
 A realization dimension may exist in Ads Console or a specialized report while being unavailable through the active API/MCP/connector.
