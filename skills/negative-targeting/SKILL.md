@@ -27,21 +27,25 @@ metadata:
 - 业务目标。
 
 强烈推荐：
+- `term_origin`：`literal_query` / `inferred_non_search` / `unknown`；
+- placement / traffic context / matched targeting evidence；
 - 品牌词保护表；
 - 核心类目词/战略词表；
 - 历史赢家；
 - 已存在 Exact 收割结构；
 - 归因延迟和促销上下文。
 
+Amazon 当前 Sponsored Products Search Term report 可能包含 shopper search query，也可能包含 non-search context 中由系统推断出的 best match。因此 Search Term row 的显示字符串不自动等于 literal shopper query。
+
 ## 候选类型
 
 ### Negative Exact
 
-适合只屏蔽一个明确查询，误伤范围较小。对于单个低效/不相关 query，优先考虑 Exact 而不是 Phrase。
+适合只屏蔽一个明确查询，误伤范围较小。对于单个低效/不相关 query，优先考虑 Exact 而不是 Phrase，但前提是 `term_origin` / context 足以证明显示字符串确实对应可由 Negative keyword 控制的 literal shopper query。
 
 ### Negative Phrase
 
-影响范围更广。只有当一个短语意图整体不相关且已评估长尾误伤时才建议。
+影响范围更广。只有当一个短语意图整体不相关、origin/context 明确且已评估长尾误伤时才建议。
 
 ### Negative Product Targeting
 
@@ -49,16 +53,20 @@ metadata:
 
 ## 判断顺序
 
-1. 查询/目标是否相关？
-2. 是否已有足够样本？
-3. 是否存在历史转化？
-4. 是否为品牌、防御、战略或高价值 NTB 流量？
-5. 是否可能存在归因延迟？
-6. 是否处于大促/价格变化窗口？
-7. 是否应该先 Exact 收割赢家再否定源流量？
-8. Negative Phrase 是否会覆盖其他有价值 query？
+1. 该 row 是 literal shopper query、inferred non-search match，还是 `unknown` origin？
+2. 实际可控对象是 keyword、product target、placement/context，还是尚不明确？
+3. 查询/目标是否相关？
+4. 是否已有足够样本？
+5. 是否存在历史转化？
+6. 是否为品牌、防御、战略或高价值 NTB 流量？
+7. 是否可能存在归因延迟？
+8. 是否处于大促/价格变化窗口？
+9. 是否应该先 Exact 收割赢家再否定源流量？
+10. Negative Phrase 是否会覆盖其他有价值 query？
 
 任何关键问题无法确认时，标记 `requires_human_review: true`。
+
+如果 `term_origin = inferred_non_search` 或 `unknown`，不要仅依据显示字符串输出 action-safe Negative keyword。先寻找 matched target / placement / traffic-context 证据；无法建立控制映射时保持 `Manual Review`。
 
 ## 0 订单处理
 
@@ -69,22 +77,25 @@ metadata:
 - target CPA/ACOS；
 - 点击样本；
 - 查询相关性；
+- `term_origin` 与 traffic context；
 - 时间跨度。
 
-如果 query 明显语义不相关，即使样本不大也可以列为“高相关性风险”候选，但仍默认人工复核。
+如果 literal query 明显语义不相关，即使样本不大也可以列为“高相关性风险”候选，但仍默认人工复核。对于 inferred non-search / unknown-origin rows，字面语义不相关本身不足以证明 Negative keyword 是正确控制。
 
 ## 收割后否定
 
 当 Search Term 是赢家但来自 Broad/Phrase：
-1. 先建议建立 Exact；
-2. 确认 Exact 处于 enabled 且可承接流量；
-3. 再根据结构目标决定是否对源入口 Negative Exact；
-4. 不先否定后创建，避免流量断层。
+1. 先确认 `term_origin` 足以支持 literal-query interpretation；
+2. 再建议建立 Exact；
+3. 确认 Exact 处于 enabled 且可承接流量；
+4. 再根据结构目标决定是否对源入口 Negative Exact；
+5. 不先否定后创建，避免流量断层。
 
 ## 输出
 
 每个候选输出：
 - search term / target；
+- `term_origin` / origin confidence；
 - proposed negative type；
 - source entity；
 - spend/clicks/orders/sales；
@@ -99,6 +110,7 @@ metadata:
 
 ## 禁止
 
+- 不把 inferred non-search / unknown-origin Search Term row 仅按显示字符串自动转成 Negative keyword；
 - 不批量否定品牌词而不提示；
 - 不将所有 0 订单词直接否定；
 - 不用 Negative Phrase 代替精细诊断；
