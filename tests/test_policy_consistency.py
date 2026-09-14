@@ -107,6 +107,23 @@ class SearchTermOriginPolicyTests(unittest.TestCase):
         self.assertIn("inferred", text.lower())
 
 
+class PlatformManagedDeliverySurfacePolicyTests(unittest.TestCase):
+    def read(self, relative_path: str) -> str:
+        return (ROOT / relative_path).read_text(encoding="utf-8")
+
+    def test_drop_skill_checks_platform_managed_delivery_surface_changes(self):
+        text = self.read("skills/performance-drop-diagnosis/SKILL.md")
+        self.assertIn("platform-managed", text.lower())
+        self.assertIn("delivery surface", text.lower())
+
+    def test_causal_reference_treats_auto_enrollment_as_competing_cause(self):
+        text = self.read("skills/performance-drop-diagnosis/references/causal-drop-diagnosis.md")
+        self.assertIn("auto-enrollment", text.lower())
+        self.assertIn("traffic-mix", text.lower())
+        self.assertIn("no manual control change", text.lower())
+        self.assertIn("does not prove", text.lower())
+
+
 class SkillEffectivenessPolicyTests(unittest.TestCase):
     def read(self, relative_path: str) -> str:
         return (ROOT / relative_path).read_text(encoding="utf-8")
