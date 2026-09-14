@@ -57,6 +57,46 @@
       },
       "additionalProperties": true
     },
+    "realization_snapshot": {
+      "type": ["object", "null"],
+      "description": "Canonical shopper-facing ad realization context when platform-managed surface, product, creative, or message selection can affect causal interpretation.",
+      "properties": {
+        "snapshot_id": {"type": ["string", "null"]},
+        "captured_at": {"type": ["string", "null"], "format": "date-time"},
+        "realization_mode": {
+          "type": ["string", "null"],
+          "enum": ["manual", "platform_managed", "hybrid", "unknown", null]
+        },
+        "realized_surfaces": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "realized_product_ids": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "realized_creative_or_message_ids": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "source_dataset": {"type": ["string", "null"]},
+        "acquisition_channel": {"type": ["string", "null"]},
+        "coverage_status": {
+          "type": ["string", "null"],
+          "enum": ["Complete", "Partial", "Unavailable", "Unknown", null]
+        },
+        "comparability_status": {
+          "type": ["string", "null"],
+          "enum": ["Comparable", "Reconcilable", "Directional", "Not Comparable", "Unknown", null]
+        },
+        "identity_hash": {"type": ["string", "null"]},
+        "warnings": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      },
+      "additionalProperties": true
+    },
     "restatement": {
       "type": ["object", "null"],
       "properties": {
