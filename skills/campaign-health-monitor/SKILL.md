@@ -21,6 +21,14 @@ metadata:
 
 `Suggest`。只输出状态、证据和动作候选。
 
+## Progressive loading
+
+只在需要时加载共享规则：
+
+- `../../references/benchmark-policy.md`：当 Amazon Benchmark reporting、同行/类目中位数或外部 benchmark 影响健康判断时；
+- `../../references/data-lineage.md`：当当前窗口与基线来自不同 report/source/semantic definition 或成熟度时；
+- `../../references/decision-boundaries.md`：当输出具体 bid/budget/placement 动作候选时。
+
 ## 输入
 
 至少需要：
@@ -31,6 +39,8 @@ metadata:
 - impressions、clicks、spend、orders、sales。
 
 最好额外提供：placement、budget status、bid strategy、库存/促销/价格变化。
+
+如果使用 peer/category benchmark，还应记录 benchmark source、metric、percentile/statistic、peer/cohort fit、window/retrieval date 和 eligibility/availability status。缺失 benchmark 不自动补 0。
 
 ## 健康维度
 
@@ -60,19 +70,28 @@ metadata:
 - state/eligibility 是否异常；
 - 是否存在 Listing/Buy Box/库存影响。
 
+### Peer context（可选）
+- Amazon Benchmark reporting 或其他可比较 peer cohort 可用于补充“市场上下文”；
+- peer median / 25th / 75th percentile 是比较证据，不是仓库默认健康阈值；
+- 低于 peer median 不代表 campaign 自动为 `Critical`，也不证明 bid、budget、placement、targeting 或 negative 中的任何一个是根因；
+- 高于 peer benchmark 也不等于存在可盈利扩量空间。
+
 ## 状态规则
 
-不要依赖固定百分比阈值作为唯一依据。结合：
-- 历史波动区间；
+不要依赖固定百分比阈值或 peer benchmark 作为唯一依据。结合：
+- 自身历史波动区间；
 - 流量体量；
-- 目标；
+- 目标与单位经济；
 - 业务事件；
-- 连续性。
+- 连续性；
+- benchmark 的 cohort fit 与方法适配度（若使用）。
 
 状态含义：
 - `Healthy`：核心指标在合理区间，无明确阻塞；
 - `Watch`：出现值得观察的偏离，但证据不足以做强动作；
 - `Critical`：持续、显著且有业务影响的问题，或 delivery/数据层硬故障。
+
+单纯“低于同行中位数/25th percentile”不足以构成 `Critical`。
 
 ## 根因拆解
 
@@ -83,9 +102,9 @@ metadata:
 4. clicks 是否不足；
 5. CVR 是否下降；
 6. price/promotion/inventory/Buy Box 是否改变；
-7. search term 或 placement mix 是否变化。
+7. search term、placement 或 delivery-surface mix 是否变化。
 
-不要把结果指标当根因。
+不要把结果指标或 benchmark gap 当根因。
 
 ## 输出格式
 
@@ -96,6 +115,7 @@ Campaign: <name/id>
 Status: Healthy | Watch | Critical
 Primary signal: <主要异常>
 Evidence: <当前值 vs 基线>
+Peer context: <optional benchmark + cohort fit + what it does not prove>
 Likely causes: <按可能性排序>
 Business impact: <影响>
 Confidence: 0-1
