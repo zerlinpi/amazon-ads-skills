@@ -1,0 +1,139 @@
+# Realized ad identity and platform-managed realization
+
+Load this shared reference when Amazon can change the **realized ad experience** without a corresponding advertiser edit to the campaign's ordinary bid, budget, targeting, placement, state, or structure controls.
+
+The goal is to keep configured intent separate from what shoppers were actually shown.
+
+## Core distinction
+
+Treat these as different layers:
+
+```text
+configured controls
+→ eligibility / selection logic
+→ realized delivery surface
+→ realized product mix
+→ realized creative/message
+→ observed traffic and outcomes
+```
+
+A stable campaign configuration does not prove that the realized ad identity stayed stable.
+
+Examples of platform-managed realization can include:
+
+- auto-enrolled delivery surfaces or ad experiences;
+- AI-selected product groups from an eligible catalog;
+- dynamically assembled product combinations;
+- platform-generated or platform-selected creative/message variants;
+- shopper-context-dependent realization that varies while campaign targets remain unchanged.
+
+Do not assume every ad product supports every layer. Record only what the relevant Amazon Ads product/report actually exposes.
+
+## Realized identity dimensions
+
+When realization can affect a decision, capture when available:
+
+- `ad_product` / format;
+- marketplace + profile/account scope;
+- campaign/ad-group/ad IDs where exposed;
+- configured targeting and control state;
+- realization mode: `manual`, `platform_managed`, `hybrid`, or `unknown`;
+- delivery surface / placement / experience;
+- advertised ASIN(s) or realized product group when reportable;
+- creative/message/prompt identity when reportable;
+- eligibility/rollout state;
+- measurement window and acquisition channel;
+- source/report identity, row eligibility, freshness and completeness.
+
+`unknown` is a valid state. A connector that does not expose realized product, creative, prompt, or surface dimensions is **not evidence** that those dimensions were unchanged or zero.
+
+## Causal safety
+
+Before attributing a performance change to an advertiser action, check whether realized ad identity also changed during the same window.
+
+Examples:
+
+```text
+same bid + same targeting
++ different realized product mix
+→ conversion/ROAS change may be composition-driven
+```
+
+```text
+same campaign controls
++ newly eligible platform-managed surface
+→ traffic mix may change without advertiser edit
+```
+
+```text
+same campaign + same products eligible
++ unknown realized creative/message mix
+→ creative-level causality is not established
+```
+
+A platform rollout announcement establishes a possible mechanism, not account-level exposure. Require account/campaign eligibility plus realized delivery evidence before calling it causal.
+
+## Product-mix safety
+
+When Amazon dynamically selects products from a catalog or eligible set:
+
+- do not treat the configured catalog/eligible-ASIN set as the realized advertised-product mix;
+- do not assign all campaign outcomes equally to every eligible ASIN;
+- do not infer that a product was shown merely because it was eligible;
+- do not interpret a campaign-level lift/drop as proof that a specific product became stronger/weaker unless product-level exposure/outcomes support it;
+- when product realization is unavailable, keep ASIN-specific conclusions `Directional`, `Unknown`, or `Manual Review`.
+
+This is especially important when product economics, retail readiness, price, inventory, Featured Offer status, or conversion rate differ materially across the eligible catalog.
+
+## Post-change evaluation
+
+For a post-change review, distinguish:
+
+1. **control readback** — was the intended advertiser control applied?
+2. **realization stability** — did surface/product/creative realization remain sufficiently comparable?
+3. **outcome movement** — did delivery and business outcomes move as expected?
+
+`control readback confirmed` does not prove that the evaluated outcome was generated under an otherwise stable ad realization.
+
+If a material platform-managed realization shift overlaps the validation window:
+
+- downgrade single-action causal attribution;
+- prefer a narrower comparable slice if available;
+- reconcile surface/product/creative-level evidence where reportable;
+- otherwise classify the result `Directional`, `Confounded`, `Keep Monitoring`, or `Manual Review` rather than inventing certainty.
+
+## Acquisition-channel safety
+
+A realization dimension may exist in Ads Console or a specialized report while being unavailable through the active API/MCP/connector.
+
+Therefore:
+
+```text
+missing from active connector
+!= zero exposure
+!= unchanged realization
+!= feature absent from Amazon Ads
+```
+
+Use `data-lineage.md` when acquisition-channel or reporting availability affects the decision.
+
+## Action gate
+
+Platform-managed realization evidence can change which control is worth investigating, but it never directly authorizes a live mutation.
+
+Do not react to a realization shift by mechanically cutting bids, budgets, placements, products, or targets. First determine whether the realized mix is harmful, beneficial, merely different, or still unknown, and whether the actual advertiser-controllable binding lever is known.
+
+Default actionability under unresolved realization identity is `Directional`, `Experiment`, `Hold`, or `Manual Review`.
+
+## Current Amazon Ads evidence motivating this policy
+
+Two current public examples demonstrate why this shared layer is necessary:
+
+- Sponsored Products / Sponsored Brands prompts can introduce an additional platform-managed ad experience for eligible existing campaigns without an ordinary manual campaign-control edit.
+- Sponsored Brands collections can use automatic control in which Amazon AI dynamically curates product groupings from the advertiser catalog based on campaign targets and shopping signals; manual product selection remains a separate mode.
+
+These are examples of the general realization problem, not hard-coded assumptions that every account, marketplace, ad product, or future format behaves the same way.
+
+## Safety boundary
+
+This reference governs evidence identity and causal interpretation only. It does not authorize Amazon Ads writes. Mutation, retry, idempotency and reconciliation remain external Connector / Executor responsibilities.
