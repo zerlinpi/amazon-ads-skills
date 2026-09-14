@@ -4,6 +4,8 @@ Load this shared reference when a decision touches an entity with prior optimiza
 
 The goal is not to create a generic long-term memory system. It is to preserve enough decision lineage to prevent duplicate, contradictory, stale, cross-scope, or falsely attributed Amazon Ads optimizations.
 
+Treat `references/realized-ad-identity.md` as the canonical interpretation policy when shopper-facing surface, product, creative, message, or other platform-managed realization can materially affect attribution.
+
 ## Core principle
 
 Treat optimization memory as an append-first event ledger plus derived entity summaries.
@@ -26,7 +28,8 @@ Before recommending a new bid, budget, placement, negative, target-state, campai
 5. the latest outcome classification;
 6. active rollback/stop conditions;
 7. concurrent actions on parent/child entities that can contaminate attribution;
-8. material evidence restatements that supersede a prior evaluation.
+8. material evidence restatements that supersede a prior evaluation;
+9. the latest relevant realization snapshot when shopper-facing surface/product/creative composition can change independently of advertiser controls.
 
 If no memory source exists, say `history unavailable` rather than assuming there was no prior action.
 
@@ -207,6 +210,7 @@ Not every event needs every stage. Preserve uncertainty explicitly.
 - `proposed` is not `applied`.
 - `applied` is not `readback confirmed`.
 - `readback confirmed` is not `worked`.
+- `control readback confirmed` is not `realization stable` when Amazon can alter shopper-facing surface/product/creative realization independently.
 - `worked` is not proof of causality if important concurrent changes remain unresolved.
 - `rollback_proposed` is not `rolled_back`.
 
@@ -280,6 +284,40 @@ If history later restates enough to change the outcome classification:
 
 A later restatement can show that the latest outcome differs from what was knowable earlier. It does not retroactively make unavailable data part of the original decision context.
 
+## Realization-aware optimization memory
+
+When `realized-ad-identity.md` is material to causal interpretation, preserve a bounded `realization_snapshot` on the relevant readback/evaluated/corrected event when the data is available.
+
+The purpose is not to copy the full ad payload into memory. It is to make later replay answer whether shopper-facing realization was sufficiently comparable across the decision window.
+
+Canonical snapshot fields are defined in `schemas/optimization-event.json` and include when known:
+
+- snapshot/capture identity;
+- `realization_mode`: `manual`, `platform_managed`, `hybrid`, or `unknown`;
+- realized delivery surface identifiers;
+- realized advertised-product identifiers;
+- realized creative/message/prompt identifiers;
+- acquisition channel / source dataset;
+- coverage status;
+- `comparability_status`;
+- optional compact identity hash and warnings.
+
+Use `unknown` / `Unavailable` explicitly when the active acquisition channel cannot observe a material realization dimension. Missing realized-product, creative, prompt, or surface fields are **not evidence** that realization was unchanged or zero.
+
+Do not require a realization snapshot on every optimization event. Persist it when realization can plausibly change the causal interpretation of a material action or outcome review. Prefer compact IDs, hashes, or immutable artifact references over copying full creative text, prompt text, images, or oversized product lists into the event ledger.
+
+The derived entity summary may expose `latest_realization`, but that summary is only a bounded retrieval aid. Historical event snapshots remain the source of truth for replay.
+
+For outcome attribution, keep these questions separate:
+
+```text
+control readback confirmed?
+realization comparable?
+outcome moved as expected?
+```
+
+If control readback is confirmed but realization comparability is `Directional`, `Not Comparable`, or `Unknown`, do not upgrade the outcome to strong single-action causal attribution merely because the advertiser control applied correctly.
+
 ## Local-only / partial-memory warnings
 
 If the runtime has multiple machines, agents, connectors, or write paths, memory can be incomplete.
@@ -296,7 +334,9 @@ Expose warnings such as:
 - `cross-profile collision detected`;
 - `migration mapping partial`;
 - `cross-marketplace portability limited`;
-- `historical evidence restated`.
+- `historical evidence restated`;
+- `realization snapshot unavailable`;
+- `realization comparability unresolved`.
 
 Do not silently treat a partial ledger as complete account history.
 
@@ -322,7 +362,8 @@ For a new optimization decision, retrieve in this order:
 4. same entity, other controls in the overlapping window;
 5. parent campaign/ad-group/product-ad changes;
 6. active experiments containing the entity;
-7. recent account-wide or portfolio controls that materially affect delivery.
+7. recent account-wide or portfolio controls that materially affect delivery;
+8. realization snapshots overlapping the evaluation window when surface/product/creative composition can confound attribution.
 
 For cross-profile/cross-marketplace migrations, keep predecessor events labeled with their original scope. Do not rewrite them as if they originated in the successor scope.
 
@@ -339,6 +380,7 @@ A derived summary should answer:
 - Did it actually apply?
 - Is evaluation complete?
 - What was the outcome at decision time and has later restatement changed the latest interpretation?
+- When relevant, what is the latest realization status and is it comparable to the evaluated window?
 - Is a rollback condition active?
 - Is there a verified predecessor/successor lineage or scope transition?
 - If marketplace changed, which predecessor facts are actually portable?
@@ -377,6 +419,7 @@ When memory materially affects a recommendation, include:
 - validation maturity;
 - latest outcome;
 - decision-time evidence identity and latest restatement status when material;
+- realization snapshot/comparability status when shopper-facing realization can affect attribution;
 - identity-lineage and scope-transition status when migration is relevant;
 - predecessor scope and portability status when predecessor evidence is used;
 - unresolved conflicts or warnings;
@@ -388,3 +431,5 @@ When memory materially affects a recommendation, include:
 Do not store credentials, refresh tokens, client secrets, access tokens or unnecessary customer-identifying data in optimization memory.
 
 Use the minimum marketplace/account/profile scope required for collision-safe entity identity. Public examples should use synthetic identifiers.
+
+For realization snapshots, prefer compact IDs/hashes and bounded source references. Do not persist unnecessary shopper-level data, full generated prompt/creative payloads, images, or large product lists merely to make replay possible.
