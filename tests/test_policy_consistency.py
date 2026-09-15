@@ -186,6 +186,13 @@ class OptimizationSignalSemanticsPolicyTests(unittest.TestCase):
         self.assertIn("not a holdout boundary", text)
         self.assertIn("actual delivery", text)
 
+    def test_experiment_schema_can_encode_audience_control_semantics(self):
+        text = self.read("schemas/experiment-plan.json")
+        self.assertIn('"audience_control_semantics"', text)
+        self.assertIn('"optimization_signal"', text)
+        self.assertIn('"hard_exclude"', text)
+        self.assertIn('"unknown"', text)
+
 
 class RealizedAdIdentityPolicyTests(unittest.TestCase):
     def read(self, relative_path: str) -> str:
