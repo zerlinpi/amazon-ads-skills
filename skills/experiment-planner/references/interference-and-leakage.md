@@ -1,6 +1,6 @@
 # Experiment interference and leakage reference
 
-Load this only when treatment and comparison scopes may share auctions, queries, ASIN demand, budgets, routing, automation, or another constrained resource. It supplements `experiment-design.md`; ordinary low-overlap experiments do not need it.
+Load this only when treatment and comparison scopes may share auctions, queries, ASIN demand, budgets, routing, automation, platform-managed realization, or another constrained resource. It supplements `experiment-design.md`; ordinary low-overlap experiments do not need it.
 
 The purpose is to stop an observed treatment lift from being mistaken for incrementality when the treatment changes what the control can receive.
 
@@ -43,6 +43,7 @@ For treatment and comparison scopes, map when available:
 - advertised ASINs and important purchased-ASIN/halo paths;
 - parent/child variation-family relationships;
 - match types and negative-routing boundaries;
+- audience/optimization signals and the product-specific semantics of those controls;
 - placement and bidding controls;
 - shared portfolio, business budget, or external pacing pool;
 - shared rules, bulk jobs, agents, or automations;
@@ -65,7 +66,44 @@ Check, where data supports it:
 
 Do not use a universal overlap-percentage threshold. The actionability depends on traffic concentration, business importance, and whether overlap can materially change the causal comparison.
 
-## 4. Auction interference
+## 4. Audience / optimization-signal boundary safety
+
+In AI-managed campaigns, an advertiser-provided audience signal can be an **optimization signal** rather than a hard targeting constraint.
+
+Current Amazon Ads Brand+ / Performance+ Audience Signals are an example of why this distinction matters: Amazon describes these audiences as inputs that guide AI optimization, and Brand+ Prospecting can retain broader reach discovery. Product documentation, not the field name alone, determines whether a given audience control is an eligibility boundary, an exclusion, or merely a model input.
+
+Therefore:
+
+```text
+audience signal configured
+!= delivery restricted to signal members
+!= treatment cohort isolated from non-members
+!= valid control/holdout boundary
+```
+
+An audience signal is **not a holdout boundary** unless the relevant control semantics or actual delivery evidence prove sufficient separation.
+
+Before using an audience-defined experiment:
+
+- classify each audience-related control as `hard include`, `hard exclude`, `optimization signal`, or `unknown`;
+- verify whether the platform can expand beyond the provided signal;
+- inspect actual delivery at the closest available audience/cohort/reporting scope;
+- confirm exclusions or other isolation controls when causal separation depends on them;
+- if realized delivery composition is unavailable, label cohort integrity `Unknown` rather than assuming the configured signal equals actual delivery.
+
+Warning pattern:
+
+```text
+treatment = AI campaign + audience signal A
+control = same AI campaign without signal A
+assumption = only audience A can receive treatment
+```
+
+If the product can use the signal as an optimization input while retaining broader reach, that assumption is invalid. The test may still answer whether **providing the signal** changes performance, but it cannot automatically answer whether **audience A** itself caused the lift.
+
+Load `../../../references/realized-ad-identity.md` when platform-managed audience/product/creative realization materially affects the interpretation.
+
+## 5. Auction interference
 
 In auction systems, increasing treatment bids, placement exposure, or budget can alter the control cohort even when control settings are unchanged.
 
@@ -79,7 +117,7 @@ Warning patterns include:
 
 When these patterns are plausible, analyze combined demand and displaced control value before claiming incremental lift.
 
-## 5. Shared-budget starvation
+## 6. Shared-budget starvation
 
 A control is not independent when treatment and control draw from the same fixed business budget, portfolio cap, or external pacing allocator.
 
@@ -111,7 +149,7 @@ If the real business question is whether reallocating a fixed pool improves the 
 
 Load `../../budget-optimization/references/portfolio-budget-conflicts.md` only when detailed budget-pool reconciliation is needed.
 
-## 6. ASIN substitution, variation families, and halo
+## 7. ASIN substitution, variation families, and halo
 
 Treat ASIN scopes as potentially interacting when:
 
@@ -143,7 +181,7 @@ purchased-ASIN crossover present
 
 Do not call the treatment child an incremental winner from its own lift alone. If ASIN-level incrementality is required but Purchased-ASIN, family mapping, or routing evidence is incomplete, downgrade the conclusion to `Directional`, `Redesign`, or `Hold`.
 
-## 7. Control-boundary drift during long tests
+## 8. Control-boundary drift during long tests
 
 A clean design at launch can become invalid later. Control integrity is a **time-varying property**, not a launch-time certificate.
 
@@ -151,6 +189,7 @@ Re-verify boundaries after material scope-changing events and at sensible checkp
 
 - newly created or harvested keywords/targets;
 - new, removed, or reattached negatives/routing rules;
+- audience-signal / optimization-input changes whose delivery semantics can alter realized cohort composition;
 - campaign/ad-group migrations or recreated entities;
 - automation/rule scope changes;
 - bulk edits that touch either cohort or a shared parent;
@@ -178,9 +217,9 @@ When drift begins mid-test:
 4. if the design is no longer comparable, downgrade to `Hold`, `Redesign`, `Experiment Only`, or `Manual Review`;
 5. prefer a clean rerun when the business decision requires strong causal evidence.
 
-A successful launch audit does not override later evidence of changed routing, automation, entity lineage, budget membership, or control exposure.
+A successful launch audit does not override later evidence of changed routing, automation, entity lineage, budget membership, audience-signal semantics, or control exposure.
 
-## 8. Integrity states
+## 9. Integrity states
 
 Use a compact interference state when useful:
 
@@ -199,11 +238,12 @@ For control integrity, useful states are:
 
 `High`, `At Risk`, `Leaky`, `Interfering`, or `Unknown` does not automatically mean the observed data are useless. It means causal winner claims and broad rollout require redesign, segmentation, additional evidence, or a clearly directional interpretation.
 
-## 9. Redesign options
+## 10. Redesign options
 
 Prefer the least invasive design that restores a credible comparison:
 
 - choose non-overlapping query/target scopes;
+- use verified hard audience exclusions/eligibility controls instead of assuming optimization-signal membership creates isolation;
 - isolate ASIN/product groups when business meaning remains valid;
 - avoid sibling child-ASIN controls when strong substitution is expected;
 - add explicit routing/negative boundaries and verify attachment;
@@ -213,7 +253,7 @@ Prefer the least invasive design that restores a credible comparison:
 
 Do not create exclusions merely to improve experimental purity if they introduce unacceptable business risk. In that case prefer `Shadow`, `Hold`, or a weaker but honest design.
 
-## 10. Readout rules
+## 11. Readout rules
 
 Before calling a treatment `Winner / Keep`:
 
@@ -221,13 +261,14 @@ Before calling a treatment `Winner / Keep`:
 2. verify allocation/delivery integrity;
 3. verify control integrity across the relevant time window, not only at launch;
 4. check leakage into control;
-5. check shared-auction, ASIN-family, budget, routing, and automation interference;
-6. compare combined/pool/family outcomes when displacement is possible;
-7. account for attribution maturity and retail confounders;
-8. state residual interference and boundary-drift risk.
+5. check audience-signal semantics when AI-managed delivery can expand beyond configured signal membership;
+6. check shared-auction, ASIN-family, budget, routing, and automation interference;
+7. compare combined/pool/family outcomes when displacement is possible;
+8. account for attribution maturity and retail confounders;
+9. state residual interference and boundary-drift risk.
 
 A treatment can improve its own ROAS, orders, or contribution profit while producing no incremental account-level value if it mostly captures traffic, budget, or demand previously available to control.
 
-## 11. Safety boundary
+## 12. Safety boundary
 
-This reference only changes experiment design and interpretation. It never authorizes live Amazon Ads writes. Any routing, negative, bid, budget, or structure change remains `Suggest`/`Shadow` until an authorized external executor is explicitly used.
+This reference only changes experiment design and interpretation. It never authorizes live Amazon Ads writes. Any routing, negative, bid, budget, audience, or structure change remains `Suggest`/`Shadow` until an authorized external executor is explicitly used.
