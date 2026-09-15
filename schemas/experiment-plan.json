@@ -39,7 +39,24 @@
         "entity_type": {"type": ["string", "null"]},
         "entity_ids": {"type": "array", "items": {"type": "string"}},
         "asin_ids": {"type": "array", "items": {"type": "string"}},
-        "exclusions": {"type": "array", "items": {"type": "string"}}
+        "exclusions": {"type": "array", "items": {"type": "string"}},
+        "audience_control_semantics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["control", "semantics"],
+            "properties": {
+              "control": {"type": "string"},
+              "semantics": {
+                "type": "string",
+                "enum": ["hard_include", "hard_exclude", "optimization_signal", "unknown"]
+              },
+              "evidence": {"type": ["string", "null"]},
+              "delivery_verified": {"type": ["boolean", "null"]}
+            },
+            "additionalProperties": false
+          }
+        }
       },
       "additionalProperties": false
     },
