@@ -47,6 +47,34 @@ When realization can affect a decision, capture when available:
 
 `unknown` is a valid state. A connector that does not expose realized product, creative, prompt, or surface dimensions is **not evidence** that those dimensions were unchanged or zero.
 
+## Optimization signals are not automatically hard targeting constraints
+
+For AI-managed campaigns, distinguish **optimization signals** from **hard targeting constraints**.
+
+An audience signal, conversion signal, catalog signal, or other advertiser-provided model input can guide optimization without defining the full set of shoppers who are eligible to receive the ad. A configured audience signal therefore does not by itself prove that actual delivery was restricted to that audience.
+
+Current Amazon Ads examples include Brand+ and Performance+ Audience Signals. Amazon describes advertiser audiences added to these campaigns as AI optimization inputs; for Brand+ Prospecting, Amazon explicitly describes retaining full reach discovery while the signal guides optimization. Treat that as product-specific evidence for this semantic distinction, not a universal rule for every Amazon Ads audience control.
+
+Therefore:
+
+```text
+audience signal configured
+!= hard audience targeting constraint
+!= verified delivery only to signal members
+!= valid experiment holdout boundary
+```
+
+Before using a configured signal as a targeting or experiment boundary, verify the product's actual control semantics and, when the conclusion depends on realized exposure, inspect delivery/reporting evidence at the closest available scope.
+
+For diagnosis and post-change review:
+
+- record whether the changed item is a hard eligibility/exclusion control or an optimization input;
+- do not attribute a traffic-mix change to a narrow audience restriction merely because a signal was added;
+- do not infer that users outside the signal were excluded unless the product contract proves it;
+- when the active connector exposes only configured signals but not realized audience/delivery composition, keep audience-composition conclusions `Directional` or `Unknown`.
+
+For experiments, an optimization signal is **not a holdout boundary**. If treatment/control separation depends on audience isolation, require an actual exclusion/eligibility mechanism or realized delivery evidence that proves the cohorts are sufficiently separated.
+
 ## Causal safety
 
 Before attributing a performance change to an advertiser action, check whether realized ad identity also changed during the same window.
@@ -204,10 +232,11 @@ Default actionability under unresolved realization identity is `Directional`, `E
 
 ## Current Amazon Ads evidence motivating this policy
 
-Two current public examples demonstrate why this shared layer is necessary:
+Current public examples demonstrate why this shared layer is necessary:
 
 - Sponsored Products / Sponsored Brands prompts can introduce an additional platform-managed ad experience for eligible existing campaigns without an ordinary manual campaign-control edit.
 - Sponsored Brands collections can use automatic control in which Amazon AI dynamically curates product groupings from the advertiser catalog based on campaign targets and shopping signals; manual product selection remains a separate mode.
+- Brand+ / Performance+ Audience Signals can act as AI optimization inputs rather than hard audience-only targeting boundaries; product-specific documentation must determine the exact semantics before an Agent treats a signal as an eligibility or experiment boundary.
 
 These are examples of the general realization problem, not hard-coded assumptions that every account, marketplace, ad product, or future format behaves the same way.
 
