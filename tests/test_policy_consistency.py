@@ -165,6 +165,28 @@ class PlatformManagedDeliverySurfacePolicyTests(unittest.TestCase):
         self.assertIn("does not prove", text.lower())
 
 
+class OptimizationSignalSemanticsPolicyTests(unittest.TestCase):
+    def read(self, relative_path: str) -> str:
+        return (ROOT / relative_path).read_text(encoding="utf-8")
+
+    def test_realized_identity_distinguishes_optimization_signal_from_hard_targeting_constraint(self):
+        text = self.read("references/realized-ad-identity.md").lower()
+        self.assertIn("optimization signal", text)
+        self.assertIn("hard targeting constraint", text)
+        self.assertIn("audience signal", text)
+
+    def test_experiment_planner_routes_ai_signal_boundary_risk_to_realized_identity_policy(self):
+        text = self.read("skills/experiment-planner/SKILL.md")
+        self.assertIn("realized-ad-identity.md", text)
+        self.assertIn("audience signal", text.lower())
+
+    def test_interference_policy_does_not_treat_signal_membership_as_holdout_boundary(self):
+        text = self.read("skills/experiment-planner/references/interference-and-leakage.md").lower()
+        self.assertIn("audience signal", text)
+        self.assertIn("not a holdout boundary", text)
+        self.assertIn("actual delivery", text)
+
+
 class RealizedAdIdentityPolicyTests(unittest.TestCase):
     def read(self, relative_path: str) -> str:
         return (ROOT / relative_path).read_text(encoding="utf-8")
