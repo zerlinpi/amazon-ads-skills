@@ -2,7 +2,7 @@
 
 ## Why this matters
 
-Amazon Ads increasingly supports campaign formats where the advertiser's configured controls do not fully determine the shopper-visible ad realization. A campaign can keep the same targeting/bid/budget state while Amazon changes the delivery surface, dynamically chooses a product grouping, or otherwise varies the realized ad experience.
+Amazon Ads increasingly supports campaign formats where the advertiser's configured controls do not fully determine the shopper-visible ad realization. A campaign can keep the same targeting/bid/budget state while Amazon changes the delivery surface, dynamically chooses a product grouping, varies the realized ad experience, or uses advertiser-provided signals as model inputs rather than hard delivery boundaries.
 
 The repository therefore separates:
 
@@ -25,21 +25,38 @@ Amazon Ads' May 27, 2026 launch announcement states that Sponsored Brands collec
 
 This establishes a second, materially different case: the same campaign/targeting configuration can produce a changing **realized product mix**.
 
-The feature announcement lists availability across multiple marketplaces and access through Ads Console and Amazon Ads API. These facts are product-specific and time-sensitive; the repository does not generalize them into a universal rule for every ad product or account.
+### Brand+ / Performance+ Audience Signals
+
+Amazon Ads' July 22, 2026 launch announcement describes Audience Signals for Brand+ and Performance+ as advertiser-provided audience data used to guide AI optimization. For Brand+ Prospecting, Amazon explicitly describes these signals as optimization inputs while retaining full reach discovery.
+
+This establishes a third semantic distinction: a configured audience can be an **optimization signal** without being a hard audience-only targeting or holdout boundary.
+
+Therefore the repository does not infer any of the following from a configured audience signal alone:
+
+```text
+signal members = all delivered users
+non-members = excluded
+configured signal = experiment cohort boundary
+```
+
+The exact semantics remain product-specific. A hard include, hard exclude, optimization signal, and unknown audience control are treated differently.
+
+The feature announcements list availability and access paths that are product-specific and time-sensitive; the repository does not generalize them into a universal rule for every ad product or account.
 
 ## Generic adaptation
 
 The repository independently derives the following safety framework:
 
-1. keep configured controls separate from realized surface/product/creative identity;
+1. keep configured controls separate from realized surface/product/creative/audience delivery identity;
 2. treat platform-managed realization shifts as potential causal confounders, not automatic causes;
 3. require account/campaign eligibility plus realized delivery evidence before assigning causality;
 4. do not equate eligible catalog products with products actually shown;
-5. do not convert missing realization dimensions from an active connector into zero/unchanged state;
-6. in post-change review, verify realization comparability separately from control readback;
-7. downgrade ASIN-specific or single-action causal claims when realized composition is unknown or materially changes.
+5. do not equate an optimization signal with a hard eligibility or experiment boundary;
+6. do not convert missing realization dimensions from an active connector into zero/unchanged state;
+7. in post-change review, verify realization comparability separately from control readback;
+8. downgrade ASIN-, audience-, or single-action causal claims when realized composition is unknown or materially changes.
 
-This extends the earlier delivery-surface rule without replacing it: delivery surface is one realization dimension; product and creative/message composition are additional dimensions.
+This extends the earlier delivery-surface rule without replacing it: delivery surface is one realization dimension; product, creative/message, and actual audience composition are additional dimensions.
 
 ## Memory and replay implication
 
@@ -48,7 +65,7 @@ Once realized identity affects both drop diagnosis and post-change review, leavi
 The repository therefore adds a **bounded, optional canonical snapshot** rather than making every realization field mandatory:
 
 - `schemas/optimization-event.json` defines `realization_snapshot` for material readback/evaluation/correction events;
-- `schemas/entity-history.json` exposes a compact derived `latest_realization` retrieval view;
+- `schemas/entity-history.json` exposes compact derived realization retrieval views;
 - the event snapshot remains the source of truth, while the derived view is only an index/summary;
 - unavailable realization dimensions stay `Unknown` / `Unavailable` instead of being synthesized as zero or unchanged;
 - compact identifiers/hashes are preferred to persisting full prompt/creative payloads or large product lists.
@@ -70,6 +87,7 @@ Primary public vendor sources:
 - Amazon Ads, “Sponsored Products prompts and Sponsored Brands prompts”, launch announcement dated March 10, 2026; U.S. GA dated March 25, 2026.
 - Amazon Ads, “Scale product discovery with AI-powered Sponsored Brands collections”, launch announcement dated May 27, 2026.
 - Amazon Ads, “Sponsored Brands collections: Promote related products and reach more shoppers”, public setup guide, retrieved September 2026.
+- Amazon Ads, “Brand+ and Performance+ expand AI, keep advertiser control”, launch announcement dated July 22, 2026; Audience Signals described as AI optimization inputs, with Brand+ Prospecting retaining reach discovery.
 
 Adjacent open research / implementation reviewed:
 
@@ -84,10 +102,10 @@ ProjectMem is MIT licensed, but this change still does not copy its implementati
 
 ## Rejected adjacent candidates
 
-General Agent Skills/Claude plugin collections were not adopted because the repository already implements thin `SKILL.md`, progressive loading, shared references, deterministic policy checks, capability replay and multi-runtime manifests. No reviewed skill-layout candidate provided a non-overlapping method with stronger value than making realized-ad memory replay-safe.
+General Agent Skills/Claude plugin collections were not adopted because the repository already implements thin `SKILL.md`, progressive loading, shared references, deterministic policy checks, capability replay and multi-runtime manifests. No reviewed skill-layout candidate provided a non-overlapping method with stronger value than making realized-ad reasoning safer.
 
 Replay/memory systems that focus on generic belief stores were also rejected as direct dependencies: this repository needs a narrow Amazon Ads optimization ledger, not a general-purpose agent memory platform.
 
 ## Safety boundary
 
-The policy and schema changes govern evidence interpretation and replay only. Live campaign/product/creative mutations remain outside the Skill layer and require an explicitly authorized external Connector / Executor.
+The policy and schema changes govern evidence interpretation and replay only. Live campaign/product/creative/audience mutations remain outside the Skill layer and require an explicitly authorized external Connector / Executor.
