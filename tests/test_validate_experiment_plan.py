@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 VALIDATOR = ROOT / "scripts" / "validate_experiment_plan.py"
 SCHEMA = ROOT / "schemas" / "experiment-plan.json"
 SKILL = ROOT / "skills" / "experiment-planner" / "SKILL.md"
+INTERFERENCE_REFERENCE = ROOT / "skills" / "experiment-planner" / "references" / "interference-and-leakage.md"
 
 
 def verified_holdout_evidence() -> list[dict]:
@@ -172,6 +173,19 @@ class ExperimentPlanSemanticValidatorTests(unittest.TestCase):
         self.assertNotIn("`Directional only`", skill)
         for status in allowed:
             self.assertIn(f"`{status}`", skill)
+
+    def test_skill_exposes_ready_holdout_isolation_contract(self):
+        skill = SKILL.read_text(encoding="utf-8")
+        self.assertIn("isolation_evidence", skill)
+        self.assertIn("control_integrity", skill)
+        self.assertIn("optimization_signal", skill)
+
+    def test_interference_reference_explains_machine_readable_holdout_boundary(self):
+        reference = INTERFERENCE_REFERENCE.read_text(encoding="utf-8")
+        self.assertIn("isolation_evidence", reference)
+        self.assertIn("verified_hard_control", reference)
+        self.assertIn("platform_randomization", reference)
+        self.assertIn("optimization_signal", reference)
 
 
 if __name__ == "__main__":
