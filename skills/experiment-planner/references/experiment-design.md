@@ -31,6 +31,8 @@ Preferred order depends on the account and available traffic:
 
 Do not present a historical comparison as equivalent to a randomized control.
 
+For a holdout that will be marked `Ready`, the plan must identify an evidence-backed isolation basis rather than relying on the design label itself. Record it under `comparison.isolation_evidence`, keep `comparison.control_integrity = Clean` only when currently verified, and use `Shadow Only` / `Redesign` / `Hold` when the boundary is unresolved.
+
 ## 3. Unit of treatment
 
 Define what receives the treatment:
@@ -149,7 +151,8 @@ Before external execution, capture:
 - primary/guardrail metric baseline;
 - inventory, price, promotion and Featured Offer/Buy Box state;
 - recent optimization events on the same entities;
-- exact source/date lineage.
+- exact source/date lineage;
+- for holdouts, the current control-integrity state plus the evidence that establishes the treatment/control isolation boundary.
 
 Avoid changing unrelated controls during the test unless a guardrail/safety issue requires intervention. If another change occurs, record it as a confounder.
 
@@ -171,7 +174,7 @@ Do not repeatedly peek at noisy short-term conversion data and stop as soon as t
 
 Use explicit states:
 
-- `Ready` — design is executable through an authorized external layer.
+- `Ready` — design is ready for **external execution review** after required identity, boundary and safety prerequisites are resolved; it is not live-write authorization.
 - `Shadow Only` — useful for simulation/backtest but not live testing yet.
 - `Redesign` — hypothesis/design has allocation, contamination or identification problems.
 - `Hold` — data/economics/readiness are insufficient.
@@ -198,6 +201,7 @@ The planner should hand off:
 - hypothesis;
 - treatment and comparison scopes;
 - declared allocation and realized-allocation check when applicable;
+- for holdouts, `control_integrity` and `isolation_evidence` describing the verified boundary;
 - exact planned changes;
 - primary metric;
 - diagnostic metrics;
