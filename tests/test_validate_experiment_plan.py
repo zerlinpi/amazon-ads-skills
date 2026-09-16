@@ -11,6 +11,16 @@ SCHEMA = ROOT / "schemas" / "experiment-plan.json"
 SKILL = ROOT / "skills" / "experiment-planner" / "SKILL.md"
 
 
+def verified_holdout_evidence() -> list[dict]:
+    return [
+        {
+            "mechanism": "verified_hard_control",
+            "verified": True,
+            "evidence": "Synthetic hard exclusion/eligibility boundary verified before launch",
+        }
+    ]
+
+
 def base_plan(*, status: str = "Ready") -> dict:
     return {
         "experiment_id": "exp-synthetic-1",
@@ -31,7 +41,11 @@ def base_plan(*, status: str = "Ready") -> dict:
             "exclusions": [],
         },
         "treatment": {"description": "Synthetic treatment"},
-        "comparison": {"design_type": "holdout"},
+        "comparison": {
+            "design_type": "holdout",
+            "control_integrity": "Clean",
+            "isolation_evidence": verified_holdout_evidence(),
+        },
         "primary_metric": {"name": "orders", "success_rule": "Predeclared decision rule"},
         "guardrails": [],
         "windows": {
@@ -62,6 +76,15 @@ class ExperimentPlanSemanticValidatorTests(unittest.TestCase):
         scope_properties = schema["properties"]["scope"]["properties"]
         self.assertIn("profile_scope", scope_properties)
 
+    def test_schema_exposes_holdout_isolation_evidence_without_optimization_signal_mechanism(self):
+        schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
+        comparison_properties = schema["properties"]["comparison"]["properties"]
+        self.assertIn("isolation_evidence", comparison_properties)
+        mechanisms = comparison_properties["isolation_evidence"]["items"]["properties"]["mechanism"]["enum"]
+        self.assertIn("verified_hard_control", mechanisms)
+        self.assertIn("platform_randomization", mechanisms)
+        self.assertNotIn("optimization_signal", mechanisms)
+
     def test_ready_plan_rejects_missing_profile_scope(self):
         payload = base_plan()
         payload["scope"].pop("profile_scope")
@@ -76,6 +99,61 @@ class ExperimentPlanSemanticValidatorTests(unittest.TestCase):
         self.assertEqual(2, result.returncode)
         self.assertIn("entity_ids", result.stderr)
 
+    def test_ready_holdout_rejects_missing_isolation_evidence(self):
+        payload = base_plan()
+        payload["comparison"].pop("isolation_evidence")
+        result = self.run_validator(payload)
+        self.assertEqual(2, result.returncode)
+        self.assertIn("isolation_evidence", result.stderr)
+
+    def test_ready_holdout_rejects_unverified_isolation_evidence(self):
+        payload = base_plan()
+        payload["comparison"]["isolation_evidence"][0]["verified"] = False
+        result = self.run_validator(payload)
+        self.assertEqual(2, result.returncode)
+        self.assertIn("verified", result.stderr)
+
+    def test_ready_holdout_rejects_optimization_signal_as_isolation_mechanism(self):
+        payload = base_plan()
+        payload["scope"]["audience_control_semantics"] = [
+            {
+                "control": "audience-signal-a",
+                "semantics": "optimization_signal",
+                "evidence": "Configured as model input",
+                "delivery_verified": False,
+            }
+        ]
+        payload["comparison"]["isolation_evidence"] = [
+            {
+                "mechanism": "optimization_signal",
+                "verified": True,
+                "evidence": "Audience signal configured",
+            }
+        ]
+        result = self.run_validator(payload)
+        self.assertEqual(2, result.returncode)
+        self.assertIn("optimization_signal", result.stderr)
+
+    def test_ready_holdout_rejects_non_clean_control_integrity(self):
+        payload = base_plan()
+        payload["comparison"]["control_integrity"] = "Unknown"
+        result = self.run_validator(payload)
+        self.assertEqual(2, result.returncode)
+        self.assertIn("control_integrity", result.stderr)
+
+    def test_ready_holdout_accepts_optimization_signal_when_separate_verified_boundary_exists(self):
+        payload = base_plan()
+        payload["scope"]["audience_control_semantics"] = [
+            {
+                "control": "audience-signal-a",
+                "semantics": "optimization_signal",
+                "evidence": "Configured as model input, not as the holdout boundary",
+                "delivery_verified": False,
+            }
+        ]
+        result = self.run_validator(payload)
+        self.assertEqual(0, result.returncode, result.stderr)
+
     def test_ready_plan_accepts_complete_collision_safe_scope(self):
         result = self.run_validator(base_plan())
         self.assertEqual(0, result.returncode, result.stderr)
@@ -83,6 +161,7 @@ class ExperimentPlanSemanticValidatorTests(unittest.TestCase):
     def test_shadow_only_plan_can_preserve_unresolved_scope(self):
         payload = base_plan(status="Shadow Only")
         payload.pop("scope")
+        payload["comparison"] = {"design_type": "holdout"}
         result = self.run_validator(payload)
         self.assertEqual(0, result.returncode, result.stderr)
 
