@@ -21,7 +21,7 @@ Default mode: `Shadow` for design/simulation, otherwise `Suggest`. This Skill ne
 8. For long-running tests, re-verify control boundaries after material keyword/target/negative, audience-signal, automation, migration, budget-pool, variation-family or retail-scope changes; launch-time cleanliness is not permanent proof.
 9. Estimate the minimum decision-useful effect or practical business threshold when the economics support it; do not invent statistical precision from missing inputs.
 10. Define pre-test state, test window, observation window, stop conditions and rollback triggers before any mutation.
-11. Output a machine-readable experiment plan when needed using `../../schemas/experiment-plan.json`.
+11. Output a machine-readable experiment plan when needed using `../../schemas/experiment-plan.json`. A plan marked `Ready` must resolve collision-safe scope: marketplace, profile/account scope, entity type and non-empty entity IDs. When repository scripts are available, validate this readiness gate with `../../scripts/validate_experiment_plan.py`; unresolved identity belongs in `Shadow Only`, `Redesign`, or `Hold` rather than fabricated scope.
 12. After an externally applied test, route outcome evaluation to `post-change-review` rather than judging success inside this planner.
 
 ## Progressive loading
@@ -36,6 +36,7 @@ Load only the reference required by the experiment. Ordinary short, low-overlap 
 
 Do not call an experiment decision-ready when any material issue remains unresolved:
 
+- marketplace/profile scope or the actual experiment entity identity is unresolved for a plan that would otherwise be marked `Ready`;
 - the hypothesis changes multiple independent controls without a way to separate effects;
 - baseline and treatment periods differ materially in promotion, stock, price, listing state or attribution maturity;
 - treatment and control share traffic or resources in a way that causes substantial leakage, displacement, or interference;
@@ -48,6 +49,15 @@ Do not call an experiment decision-ready when any material issue remains unresol
 - another recent optimization on the same entity is still inside its validation window.
 
 When blocked, return `Redesign`, `Hold`, or `Directional only` instead of forcing a test.
+
+## Status semantics
+
+- `Ready` — the experiment is decision-ready for **external execution review**, with collision-safe entity scope resolved. It is not permission to mutate Amazon Ads.
+- `Shadow Only` — the design is useful for simulation/replay, but one or more action-safety or identity prerequisites are not resolved.
+- `Redesign` — the current comparison/treatment structure cannot answer the declared question credibly without changing the design.
+- `Hold` — required evidence, retail/data state, validation maturity, or another prerequisite is not yet available.
+
+A plan must never upgrade itself from `Shadow Only`/`Redesign`/`Hold` to `Ready` by inventing marketplace, profile/account scope, entity IDs, audience semantics, sample sufficiency, or control integrity.
 
 ## Design principles
 
@@ -68,7 +78,7 @@ Return:
 
 1. **Decision question** — what uncertainty this test should resolve.
 2. **Hypothesis** — treatment → mechanism → expected outcome.
-3. **Scope** — marketplace, ad type, entity IDs/ASINs, audience/optimization-signal semantics, and exclusions.
+3. **Scope** — marketplace, profile/account scope, ad type, entity IDs/ASINs, audience/optimization-signal semantics, and exclusions.
 4. **Design** — treatment, comparison method, baseline/control, allocation integrity, boundary freshness and interference risk.
 5. **Metrics** — one primary metric, diagnostics and guardrails.
 6. **Readiness** — data quality, sample sufficiency, attribution maturity, overlap/interference and confounders.
