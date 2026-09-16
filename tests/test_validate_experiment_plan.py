@@ -8,6 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 VALIDATOR = ROOT / "scripts" / "validate_experiment_plan.py"
 SCHEMA = ROOT / "schemas" / "experiment-plan.json"
+SKILL = ROOT / "skills" / "experiment-planner" / "SKILL.md"
 
 
 def base_plan(*, status: str = "Ready") -> dict:
@@ -84,6 +85,14 @@ class ExperimentPlanSemanticValidatorTests(unittest.TestCase):
         payload.pop("scope")
         result = self.run_validator(payload)
         self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_skill_uses_only_machine_readable_status_names(self):
+        schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
+        allowed = schema["properties"]["status"]["enum"]
+        skill = SKILL.read_text(encoding="utf-8")
+        self.assertNotIn("`Directional only`", skill)
+        for status in allowed:
+            self.assertIn(f"`{status}`", skill)
 
 
 if __name__ == "__main__":
