@@ -48,7 +48,7 @@ Do not call an experiment decision-ready when any material issue remains unresol
 - sample size or traffic is too small to distinguish a useful business effect;
 - another recent optimization on the same entity is still inside its validation window.
 
-When blocked, return `Redesign`, `Hold`, or `Directional only` instead of forcing a test.
+When blocked, return `Shadow Only`, `Redesign`, or `Hold` instead of forcing a test.
 
 ## Status semantics
 
