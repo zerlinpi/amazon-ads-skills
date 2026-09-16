@@ -89,6 +89,29 @@
           "type": ["string", "null"],
           "enum": ["Clean", "At Risk", "Leaky", "Interfering", "Unknown", null]
         },
+        "isolation_evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["mechanism", "verified", "evidence"],
+            "properties": {
+              "mechanism": {
+                "type": "string",
+                "enum": [
+                  "platform_randomization",
+                  "verified_hard_control",
+                  "verified_routing_partition",
+                  "verified_delivery_partition"
+                ]
+              },
+              "verified": {"type": "boolean"},
+              "evidence": {"type": "string", "minLength": 1},
+              "verified_at": {"type": ["string", "null"], "format": "date-time"},
+              "source": {"type": ["string", "null"]}
+            },
+            "additionalProperties": false
+          }
+        },
         "overlap_dimensions": {
           "type": "array",
           "uniqueItems": true,
