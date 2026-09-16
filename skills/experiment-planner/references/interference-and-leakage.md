@@ -101,6 +101,23 @@ assumption = only audience A can receive treatment
 
 If the product can use the signal as an optimization input while retaining broader reach, that assumption is invalid. The test may still answer whether **providing the signal** changes performance, but it cannot automatically answer whether **audience A** itself caused the lift.
 
+### Machine-readable holdout boundary
+
+For a plan that will be marked `Ready` with `comparison.design_type = holdout`, record the actual isolation basis under `comparison.isolation_evidence` and keep `comparison.control_integrity = Clean` only while that boundary is verified.
+
+Allowed evidence mechanisms are deliberately narrow:
+
+- `platform_randomization` — a platform/assignment mechanism creates the treatment/control partition;
+- `verified_hard_control` — a hard eligibility or exclusion control creates the relevant partition;
+- `verified_routing_partition` — routing/negative/control logic is verified to keep the relevant traffic separated;
+- `verified_delivery_partition` — realized delivery evidence verifies a distinct treatment/control partition when configured controls alone are insufficient.
+
+Each item carries an evidence statement and a `verified` flag. These fields make the planner's claimed boundary auditable; they do **not** prove the external evidence is true by themselves.
+
+`optimization_signal` is intentionally **not** an `isolation_evidence.mechanism`. An AI audience signal may coexist with a valid holdout when a separate verified boundary exists, but the signal itself cannot be promoted into holdout evidence merely because it is configured.
+
+If the only proposed basis is an `optimization_signal`, or if the boundary evidence is missing/unverified, keep the plan in `Shadow Only`, `Redesign`, or `Hold` rather than `Ready`.
+
 Load `../../../references/realized-ad-identity.md` when platform-managed audience/product/creative realization materially affects the interpretation.
 
 ## 5. Auction interference
