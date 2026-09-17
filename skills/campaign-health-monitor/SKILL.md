@@ -1,6 +1,6 @@
 ---
 name: campaign-health-monitor
-description: 监控 Amazon Ads campaign 的流量、花费、转化、预算和效率变化，基于历史基线识别 Healthy、Watch、Critical 状态并给出根因方向。适用于日常巡检、异常告警、周趋势监控。
+description: Monitor routine campaign health status across Amazon Ads traffic, spend, conversion, budget and efficiency using historical baselines; use for scheduled checks, watchlists and broad campaign triage, not deep root-cause work. 中文：用于日常 Campaign 健康巡检、状态分级和周趋势监控。
 license: MIT
 metadata:
   author: "zerlinpi"
@@ -20,6 +20,13 @@ metadata:
 ## 默认模式
 
 `Suggest`。只输出状态、证据和动作候选。
+
+## Routing boundary
+
+- 这是**例行状态扫描 / watchlist / campaign triage** Skill：回答“哪些 Campaign 健康、需要观察或值得升级调查”。
+- 如果用户主要是在判断一个突然信号究竟是不是异常、业务事件还是正常波动，交给 `../anomaly-detection/SKILL.md`。
+- 如果已经确认存在持续且有业务影响的下降，并且问题是“为什么下降、损失从哪里来、哪一个原因有证据”，交给 `../performance-drop-diagnosis/SKILL.md`。
+- `Healthy` 只表示当前没有明确健康阻塞，不自动等于存在可盈利扩量空间；扩量判断交给 `../growth-opportunity-finder/SKILL.md`。
 
 ## Progressive loading
 
@@ -104,6 +111,8 @@ metadata:
 6. price/promotion/inventory/Buy Box 是否改变；
 7. search term、placement 或 delivery-surface mix 是否变化。
 
+这里的拆解用于**决定是否升级调查以及升级到哪个 Skill**，不要把 campaign-health-monitor 本身当成深度根因分析器。持续业务影响需要交给 `performance-drop-diagnosis`。
+
 不要把结果指标或 benchmark gap 当根因。
 
 ## 输出格式
@@ -126,8 +135,10 @@ Validation window: <再次观察条件>
 然后给出：
 - Critical campaigns；
 - Watch list；
-- Healthy but scalable campaigns；
+- Healthy campaigns that may warrant growth review；
 - Account-wide pattern。
+
+对第三类只标记“值得进入增长审查”的候选；真正的 scale/headroom 判断必须路由到 `growth-opportunity-finder`，不能从 `Healthy` 状态直接推出加预算/加 bid。
 
 ## 特殊事件保护
 

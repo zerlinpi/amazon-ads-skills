@@ -1,6 +1,6 @@
 ---
 name: anomaly-detection
-description: 基于历史基线检测 Amazon Ads 的展示、点击、CPC、CVR、花费、订单、销售、ACOS/ROAS 和预算异常，并区分真实异常、业务事件与正常波动。适用于自动监控、告警和根因排查。
+description: Detect unexplained anomaly signals and alert-worthy Amazon Ads metric movements against historical baselines, separating true anomalies from promotions, inventory, pricing events and normal variance before escalation. 中文：用于异常信号识别、告警分级和误报过滤，不替代深度根因诊断。
 license: MIT
 metadata:
   author: "zerlinpi"
@@ -16,6 +16,13 @@ metadata:
 ## 目标
 
 检测“值得行动”的变化，而不是简单比较今天和昨天。
+
+## Routing boundary
+
+- 这是**异常信号判定 / 告警 triage** Skill：回答“这个变化是否真的异常，还是活动、库存、价格、季节或数据问题可以解释”。
+- 如果任务只是例行扫描多个 Campaign 的健康状态、Watch/Critical watchlist 或周趋势监控，交给 `../campaign-health-monitor/SKILL.md`。
+- 如果异常已经表现为 sustained business-impact decline，而且用户要知道“为什么下降、损失从哪里来、哪一个原因最有证据”，升级到 `../performance-drop-diagnosis/SKILL.md`。
+- 异常本身不是动作授权；即使 severity 为 `Critical`，也不直接推导 bid/budget/negative/placement 变更。
 
 ## 输入
 
@@ -80,6 +87,8 @@ metadata:
 - 样本充分或持续多个窗口；
 - 无已知合理事件解释。
 
+`Critical` 只表示值得优先升级调查，不等于已经完成 sustained decline 的因果归因。需要深度损失桥接、控制变更、零售状态与证据强度判断时交给 `performance-drop-diagnosis`。
+
 ## 根因树
 
 例如 sales 下降：
@@ -97,6 +106,8 @@ Sales ↓
    └─ Search term / placement mix changed
 ```
 
+该树用于 anomaly triage 和下一步路由，不把“possible cause”自动升级成确认根因。
+
 ## 输出格式
 
 每个异常：
@@ -111,6 +122,8 @@ Sales ↓
 - confidence；
 - recommended investigation/action；
 - next validation time/window。
+
+如果异常已经 sustained 且业务影响明确，输出中应标记 `escalate_to: performance-drop-diagnosis`，而不是在 anomaly Skill 内继续扩展为完整深度诊断。
 
 ## 自动化约束
 
