@@ -18,213 +18,94 @@
       },
       "additionalProperties": true
     },
-    "identity_scope_status": {
-      "type": ["string", "null"],
-      "enum": ["Complete", "Incomplete", "Ambiguous", "Collision Detected", null]
-    },
-    "identity_scope_warnings": {
-      "type": "array",
-      "items": {"type": "string"}
-    },
-    "candidate_scopes": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "marketplace": {"type": ["string", "null"]},
-          "profile_scope": {"type": ["string", "null"]},
-          "reason": {"type": ["string", "null"]}
-        },
-        "additionalProperties": true
-      }
-    },
+    "identity_scope_status": {"type": ["string", "null"], "enum": ["Complete", "Incomplete", "Ambiguous", "Collision Detected", null]},
+    "identity_scope_warnings": {"type": "array", "items": {"type": "string"}},
+    "candidate_scopes": {"type": "array", "items": {"type": "object", "properties": {"marketplace": {"type": ["string", "null"]}, "profile_scope": {"type": ["string", "null"]}, "reason": {"type": ["string", "null"]}}, "additionalProperties": true}},
     "as_of": {"type": "string", "format": "date-time"},
     "latest_source_event_at": {"type": ["string", "null"], "format": "date-time"},
     "latest_readback_at": {"type": ["string", "null"], "format": "date-time"},
-    "history_status": {
-      "type": "string",
-      "enum": [
-        "No Recent Action",
-        "Proposed Only",
-        "Awaiting Application",
-        "Application Unknown",
-        "Pending Readback",
-        "Pending Evaluation",
-        "Worked / Keep",
-        "Monitoring",
-        "Rollback Candidate",
-        "Rolled Back",
-        "Failed Application",
-        "Drifted",
-        "Conflicted / Manual Review"
-      ]
-    },
+    "history_status": {"type": "string", "enum": ["No Recent Action", "Proposed Only", "Awaiting Application", "Application Unknown", "Pending Readback", "Pending Evaluation", "Worked / Keep", "Monitoring", "Rollback Candidate", "Rolled Back", "Failed Application", "Drifted", "Conflicted / Manual Review"]},
     "identity_lineage": {
       "type": ["object", "null"],
       "properties": {
-        "continuity_status": {
-          "type": ["string", "null"],
-          "enum": ["Verified", "Partial", "Rejected", "Unknown", null]
-        },
-        "scope_transition_type": {
-          "type": ["string", "null"],
-          "enum": ["same_scope", "cross_profile_same_marketplace", "cross_marketplace", "unknown", null]
-        },
+        "continuity_status": {"type": ["string", "null"], "enum": ["Verified", "Partial", "Rejected", "Unknown", null]},
+        "scope_transition_type": {"type": ["string", "null"], "enum": ["same_scope", "cross_profile_same_marketplace", "cross_marketplace", "unknown", null]},
         "scope_transition_verified": {"type": ["boolean", "null"]},
-        "predecessor_evidence_portability": {
-          "type": ["string", "null"],
-          "enum": ["Bounded", "Directional Only", "Rejected", "Unknown", null]
-        },
-        "portability_constraints": {
-          "type": "array",
-          "items": {"type": "string"}
-        },
-        "predecessor_entities": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["type", "id"],
-            "properties": {
-              "type": {"type": "string", "minLength": 1},
-              "id": {"type": "string", "minLength": 1},
-              "marketplace": {"type": ["string", "null"]},
-              "profile_scope": {"type": ["string", "null"]}
-            },
-            "additionalProperties": true
-          }
-        },
+        "predecessor_evidence_portability": {"type": ["string", "null"], "enum": ["Bounded", "Directional Only", "Rejected", "Unknown", null]},
+        "portability_constraints": {"type": "array", "items": {"type": "string"}},
+        "predecessor_entities": {"type": "array", "items": {"type": "object", "required": ["type", "id"], "properties": {"type": {"type": "string", "minLength": 1}, "id": {"type": "string", "minLength": 1}, "marketplace": {"type": ["string", "null"]}, "profile_scope": {"type": ["string", "null"]}}, "additionalProperties": true}},
         "migration_reason": {"type": ["string", "null"]},
         "mapping_timestamp": {"type": ["string", "null"], "format": "date-time"},
         "verification_source": {"type": ["string", "null"]},
         "business_intent_preserved": {"type": ["boolean", "null"]},
         "targeting_semantics_preserved": {"type": ["boolean", "null"]},
         "asin_scope_preserved": {"type": ["boolean", "null"]},
-        "warnings": {
-          "type": "array",
-          "items": {"type": "string"}
-        }
+        "warnings": {"type": "array", "items": {"type": "string"}}
       },
       "additionalProperties": true
     },
     "latest_known_state": {},
+    "latest_measurement_state": {
+      "type": ["object", "null"],
+      "description": "Bounded projection of the newest decision-relevant evidence identity. This is retrieval context, not proof that historical outcomes remain comparable under current reporting semantics.",
+      "properties": {
+        "evidence_snapshot_id": {"type": ["string", "null"]},
+        "observed_at": {"type": ["string", "null"], "format": "date-time"},
+        "source_system": {"type": ["string", "null"]},
+        "source_dataset": {"type": ["string", "null"]},
+        "acquisition_channel": {"type": ["string", "null"]},
+        "reporting_generation": {"type": ["string", "null"]},
+        "semantic_version": {"type": ["string", "null"]},
+        "date_attribution_semantics": {"type": ["string", "null"]},
+        "historical_availability_status": {"type": ["string", "null"], "enum": ["available", "partial", "unavailable", "retired_or_deleted", "unknown", null]},
+        "comparability_status": {"type": ["string", "null"], "enum": ["Comparable", "Reconcilable", "Directional", "Not Comparable", "Unknown", null]},
+        "warnings": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    },
     "latest_realization": {
       "type": ["object", "null"],
       "description": "Backward-compatible bounded shopper-facing ad realization summary. New producers should prefer last_observed_realization plus current_realization_observability so known state and current observability are not conflated.",
       "properties": {
-        "snapshot_id": {"type": ["string", "null"]},
-        "as_of": {"type": ["string", "null"], "format": "date-time"},
-        "realization_mode": {
-          "type": ["string", "null"],
-          "enum": ["manual", "platform_managed", "hybrid", "unknown", null]
-        },
-        "coverage_status": {
-          "type": ["string", "null"],
-          "enum": ["Complete", "Partial", "Unavailable", "Unknown", null]
-        },
-        "comparability_status": {
-          "type": ["string", "null"],
-          "enum": ["Comparable", "Reconcilable", "Directional", "Not Comparable", "Unknown", null]
-        },
-        "identity_hash": {"type": ["string", "null"]},
-        "warnings": {
-          "type": "array",
-          "items": {"type": "string"}
-        }
-      },
-      "additionalProperties": true
+        "snapshot_id": {"type": ["string", "null"]}, "as_of": {"type": ["string", "null"], "format": "date-time"},
+        "realization_mode": {"type": ["string", "null"], "enum": ["manual", "platform_managed", "hybrid", "unknown", null]},
+        "coverage_status": {"type": ["string", "null"], "enum": ["Complete", "Partial", "Unavailable", "Unknown", null]},
+        "comparability_status": {"type": ["string", "null"], "enum": ["Comparable", "Reconcilable", "Directional", "Not Comparable", "Unknown", null]},
+        "identity_hash": {"type": ["string", "null"]}, "warnings": {"type": "array", "items": {"type": "string"}}
+      }, "additionalProperties": true
     },
     "last_observed_realization": {
       "type": ["object", "null"],
       "description": "Most recent bounded realization state actually observed. A newer Unavailable/Unknown observation attempt must not erase this state, but it must not be treated as current truth without freshness and observability context.",
       "properties": {
-        "snapshot_id": {"type": ["string", "null"]},
-        "observed_at": {"type": ["string", "null"], "format": "date-time"},
-        "realization_mode": {
-          "type": ["string", "null"],
-          "enum": ["manual", "platform_managed", "hybrid", "unknown", null]
-        },
-        "coverage_status": {
-          "type": ["string", "null"],
-          "enum": ["Complete", "Partial", "Unknown", null]
-        },
-        "comparability_status": {
-          "type": ["string", "null"],
-          "enum": ["Comparable", "Reconcilable", "Directional", "Not Comparable", "Unknown", null]
-        },
-        "freshness_status": {
-          "type": ["string", "null"],
-          "enum": ["Current", "Bounded", "Stale", "Unknown", null]
-        },
-        "freshness_basis": {"type": ["string", "null"]},
-        "identity_hash": {"type": ["string", "null"]},
-        "warnings": {
-          "type": "array",
-          "items": {"type": "string"}
-        }
-      },
-      "additionalProperties": true
+        "snapshot_id": {"type": ["string", "null"]}, "observed_at": {"type": ["string", "null"], "format": "date-time"},
+        "realization_mode": {"type": ["string", "null"], "enum": ["manual", "platform_managed", "hybrid", "unknown", null]},
+        "coverage_status": {"type": ["string", "null"], "enum": ["Complete", "Partial", "Unknown", null]},
+        "comparability_status": {"type": ["string", "null"], "enum": ["Comparable", "Reconcilable", "Directional", "Not Comparable", "Unknown", null]},
+        "freshness_status": {"type": ["string", "null"], "enum": ["Current", "Bounded", "Stale", "Unknown", null]},
+        "freshness_basis": {"type": ["string", "null"]}, "identity_hash": {"type": ["string", "null"]}, "warnings": {"type": "array", "items": {"type": "string"}}
+      }, "additionalProperties": true
     },
     "current_realization_observability": {
       "type": ["object", "null"],
       "description": "Newest relevant attempt to observe material realization dimensions, kept separate from the last known realized identity.",
       "properties": {
         "checked_at": {"type": ["string", "null"], "format": "date-time"},
-        "status": {
-          "type": ["string", "null"],
-          "enum": ["Complete", "Partial", "Unavailable", "Unknown", null]
-        },
-        "source_dataset": {"type": ["string", "null"]},
-        "acquisition_channel": {"type": ["string", "null"]},
-        "material_dimensions": {
-          "type": "array",
-          "items": {"type": "string"}
-        },
-        "warnings": {
-          "type": "array",
-          "items": {"type": "string"}
-        }
-      },
-      "additionalProperties": true
+        "status": {"type": ["string", "null"], "enum": ["Complete", "Partial", "Unavailable", "Unknown", null]},
+        "source_dataset": {"type": ["string", "null"]}, "acquisition_channel": {"type": ["string", "null"]},
+        "material_dimensions": {"type": "array", "items": {"type": "string"}}, "warnings": {"type": "array", "items": {"type": "string"}}
+      }, "additionalProperties": true
     },
     "latest_action": {"type": ["object", "null"]},
-    "application_status": {
-      "type": ["string", "null"],
-      "enum": ["Confirmed", "Partial", "Not Applied", "Drifted", "Unknown", null]
-    },
-    "outcome_status": {
-      "type": ["string", "null"],
-      "enum": ["Worked", "Likely Worked", "Monitoring", "Inconclusive", "Likely Failed", "Failed", "Application Failure", "Drifted", null]
-    },
-    "validation": {
-      "type": ["object", "null"],
-      "properties": {
-        "status": {
-          "type": ["string", "null"],
-          "enum": ["Not Started", "Pending", "Mature", "Blocked", "Unknown", null]
-        },
-        "window": {"type": ["object", "null"]},
-        "next_evaluation": {"type": ["string", "object", "null"]}
-      },
-      "additionalProperties": true
-    },
+    "application_status": {"type": ["string", "null"], "enum": ["Confirmed", "Partial", "Not Applied", "Drifted", "Unknown", null]},
+    "outcome_status": {"type": ["string", "null"], "enum": ["Worked", "Likely Worked", "Monitoring", "Inconclusive", "Likely Failed", "Failed", "Application Failure", "Drifted", null]},
+    "validation": {"type": ["object", "null"], "properties": {"status": {"type": ["string", "null"], "enum": ["Not Started", "Pending", "Mature", "Blocked", "Unknown", null]}, "window": {"type": ["object", "null"]}, "next_evaluation": {"type": ["string", "object", "null"]}}, "additionalProperties": true},
     "active_rollback_condition": {},
     "pending_event_count": {"type": "integer", "minimum": 0},
-    "memory_warnings": {
-      "type": "array",
-      "items": {"type": "string"}
-    },
-    "active_experiments": {
-      "type": "array",
-      "items": {}
-    },
-    "recent_events": {
-      "type": "array",
-      "items": {}
-    },
-    "decision_gate": {
-      "type": ["string", "null"],
-      "enum": ["Allowed", "Hold", "Experiment Only", "Manual Review", null]
-    },
+    "memory_warnings": {"type": "array", "items": {"type": "string"}},
+    "active_experiments": {"type": "array", "items": {}},
+    "recent_events": {"type": "array", "items": {}},
+    "decision_gate": {"type": ["string", "null"], "enum": ["Allowed", "Hold", "Experiment Only", "Manual Review", null]},
     "source_complete": {"type": ["boolean", "null"]}
   }
 }
