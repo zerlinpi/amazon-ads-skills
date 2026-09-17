@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zerlinpi/amazon-ads-skills/schemas/skill-effectiveness-benchmark.json",
+  "title": "Amazon Ads Skill Effectiveness Benchmark",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["benchmark_id", "skill", "fixture_id", "mode", "harness", "trials"],
+  "properties": {
+    "benchmark_id": {"type": "string", "minLength": 1},
+    "skill": {"type": "string", "minLength": 1},
+    "fixture_id": {"type": "string", "minLength": 1},
+    "mode": {"enum": ["Discovery", "Forced invocation", "Negative control", "Ablation"]},
+    "harness": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["runtime", "model", "model_version"],
+      "properties": {
+        "runtime": {"type": "string", "minLength": 1},
+        "model": {"type": "string", "minLength": 1},
+        "model_version": {"type": "string", "minLength": 1},
+        "config_hash": {"type": ["string", "null"]},
+        "tool_profile_hash": {"type": ["string", "null"]},
+        "evidence_hash": {"type": ["string", "null"]}
+      }
+    },
+    "trials": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["pair_id", "trial_id", "variant", "acceptable_decision", "forbidden_behavior", "required_observations_met"],
+        "properties": {
+          "pair_id": {"type": "string", "minLength": 1},
+          "trial_id": {"type": "string", "minLength": 1},
+          "variant": {"enum": ["with_skill", "without_skill"]},
+          "acceptable_decision": {"type": "boolean"},
+          "forbidden_behavior": {"type": "boolean"},
+          "required_observations_met": {"type": "boolean"},
+          "triggered": {"type": ["boolean", "null"]},
+          "tokens": {"type": ["integer", "null"], "minimum": 0},
+          "latency_ms": {"type": ["number", "null"], "minimum": 0},
+          "notes": {"type": ["string", "null"]}
+        }
+      }
+    }
+  }
+}
