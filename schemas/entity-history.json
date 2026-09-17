@@ -57,7 +57,7 @@
         "reporting_generation": {"type": ["string", "null"]},
         "semantic_version": {"type": ["string", "null"]},
         "date_attribution_semantics": {"type": ["string", "null"]},
-        "historical_availability_status": {"type": ["string", "null"], "enum": ["available", "partial", "unavailable", "retired_or_deleted", "unknown", null]},
+        "historical_availability_status": {"type": ["string", "null"], "enum": ["available", "partially_available", "unavailable", "retired_or_deleted", "unknown", null]},
         "comparability_status": {"type": ["string", "null"], "enum": ["Comparable", "Reconcilable", "Directional", "Not Comparable", "Unknown", null]},
         "warnings": {"type": "array", "items": {"type": "string"}}
       },
