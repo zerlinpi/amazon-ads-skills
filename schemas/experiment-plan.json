@@ -2,23 +2,228 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Amazon Ads Experiment Plan",
   "type": "object",
-  "required": ["experiment_id", "decision_question", "hypothesis", "mode", "treatment", "comparison", "primary_metric", "guardrails", "windows", "status"],
+  "required": [
+    "experiment_id",
+    "decision_question",
+    "hypothesis",
+    "mode",
+    "treatment",
+    "comparison",
+    "primary_metric",
+    "guardrails",
+    "windows",
+    "status"
+  ],
   "properties": {
     "experiment_id": {"type": "string"},
     "decision_question": {"type": "string"},
-    "hypothesis": {"type": "object", "required": ["change", "mechanism", "expected_outcome"], "properties": {"change": {"type": "string"}, "mechanism": {"type": "string"}, "expected_outcome": {"type": "string"}}, "additionalProperties": false},
-    "mode": {"type": "string", "enum": ["Suggest", "Shadow"]},
-    "scope": {"type": "object", "properties": {"marketplace": {"type": ["string", "null"]}, "profile_scope": {"type": ["string", "null"]}, "ad_type": {"type": ["string", "null"]}, "entity_type": {"type": ["string", "null"]}, "entity_ids": {"type": "array", "items": {"type": "string"}}, "asin_ids": {"type": "array", "items": {"type": "string"}}, "exclusions": {"type": "array", "items": {"type": "string"}}, "audience_control_semantics": {"type": "array", "items": {"type": "object", "required": ["control", "semantics"], "properties": {"control": {"type": "string"}, "semantics": {"type": "string", "enum": ["hard_include", "hard_exclude", "optimization_signal", "unknown"]}, "evidence": {"type": ["string", "null"]}, "delivery_verified": {"type": ["boolean", "null"]}}, "additionalProperties": false}}}, "additionalProperties": false},
-    "treatment": {"type": "object", "required": ["description"], "properties": {"description": {"type": "string"}, "planned_changes": {"type": "array", "items": {"type": "object"}}, "reversible": {"type": ["boolean", "null"]}}, "additionalProperties": true},
-    "comparison": {"type": "object", "required": ["design_type"], "properties": {"design_type": {"type": "string", "enum": ["holdout", "matched_control", "phased_rollout", "switchback", "historical_baseline", "pre_post"]}, "control_entity_ids": {"type": "array", "items": {"type": "string"}}, "rationale": {"type": ["string", "null"]}, "contamination_risk": {"type": ["string", "null"], "enum": ["Low", "Moderate", "High", "Unknown", null]}, "control_integrity": {"type": ["string", "null"], "enum": ["Clean", "At Risk", "Leaky", "Interfering", "Unknown", null]}, "isolation_evidence": {"type": "array", "items": {"type": "object", "required": ["mechanism", "verified", "evidence"], "properties": {"mechanism": {"type": "string", "enum": ["platform_randomization", "verified_hard_control", "verified_routing_partition", "verified_delivery_partition"]}, "verified": {"type": "boolean"}, "evidence": {"type": "string", "minLength": 1}, "verified_at": {"type": ["string", "null"], "format": "date-time"}, "source": {"type": ["string", "null"]}}, "additionalProperties": false}}, "overlap_dimensions": {"type": "array", "uniqueItems": true, "items": {"enum": ["query", "target", "advertised_asin", "purchased_asin", "budget_pool", "portfolio", "placement", "auction", "routing", "automation", "parent_control", "other"]}}, "requires_combined_readout": {"type": ["boolean", "null"]}, "boundary_monitoring": {"type": ["object", "null"], "properties": {"launch_verified_at": {"type": ["string", "null"], "format": "date-time"}, "latest_verified_at": {"type": ["string", "null"], "format": "date-time"}, "current_status": {"type": ["string", "null"], "enum": ["Clean", "At Risk", "Leaky", "Interfering", "Unknown", null]}, "material_scope_changes": {"type": "array", "items": {"type": "object", "properties": {"timestamp": {"type": ["string", "null"], "format": "date-time"}, "type": {"type": ["string", "null"]}, "description": {"type": ["string", "null"]}, "reverified": {"type": ["boolean", "null"]}}, "additionalProperties": true}}, "warnings": {"type": "array", "items": {"type": "string"}}}, "additionalProperties": true}}, "additionalProperties": false},
-    "primary_metric": {"type": "object", "required": ["name", "success_rule"], "properties": {"name": {"type": "string"}, "success_rule": {"type": "string"}, "minimum_decision_useful_effect": {"type": ["number", "string", "null"]}, "unit": {"type": ["string", "null"]}, "metric_semantics": {"type": ["object", "null"], "description": "Explicit measurement identity for comparison safety. Unknown semantics stay null or incomplete until verified; Ready conversion metrics are further gated by the semantic validator.", "properties": {"metric_family": {"type": ["string", "null"]}, "attribution_family": {"type": ["string", "null"]}, "semantic_version": {"type": ["string", "null"]}}, "additionalProperties": false}}, "additionalProperties": false},
-    "diagnostic_metrics": {"type": "array", "items": {"type": "string"}},
-    "guardrails": {"type": "array", "items": {"type": "object", "required": ["metric", "rule"], "properties": {"metric": {"type": "string"}, "rule": {"type": "string"}, "action_if_breached": {"type": ["string", "null"]}}, "additionalProperties": false}},
-    "windows": {"type": "object", "required": ["baseline", "treatment", "observation"], "properties": {"baseline": {"type": "string"}, "treatment": {"type": "string"}, "observation": {"type": "string"}, "next_review": {"type": ["string", "null"]}}, "additionalProperties": false},
-    "readiness": {"type": "object", "properties": {"data_quality": {"type": ["string", "null"]}, "sample_sufficiency": {"type": ["string", "null"]}, "attribution_maturity": {"type": ["string", "null"]}, "mixed_asin_risk": {"type": ["string", "null"]}, "leakage_risk": {"type": ["string", "null"], "enum": ["Low", "Moderate", "High", "Unknown", null]}, "interference_risk": {"type": ["string", "null"], "enum": ["Low", "Moderate", "High", "Unknown", null]}, "confounders": {"type": "array", "items": {"type": "string"}}, "source_lineage": {"type": "array", "items": {"type": "string"}}}, "additionalProperties": false},
+    "hypothesis": {
+      "type": "object",
+      "required": ["change", "mechanism", "expected_outcome"],
+      "properties": {
+        "change": {"type": "string"},
+        "mechanism": {"type": "string"},
+        "expected_outcome": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["Suggest", "Shadow"]
+    },
+    "scope": {
+      "type": "object",
+      "properties": {
+        "marketplace": {"type": ["string", "null"]},
+        "profile_scope": {"type": ["string", "null"]},
+        "ad_type": {"type": ["string", "null"]},
+        "entity_type": {"type": ["string", "null"]},
+        "entity_ids": {"type": "array", "items": {"type": "string"}},
+        "asin_ids": {"type": "array", "items": {"type": "string"}},
+        "exclusions": {"type": "array", "items": {"type": "string"}},
+        "audience_control_semantics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["control", "semantics"],
+            "properties": {
+              "control": {"type": "string"},
+              "semantics": {
+                "type": "string",
+                "enum": ["hard_include", "hard_exclude", "optimization_signal", "unknown"]
+              },
+              "evidence": {"type": ["string", "null"]},
+              "delivery_verified": {"type": ["boolean", "null"]}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "treatment": {
+      "type": "object",
+      "required": ["description"],
+      "properties": {
+        "description": {"type": "string"},
+        "planned_changes": {"type": "array", "items": {"type": "object"}},
+        "reversible": {"type": ["boolean", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "comparison": {
+      "type": "object",
+      "required": ["design_type"],
+      "properties": {
+        "design_type": {
+          "type": "string",
+          "enum": ["holdout", "matched_control", "phased_rollout", "switchback", "historical_baseline", "pre_post"]
+        },
+        "control_entity_ids": {"type": "array", "items": {"type": "string"}},
+        "rationale": {"type": ["string", "null"]},
+        "contamination_risk": {
+          "type": ["string", "null"],
+          "enum": ["Low", "Moderate", "High", "Unknown", null]
+        },
+        "control_integrity": {
+          "type": ["string", "null"],
+          "enum": ["Clean", "At Risk", "Leaky", "Interfering", "Unknown", null]
+        },
+        "isolation_evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["mechanism", "verified", "evidence"],
+            "properties": {
+              "mechanism": {
+                "type": "string",
+                "enum": [
+                  "platform_randomization",
+                  "verified_hard_control",
+                  "verified_routing_partition",
+                  "verified_delivery_partition"
+                ]
+              },
+              "verified": {"type": "boolean"},
+              "evidence": {"type": "string", "minLength": 1},
+              "verified_at": {"type": ["string", "null"], "format": "date-time"},
+              "source": {"type": ["string", "null"]}
+            },
+            "additionalProperties": false
+          }
+        },
+        "overlap_dimensions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": ["query", "target", "advertised_asin", "purchased_asin", "budget_pool", "portfolio", "placement", "auction", "routing", "automation", "parent_control", "other"]
+          }
+        },
+        "requires_combined_readout": {"type": ["boolean", "null"]},
+        "boundary_monitoring": {
+          "type": ["object", "null"],
+          "properties": {
+            "launch_verified_at": {"type": ["string", "null"], "format": "date-time"},
+            "latest_verified_at": {"type": ["string", "null"], "format": "date-time"},
+            "current_status": {
+              "type": ["string", "null"],
+              "enum": ["Clean", "At Risk", "Leaky", "Interfering", "Unknown", null]
+            },
+            "material_scope_changes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "timestamp": {"type": ["string", "null"], "format": "date-time"},
+                  "type": {"type": ["string", "null"]},
+                  "description": {"type": ["string", "null"]},
+                  "reverified": {"type": ["boolean", "null"]}
+                },
+                "additionalProperties": true
+              }
+            },
+            "warnings": {"type": "array", "items": {"type": "string"}}
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "primary_metric": {
+      "type": "object",
+      "required": ["name", "success_rule"],
+      "properties": {
+        "name": {"type": "string"},
+        "success_rule": {"type": "string"},
+        "minimum_decision_useful_effect": {"type": ["number", "string", "null"]},
+        "unit": {"type": ["string", "null"]},
+        "metric_semantics": {
+          "type": ["object", "null"],
+          "description": "Explicit measurement identity for comparison safety. Unknown semantics stay null or incomplete until verified; Ready conversion metrics are further gated by the semantic validator.",
+          "properties": {
+            "metric_family": {"type": ["string", "null"]},
+            "attribution_family": {"type": ["string", "null"]},
+            "semantic_version": {"type": ["string", "null"]}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "diagnostic_metrics": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "guardrails": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["metric", "rule"],
+        "properties": {
+          "metric": {"type": "string"},
+          "rule": {"type": "string"},
+          "action_if_breached": {"type": ["string", "null"]}
+        },
+        "additionalProperties": false
+      }
+    },
+    "windows": {
+      "type": "object",
+      "required": ["baseline", "treatment", "observation"],
+      "properties": {
+        "baseline": {"type": "string"},
+        "treatment": {"type": "string"},
+        "observation": {"type": "string"},
+        "next_review": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "readiness": {
+      "type": "object",
+      "properties": {
+        "data_quality": {"type": ["string", "null"]},
+        "sample_sufficiency": {"type": ["string", "null"]},
+        "attribution_maturity": {"type": ["string", "null"]},
+        "mixed_asin_risk": {"type": ["string", "null"]},
+        "leakage_risk": {
+          "type": ["string", "null"],
+          "enum": ["Low", "Moderate", "High", "Unknown", null]
+        },
+        "interference_risk": {
+          "type": ["string", "null"],
+          "enum": ["Low", "Moderate", "High", "Unknown", null]
+        },
+        "confounders": {"type": "array", "items": {"type": "string"}},
+        "source_lineage": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
     "stop_conditions": {"type": "array", "items": {"type": "string"}},
     "rollback_conditions": {"type": "array", "items": {"type": "string"}},
-    "status": {"type": "string", "enum": ["Ready", "Shadow Only", "Redesign", "Hold"]}
+    "status": {
+      "type": "string",
+      "enum": ["Ready", "Shadow Only", "Redesign", "Hold"]
+    }
   },
   "additionalProperties": false
 }
