@@ -70,7 +70,7 @@ amazon-ads-optimizer
 }
 ```
 
-可能的 Suggest 输出：
+如果这些证据支持“Bid 偏高”的方向，但没有账户级 action-sizing policy、校准过的响应曲线、可信 marginal headroom 或声明好的实验幅度，安全的 Suggest 输出应保留方向而不是制造默认百分比：
 
 ```json
 {
@@ -78,8 +78,9 @@ amazon-ads-optimizer
   "entity_type": "keyword",
   "entity_id": "kw-123",
   "current_value": 1.2,
-  "proposed_value": 1.08,
-  "reason": "当前 ACOS 持续高于目标且订单样本可用，建议小步降低竞价后重新观察",
+  "direction": "decrease",
+  "proposed_value": null,
+  "reason": "当前 ACOS 高于用户目标；先确认 placement、最近控制变更与可用 sizing basis，再决定具体幅度",
   "evidence": [
     "spend=104",
     "sales=240",
@@ -87,15 +88,16 @@ amazon-ads-optimizer
     "target ACOS=30%",
     "orders=8"
   ],
-  "confidence": 0.8,
+  "confidence": "directional",
   "mode": "Suggest",
-  "guardrails": ["single bid change <= 20%"],
-  "validation_window": "7 days or until another sufficient conversion sample is collected",
-  "rollback_condition": "traffic or orders fall materially beyond the expected range"
+  "sizing_basis": "missing",
+  "guardrails": ["do not invent a repository-global bid-change percentage"],
+  "validation_window": "define after a concrete action is sized",
+  "rollback_condition": "define with the eventual action and validation plan"
 }
 ```
 
-这里的 `1.08` 是示例，不是固定算法结果。Skill 需要结合 placement、最近调整、流量和业务阶段重新判断。
+这里的输入数值只用于演示数据结构和方向判断，不构成固定竞价算法。需要具体金额或百分比时，按 `references/action-sizing.md` 做 **contextual action sizing**；没有可审计 sizing basis 时允许保持 `proposed_value: null`。
 
 ## 示例 4：搜索词收割 + 否词保护
 
