@@ -142,6 +142,78 @@ class ExperimentPlanSemanticValidatorTests(unittest.TestCase):
         self.assertEqual(2, result.returncode)
         self.assertIn("control_integrity", result.stderr)
 
+    def test_ready_holdout_rejects_material_scope_change_newer_than_boundary_verification(self):
+        payload = base_plan()
+        payload["comparison"]["boundary_monitoring"] = {
+            "latest_verified_at": "2026-09-01T00:00:00Z",
+            "current_status": "Clean",
+            "material_scope_changes": [
+                {
+                    "timestamp": "2026-09-02T00:00:00Z",
+                    "type": "routing_change",
+                    "description": "Synthetic negative/routing change after boundary verification",
+                    "reverified": False,
+                }
+            ],
+        }
+        result = self.run_validator(payload)
+        self.assertEqual(2, result.returncode)
+        self.assertIn("boundary", result.stderr.lower())
+        self.assertIn("scope change", result.stderr.lower())
+
+    def test_ready_holdout_rejects_stale_latest_verified_at_even_when_change_claims_reverified(self):
+        payload = base_plan()
+        payload["comparison"]["boundary_monitoring"] = {
+            "latest_verified_at": "2026-09-01T00:00:00Z",
+            "current_status": "Clean",
+            "material_scope_changes": [
+                {
+                    "timestamp": "2026-09-02T00:00:00Z",
+                    "type": "audience_change",
+                    "description": "Synthetic audience semantics change",
+                    "reverified": True,
+                }
+            ],
+        }
+        result = self.run_validator(payload)
+        self.assertEqual(2, result.returncode)
+        self.assertIn("latest_verified_at", result.stderr)
+
+    def test_ready_holdout_rejects_explicit_unreverified_scope_change(self):
+        payload = base_plan()
+        payload["comparison"]["boundary_monitoring"] = {
+            "latest_verified_at": "2026-09-03T00:00:00Z",
+            "current_status": "Clean",
+            "material_scope_changes": [
+                {
+                    "timestamp": "2026-09-02T00:00:00Z",
+                    "type": "automation_change",
+                    "description": "Synthetic automation scope change",
+                    "reverified": False,
+                }
+            ],
+        }
+        result = self.run_validator(payload)
+        self.assertEqual(2, result.returncode)
+        self.assertIn("reverified", result.stderr)
+
+    def test_ready_holdout_accepts_boundary_reverified_after_material_scope_change(self):
+        payload = base_plan()
+        payload["comparison"]["boundary_monitoring"] = {
+            "latest_verified_at": "2026-09-03T00:00:00Z",
+            "current_status": "Clean",
+            "material_scope_changes": [
+                {
+                    "timestamp": "2026-09-02T00:00:00Z",
+                    "type": "routing_change",
+                    "description": "Synthetic routing scope change",
+                    "reverified": True,
+                }
+            ],
+        }
+        result = self.run_validator(payload)
+        self.assertEqual(0, result.returncode, result.stderr)
+
     def test_ready_holdout_accepts_optimization_signal_when_separate_verified_boundary_exists(self):
         payload = base_plan()
         payload["scope"]["audience_control_semantics"] = [
