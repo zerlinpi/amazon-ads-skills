@@ -5,15 +5,33 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
+class EvidenceSnapshotLineagePolicyTests(unittest.TestCase):
+    def read(self, relative_path: str) -> str:
+        return (ROOT / relative_path).read_text(encoding="utf-8")
+
+    def test_optimization_event_evidence_snapshot_preserves_measurement_identity(self):
+        text = self.read("schemas/optimization-event.json")
+        self.assertIn('"source_system"', text)
+        self.assertIn('"acquisition_channel"', text)
+        self.assertIn('"reporting_generation"', text)
+        self.assertIn('"date_attribution_semantics"', text)
+        self.assertIn('"historical_availability_status"', text)
+        self.assertIn('"comparability_status"', text)
+
+    def test_memory_contract_names_measurement_identity_fields_for_replay(self):
+        text = self.read("references/optimization-memory.md")
+        self.assertIn("reporting_generation", text)
+        self.assertIn("date_attribution_semantics", text)
+        self.assertIn("historical_availability_status", text)
+        self.assertIn("acquisition_channel", text)
+
+
 class ActionSizingPolicyTests(unittest.TestCase):
     def read(self, relative_path: str) -> str:
         return (ROOT / relative_path).read_text(encoding="utf-8")
 
     def test_shared_action_sizing_reference_exists(self):
-        self.assertTrue(
-            (ROOT / "references/action-sizing.md").is_file(),
-            "monetary-control recommendations need one shared contextual action-sizing policy",
-        )
+        self.assertTrue((ROOT / "references/action-sizing.md").is_file())
 
     def test_decision_boundaries_do_not_define_universal_default_percentages(self):
         text = self.read("references/decision-boundaries.md")
@@ -28,8 +46,7 @@ class ActionSizingPolicyTests(unittest.TestCase):
         self.assertNotIn("single_change_pct <= 20%", text)
 
     def test_budget_skill_routes_change_magnitude_to_shared_policy(self):
-        text = self.read("skills/budget-optimization/SKILL.md")
-        self.assertIn("action-sizing.md", text)
+        self.assertIn("action-sizing.md", self.read("skills/budget-optimization/SKILL.md"))
 
 
 class ReportCoveragePolicyTests(unittest.TestCase):
@@ -37,10 +54,7 @@ class ReportCoveragePolicyTests(unittest.TestCase):
         return (ROOT / relative_path).read_text(encoding="utf-8")
 
     def test_shared_report_coverage_reference_exists(self):
-        self.assertTrue(
-            (ROOT / "references/report-coverage.md").is_file(),
-            "report row-inclusion and eligibility rules need one shared coverage policy",
-        )
+        self.assertTrue((ROOT / "references/report-coverage.md").is_file())
 
     def test_search_term_skill_routes_coverage_sensitive_claims_to_shared_policy(self):
         text = self.read("skills/search-term-analysis/SKILL.md")
@@ -116,10 +130,7 @@ class SearchTermImpressionSharePolicyTests(unittest.TestCase):
         return (ROOT / relative_path).read_text(encoding="utf-8")
 
     def test_shared_impression_share_reference_exists(self):
-        self.assertTrue(
-            (ROOT / "references/search-term-impression-share.md").is_file(),
-            "query growth decisions need a shared impression-share evidence policy",
-        )
+        self.assertTrue((ROOT / "references/search-term-impression-share.md").is_file())
 
     def test_search_term_skill_routes_share_of_voice_analysis_to_shared_reference(self):
         text = self.read("skills/search-term-analysis/SKILL.md")
@@ -127,8 +138,7 @@ class SearchTermImpressionSharePolicyTests(unittest.TestCase):
         self.assertIn("impression share", text.lower())
 
     def test_growth_skill_routes_query_headroom_to_impression_share_policy(self):
-        text = self.read("skills/growth-opportunity-finder/SKILL.md")
-        self.assertIn("search-term-impression-share.md", text)
+        self.assertIn("search-term-impression-share.md", self.read("skills/growth-opportunity-finder/SKILL.md"))
 
     def test_sis_policy_records_acquisition_channel_and_does_not_treat_missing_connector_field_as_zero(self):
         text = self.read("references/search-term-impression-share.md")
@@ -216,10 +226,7 @@ class RealizedAdIdentityPolicyTests(unittest.TestCase):
         return (ROOT / relative_path).read_text(encoding="utf-8")
 
     def test_shared_realized_ad_identity_reference_exists(self):
-        self.assertTrue(
-            (ROOT / "references/realized-ad-identity.md").is_file(),
-            "platform-managed surface/product/creative realization needs one shared identity policy",
-        )
+        self.assertTrue((ROOT / "references/realized-ad-identity.md").is_file())
 
     def test_realized_ad_policy_separates_configured_controls_from_realized_product_mix(self):
         text = self.read("references/realized-ad-identity.md")
@@ -229,8 +236,7 @@ class RealizedAdIdentityPolicyTests(unittest.TestCase):
         self.assertIn("not evidence", text.lower())
 
     def test_drop_skill_routes_platform_managed_realization_to_shared_policy(self):
-        text = self.read("skills/performance-drop-diagnosis/SKILL.md")
-        self.assertIn("realized-ad-identity.md", text)
+        self.assertIn("realized-ad-identity.md", self.read("skills/performance-drop-diagnosis/SKILL.md"))
 
     def test_post_change_review_checks_realized_ad_identity_before_single_action_attribution(self):
         text = self.read("skills/post-change-review/SKILL.md")
@@ -266,10 +272,7 @@ class SkillEffectivenessPolicyTests(unittest.TestCase):
         return (ROOT / relative_path).read_text(encoding="utf-8")
 
     def test_skill_effectiveness_guide_exists(self):
-        self.assertTrue(
-            (ROOT / "evals/SKILL-EFFECTIVENESS.md").is_file(),
-            "repository needs a repeatable with-skill vs without-skill effectiveness protocol",
-        )
+        self.assertTrue((ROOT / "evals/SKILL-EFFECTIVENESS.md").is_file())
 
     def test_eval_index_distinguishes_capability_replay_from_effectiveness_measurement(self):
         text = self.read("evals/README.md")
