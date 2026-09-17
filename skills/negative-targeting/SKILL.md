@@ -1,6 +1,6 @@
 ---
 name: negative-targeting
-description: 从 Amazon Ads Search Term/Targeting 数据中生成安全的 Negative Exact、Negative Phrase 或否定商品投放候选，重点防止误杀品牌词、核心词和历史赢家。适用于否词、浪费控制和流量净化。
+description: Generate action-safe Amazon Ads negative keyword or negative product-targeting candidates with protected-term, origin/context and collateral-damage checks. Use when the primary task is choosing negative type/scope; route Search Term row interpretation to search-term-analysis.
 license: MIT
 metadata:
   author: "zerlinpi"
@@ -16,6 +16,13 @@ metadata:
 ## 默认模式
 
 `Suggest`。否词属于可能直接切断流量的高影响动作，默认要求人工复核。
+
+## Routing boundary
+
+- 本 Skill 负责 **negative control decision**：选择 Negative Exact / Negative Phrase / Negative Product Targeting 的类型与 scope，并检查 protected terms、origin/context、历史赢家、归因延迟和 collateral-damage risk。
+- 如果主要任务是解释 Search Term report row、判断 `term_origin`、report coverage、query/traffic quality、winner/waste evidence，先路由到 `../search-term-analysis/SKILL.md`；本 Skill 消费该证据，不复制 Search Term 解释层。
+- 如果主要任务是 configured keyword/target 的结构、match type、state 或 lifecycle，而不是否定控制，路由到 `../keyword-optimization/SKILL.md`。
+- Search Term row 缺少 origin/context/control mapping 时，不因为用户说“否词”就跳过解释层；先补证据或保持 `Manual Review`。
 
 ## 输入
 
