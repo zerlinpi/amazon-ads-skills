@@ -2,7 +2,7 @@
 
 Amazon Ads AI Agent 技能库：监控、因果诊断、增长机会、受控实验、变更后复盘、优化记忆、安全优化与历史回放 Eval。
 
-> 当前版本：`v0.9.0`  
+> 当前版本：`v1.0.0`  
 > 默认模式：`Suggest`  
 > 本仓库不直接修改真实 Amazon Ads 账户；写入由外部 Connector / Executor 负责。
 
@@ -184,7 +184,7 @@ low account-wide SIS
 对重要的新 Skill 或大改版，优先区分：
 
 ```text
-Discovery       → 自然任务能否正确触发 Skill
+Discovery         → 自然任务能否正确触发 Skill
 Forced invocation → Skill 已加载后方法是否有效
 Negative control  → 相邻任务是否避免误触发
 Ablation          → with-skill 是否优于 without-skill baseline
@@ -192,6 +192,17 @@ Repeated trials   → 改善是否具有基本重复性
 ```
 
 这套评估不把“文案更长”或“单次跑通”当作有效证明。任务、fixture、model/harness、工具权限和证据应尽量保持一致；机械可检查的 decision/safety 条件优先用 deterministic assertions，只有语义质量再交给 rubric/judge。对随机运行报告实际 trial count、pass rate / `pass@k` 等，但不把小样本差异伪装成统计显著性。
+
+v1.0 增加 provider-neutral 的 paired result contract 与 deterministic summarizer：
+
+```text
+schemas/skill-effectiveness-benchmark.json
+→ completed with_skill / without_skill trial pairs
+→ scripts/summarize_skill_effectiveness.py
+→ pair counts / full-pass rates / forbidden-behavior rates / measured deltas
+```
+
+`scripts/summarize_skill_effectiveness.py` 只汇总外部 harness 已产生的 trial records；它不会调用模型、不会伪造 repeated trials、不会把 measured delta 宣称成 statistical significance，也不会连接或修改真实 Amazon Ads 账户。真实 model/runtime benchmark 仍由外部 eval harness 执行，仓库负责稳定输入/结果契约和安全汇总。
 
 ## Account Audit Integrity
 
@@ -234,7 +245,17 @@ Memory identity：
 marketplace + profile/account scope + entity type + entity id + control dimension
 ```
 
-对于会 restate 的历史数据，material `evaluated` event 应尽量保存 decision-time `evidence_snapshot`（snapshot/report/export identity、capture time、available-through、maturity 等）。后续 restatement 如果改变结论，不覆盖旧事件，而是追加 `corrected/evaluated` 事件并链接原事件；derived summary 同时区分当时结论与 latest-data interpretation。
+对于会 restate 的历史数据，material `evaluated` event 应尽量保存 decision-time `evidence_snapshot`（source system/dataset、acquisition channel、reporting generation、semantic version、date-attribution semantics、historical availability、capture time、available-through、maturity 等）。后续 restatement 如果改变结论，不覆盖旧事件，而是追加 `corrected/evaluated` 事件并链接原事件；derived summary 同时区分当时结论与 latest-data interpretation。
+
+v1.0 提供只读 deterministic projector：
+
+```text
+optimization event slice
+→ scripts/project_measurement_history.py
+→ entity-history.latest_measurement_state
+```
+
+它按 measurement capture time 选择最新 traceable evidence identity，在请求了 expected scope 时对 marketplace/profile/entity mismatch fail closed，并显式保留 `unknown`、`retired_or_deleted`、`Not Comparable` 等状态。历史来源不可用不会被补成 0，旧 `Worked / Keep` 也不会自动覆盖当前 measurement comparability uncertainty。
 
 Deliberate migration 区分：
 
@@ -354,7 +375,7 @@ python scripts/validate_evals.py .
 
 `validate_evals.py` 检查全部 `evals/fixtures/*.json`：JSON 可解析、字段/enum 符合 closed-world contract、fixture ID 与文件名一致且不冲突、entrypoint 在仓库内真实存在、rubric/required observation 不得正向要求 live mutation。
 
-`.github/workflows/validate-skills.yml` 对相关 Push/PR 运行 unit tests + 两个 validator。Deterministic pass 只证明 packaging/fixture contract integrity；Amazon Ads 决策质量仍由 capability replay 验证，二者不能互相替代。
+`.github/workflows/validate-skills.yml` 对相关 Push/PR 运行 unit tests + 两个 validator。v1.0 workflow 使用 Node 24 generation 的官方 GitHub Actions，同时固定 Python 3.12。Deterministic pass 只证明 packaging/fixture/tool contract integrity；Amazon Ads 决策质量仍由 capability replay 与外部 model/harness effectiveness runs 验证，二者不能互相替代。
 
 ## Development Rules
 
@@ -391,39 +412,29 @@ python scripts/validate_evals.py .
 
 项目持续研究公开 Amazon Ads / PPC / Agent Skills 项目。采用流程：`discover → license check → extract generic idea → independently rewrite → Amazon Ads adaptation → safety gate → progressive loading`。已审阅来源见 `docs/SOURCES.md`，单轮专项研究可放在 `docs/research/` 并保持来源与采用边界可追溯。
 
-## Roadmap
+## v1.0 Baseline
 
-- [x] Codex / Claude Code / WorkBuddy 共用 Skill 根目录
-- [x] Agent Skills strict frontmatter compatibility（custom metadata nested under `metadata`）
-- [x] Deterministic Skill validator + unit tests + CI gate
+v1.0 的稳定边界已经包含：
+
+- [x] Codex / Claude Code / WorkBuddy 共用 canonical Skill 根目录与一致 runtime manifest
+- [x] Agent Skills strict frontmatter compatibility + deterministic Skill validator
 - [x] Deterministic Eval fixture validator + CI gate
-- [x] Skill effectiveness / with-skill vs without-skill evaluation protocol
+- [x] 15 个核心 Amazon Ads Skills + progressive references/playbooks
 - [x] Audit / Monitor / Search Term / Bid / Budget / Placement / Negative / Profitability
-- [x] Performance Drop Diagnosis + Mixed-ASIN safety
-- [x] Growth Opportunity Finder
-- [x] Experiment Planner
-- [x] Post-change Review + Reconciliation
-- [x] Optimization Memory + Entity History
-- [x] Contextual Benchmark Policy
-- [x] Contextual action sizing / no universal default change percentage
+- [x] Performance Drop Diagnosis + Mixed-ASIN / retail / platform-managed-delivery safety
+- [x] Growth Opportunity Finder + query-headroom / SIS scope safety
+- [x] Experiment Planner + interference / leakage / control-boundary validation
+- [x] Post-change Review + readback / reconciliation / measurement parity
+- [x] Optimization Memory + Entity History + realized-ad state
+- [x] Decision-time evidence identity + deterministic measurement-state projector
+- [x] Contextual Benchmark Policy + contextual action sizing
 - [x] Weekly Review Playbook
 - [x] Historical replay / regression fixtures
-- [x] Source lineage + semantic metric-version drift
-- [x] Attribution-variant / methodology-cutover measurement safety
-- [x] Report row-inclusion / eligibility coverage safety
-- [x] Search Term origin / inferred non-search semantic safety
-- [x] Search Term Impression Share / account-wide query-headroom safety
-- [x] Platform-managed delivery-surface / auto-enrollment causal safety
-- [x] Cross-profile + cross-marketplace migration safety
-- [x] Asymmetric backfill measurement-parity eval
-- [x] Slim `performance-drop-diagnosis` and `amazon-ads-audit` entrypoints
-- [x] Audit aggregation-integrity eval
-- [x] Historical-restatement-after-decision eval
-- [x] Truncated/paginated audit coverage eval
-- [x] Upstream account/portfolio budget-cap feasibility eval
-- [x] Placement realized-exposure / coupled-control attribution eval
-- [ ] 继续拆薄其他旧版较厚 Skills
-- [ ] Amazon Ads API / 自研 Connector 示例
+- [x] Source lineage + semantic / attribution / row-eligibility / backfill / historical-availability safety
+- [x] Paired with-Skill / without-Skill benchmark result schema + deterministic summarizer
+- [x] Node 24 generation GitHub Actions validation workflow
+
+Future changes are evidence-driven maintenance rather than a requirement to increase Skill count. Live Amazon Ads API writes, retry/idempotency mechanics, credentials and provider-specific model execution intentionally remain outside this repository in external Connector / Executor / eval harness integrations.
 
 ## Disclaimer
 
