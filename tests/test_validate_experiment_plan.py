@@ -252,6 +252,18 @@ class ExperimentPlanSemanticValidatorTests(unittest.TestCase):
         self.assertIn("control_integrity", skill)
         self.assertIn("optimization_signal", skill)
 
+    def test_skill_exposes_machine_readable_boundary_freshness_contract(self):
+        skill = SKILL.read_text(encoding="utf-8")
+        self.assertIn("boundary_monitoring.latest_verified_at", skill)
+        self.assertIn("boundary_monitoring.material_scope_changes", skill)
+
+    def test_interference_reference_uses_schema_boundary_monitoring_field_names(self):
+        reference = INTERFERENCE_REFERENCE.read_text(encoding="utf-8")
+        self.assertIn("boundary_monitoring.latest_verified_at", reference)
+        self.assertIn("boundary_monitoring.material_scope_changes", reference)
+        self.assertNotIn("latest_boundary_verified_at", reference)
+        self.assertNotIn("launch_boundary_verified_at", reference)
+
     def test_interference_reference_explains_machine_readable_holdout_boundary(self):
         reference = INTERFERENCE_REFERENCE.read_text(encoding="utf-8")
         self.assertIn("isolation_evidence", reference)
