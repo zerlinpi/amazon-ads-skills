@@ -119,6 +119,50 @@ def _event_account_identity(event: dict[str, Any]) -> dict[str, Any] | None:
     return normalized
 
 
+def _normalize_expected_account_identity(value: Any) -> dict[str, str] | None:
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        raise ValueError("expected_scope must be an object or null")
+    account_identity = value.get("account_identity")
+    if account_identity is None:
+        return None
+    if not isinstance(account_identity, dict):
+        raise ValueError("expected_scope account identity must be an object or null")
+
+    normalized: dict[str, str] = {}
+    for field in ACCOUNT_IDENTITY_FIELDS:
+        item = account_identity.get(field)
+        if item is None:
+            continue
+        if not isinstance(item, str) or not item:
+            raise ValueError(
+                f"expected_scope account identity {field} must be a non-empty string or null"
+            )
+        normalized[field] = item
+
+    if not any(field in normalized for field in STRONG_ACCOUNT_IDENTITY_FIELDS):
+        raise ValueError(
+            "expected_scope account identity must include at least one advertiser or regional profile identifier"
+        )
+    return normalized
+
+
+def _validate_expected_account_identity(
+    current: dict[str, Any] | None,
+    expected: dict[str, str] | None,
+) -> None:
+    if expected is None:
+        return
+    if current is None:
+        raise ValueError("measurement account identity is incomplete for expected_scope")
+    for field, expected_value in expected.items():
+        if current.get(field) != expected_value:
+            raise ValueError(
+                f"measurement account identity does not match expected_scope on {field}"
+            )
+
+
 def _merge_account_identity(
     resolved: dict[str, Any] | None,
     current: dict[str, Any] | None,
@@ -198,6 +242,7 @@ def project_measurement_history(
     events: list[dict[str, Any]], *, expected_scope: dict[str, Any] | None = None
 ) -> dict[str, Any]:
     expected = _normalize_expected_scope(expected_scope)
+    expected_account_identity = _normalize_expected_account_identity(expected_scope)
     candidates: list[tuple[datetime, int, str, dict[str, Any]]] = []
     observed_scope: tuple[Any, Any, Any, Any] | None = None
     account_identity: dict[str, Any] | None = None
@@ -219,9 +264,11 @@ def project_measurement_history(
             elif scope != observed_scope:
                 raise ValueError("measurement projection requires a single entity scope")
 
+        current_account_identity = _event_account_identity(event)
+        _validate_expected_account_identity(current_account_identity, expected_account_identity)
         account_identity, missing_account_identity_seen = _merge_account_identity(
             account_identity,
-            _event_account_identity(event),
+            current_account_identity,
             missing_seen=missing_account_identity_seen,
         )
 
