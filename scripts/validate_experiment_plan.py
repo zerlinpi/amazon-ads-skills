@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -26,6 +27,76 @@ HOLDOUT_ISOLATION_MECHANISMS = {
 
 def _non_empty_string(value: Any) -> bool:
     return isinstance(value, str) and bool(value.strip())
+
+
+def _parse_timestamp(value: Any, label: str, errors: list[str]) -> datetime | None:
+    if not _non_empty_string(value):
+        errors.append(f"Ready holdout requires non-empty {label}")
+        return None
+
+    normalized = value.strip()
+    if normalized.endswith("Z"):
+        normalized = f"{normalized[:-1]}+00:00"
+
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError:
+        errors.append(f"Ready holdout requires valid RFC3339-style {label}")
+        return None
+
+    if parsed.tzinfo is None:
+        errors.append(f"Ready holdout requires timezone-aware {label}")
+        return None
+
+    return parsed.astimezone(timezone.utc)
+
+
+def _validate_ready_boundary_freshness(comparison: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    monitoring = comparison.get("boundary_monitoring")
+    if not isinstance(monitoring, dict):
+        return errors
+
+    current_status = monitoring.get("current_status")
+    if current_status is not None and current_status != "Clean":
+        errors.append(
+            "Ready holdout boundary_monitoring.current_status must be Clean when boundary monitoring is present"
+        )
+
+    material_changes = monitoring.get("material_scope_changes")
+    if not isinstance(material_changes, list) or not material_changes:
+        return errors
+
+    latest_verified_at = _parse_timestamp(
+        monitoring.get("latest_verified_at"),
+        "comparison.boundary_monitoring.latest_verified_at",
+        errors,
+    )
+
+    for index, change in enumerate(material_changes):
+        if not isinstance(change, dict):
+            errors.append(
+                f"Ready holdout comparison.boundary_monitoring.material_scope_changes[{index}] must be an object"
+            )
+            continue
+
+        if change.get("reverified") is False:
+            errors.append(
+                f"Ready holdout material scope change #{index + 1} is explicitly unreverified"
+            )
+
+        change_timestamp = _parse_timestamp(
+            change.get("timestamp"),
+            f"comparison.boundary_monitoring.material_scope_changes[{index}].timestamp",
+            errors,
+        )
+        if latest_verified_at is not None and change_timestamp is not None:
+            if change_timestamp > latest_verified_at:
+                errors.append(
+                    "Ready holdout boundary is stale: latest_verified_at predates a material scope change"
+                )
+
+    return errors
 
 
 def _validate_ready_holdout(comparison: dict[str, Any]) -> list[str]:
@@ -63,6 +134,7 @@ def _validate_ready_holdout(comparison: dict[str, Any]) -> list[str]:
             "Ready holdout requires at least one verified isolation_evidence item with non-empty evidence"
         )
 
+    errors.extend(_validate_ready_boundary_freshness(comparison))
     return errors
 
 
