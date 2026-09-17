@@ -18,6 +18,21 @@
       },
       "additionalProperties": true
     },
+    "account_identity": {
+      "type": ["object", "null"],
+      "description": "Derived account identity envelope preserved from compatible optimization events. Missing fields remain unknown; conflicting advertiser identities must not be collapsed into one history.",
+      "properties": {
+        "manager_account_id": {"type": ["string", "null"]},
+        "global_advertiser_account_id": {"type": ["string", "null"]},
+        "regional_advertiser_account_id": {"type": ["string", "null"]},
+        "legacy_advertiser_account_id": {"type": ["string", "null"]},
+        "advertiser_account_id": {"type": ["string", "null"]},
+        "regional_profile_id": {"type": ["string", "null"]},
+        "country_code": {"type": ["string", "null"]},
+        "identity_mapping_provenance": {"type": ["object", "string", "null"]}
+      },
+      "additionalProperties": true
+    },
     "identity_scope_status": {"type": ["string", "null"], "enum": ["Complete", "Incomplete", "Ambiguous", "Collision Detected", null]},
     "identity_scope_warnings": {"type": "array", "items": {"type": "string"}},
     "candidate_scopes": {"type": "array", "items": {"type": "object", "properties": {"marketplace": {"type": ["string", "null"]}, "profile_scope": {"type": ["string", "null"]}, "reason": {"type": ["string", "null"]}}, "additionalProperties": true}},
