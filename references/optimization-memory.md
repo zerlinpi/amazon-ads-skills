@@ -2,313 +2,68 @@
 
 Load this shared reference when a decision touches an entity with prior optimization activity, when a previous action may still be maturing, or when the user asks for historical context.
 
-The goal is not to create a generic long-term memory system. It is to preserve enough decision lineage to prevent duplicate, contradictory, stale, cross-scope, or falsely attributed Amazon Ads optimizations.
+The goal is not to create a generic long-term memory system. Preserve enough decision lineage to prevent duplicate, contradictory, stale, cross-scope, or falsely attributed Amazon Ads optimizations. Use `schemas/optimization-event.json` for event records, `schemas/entity-history.json` for derived history, `references/data-lineage.md` for measurement comparability, and `references/realized-ad-identity.md` when shopper-facing realization can confound attribution.
 
-Treat `references/realized-ad-identity.md` as the canonical interpretation policy when shopper-facing surface, product, creative, message, or other platform-managed realization can materially affect attribution.
+## Core model
 
-## Core principle
-
-Treat optimization memory as an append-first event ledger plus derived entity summaries.
-
-- Events record what was proposed, approved, applied, read back, evaluated, failed, rolled back, corrected, or became unknown.
-- Entity summaries are derived views for fast retrieval. They are not the source of truth.
-- Never overwrite historical events merely because a later conclusion or historical dataset changed.
-- A new event may supersede or correct an earlier interpretation while preserving the original record.
-
-Use `schemas/optimization-event.json` for event records and `schemas/entity-history.json` for the derived entity-history view.
+Treat memory as an append-first event ledger plus derived summaries. Events record proposed, approved, applied, readback, evaluated, failed, rolled-back, corrected, or unknown states. Summaries are retrieval aids, not source of truth. Never overwrite an old event because a later dataset or conclusion changed; append a linked correction/re-evaluation.
 
 ## Read-before-recommend gate
 
-Before recommending a new bid, budget, placement, negative, target-state, campaign-state, or structural action on an entity, retrieve when available:
+Before a material bid, budget, placement, negative, state, or structural recommendation, retrieve when available: latest same-control event; pending validation; recent failed/unknown events; latest trusted readback and outcome; rollback conditions; overlapping parent/child actions or experiments; material evidence restatements; and relevant realization snapshots. If history cannot be retrieved, say `history unavailable`; do not infer no prior action.
 
-1. the latest relevant event for the same entity/control;
-2. any pending evaluation or still-open validation window;
-3. recent applied/failed/unknown events;
-4. the latest readback state;
-5. the latest outcome classification;
-6. active rollback/stop conditions;
-7. concurrent actions on parent/child entities that can contaminate attribution;
-8. material evidence restatements that supersede a prior evaluation;
-9. the latest relevant realization snapshot when shopper-facing surface/product/creative composition can change independently of advertiser controls.
+## Collision-safe identity
 
-If no memory source exists, say `history unavailable` rather than assuming there was no prior action.
-
-## Entity identity
-
-Memory must be scoped tightly enough to avoid cross-account and cross-marketplace collisions.
-
-Preferred identity tuple:
+Preferred identity is:
 
 ```text
 marketplace + profile/account scope + entity type + entity id + control dimension
 ```
 
-Examples of `control dimension`:
+Names and locally normalized IDs alone are not collision-safe. When marketplace/profile scope is incomplete, ambiguous, or colliding, do not merge histories or transfer outcomes/readbacks; downgrade to Hold, Directional, or Manual Review until scope resolves.
 
-- bid;
-- daily budget;
-- placement modifier;
-- campaign state;
-- keyword/target state;
-- negative keyword;
-- negative product target;
-- match type / structure.
+Verified predecessor/successor migration can preserve bounded lineage, but predecessor live state is never successor current state. Cross-marketplace predecessor performance is directional by default: do not directly transfer bids, CPC/CVR/CTR/ACOS/ROAS baselines, budgets, placement multipliers, profitability thresholds, sample thresholds, or validation clocks without successor-market calibration.
 
-Do not merge two entities because their names match. Use stable IDs when available.
+## Lifecycle and anti-thrashing
 
-## Identity-scope safety gate
-
-Treat `marketplace` and `profile/account scope` as part of optimization identity whenever memory can contain more than one account/profile/marketplace.
-
-A matching entity ID, keyword text, campaign name, ASIN label, or display name is **not sufficient** to establish same-entity history across scopes.
-
-Classify identity scope when useful as:
-
-- `Complete` — marketplace and profile/account scope are present and match the requested entity;
-- `Incomplete` — one or more required scope dimensions are missing;
-- `Ambiguous` — multiple plausible histories remain after available scope filtering;
-- `Collision Detected` — records with the same local entity key/name resolve to different marketplace/profile scopes.
-
-### Fail-closed rules
-
-When identity scope is `Incomplete`, `Ambiguous`, or `Collision Detected`:
-
-- do not merge histories across candidate scopes;
-- do not transfer `Worked / Keep`, `Rollback Candidate`, pending validation, or prior action outcomes from another scope;
-- do not infer identity from display-name similarity;
-- do not use a foreign-scope readback as current state;
-- downgrade the memory-dependent decision to `Hold`, `Directional`, or `Manual Review` until the requested scope is resolved.
-
-If the current request explicitly identifies marketplace/profile scope, filter memory to that scope before ranking recency or semantic similarity.
-
-### Connector-normalized or local IDs
-
-Some connectors, exports, test fixtures, caches, or intermediate stores may expose locally normalized IDs rather than globally collision-proof identifiers.
-
-Therefore:
+Typical lifecycle:
 
 ```text
-entity type + entity id alone
-≠ collision-safe optimization identity
+proposed → approved(optional) → applied|failed|unknown → readback → evaluated → keep|monitor|rollback_proposed|follow-up
 ```
 
-The storage/retrieval layer should preserve scope fields alongside the local entity key. Public examples should use synthetic profile IDs and never rely on customer-identifying data.
+Keep these distinctions explicit: proposed ≠ applied; applied ≠ readback-confirmed; readback-confirmed ≠ worked; worked ≠ proven causal; rollback-proposed ≠ rolled-back.
 
-## Verified migration lineage
+While a material action is still attribution/sample-maturity pending, avoid contradictory or large overlapping edits unless a safety guardrail requires intervention. Flag oscillation, unknown application, overlapping experiments, and parent-level confounding. Do not use a universal waiting period.
 
-A deliberate restructure can replace an entity with a new ID or move it to another profile/marketplace while preserving some business intent. This is different from assuming that two similarly named entities are the same.
+## Decision-time evidence identity
 
-History may cross an ID, profile, or marketplace boundary only when there is explicit migration evidence such as a trusted bulk-operation record, migration manifest, connector event, or another auditable mapping that links predecessor and successor.
+Mutable reporting history creates two separate questions: what evidence was available when the decision was made, and what the latest/restated history says now. Preserve both.
 
-A migration record should capture when available:
+For material evaluated/corrected events, `evidence_snapshot` should preserve available decision-relevant measurement identity rather than only a dataset label. Canonical fields are defined in `schemas/optimization-event.json`; capture when known:
 
-- predecessor entity type/id and marketplace/profile scope;
-- successor entity type/id and marketplace/profile scope;
-- migration timestamp and reason;
-- verification source;
-- scope-transition type;
-- whether targeting semantics/match type were preserved;
-- whether advertised-ASIN/product equivalence was preserved;
-- whether business role/objective was preserved;
-- continuity status: `Verified`, `Partial`, `Rejected`, or `Unknown`;
-- evidence-portability status and constraints.
-
-### Scope-transition types
-
-Use when helpful:
-
-- `same_scope` — predecessor/successor remain in the same marketplace/profile scope;
-- `cross_profile_same_marketplace` — profile/account scope changed inside the same marketplace;
-- `cross_marketplace` — marketplace changed;
-- `unknown` — transition scope is not reliably known.
-
-A cross-profile mapping is **not** a collision when it is explicit, audited and attached to the successor as lineage. However, it does not make the predecessor's live state current in the successor profile.
-
-### Cross-marketplace portability limits
-
-For `cross_marketplace` transitions, default continuity to `Partial` and `predecessor_evidence_portability` to `Directional Only` unless successor-market evidence proves a narrower fact is portable.
-
-Potentially useful as bounded directional context:
-
-- semantic query/product relevance;
-- business intent and taxonomy;
-- prior hypotheses worth retesting;
-- known failure modes and safety pitfalls;
-- structural lessons that do not depend on auction economics.
-
-Do **not** transfer as action-safe performance evidence without successor-market calibration:
-
-- bid magnitude or bid-change percentage;
-- CPC, CVR, CTR, ACOS, ROAS or CPA baselines;
-- budget size or pacing thresholds;
-- placement multipliers;
-- profitability thresholds or target economics;
-- traffic/sample thresholds;
-- validation clocks or expected response magnitude.
-
-Why: currency, auction density, query demand, competitor set, retail price position, tax/fee economics, conversion behavior, logistics, promotion norms, attribution/reporting context, and product assortment can differ materially by marketplace.
-
-Therefore:
-
-```text
-verified cross-marketplace mapping
-≠ portable performance conclusion
-```
-
-A predecessor `Worked / Keep` outcome can justify a hypothesis or experiment in the successor marketplace, not a direct copy of the old action.
-
-### What may transfer
-
-When continuity is `Verified`, mature historical evidence may be used as bounded context, for example:
-
-- historical relevance;
-- mature profitability/efficiency patterns only when marketplace economics and measurement context are demonstrably compatible;
-- prior hypotheses and tested actions;
-- known failure modes;
-- predecessor relationship for audit lineage.
-
-For a verified `cross_profile_same_marketplace` migration, the above context may be retrieved after current-scope history and clearly labeled as predecessor evidence.
-
-For `cross_marketplace`, prefer semantic/qualitative evidence first and require successor-specific observations before performance-based action.
-
-### What must not transfer as current truth
-
-Even with verified lineage, do not copy the predecessor's last known:
-
-- bid;
-- budget;
-- state;
-- placement modifier;
-- negative attachment;
-- pending mutation;
-- readback status;
-- active experiment assignment;
-- validation clock.
-
-The successor's current state must come from successor-specific trusted readback or source data.
-
-If targeting semantics, ASIN/product scope, objective, route, marketplace, or important economics changed materially, downgrade continuity to `Partial` or `Rejected`. Preserve lineage for auditability without treating the predecessor and successor as literally identical entities.
-
-## Event lifecycle
-
-A common lifecycle is:
-
-```text
-proposed
-→ approved (optional)
-→ applied OR failed OR unknown
-→ readback
-→ evaluated
-→ keep / monitor / rollback_proposed / follow-up experiment
-→ rolled_back (if externally applied)
-```
-
-Not every event needs every stage. Preserve uncertainty explicitly.
-
-### Important distinctions
-
-- `proposed` is not `applied`.
-- `applied` is not `readback confirmed`.
-- `readback confirmed` is not `worked`.
-- `control readback confirmed` is not `realization stable` when Amazon can alter shopper-facing surface/product/creative realization independently.
-- `worked` is not proof of causality if important concurrent changes remain unresolved.
-- `rollback_proposed` is not `rolled_back`.
-
-## Pending evaluation
-
-An action is `pending evaluation` when its intended validation window is not mature or required post-change evidence has not arrived.
-
-While a material action is pending:
-
-- do not stack a contradictory edit on the same control unless a safety guardrail triggered;
-- avoid another large edit that makes the first action uninterpretable;
-- prefer `Hold`, `Keep Monitoring`, or a separately scoped experiment;
-- record why an emergency override was necessary when one occurs.
-
-Validation maturity should consider attribution lag, order volume, seasonality, promotions and retail-readiness changes. Do not use a fixed universal waiting period.
-
-## Anti-thrashing rules
-
-Flag a new proposal for manual review or hold when any of the following is true:
-
-- it reverses the latest applied action before evaluation maturity;
-- the same control has oscillated repeatedly without stable evidence;
-- multiple actions are being layered faster than their effects can be separated;
-- an earlier action has application status `Unknown` or `Drifted`;
-- the entity is already inside an active experiment where the new edit would contaminate treatment/control;
-- a parent-level change can explain the child-level movement under review.
-
-An exception is allowed for triggered safety conditions such as severe overspend, loss of purchasability, listing suppression, inventory risk, or another explicit guardrail. Record the override reason.
-
-## Staleness and freshness
-
-Historical memory is context, not current truth.
-
-Every derived entity summary should include:
-
-- `as_of` timestamp;
-- latest source event timestamp;
-- latest trusted readback timestamp;
-- unresolved/pending event count;
-- source completeness or warnings.
-
-Before presenting a stored state as current, refresh from a trusted live/exported source when the decision depends on current state.
-
-A stale memory item may explain why an action happened, but it cannot prove the entity is still configured that way.
-
-## Decision-time evidence and historical restatement
-
-Mutable reporting history creates two different questions:
-
-1. **Decision-time auditability** — what evidence was available when the recommendation/evaluation was made?
-2. **Latest-data interpretation** — what does the most mature/restated history say now?
-
-Do not collapse them into one mutable answer.
-
-For material `evaluated` events, preserve an immutable evidence identity when available, for example:
-
-- snapshot/report/export ID;
-- source dataset and semantic/report version;
-- snapshot capture timestamp;
-- available-through date and attribution/backfill maturity;
-- baseline/post window definitions;
-- compact evidence hash or immutable artifact reference when the runtime supports it.
-
-If history later restates enough to change the outcome classification:
-
-- do not overwrite the original evaluation event;
-- append a correction/re-evaluation event linked to the original action/evaluation;
-- record the new evidence snapshot identity and restatement reason when known;
-- update the derived entity summary to expose the latest interpretation while retaining the decision-time interpretation;
-- require reconciliation before using the changed outcome to drive another aggressive optimization.
-
-A later restatement can show that the latest outcome differs from what was knowable earlier. It does not retroactively make unavailable data part of the original decision context.
-
-## Realization-aware optimization memory
-
-When `realized-ad-identity.md` is material to causal interpretation, preserve a bounded `realization_snapshot` on the relevant readback/evaluated/corrected event when the data is available.
-
-The purpose is not to copy the full ad payload into memory. It is to make later replay answer whether shopper-facing realization was sufficiently comparable across the decision window.
-
-Canonical snapshot fields are defined in `schemas/optimization-event.json` and include when known:
-
-- snapshot/capture identity;
-- `realization_mode`: `manual`, `platform_managed`, `hybrid`, or `unknown`;
-- realized delivery surface identifiers;
-- realized advertised-product identifiers;
-- realized creative/message/prompt identifiers;
-- acquisition channel / source dataset;
-- coverage status;
+- snapshot identity and capture timestamp;
+- `source_system` and `source_dataset`;
+- `acquisition_channel`;
+- `reporting_generation`;
+- `semantic_version`;
+- `date_attribution_semantics`;
+- `historical_availability_status`;
 - `comparability_status`;
-- optional compact identity hash and warnings.
+- `available_through` and attribution/backfill maturity;
+- compact evidence hash or immutable artifact reference.
 
-Use `unknown` / `Unavailable` explicitly when the active acquisition channel cannot observe a material realization dimension. Missing realized-product, creative, prompt, or surface fields are **not evidence** that realization was unchanged or zero.
+These fields are nullable because an older connector or artifact may not expose them. Missing lineage is uncertainty, not permission to guess. In particular, `historical_availability_status = unavailable|retired_or_deleted|unknown` must never be interpreted as a zero historical metric or no historical activity.
 
-Do not require a realization snapshot on every optimization event. Persist it when realization can plausibly change the causal interpretation of a material action or outcome review. Prefer compact IDs, hashes, or immutable artifact references over copying full creative text, prompt text, images, or oversized product lists into the event ledger.
+When reporting generation, date attribution, acquisition channel, semantic version, or historical availability differs across replay windows, apply `references/data-lineage.md` before reusing the old outcome. A stored `Worked` result does not become action-safe evidence under a new measurement identity merely because campaign/entity IDs match.
 
-The derived entity summary may expose `latest_realization`, but that summary is only a bounded retrieval aid. Historical event snapshots remain the source of truth for replay.
+If history later restates enough to change an outcome, append a correction/re-evaluation linked to the original event and preserve both evidence identities. Reconcile before using the changed conclusion for another aggressive optimization.
 
-For outcome attribution, keep these questions separate:
+## Realization-aware memory
+
+When platform-managed surface/product/creative/message realization can affect causal interpretation, preserve the bounded `realization_snapshot` defined in `schemas/optimization-event.json`. Missing realization fields are not evidence that realization was unchanged or zero.
+
+Keep separate:
 
 ```text
 control readback confirmed?
@@ -316,120 +71,20 @@ realization comparable?
 outcome moved as expected?
 ```
 
-If control readback is confirmed but realization comparability is `Directional`, `Not Comparable`, or `Unknown`, do not upgrade the outcome to strong single-action causal attribution merely because the advertiser control applied correctly.
+If realization comparability is Directional, Not Comparable, or Unknown, do not upgrade to strong single-action causal attribution solely because the advertiser control applied.
 
-## Local-only / partial-memory warnings
+## Partial-memory warnings
 
-If the runtime has multiple machines, agents, connectors, or write paths, memory can be incomplete.
-
-Expose warnings such as:
-
-- `local-only history`;
-- `external executor history unavailable`;
-- `missing readback`;
-- `unknown write result`;
-- `legacy changelog only`;
-- `event gap detected`;
-- `identity scope incomplete`;
-- `cross-profile collision detected`;
-- `migration mapping partial`;
-- `cross-marketplace portability limited`;
-- `historical evidence restated`;
-- `realization snapshot unavailable`;
-- `realization comparability unresolved`.
-
-Do not silently treat a partial ledger as complete account history.
-
-## Conflict and supersession
-
-When newer evidence changes the interpretation of an older event:
-
-- keep the old event immutable;
-- append a new evaluation/correction event;
-- link it through `parent_action_id` or related event IDs;
-- mark the derived entity summary with the newest decision state;
-- preserve the evidence identity for both the original and superseding interpretation when history is mutable.
-
-For mutually conflicting events, prefer current trusted readback for state, but preserve historical intent and outcome separately.
+Expose incomplete-history conditions such as local-only history, external executor history unavailable, missing readback, unknown write result, event gap, identity-scope ambiguity, migration mapping partial, historical evidence restated, retired/deleted historical source, or realization comparability unresolved. Never treat a partial ledger as complete account history.
 
 ## Retrieval order
 
-For a new optimization decision, retrieve in this order:
+Resolve marketplace/profile scope first; retrieve same entity + same control newest-first; then verified predecessor history; overlapping other controls; parent changes; active experiments; account/portfolio constraints; and relevant realization snapshots. Keep the slice bounded rather than dumping account history into context.
 
-1. resolve marketplace + profile/account scope and reject accidental cross-scope collisions;
-2. same entity + same control, most recent first;
-3. verified predecessor history only when an explicit migration mapping links it to the requested successor;
-4. same entity, other controls in the overlapping window;
-5. parent campaign/ad-group/product-ad changes;
-6. active experiments containing the entity;
-7. recent account-wide or portfolio controls that materially affect delivery;
-8. realization snapshots overlapping the evaluation window when surface/product/creative composition can confound attribution.
+## Output contract
 
-For cross-profile/cross-marketplace migrations, keep predecessor events labeled with their original scope. Do not rewrite them as if they originated in the successor scope.
+When memory materially affects a decision, report history status, identity scope, latest relevant action/time, application/readback status, validation maturity, latest outcome, decision-time evidence identity, latest restatement status, realization comparability when relevant, unresolved warnings, and next decision point.
 
-Keep the returned slice bounded. Do not dump the whole account history into context.
+## Safety boundary
 
-## Compact entity summary
-
-A derived summary should answer:
-
-- What marketplace/profile scope does this history belong to?
-- Is the identity scope complete and collision-free?
-- What is the latest known control state?
-- What was the last material action and why?
-- Did it actually apply?
-- Is evaluation complete?
-- What was the outcome at decision time and has later restatement changed the latest interpretation?
-- When relevant, what is the latest realization status and is it comparable to the evaluated window?
-- Is a rollback condition active?
-- Is there a verified predecessor/successor lineage or scope transition?
-- If marketplace changed, which predecessor facts are actually portable?
-- Are there unresolved events or memory-quality warnings?
-- When is the next decision point?
-
-Prefer a compact summary plus the few source events needed for evidence.
-
-## Suggested decision states
-
-Use these derived states when useful:
-
-- `No Recent Action`
-- `Proposed Only`
-- `Awaiting Application`
-- `Application Unknown`
-- `Pending Readback`
-- `Pending Evaluation`
-- `Worked / Keep`
-- `Monitoring`
-- `Rollback Candidate`
-- `Rolled Back`
-- `Failed Application`
-- `Drifted`
-- `Conflicted / Manual Review`
-
-## Output contract for memory-aware decisions
-
-When memory materially affects a recommendation, include:
-
-- `history_status`;
-- identity-scope status and warnings;
-- marketplace/profile scope used for current-entity retrieval;
-- latest relevant action and timestamp;
-- application/readback status;
-- validation maturity;
-- latest outcome;
-- decision-time evidence identity and latest restatement status when material;
-- realization snapshot/comparability status when shopper-facing realization can affect attribution;
-- identity-lineage and scope-transition status when migration is relevant;
-- predecessor scope and portability status when predecessor evidence is used;
-- unresolved conflicts or warnings;
-- whether the new proposal is `Allowed`, `Hold`, `Experiment Only`, or `Manual Review`;
-- the event IDs supporting the decision when available.
-
-## Privacy and storage safety
-
-Do not store credentials, refresh tokens, client secrets, access tokens or unnecessary customer-identifying data in optimization memory.
-
-Use the minimum marketplace/account/profile scope required for collision-safe entity identity. Public examples should use synthetic identifiers.
-
-For realization snapshots, prefer compact IDs/hashes and bounded source references. Do not persist unnecessary shopper-level data, full generated prompt/creative payloads, images, or large product lists merely to make replay possible.
+This memory contract stores decision evidence and state. It does not authorize live Amazon Ads mutation. Write/retry/idempotency/reconciliation/executor mechanics remain outside this repository in an explicitly authorized Connector/Executor.
