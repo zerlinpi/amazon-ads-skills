@@ -24,11 +24,10 @@ class ReportCompletenessContractTests(unittest.TestCase):
         self.assertIn("not evidence of zero", coverage)
         self.assertIn("not evidence of full population coverage", coverage)
 
-    def test_data_lineage_routes_extraction_completeness_through_report_coverage(self):
+    def test_data_lineage_routes_population_completeness_through_report_coverage(self):
         lineage = LINEAGE.read_text(encoding="utf-8")
-        self.assertIn("pagination_status", lineage)
-        self.assertIn("truncation_status", lineage)
         self.assertIn("report-coverage.md", lineage)
+        self.assertIn("Population completeness is separate", lineage)
 
 
 if __name__ == "__main__":
