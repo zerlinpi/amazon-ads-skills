@@ -2,7 +2,7 @@
 
 Load this shared reference only when a decision compares, joins, or reconciles metrics from different exports, APIs, MCPs, warehouses, dashboards, caches, refresh schedules, metric-definition versions, report row-inclusion rules, reporting generations, date-attribution semantics, attribution variants, acquisition channels, or snapshots with different backfill maturity.
 
-The goal is to prevent a source, measurement-definition, coverage-selection, reporting-generation, attribution-methodology, date-attribution, acquisition-path, or historical-restatement change from being mistaken for a business change.
+The goal is to prevent a source, measurement-definition, coverage-selection, reporting-generation, attribution-methodology, date-attribution, acquisition-path, historical-availability, or historical-restatement change from being mistaken for a business change.
 
 If a decision depends on whether returned rows represent the full logical population, load `report-coverage.md` for row-inclusion / eligibility handling.
 
@@ -20,7 +20,7 @@ Two fields both named `orders`, `sales`, `spend`, `ACOS`, or `ROAS` may differ b
 - reporting generation or standardized terminology changes;
 - acquisition channel or connector capability differences;
 - deduplication/backfill behavior;
-- data availability lag or historical-range limits;
+- data availability lag, historical-range limits, or retired/deleted source history;
 - semantic/model version;
 - partial-day or incomplete partition state.
 
@@ -65,6 +65,7 @@ When lineage matters, capture when available:
 - per-metric definition/version when a dataset can evolve individual metrics independently;
 - completeness/backfill status;
 - maximum historical range and metric/dimension-specific availability limits when relevant;
+- `historical_availability_status` — available, partially available, retired/deleted, unsupported, or unknown when the requested baseline can disappear independently of metric value;
 - `backfill_age` or snapshot maturity when historical partitions can restate;
 - transformation lineage or upstream source when a derived dataset is used.
 
@@ -90,6 +91,28 @@ Therefore:
 - `field present in connector` ≠ semantics verified.
 
 When a decision materially depends on a field that the current acquisition channel cannot provide, classify it as a capability/data-availability gap, use a verified alternate acquisition path when allowed, or downgrade the decision. Do not invent the missing measurement.
+
+### Retired or deleted historical reporting surfaces
+
+A source can stop exposing history because the reporting generation, saved report, schedule, UI surface, retention window, or underlying historical store has been retired or deleted. That is a historical availability state, not a metric observation.
+
+Therefore:
+
+```text
+legacy source no longer returns historical rows
+≠ historical metric value is zero
+≠ historical entity had no delivery
+```
+
+When a documented retirement/deletion boundary can explain the missing baseline:
+
+- set `historical_availability_status` to `retired/deleted` (or the nearest explicit connector-neutral equivalent), not `available` with zero values;
+- do not backfill missing legacy history with zeros, empty aggregates, or a different reporting generation without proving semantic comparability;
+- prefer a verified preserved export/warehouse snapshot or replay both windows under one compatible current generation when history exists there;
+- if no compatible baseline remains, shorten or reframe the comparison and downgrade the conclusion to `Unknown`, `Directional`, `Missing Data`, or `Hold` as appropriate;
+- when an exact retirement date matters, verify current vendor documentation because migration dates can change.
+
+This rule is intentionally generic. A current Amazon Ads migration is documented in `docs/research/unified-reporting-migration.md`.
 
 ## 3. Comparability states
 
@@ -117,9 +140,10 @@ Examples:
 - one source excludes paused/archived entities while another includes them;
 - one report is clicked-only while another includes impression-qualified rows;
 - a reporting platform migration changes terminology, attribution methodology, date attribution, history limits or dimension behavior;
+- a legacy reporting surface is retired/deleted so the requested baseline is no longer retrievable;
 - source timezone or currency treatment changes between windows.
 
-Treat a source, acquisition-channel, reporting-generation, attribution-variant, row-eligibility or date-attribution switch near the apparent break point as a competing cause until reconciled.
+Treat a source, acquisition-channel, reporting-generation, attribution-variant, row-eligibility, historical-availability or date-attribution switch near the apparent break point as a competing cause until reconciled.
 
 ## 5. Detect semantic metric-version drift
 
@@ -190,7 +214,7 @@ This is not a universal claim that `all views` is more or less correct than the 
 
 Treat a move between reporting generations as a first-class measurement migration, not a cosmetic UI change.
 
-A current Amazon Ads example is the transition from legacy Sponsored Ads / Amazon DSP reports to Unified Reporting. Public Amazon Ads documentation states that Unified Reporting standardizes metric names and terminology and reports conversion metrics on **traffic date**; legacy Amazon DSP and legacy Sponsored Brands workflows could report conversions on **conversion date**. Amazon also documents history limits that vary by time grain, metric and dimension, and plans to decommission the legacy report centers on December 31, 2026.
+A current Amazon Ads example is the transition from legacy Sponsored Ads / Amazon DSP reports to Unified Reporting. Public Amazon Ads documentation states that Unified Reporting standardizes metric names and terminology and reports conversion metrics on **traffic date**; legacy Amazon DSP and legacy Sponsored Brands workflows could report conversions on **conversion date**. Amazon also documents history limits that vary by time grain, metric and dimension, and plans to decommission the legacy report centers on December 31, 2026. Migration guidance reviewed September 17, 2026 additionally says remaining saved/scheduled legacy reports and historical data on those legacy pages will be permanently deleted at shutdown.
 
 Generic rules:
 
@@ -199,6 +223,8 @@ Generic rules:
 - matching total mature conversions over a broad window does not prove daily ROAS/CVR patterns are comparable;
 - standardized names do not prove standardized historical meaning;
 - verify the requested historical range is actually available for the chosen grain, metric and dimensions before replaying a baseline;
+- distinguish `history was zero` from `history is no longer available because the source was retired/deleted`;
+- preserve decision-critical legacy baselines before a documented retirement when allowed by the user's data-governance policy, but do not require or implement private connector storage here;
 - prefer recreating both baseline and comparison under one reporting generation/definition when possible;
 - otherwise build an overlap bridge and keep unresolved deltas `Directional`.
 
@@ -210,7 +236,7 @@ When a source, acquisition channel, reporting generation, attribution variant or
 
 1. identify the canonical decision metric and required population/scope;
 2. identify the metric definition/version, attribution variant, acquisition channel, reporting generation, date-attribution semantics and row-inclusion rule used in each window;
-3. verify both windows are available and complete at the requested grain;
+3. verify both windows are available and complete at the requested grain, including whether either source crossed a retention/retirement boundary;
 4. verify the active acquisition path actually exposes the needed metrics/dimensions without undocumented transformation;
 5. find an overlap window where both measurement paths report the same dates/entities when possible;
 6. compare totals and key components, not only ratios or daily timing shapes;
@@ -219,7 +245,7 @@ When a source, acquisition channel, reporting generation, attribution variant or
 9. label unresolved differences and downgrade actionability;
 10. prefer one stable source, acquisition path, reporting generation, attribution variant, semantic version and coverage contract for both windows when possible.
 
-For a semantic/reporting cutover, prefer replaying history under the current definition over splicing incompatible pre-cutover and post-cutover values into one trend.
+For a semantic/reporting cutover, prefer replaying history under the current definition over splicing incompatible pre-cutover and post-cutover values into one trend. If the old source has been retired and no compatible replay or preserved baseline exists, do not synthesize one from zero-filled history.
 
 ## 8. Freshness vs event coverage
 
@@ -233,6 +259,7 @@ Track separately:
 - which event/traffic dates are complete;
 - which conversion outcomes are mature enough for the decision;
 - whether the requested historical range exists for the selected grain/dimensions;
+- whether the historical source still exists or has crossed a retention/retirement boundary;
 - whether the active acquisition channel supports every metric and attribution variant needed for the decision.
 
 Population completeness is separate again: a report can be fresh and complete for its own clicked-only/impression-qualified contract while still not enumerate every logical entity/query. Use `report-coverage.md` when that distinction matters.
@@ -280,7 +307,7 @@ Prefer the measurement path that is:
 3. explicit about attribution variant/model/window when alternatives coexist;
 4. available through a verified acquisition channel for the required metrics/dimensions;
 5. explicit about reporting generation and date-attribution semantics;
-6. complete for the required dates and explicit about row eligibility/history limits;
+6. complete for the required dates and explicit about row eligibility/history limits/retirement state;
 7. attribution-mature enough;
 8. auditable and reproducible;
 9. stable across the compared windows;
@@ -291,12 +318,12 @@ If two trusted paths disagree materially, expose the disagreement rather than si
 
 ## 12. Action gate
 
-When a material performance break or post-change lift aligns with unresolved source-lineage, attribution-variant, acquisition-channel, reporting-generation, date-attribution, row-eligibility, semantic-version or asymmetric-backfill drift:
+When a material performance break or post-change lift aligns with unresolved source-lineage, attribution-variant, acquisition-channel, reporting-generation, date-attribution, row-eligibility, historical-availability, semantic-version or asymmetric-backfill drift:
 
 - do not call the movement `Confirmed` business deterioration or `Worked` optimization outcome;
 - do not generate aggressive bid, budget, negative, pause, scaling or rollback actions from the disputed delta;
 - return `Directional`, `Missing Data`, `Hold` or `Manual Review` as appropriate;
-- request a verified acquisition path, same-source/same-generation/same-attribution-variant/same-version/same-coverage replay, compatible population denominator, matched-maturity snapshot, or overlap reconciliation.
+- request a verified acquisition path, same-source/same-generation/same-attribution-variant/same-version/same-coverage replay, compatible population denominator, preserved compatible baseline, matched-maturity snapshot, or overlap reconciliation.
 
 ## 13. Safety boundary
 
