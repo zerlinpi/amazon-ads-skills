@@ -15,7 +15,8 @@ Default mode: `Suggest`. Use `Shadow` for simulation/backtesting. Never claim a 
 |---|---|
 | Recurring weekly / Monday PPC review, this week vs prior period | `../../playbooks/weekly-review.md` then only the required child Skills |
 | Whole-account audit / account takeover | `amazon-ads-audit` |
-| Routine campaign health / alerts | `campaign-health-monitor` |
+| Routine campaign health / status scan / watchlist | `campaign-health-monitor` |
+| Unexpected metric movement / alert triage / anomaly vs event | `anomaly-detection` |
 | Sustained sales, orders, ROAS, ACOS or traffic decline; what dropped and why | `performance-drop-diagnosis` |
 | Where to scale / which winners deserve more investment / growth headroom | `growth-opportunity-finder` |
 | Promising but unproven optimization; design a controlled test | `experiment-planner` |
@@ -27,14 +28,13 @@ Default mode: `Suggest`. Use `Shadow` for simulation/backtesting. Never claim a 
 | Top of Search / Product Pages / Rest of Search | `placement-optimization` |
 | Negative keywords / negative product targeting | `negative-targeting` |
 | Break-even ACOS / contribution profit / TACOS | `profitability-analysis` |
-| Unexplained metric anomaly / monitoring signal | `anomaly-detection` |
 
 ## Routing rules
 
 - For recurring weekly operating reviews, load `../../playbooks/weekly-review.md` first. It is a conductor playbook, not a replacement for specialist Skills.
 - During a weekly review, escalate only material findings to the minimum specialist Skill needed; do not load every Skill preemptively.
 - For a sustained business-impact decline, prefer `performance-drop-diagnosis` over a generic anomaly review.
-- For an alert without a confirmed sustained decline, start with `anomaly-detection` or `campaign-health-monitor`.
+- For an alert without a confirmed sustained decline, start with `anomaly-detection`; for scheduled multi-campaign status scanning, start with `campaign-health-monitor`.
 - For “lower ACOS”, diagnose traffic quality, CPC, CVR, placement, budget, retail readiness and economics before routing to bid reduction.
 - For “where can I grow?”, use `growth-opportunity-finder` before bid/budget tuning.
 - If a growth or efficiency hypothesis is plausible but not action-safe, route to `experiment-planner` instead of pretending it is a proven optimization.
@@ -44,6 +44,15 @@ Default mode: `Suggest`. Use `Shadow` for simulation/backtesting. Never claim a 
 - Resolve marketplace + profile/account scope before trusting retrieved optimization history. If the memory query is scope-incomplete, ambiguous, or collides across scopes, do not merge histories; prefer `Hold`, `Directional`, or `Manual Review` until identity is resolved.
 - If the previous action is still pending evaluation, application is unknown/drifted, or a new action would contaminate an active experiment, prefer `Hold`, `Experiment Only` or `Manual Review` unless a safety guardrail has triggered.
 - Load only the minimum child Skills required and only a bounded slice of relevant history.
+
+### Monitoring escalation ladder
+
+- Routine status scan → `campaign-health-monitor`
+- Unexpected signal / alert triage → `anomaly-detection`
+- Sustained business-impact decline + causal question → `performance-drop-diagnosis`
+- Do not load all three by default. Start at the narrowest stage supported by the user's intent and evidence, then escalate only if the current stage establishes the next-stage condition.
+
+This ladder is about **routing**, not three independent opinions on the same evidence. `campaign-health-monitor` may flag a Watch/Critical entity, `anomaly-detection` may determine whether the signal is unexplained, and `performance-drop-diagnosis` may then perform deep causal decomposition. Do not duplicate all three analyses in one pass unless the user explicitly asks for the full escalation chain.
 
 ## Shared checks
 
