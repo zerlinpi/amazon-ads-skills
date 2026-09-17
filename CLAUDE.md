@@ -2,6 +2,8 @@
 
 This repository is an Amazon Ads Agent Skills library. Use the canonical skill definitions in `skills/*/SKILL.md`; do not fork or duplicate their business rules into Claude-specific copies.
 
+For first-run installation, cloning, plugin/workspace choices, bootstrap prompts, and smoke tests, read `docs/GETTING-STARTED.md`. Prefer the whole repository as the workspace so `CLAUDE.md`, the canonical `skills/` tree, and shared references stay resolvable. If automatic Skill discovery fails, explicitly load the matching `skills/<name>/SKILL.md` instead of inventing a runtime-specific copy or path.
+
 ## How to work with this repository
 
 1. Match the user intent to one skill under `skills/`.
@@ -24,4 +26,4 @@ This repository is an Amazon Ads Agent Skills library. Use the canonical skill d
 - Effectiveness summaries do not call models, claim statistical significance, or authorize live advertising mutation.
 - Never expose secrets or authentication material.
 
-See `AGENTS.md` for repository-wide conventions, `references/data-lineage.md` for cross-source evidence rules, `references/optimization-memory.md` for measurement-state memory, and `references/decision-boundaries.md` for execution guardrails.
+See `AGENTS.md` for repository-wide conventions, `docs/GETTING-STARTED.md` for runtime setup and prompts, `references/data-lineage.md` for cross-source evidence rules, `references/optimization-memory.md` for measurement-state memory, and `references/decision-boundaries.md` for execution guardrails.
