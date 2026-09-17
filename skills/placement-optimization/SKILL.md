@@ -34,6 +34,12 @@ metadata:
 
 `references/realized-bid-exposure.md`
 
+当 recommendation 依赖 Amazon 当前 placement adjustment 范围、dynamic bidding 的精确平台行为、audience/video/other bid boost capability、rule eligibility，或 console/API 是否支持某项控制时，再加载：
+
+`../../references/platform-capability-lineage.md`
+
+平台规则发生版本/来源冲突时，先完成 capability lineage reconciliation；不要把旧 guide、launch announcement、不同 ad product 或不同 control surface 的数值直接当成当前 action-safe rule。
+
 ## 分析思路
 
 ### 1. 看效率，不只看销售额
@@ -51,6 +57,8 @@ metadata:
 Base/target bid、placement adjustment、campaign bidding strategy、schedule/event rule 都是配置控制；placement report 中的实际流量、CPC、CVR 和效率是 realized outcome。
 
 不要从配置值自行发明一个精确 auction-level effective bid。控制组合与 Amazon 的 auction-time logic 共同影响实际 exposure，应该通过控制时间线 + placement delivery/CPC 来诊断。
+
+当“Amazon 会如何自动提高/降低 bid、某 placement 最大 adjustment、某 control 是否在当前 surface/marketplace 可用”等事实影响推理时，先按 `../../references/platform-capability-lineage.md` 标记 capability scope 和 conflict status。`Conflicted` / `Unknown` 的 exact platform rule 不能支撑精确 effective-bid 推断或 modifier 建议。
 
 ### 3. 看增量潜力
 
@@ -96,6 +104,7 @@ Base bid、dynamic bidding、placement modifier、schedule/event rules 可能共
 - 若同时需要改 base bid 和 placement，优先分阶段；
 - 已有 base bid / placement / bidding-strategy / bid-rule 变化 pending evaluation 时，不叠加同一路由上的另一个 material change；
 - 数值幅度需要账户策略、校准响应或明确实验约束；必要时加载 `../../references/action-sizing.md`；
+- 平台允许范围/自动 multiplier 与 advertiser-specific sizing 分开；前者按 `../../references/platform-capability-lineage.md` 验证，后者按 action-sizing 决定；
 - 设验证窗口，避免短期反向调整；
 - 大促、event rule active window、零售状态变化需要单独解释。
 
@@ -106,6 +115,7 @@ Base bid、dynamic bidding、placement modifier、schedule/event rules 可能共
 - current base/target bid；
 - bidding strategy / active bid-rule state；
 - control state as-of / material change timeline；
+- platform capability scope / conflict status（当平台规则影响结论时）；
 - spend share / sales share；
 - CPC/CVR/ACOS；
 - baseline comparison；
@@ -128,4 +138,5 @@ Base bid、dynamic bidding、placement modifier、schedule/event rules 可能共
 - 不把历史 placement 平均效率当成增加 modifier 后的保证边际效率；
 - 不在 placement 样本很小的时候做大幅动作；
 - 不同时大改多个竞价层造成无法归因；
+- 不把未完成 capability lineage reconciliation 的旧/冲突 Amazon 文档数值写成当前确定的平台上限或自动调整公式；
 - 不在 material control state 缺失/过期时输出 action-safe 精确 modifier。
