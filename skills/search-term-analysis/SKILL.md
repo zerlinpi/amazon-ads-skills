@@ -1,6 +1,6 @@
 ---
 name: search-term-analysis
-description: 分析 Amazon Ads Search Term 数据，识别赢家词、扩词/Exact 收割候选、浪费词、否词候选和流量意图偏移。适用于搜索词报告、扩词、否词、流量质量诊断。
+description: Analyze Amazon Ads Search Term rows for origin, report coverage, query/traffic quality, winner and harvest-candidate evidence. Use when the primary task is interpreting Search Term evidence; route action-safe negative type/scope to negative-targeting and configured keyword/target lifecycle or structure to keyword-optimization.
 license: MIT
 metadata:
   author: "zerlinpi"
@@ -12,6 +12,13 @@ metadata:
 ---
 
 # Search Term Analysis
+
+## Routing boundary
+
+- 本 Skill 负责 **Search Term row 的解释层**：`term_origin`、report/row coverage、query/traffic quality、赢家/浪费证据，以及 harvest / negative 的候选筛选。
+- 如果用户的主要目标是选择 action-safe Negative Exact / Negative Phrase / Negative Product Targeting 的类型、scope 与误杀保护，路由到 `../negative-targeting/SKILL.md`；本 Skill 提供证据，不复制否定动作的最终控制决策。
+- 如果主要目标是 configured keyword/target 的结构、match type、state、lifecycle 或 traffic ownership，路由到 `../keyword-optimization/SKILL.md`。
+- 若同一任务同时需要解释 Search Term row 和选择否定动作，先完成本 Skill 的 origin/coverage/actionability gate，再把结论交给 `negative-targeting`；不要把两个 Skill 当成对同一问题的平行意见。
 
 ## 核心原则
 
@@ -134,7 +141,7 @@ Search Term report row 不一定等同于字面意义上的真实用户查询。
 每项：search term、`term_origin`、现有来源、证据、建议目标结构、confidence。
 
 ### Negative candidates
-每项：search term、`term_origin`、建议 negative type、证据、误伤风险、confidence、是否需要人工复核。
+每项：search term、`term_origin`、建议 negative type、证据、误伤风险、confidence、是否需要人工复核。需要形成 action-safe negative type/scope 时交给 `negative-targeting` 完成最终控制决策。
 
 ### Keep exploring
 列出样本不足、origin 不确定或相关性合理的词，解释为什么暂不动作。

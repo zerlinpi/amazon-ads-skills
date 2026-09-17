@@ -45,6 +45,14 @@ Default mode: `Suggest`. Use `Shadow` for simulation/backtesting. Never claim a 
 - If the previous action is still pending evaluation, application is unknown/drifted, or a new action would contaminate an active experiment, prefer `Hold`, `Experiment Only` or `Manual Review` unless a safety guardrail has triggered.
 - Load only the minimum child Skills required and only a bounded slice of relevant history.
 
+### Search / negative / keyword primary-intent boundary
+
+- Primary intent: interpret Search Term rows → `search-term-analysis` for origin, report coverage, query/traffic quality, winner/waste and harvest-candidate evidence.
+- Primary intent: choose negative type/scope → `negative-targeting` for guarded Negative Exact / Phrase / Product Targeting decisions and collateral-damage protection.
+- Primary intent: govern configured keyword/target lifecycle → `keyword-optimization` for structure, match type, state, lifecycle and traffic ownership.
+- If a negative decision depends on Search Term semantics, run the Search Term interpretation gate first and pass the resulting evidence to `negative-targeting`; do not load both as parallel competing analysts.
+- If keyword structure depends on a displayed Search Term string or harvest candidate, obtain the Search Term origin/actionability conclusion first; do not infer literal query identity inside keyword lifecycle work.
+
 ### Monitoring escalation ladder
 
 - Routine status scan → `campaign-health-monitor`

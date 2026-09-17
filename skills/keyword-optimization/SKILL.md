@@ -1,6 +1,6 @@
 ---
 name: keyword-optimization
-description: 优化 Amazon Ads keyword/target 的结构、匹配类型、状态和流量分工，识别扩量、收割、观察、降权或暂停候选。适用于关键词复盘、匹配类型治理、重复争抢和关键词分层。
+description: Govern configured keyword/target structure, match type, state, lifecycle and traffic ownership in Amazon Ads. Use for keyword/target review and structural decisions; route Search Term row interpretation or harvest evidence to search-term-analysis and guarded negative actions to negative-targeting.
 license: MIT
 metadata:
   author: "zerlinpi"
