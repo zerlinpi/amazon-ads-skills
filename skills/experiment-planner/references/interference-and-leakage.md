@@ -214,13 +214,14 @@ Re-verify boundaries after material scope-changing events and at sensible checkp
 - variation availability or parent/child structure changes;
 - promotion, price, inventory, Buy Box / Featured Offer or listing-state changes that affect only one cohort.
 
-Track when possible:
+Track this in the experiment-plan schema when available:
 
-- `launch_boundary_verified_at`;
-- `latest_boundary_verified_at`;
-- material scope-change timestamps;
-- whether each change was reviewed against the treatment/control map;
-- the first interval where boundary integrity became `At Risk`, `Leaky`, `Interfering`, or `Unknown`.
+- `comparison.boundary_monitoring.launch_verified_at` — launch-time boundary check;
+- `comparison.boundary_monitoring.latest_verified_at` — latest trustworthy boundary check;
+- `comparison.boundary_monitoring.current_status` — current compact integrity state;
+- `comparison.boundary_monitoring.material_scope_changes` — dated scope changes, each with `reverified` when known.
+
+For a `Ready` holdout, a material change newer than `boundary_monitoring.latest_verified_at` means the boundary is stale. A change explicitly marked `reverified = false` also blocks `Ready`. Do not treat a stale launch check as evidence that later routing, audience, budget, entity, retail, or automation conditions remained clean.
 
 If the latest trustworthy boundary check predates a material scope-changing event, do not claim the entire later window remained clean.
 
