@@ -49,6 +49,21 @@ class RuntimeOnboardingTests(unittest.TestCase):
         self.assertNotIn('"single bid change <= 20%"', examples)
         self.assertIn("contextual action sizing", examples.lower())
 
+    def test_ci_covers_runtime_facing_onboarding_contracts(self):
+        workflow = self.read(".github/workflows/validate-skills.yml")
+        required_paths = (
+            '"README.md"',
+            '"AGENTS.md"',
+            '"CLAUDE.md"',
+            '"docs/**"',
+            '"examples/**"',
+            '".codex-plugin/**"',
+            '".claude-plugin/**"',
+            '".workbuddy-plugin/**"',
+        )
+        for path in required_paths:
+            self.assertIn(path, workflow)
+
 
 if __name__ == "__main__":
     unittest.main()
