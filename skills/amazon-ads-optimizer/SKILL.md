@@ -15,7 +15,8 @@ Default mode: `Suggest`. Use `Shadow` for simulation/backtesting. Never claim a 
 |---|---|
 | Recurring weekly / Monday PPC review, this week vs prior period | `../../playbooks/weekly-review.md` then only the required child Skills |
 | Whole-account audit / account takeover | `amazon-ads-audit` |
-| Routine campaign health / alerts | `campaign-health-monitor` |
+| Routine portfolio/campaign health classification, watchlist, or recurring alert triage | `campaign-health-monitor` |
+| One unexplained deviation/single signal that first needs baseline/event classification | `anomaly-detection` |
 | Sustained sales, orders, ROAS, ACOS or traffic decline; what dropped and why | `performance-drop-diagnosis` |
 | Where to scale / which winners deserve more investment / growth headroom | `growth-opportunity-finder` |
 | Promising but unproven optimization; design a controlled test | `experiment-planner` |
@@ -27,14 +28,16 @@ Default mode: `Suggest`. Use `Shadow` for simulation/backtesting. Never claim a 
 | Top of Search / Product Pages / Rest of Search | `placement-optimization` |
 | Negative keywords / negative product targeting | `negative-targeting` |
 | Break-even ACOS / contribution profit / TACOS | `profitability-analysis` |
-| Unexplained metric anomaly / monitoring signal | `anomaly-detection` |
 
 ## Routing rules
 
 - For recurring weekly operating reviews, load `../../playbooks/weekly-review.md` first. It is a conductor playbook, not a replacement for specialist Skills.
 - During a weekly review, escalate only material findings to the minimum specialist Skill needed; do not load every Skill preemptively.
-- For a sustained business-impact decline, prefer `performance-drop-diagnosis` over a generic anomaly review.
-- For an alert without a confirmed sustained decline, start with `anomaly-detection` or `campaign-health-monitor`.
+- Use `campaign-health-monitor` when the job is recurring portfolio/campaign classification: Healthy/Watch/Critical, watchlist construction, or broad routine triage across multiple campaigns/signals.
+- Use `anomaly-detection` when the starting object is an unexplained deviation or single signal and the immediate question is whether it is a true anomaly, explained business event, data issue, or normal variance.
+- Use `performance-drop-diagnosis` when a sustained business-impact decline is already established and the user wants causal diagnosis: what changed, where the loss came from, and which causes are evidence-supported.
+- Do not treat these routes as mutually exclusive forever: a monitor can surface a signal, anomaly detection can classify it, and a material sustained decline can then escalate to causal diagnosis. Progressive loading means start at the narrowest stage supported by the request and evidence rather than loading all three.
+- For an alert without a confirmed sustained decline, choose between `anomaly-detection` and `campaign-health-monitor` using the scope distinction above; do not route merely because the prompt contains the word “alert”.
 - For “lower ACOS”, diagnose traffic quality, CPC, CVR, placement, budget, retail readiness and economics before routing to bid reduction.
 - For “where can I grow?”, use `growth-opportunity-finder` before bid/budget tuning.
 - If a growth or efficiency hypothesis is plausible but not action-safe, route to `experiment-planner` instead of pretending it is a proven optimization.
