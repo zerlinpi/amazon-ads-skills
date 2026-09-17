@@ -70,6 +70,23 @@ class AttributionVariantPolicyTests(unittest.TestCase):
         self.assertIn("click-based attribution", text.lower())
 
 
+class ReportingRetirementPolicyTests(unittest.TestCase):
+    def read(self, relative_path: str) -> str:
+        return (ROOT / relative_path).read_text(encoding="utf-8")
+
+    def test_unified_reporting_research_records_permanent_legacy_history_deletion(self):
+        text = self.read("docs/research/unified-reporting-migration.md").lower()
+        self.assertIn("permanently delete", text)
+        self.assertIn("historical availability", text)
+        self.assertIn("not coerced to zero", text)
+
+    def test_data_lineage_treats_retired_source_history_as_unavailable_not_zero(self):
+        text = self.read("references/data-lineage.md").lower()
+        self.assertIn("retired", text)
+        self.assertIn("historical availability", text)
+        self.assertIn("not zero", text)
+
+
 class BenchmarkPolicyTests(unittest.TestCase):
     def read(self, relative_path: str) -> str:
         return (ROOT / relative_path).read_text(encoding="utf-8")
