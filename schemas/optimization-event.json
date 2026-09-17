@@ -13,6 +13,21 @@
     "timestamp": {"type": "string", "format": "date-time"},
     "marketplace": {"type": ["string", "null"]},
     "profile_scope": {"type": ["string", "null"]},
+    "account_identity": {
+      "type": ["object", "null"],
+      "description": "Event-time advertiser/account identity envelope. Preserve explicit global, regional, legacy, profile, country, and mapping provenance when exposed; missing fields remain unknown.",
+      "properties": {
+        "manager_account_id": {"type": ["string", "null"]},
+        "global_advertiser_account_id": {"type": ["string", "null"]},
+        "regional_advertiser_account_id": {"type": ["string", "null"]},
+        "legacy_advertiser_account_id": {"type": ["string", "null"]},
+        "advertiser_account_id": {"type": ["string", "null"]},
+        "regional_profile_id": {"type": ["string", "null"]},
+        "country_code": {"type": ["string", "null"]},
+        "identity_mapping_provenance": {"type": ["object", "string", "null"]}
+      },
+      "additionalProperties": true
+    },
     "entity": {"type": "object", "required": ["type", "id"], "properties": {"type": {"type": "string"}, "id": {"type": "string", "minLength": 1}}, "additionalProperties": true},
     "action_type": {"type": "string"},
     "before_value": {}, "intended_value": {}, "current_value": {},
