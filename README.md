@@ -6,6 +6,25 @@ Amazon Ads AI Agent 技能库：监控、因果诊断、增长机会、受控实
 > 默认模式：`Suggest`  
 > 本仓库不直接修改真实 Amazon Ads 账户；写入由外部 Connector / Executor 负责。
 
+## Quick Start / 安装与首次调用
+
+最稳定的跨 Runtime 使用方式是直接克隆完整仓库，并把**仓库根目录**作为 Agent workspace：
+
+```bash
+git clone https://github.com/zerlinpi/amazon-ads-skills.git
+cd amazon-ads-skills
+```
+
+然后让 Codex / Claude Code / WorkBuddy 读取仓库级 instructions，并按需加载一个 `skills/<name>/SKILL.md`。完整的 Codex、Claude Code、WorkBuddy、手动加载、原生 plugin/Skill installer、验证步骤与可复制 Bootstrap prompts 见 **`docs/GETTING-STARTED.md`**。
+
+首次会话可以直接使用这个最小提示词：
+
+```text
+Read the repository instructions first. Select the one Skill under skills/ that best matches my task, state which Skill you selected and the missing inputs, and default to Suggest. List missing inputs instead of guessing. Do not perform live Amazon Ads writes; real mutations belong to an explicitly authorized External Connector / Executor.
+```
+
+如果 Runtime 没有自动发现 Skill，显式指定路径；跨多个优化域的任务从 `skills/amazon-ads-optimizer/SKILL.md` 开始。不要只复制单个 `SKILL.md` 而丢失其 `references/`、shared `references/`、`schemas/` 或 `playbooks/` 依赖。
+
 ## 核心闭环
 
 ```text
@@ -360,6 +379,8 @@ historical rows mutable
 | 其他 Agent Skills Runtime | `skills/<name>/SKILL.md` |
 
 三套 Runtime 共用同一个 canonical `skills/` 树，不复制 Amazon Ads 业务逻辑。`SKILL.md` frontmatter 对齐 Agent Skills 规范：顶层仅使用 `name`、`description` 及规范允许的可选字段；作者、版本、双语显示名等仓库自定义信息统一放入 `metadata`，避免在严格 validator/runtime 下因未知顶层字段加载失败。
+
+首次安装、repo-root workspace、native plugin/Skill installer、手动显式加载和 smoke-test 提示词统一见 `docs/GETTING-STARTED.md`；不要根据 manifest 的存在就假设某个 Runtime 已完成安装或自动发现。
 
 ## Deterministic Repository Validation
 
