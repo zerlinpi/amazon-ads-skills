@@ -98,7 +98,8 @@ class ReportingRetirementPolicyTests(unittest.TestCase):
         text = self.read("references/data-lineage.md").lower()
         self.assertIn("retired", text)
         self.assertIn("historical availability", text)
-        self.assertIn("not zero", text)
+        self.assertIn("historical metric value is zero", text)
+        self.assertIn("do not backfill missing legacy history with zeros", text)
 
 
 class BenchmarkPolicyTests(unittest.TestCase):
