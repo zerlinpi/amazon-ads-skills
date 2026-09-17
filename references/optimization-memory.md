@@ -2,7 +2,7 @@
 
 Load this shared reference when a decision touches an entity with prior optimization activity, when a previous action may still be maturing, or when the user asks for historical context.
 
-The goal is not to create a generic long-term memory system. Preserve enough decision lineage to prevent duplicate, contradictory, stale, cross-scope, or falsely attributed Amazon Ads optimizations. Use `schemas/optimization-event.json` for event records, `schemas/entity-history.json` for derived history, `references/data-lineage.md` for measurement comparability, and `references/realized-ad-identity.md` when shopper-facing realization can confound attribution.
+The goal is not to create a generic long-term memory system. Preserve enough decision lineage to prevent duplicate, contradictory, stale, cross-scope, or falsely attributed Amazon Ads optimizations. Use `schemas/optimization-event.json` for event records, `schemas/entity-history.json` for derived history, `references/data-lineage.md` for measurement comparability, `references/cross-account-identity.md` when history can span advertiser/account/country/region or account-identity generations, and `references/realized-ad-identity.md` when shopper-facing realization can confound attribution.
 
 ## Core model
 
@@ -14,13 +14,13 @@ Before a material bid, budget, placement, negative, state, or structural recomme
 
 ## Collision-safe identity
 
-Preferred identity is:
+Preferred identity is a verified account identity envelope plus:
 
 ```text
 marketplace + profile/account scope + entity type + entity id + control dimension
 ```
 
-Names and locally normalized IDs alone are not collision-safe. When marketplace/profile scope is incomplete, ambiguous, or colliding, do not merge histories or transfer outcomes/readbacks; downgrade to Hold, Directional, or Manual Review until scope resolves.
+Names and locally normalized IDs alone are not collision-safe. When marketplace/profile/account identity is incomplete, ambiguous, or colliding, do not merge histories or transfer outcomes/readbacks; downgrade to Hold, Directional, or Manual Review until scope resolves. When global, regional, legacy advertiser IDs or regional profiles coexist, apply `references/cross-account-identity.md` before history retrieval or deduplication and preserve `account_identity` from `schemas/optimization-event.json` when known.
 
 Verified predecessor/successor migration can preserve bounded lineage, but predecessor live state is never successor current state. Cross-marketplace predecessor performance is directional by default: do not directly transfer bids, CPC/CVR/CTR/ACOS/ROAS baselines, budgets, placement multipliers, profitability thresholds, sample thresholds, or validation clocks without successor-market calibration.
 
@@ -83,11 +83,11 @@ If realization comparability is Directional, Not Comparable, or Unknown, do not 
 
 ## Partial-memory warnings
 
-Expose incomplete-history conditions such as local-only history, external executor history unavailable, missing readback, unknown write result, event gap, identity-scope ambiguity, migration mapping partial, historical evidence restated, retired/deleted historical source, or realization comparability unresolved. Never treat a partial ledger as complete account history.
+Expose incomplete-history conditions such as local-only history, external executor history unavailable, missing readback, unknown write result, event gap, identity-scope ambiguity, account-identity mapping unavailable, migration mapping partial, historical evidence restated, retired/deleted historical source, or realization comparability unresolved. Never treat a partial ledger as complete account history.
 
 ## Retrieval order
 
-Resolve marketplace/profile scope first; retrieve same entity + same control newest-first; then verified predecessor history; overlapping other controls; parent changes; active experiments; account/portfolio constraints; and relevant realization snapshots. Keep the slice bounded rather than dumping account history into context.
+Resolve account identity generation/mapping plus marketplace/profile scope first; retrieve same entity + same control newest-first; then verified predecessor history; overlapping other controls; parent changes; active experiments; account/portfolio constraints; and relevant realization snapshots. Keep the slice bounded rather than dumping account history into context.
 
 ## Output contract
 
