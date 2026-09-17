@@ -4,6 +4,14 @@ on:
   push:
     branches: [main]
     paths:
+      - "README.md"
+      - "AGENTS.md"
+      - "CLAUDE.md"
+      - ".codex-plugin/**"
+      - ".claude-plugin/**"
+      - ".workbuddy-plugin/**"
+      - "docs/**"
+      - "examples/**"
       - "skills/**"
       - "references/**"
       - "schemas/**"
@@ -14,6 +22,14 @@ on:
       - ".github/workflows/validate-skills.yml"
   pull_request:
     paths:
+      - "README.md"
+      - "AGENTS.md"
+      - "CLAUDE.md"
+      - ".codex-plugin/**"
+      - ".claude-plugin/**"
+      - ".workbuddy-plugin/**"
+      - "docs/**"
+      - "examples/**"
       - "skills/**"
       - "references/**"
       - "schemas/**"
