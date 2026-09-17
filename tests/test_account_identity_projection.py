@@ -12,10 +12,13 @@ EVENT_SCHEMA = ROOT / "schemas/optimization-event.json"
 HISTORY_SCHEMA = ROOT / "schemas/entity-history.json"
 
 
-def invoke(script: Path, events):
+def invoke(script: Path, events, expected_scope=None):
+    payload = {"events": events}
+    if expected_scope is not None:
+        payload["expected_scope"] = expected_scope
     return subprocess.run(
         [sys.executable, str(script)],
-        input=json.dumps({"events": events}),
+        input=json.dumps(payload),
         text=True,
         capture_output=True,
         cwd=ROOT,
@@ -31,6 +34,18 @@ def identity(global_id: str, *, regional_id: str | None = None):
     if regional_id is not None:
         value["regional_advertiser_account_id"] = regional_id
     return value
+
+
+def expected_scope(global_id: str):
+    return {
+        "marketplace": "US",
+        "profile_scope": "profile-a",
+        "entity_type": "campaign",
+        "entity_id": "campaign-1",
+        "account_identity": {
+            "global_advertiser_account_id": global_id,
+        },
+    }
 
 
 def base_event(event_id: str, account_identity, *, timestamp: str):
@@ -127,6 +142,79 @@ class AccountIdentityProjectionTests(unittest.TestCase):
         self.assertEqual(realization.returncode, 0, realization.stderr)
         realization_projection = json.loads(realization.stdout)
         self.assertEqual(realization_projection["account_identity"], account)
+
+    def test_measurement_expected_scope_rejects_wrong_advertiser_identity(self):
+        event = base_event("e1", identity("global-b"), timestamp="2026-09-17T10:00:00Z")
+        event["evidence_snapshot"] = {
+            "snapshot_id": "m1",
+            "captured_at": "2026-09-17T10:00:00Z",
+        }
+
+        result = invoke(MEASUREMENT_SCRIPT, [event], expected_scope("global-a"))
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("account identity", result.stderr.lower())
+
+    def test_realization_expected_scope_rejects_wrong_advertiser_identity(self):
+        event = base_event("e1", identity("global-b"), timestamp="2026-09-17T10:00:00Z")
+        event["realization_snapshot"] = {
+            "snapshot_id": "r1",
+            "captured_at": "2026-09-17T10:00:00Z",
+            "realized_surfaces": ["shopping_results"],
+            "coverage_status": "Complete",
+        }
+
+        result = invoke(REALIZATION_SCRIPT, [event], expected_scope("global-a"))
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("account identity", result.stderr.lower())
+
+    def test_expected_account_identity_rejects_missing_event_identity(self):
+        measurement_event = base_event("e1", None, timestamp="2026-09-17T10:00:00Z")
+        measurement_event["evidence_snapshot"] = {
+            "snapshot_id": "m1",
+            "captured_at": "2026-09-17T10:00:00Z",
+        }
+        measurement = invoke(
+            MEASUREMENT_SCRIPT,
+            [measurement_event],
+            expected_scope("global-a"),
+        )
+        self.assertEqual(measurement.returncode, 2)
+        self.assertIn("account identity", measurement.stderr.lower())
+
+        realization_event = base_event("e2", None, timestamp="2026-09-17T11:00:00Z")
+        realization_event["realization_snapshot"] = {
+            "snapshot_id": "r1",
+            "captured_at": "2026-09-17T11:00:00Z",
+            "realized_surfaces": ["shopping_results"],
+            "coverage_status": "Complete",
+        }
+        realization = invoke(
+            REALIZATION_SCRIPT,
+            [realization_event],
+            expected_scope("global-a"),
+        )
+        self.assertEqual(realization.returncode, 2)
+        self.assertIn("account identity", realization.stderr.lower())
+
+    def test_matching_expected_account_identity_is_accepted(self):
+        account = identity("global-a", regional_id="regional-na-a")
+        measurement_event = base_event("e1", account, timestamp="2026-09-17T12:00:00Z")
+        measurement_event["evidence_snapshot"] = {
+            "snapshot_id": "m1",
+            "captured_at": "2026-09-17T12:00:00Z",
+        }
+
+        result = invoke(
+            MEASUREMENT_SCRIPT,
+            [measurement_event],
+            expected_scope("global-a"),
+        )
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        projected = json.loads(result.stdout)
+        self.assertEqual(projected["account_identity"]["global_advertiser_account_id"], "global-a")
 
 
 if __name__ == "__main__":
