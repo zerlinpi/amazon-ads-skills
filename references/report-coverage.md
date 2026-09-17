@@ -2,43 +2,48 @@
 
 Load this shared reference when a decision assumes that rows returned by an Amazon Ads report represent the full underlying entity/query population, or when totals from reports with different inclusion rules are compared.
 
-The goal is to prevent **report selection rules** from being mistaken for business behavior.
+The goal is to prevent **report selection rules and incomplete extraction** from being mistaken for business behavior.
 
-## 1. A valid report can still be population-incomplete by design
+## 1. Separate generation, extraction and population coverage
 
-A report may be complete according to its own contract while intentionally omitting rows that do not satisfy an eligibility condition.
+A report can be valid according to its own row contract and still be population-incomplete by design. Separately, a successfully generated report can be only partially acquired by a connector/client because pagination stopped early, a response was truncated, a download was incomplete, or a downstream ingestion omitted pages.
 
-Examples from current Amazon Ads public documentation include:
+Keep these states distinct:
 
-- Sponsored Products Search Term reports include only search terms that generated at least one ad click for the requested period;
-- Sponsored Products Targeting reports cover targets in campaigns that received at least one impression;
-- other report types may have their own campaign/ad-product/account eligibility, lookback, grain, status or metric-availability contracts.
+- `generation_status` — whether the upstream report job/artifact completed successfully;
+- `pagination_status` — complete, partial, not_applicable, or unknown for the acquisition path;
+- `truncation_status` — not_truncated, truncated, suspected, or unknown;
+- `row_inclusion_rule` — clicked-only, impression-qualified, delivered-only, active-only, full-enumeration, or unknown;
+- `population_coverage` — whether the returned rows can answer the logical population question being asked.
 
 Therefore:
 
 ```text
 report generation completed successfully
+!= extraction completed successfully
 != every logical entity/query appears as a row
 ```
 
-Do not treat a missing row as zero until the report contract proves that zero-valued members are represented.
+A partial/truncated extraction is not evidence of zero for omitted members and is not evidence of full population coverage. Do not treat a missing row as zero until both acquisition completeness and the report contract prove that zero-valued members are represented.
 
-## 2. Track row-inclusion semantics explicitly
+## 2. Track row-inclusion and extraction semantics explicitly
 
 When coverage matters, capture when available:
 
 - `report_type` / dataset identity;
+- `generation_status`;
 - `row_inclusion_rule` — e.g. clicked-only, impression-qualified, delivered-only, active-only, unknown;
 - `eligibility_scope` — campaign/ad product/account/profile/marketplace constraints;
 - `lookback_limit`;
 - requested date range and supported time grain;
-- pagination/completion state;
+- `pagination_status`, including whether every expected page/token/chunk was consumed;
+- `truncation_status`, including connector/client row caps or incomplete downloads when known;
 - filters and selected dimensions;
 - whether zero-activity entities can appear;
 - whether report totals are expected to reconcile to a parent/canonical total;
 - known metric availability or attribution differences.
 
-If the inclusion rule is unknown and a conclusion depends on population completeness, downgrade confidence rather than infer completeness.
+If generation succeeded but pagination/truncation is unknown, do not promote that success to extraction completeness. If the inclusion rule is unknown and a conclusion depends on population completeness, downgrade confidence rather than infer completeness.
 
 ## 3. Search-term report selection effect
 
@@ -103,27 +108,29 @@ Do not silently shorten those labels to `worst search term in the account` or `a
 
 Before joining or reconciling two reports, compare their:
 
+- report generation status;
+- pagination/truncation/acquisition completeness;
 - row-inclusion / eligibility rules;
 - account/profile/marketplace scope;
 - ad-product coverage;
 - dimensions/grain;
 - attribution and metric semantics;
-- lookback/time boundaries;
-- pagination/completeness state.
+- lookback/time boundaries.
 
-Two reports generated from the same console or API are not automatically population-equivalent.
+Two reports generated from the same console or API are not automatically population-equivalent, and two successful report jobs are not automatically equally complete extractions.
 
 When material, route these differences through `data-lineage.md` and classify the comparison as `Comparable / Reconcilable / Directional / Not Comparable / Unknown`.
 
 ## 8. Action gate
 
-When an action depends on rows that the report contract may systematically omit:
+When an action depends on rows that the report contract may systematically omit, or when extraction completeness is not verified:
 
 - do not manufacture zero rows;
-- do not make full-population rankings from a selected subset;
+- do not make full-population rankings from a selected or partially acquired subset;
 - do not infer no-delivery configuration state from performance-report absence alone;
-- request/reconcile the source needed for the missing population dimension;
-- or keep the recommendation explicitly bounded to the represented rows.
+- do not equate upstream report-job success with complete connector/client acquisition;
+- request/reconcile the source or remaining pages needed for the missing population dimension;
+- or keep the recommendation explicitly bounded to the represented and verified-acquired rows.
 
 This is especially important for account audits, query coverage claims, CTR/impression diagnostics, pruning decisions and “all waste / all opportunities” language.
 
