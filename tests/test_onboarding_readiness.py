@@ -37,12 +37,16 @@ class RuntimeOnboardingTests(unittest.TestCase):
             self.assertIn("docs/GETTING-STARTED.md", self.read(path), path)
 
     def test_bootstrap_prompts_are_copyable_and_fail_closed(self):
-        guide = self.read("docs/GETTING-STARTED.md")
-        self.assertIn("Bootstrap prompt", guide)
-        self.assertIn("read the repository instructions", guide.lower())
-        self.assertIn("do not perform live Amazon Ads writes", guide)
-        self.assertIn("state which Skill you selected", guide)
-        self.assertIn("list missing inputs instead of guessing", guide)
+        guide_lower = self.read("docs/GETTING-STARTED.md").lower()
+        required = (
+            "bootstrap prompt",
+            "read the repository instructions",
+            "do not perform live amazon ads writes",
+            "state which skill you selected",
+            "list missing inputs instead of guessing",
+        )
+        for text in required:
+            self.assertIn(text, guide_lower)
 
     def test_examples_do_not_reintroduce_global_percent_guardrail(self):
         examples = self.read("examples/README.md")
