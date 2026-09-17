@@ -1,0 +1,54 @@
+import unittest
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+class RuntimeOnboardingTests(unittest.TestCase):
+    def read(self, relative_path: str) -> str:
+        return (ROOT / relative_path).read_text(encoding="utf-8")
+
+    def test_getting_started_covers_clone_runtime_routes_and_verification(self):
+        guide_path = ROOT / "docs/GETTING-STARTED.md"
+        self.assertTrue(guide_path.is_file())
+        guide = guide_path.read_text(encoding="utf-8")
+
+        required = (
+            "git clone https://github.com/zerlinpi/amazon-ads-skills.git",
+            "## Codex",
+            "## Claude Code",
+            "## WorkBuddy",
+            "## Manual / explicit Skill loading",
+            "AGENTS.md",
+            "CLAUDE.md",
+            "skills/amazon-ads-optimizer/SKILL.md",
+            "python -m unittest discover -s tests -v",
+            "python scripts/validate_skills.py .",
+            "python scripts/validate_evals.py .",
+            "Suggest",
+            "External Connector / Executor",
+        )
+        for text in required:
+            self.assertIn(text, guide)
+
+    def test_public_entrypoints_link_to_getting_started(self):
+        for path in ("README.md", "AGENTS.md", "CLAUDE.md"):
+            self.assertIn("docs/GETTING-STARTED.md", self.read(path), path)
+
+    def test_bootstrap_prompts_are_copyable_and_fail_closed(self):
+        guide = self.read("docs/GETTING-STARTED.md")
+        self.assertIn("Bootstrap prompt", guide)
+        self.assertIn("read the repository instructions", guide.lower())
+        self.assertIn("do not perform live Amazon Ads writes", guide)
+        self.assertIn("state which Skill you selected", guide)
+        self.assertIn("list missing inputs instead of guessing", guide)
+
+    def test_examples_do_not_reintroduce_global_percent_guardrail(self):
+        examples = self.read("examples/README.md")
+        self.assertNotIn('"single bid change <= 20%"', examples)
+        self.assertIn("contextual action sizing", examples.lower())
+
+
+if __name__ == "__main__":
+    unittest.main()
