@@ -167,6 +167,19 @@ No Microsoft-specific behavior is asserted as Amazon Ads behavior. The generic c
 
 Repository: https://github.com/MicrosoftDocs/Advertising
 
+### actions/checkout and actions/setup-python
+
+GitHub's official MIT-licensed workflow actions were reviewed during the v1.0 release-readiness pass after the repository's CI emitted a Node 20 deprecation warning. Current official documentation/release metadata uses `actions/checkout@v7` and `actions/setup-python@v7`; these releases run on the current Node 24 action runtime generation. The hosted GitHub runner observed by this repository was already new enough for the documented runtime requirement.
+
+Only the action major-version references in `.github/workflows/validate-skills.yml` were updated. No GitHub Action source code, workflow implementation, examples, composite action internals, or documentation prose was copied into this repository. This is infrastructure maintenance only and does not change Amazon Ads decision logic or execution authority.
+
+Repositories:
+
+- https://github.com/actions/checkout
+- https://github.com/actions/setup-python
+
+License/adoption note: both repositories are MIT licensed. Version/runtime facts were verified from GitHub's official repositories; the repository continues to use its own minimal validation workflow and independent test contracts.
+
 ## Reviewed public Amazon Ads documentation
 
 ### Amazon Ads budget and bidding rules

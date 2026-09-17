@@ -61,6 +61,9 @@ Modes:
 - Experiment plan schema: `schemas/experiment-plan.json`
 - Historical replay framework: `evals/README.md`
 - Eval-case schema: `schemas/eval-case.json`
+- Paired Skill-effectiveness result schema: `schemas/skill-effectiveness-benchmark.json`
+- Decision-time measurement-state projector: `scripts/project_measurement_history.py`
+- Paired with/without-Skill benchmark summarizer: `scripts/summarize_skill_effectiveness.py`
 
 ## Evaluation rules
 
@@ -74,6 +77,16 @@ When adding or changing decision logic, prefer adding a focused synthetic replay
 - Do not weaken a fixture merely because a current model fails it; change the Skill only when the fixture represents the intended behavior.
 - Prefer synthetic identifiers and values. Never commit client/account secrets or proprietary exports as fixtures.
 - Eval fixtures must remain closed-world by default and must not trigger live Amazon Ads writes.
+- For important with-Skill / without-Skill comparisons, keep pair identity and harness/model/tool/evidence configuration aligned. `scripts/summarize_skill_effectiveness.py` fails closed on missing/duplicate pair variants and reports measured deltas only; it does not claim statistical significance.
+
+## Read-only repository utilities
+
+The repository includes deterministic helpers for derived memory and evaluation summaries. These are not Amazon Ads executors.
+
+- `scripts/project_measurement_history.py` reads an optimization-event slice from stdin and projects only the newest traceable `evidence_snapshot` into `latest_measurement_state`. It fails closed on requested scope mismatch, preserves `unknown`, `retired_or_deleted` and `Not Comparable`, and never converts unavailable history to zero.
+- `scripts/summarize_skill_effectiveness.py` reads completed benchmark trial records that conform to `schemas/skill-effectiveness-benchmark.json`. It validates paired `with_skill` / `without_skill` trials and reports counts/rates/deltas. It does not call a model, invoke a live agent runtime, or mutate an advertiser account.
+
+Actual model/harness execution remains an external evaluation-runner concern. Raw transcripts and provider credentials should stay outside normal Skill loading paths and outside committed fixtures unless explicitly synthetic and safe.
 
 ## Agent Skills frontmatter compatibility
 
@@ -94,7 +107,7 @@ Keep `name` within the Agent Skills naming constraints and `description` within 
 
 ## Deterministic repository validation
 
-After changing a Skill, its supporting references, shared references, schemas, playbooks, eval fixtures, or validators, run:
+After changing a Skill, its supporting references, shared references, schemas, playbooks, eval fixtures, validators, projector/summarizer utilities, or runtime manifests, run:
 
 ```bash
 python -m unittest discover -s tests -v
@@ -102,7 +115,7 @@ python scripts/validate_skills.py .
 python scripts/validate_evals.py .
 ```
 
-The validators are intentionally dependency-free and check repository invariants that should fail before a runtime or eval harness discovers them interactively.
+The validators are intentionally dependency-free and check repository invariants that should fail before a runtime or eval harness discovers them interactively. Unit tests additionally cover measurement-state projection, realized-ad projection, experiment-plan semantics, paired effectiveness aggregation and release/runtime compatibility.
 
 Skill/package validation checks:
 
