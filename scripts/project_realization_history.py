@@ -22,6 +22,22 @@ MATERIAL_DIMENSIONS = (
 BOUNDED_COVERAGE = {"Complete", "Partial"}
 OBSERVABILITY_STATUSES = {"Complete", "Partial", "Unavailable", "Unknown"}
 SCOPE_FIELDS = ("marketplace", "profile_scope", "entity_type", "entity_id")
+ACCOUNT_IDENTITY_FIELDS = (
+    "manager_account_id",
+    "global_advertiser_account_id",
+    "regional_advertiser_account_id",
+    "legacy_advertiser_account_id",
+    "advertiser_account_id",
+    "regional_profile_id",
+    "country_code",
+)
+STRONG_ACCOUNT_IDENTITY_FIELDS = (
+    "global_advertiser_account_id",
+    "regional_advertiser_account_id",
+    "legacy_advertiser_account_id",
+    "advertiser_account_id",
+    "regional_profile_id",
+)
 
 
 def _parse_timestamp(value: Any, *, field: str) -> datetime:
@@ -104,6 +120,68 @@ def _validate_scope(
     return event_scope
 
 
+def _event_account_identity(event: dict[str, Any]) -> dict[str, Any] | None:
+    value = event.get("account_identity")
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        raise ValueError("account identity must be an object or null")
+
+    normalized: dict[str, Any] = {}
+    for field in ACCOUNT_IDENTITY_FIELDS:
+        item = value.get(field)
+        if item is None:
+            continue
+        if not isinstance(item, str) or not item:
+            raise ValueError(f"account identity {field} must be a non-empty string or null")
+        normalized[field] = item
+
+    if not any(field in normalized for field in STRONG_ACCOUNT_IDENTITY_FIELDS):
+        return None
+
+    provenance = value.get("identity_mapping_provenance")
+    if provenance is not None:
+        normalized["identity_mapping_provenance"] = provenance
+    return normalized
+
+
+def _merge_account_identity(
+    resolved: dict[str, Any] | None,
+    current: dict[str, Any] | None,
+    *,
+    missing_seen: bool,
+) -> tuple[dict[str, Any] | None, bool]:
+    if current is None:
+        if resolved is not None:
+            raise ValueError("realization account identity is incomplete across the event slice")
+        return None, True
+
+    if missing_seen:
+        raise ValueError("realization account identity is incomplete across the event slice")
+    if resolved is None:
+        return dict(current), False
+
+    for field in ACCOUNT_IDENTITY_FIELDS:
+        if field in resolved and field in current and resolved[field] != current[field]:
+            raise ValueError(f"realization account identity conflicts on {field}")
+
+    shared_strong = [
+        field
+        for field in STRONG_ACCOUNT_IDENTITY_FIELDS
+        if field in resolved and field in current and resolved[field] == current[field]
+    ]
+    if not shared_strong:
+        raise ValueError("realization account identity cannot be reconciled across the event slice")
+
+    merged = dict(resolved)
+    for field in ACCOUNT_IDENTITY_FIELDS:
+        if field in current and field not in merged:
+            merged[field] = current[field]
+    if "identity_mapping_provenance" in current:
+        merged["identity_mapping_provenance"] = current["identity_mapping_provenance"]
+    return merged, False
+
+
 def _project_last_observed(snapshot: dict[str, Any], observed_at: str) -> dict[str, Any]:
     projected: dict[str, Any] = {
         "snapshot_id": snapshot.get("snapshot_id"),
@@ -152,12 +230,15 @@ def project_realization_history(
     rather than silently merging realization histories across entities/accounts. A
     caller may additionally provide expected_scope to require every realization event
     to carry the complete marketplace/profile/entity identity and match the requested
-    replay scope exactly.
+    replay scope exactly. Explicit account identities must also be mutually compatible;
+    missing and known account identity must not be silently merged.
     """
 
     normalized_expected_scope = _normalize_expected_scope(expected_scope)
     observations: list[tuple[datetime, int, str, dict[str, Any]]] = []
     observed_scopes: set[tuple[Any, Any, Any, Any]] = set()
+    account_identity: dict[str, Any] | None = None
+    missing_account_identity_seen = False
 
     for index, event in enumerate(events):
         if not isinstance(event, dict):
@@ -173,6 +254,12 @@ def project_realization_history(
             observed_scopes.add(scope)
             if len(observed_scopes) > 1:
                 raise ValueError("realization projection requires a single entity scope")
+
+        account_identity, missing_account_identity_seen = _merge_account_identity(
+            account_identity,
+            _event_account_identity(event),
+            missing_seen=missing_account_identity_seen,
+        )
 
         parsed_time, raw_time = _observation_time(event, snapshot)
         observations.append((parsed_time, index, raw_time, snapshot))
@@ -192,10 +279,13 @@ def project_realization_history(
             last_observed = _project_last_observed(snapshot, observed_at)
             break
 
-    return {
+    result = {
         "last_observed_realization": last_observed,
         "current_realization_observability": _project_observability(newest_snapshot, newest_time),
     }
+    if account_identity is not None:
+        result["account_identity"] = account_identity
+    return result
 
 
 def _load_payload() -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
