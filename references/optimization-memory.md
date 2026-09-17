@@ -59,6 +59,14 @@ When reporting generation, date attribution, acquisition channel, semantic versi
 
 If history later restates enough to change an outcome, append a correction/re-evaluation linked to the original event and preserve both evidence identities. Reconcile before using the changed conclusion for another aggressive optimization.
 
+## Derived measurement-state projection
+
+`schemas/entity-history.json` may expose `latest_measurement_state` as a bounded retrieval projection of the newest decision-relevant evidence identity. Populate it from a traceable event/evidence snapshot; do not synthesize missing lineage from entity IDs, metric values, or a newer connector response.
+
+Keep the event ledger authoritative. The projection should carry the evidence snapshot identity, observed time, source system/dataset, acquisition channel, reporting generation, semantic version, date-attribution semantics, historical-availability state, comparability state, and warnings when known. A later `unknown`, `unavailable`, or `retired_or_deleted` observation must not silently become zero, and a previous `Comparable` state must not be assumed current after a reporting-generation or attribution change.
+
+Fail closed when the projection carries material uncertainty. `Worked / Keep` describes a historical outcome; it must not override `comparability_status = Not Comparable|Unknown` or `historical_availability_status = unavailable|retired_or_deleted|unknown`. In those cases, downgrade reuse to bounded/directional evidence, Hold, or Manual Review as appropriate until comparability is re-established. Do not let a compact entity summary erase the uncertainty preserved by its source events.
+
 ## Realization-aware memory
 
 When platform-managed surface/product/creative/message realization can affect causal interpretation, preserve the bounded `realization_snapshot` defined in `schemas/optimization-event.json`. Missing realization fields are not evidence that realization was unchanged or zero.
@@ -83,7 +91,7 @@ Resolve marketplace/profile scope first; retrieve same entity + same control new
 
 ## Output contract
 
-When memory materially affects a decision, report history status, identity scope, latest relevant action/time, application/readback status, validation maturity, latest outcome, decision-time evidence identity, latest restatement status, realization comparability when relevant, unresolved warnings, and next decision point.
+When memory materially affects a decision, report history status, identity scope, latest relevant action/time, application/readback status, validation maturity, latest outcome, decision-time evidence identity, latest measurement state/comparability, latest restatement status, realization comparability when relevant, unresolved warnings, and next decision point.
 
 ## Safety boundary
 
