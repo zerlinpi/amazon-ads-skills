@@ -9,15 +9,19 @@ This repository is an Amazon Ads Agent Skills library. Use the canonical skill d
 3. Load `references/` or `schemas/` only when the skill asks for them or the task requires exact definitions.
 4. Use `skills/amazon-ads-optimizer/SKILL.md` when the request spans multiple optimization domains.
 5. When compared windows come from different APIs, MCPs, exports, warehouses or report definitions, load `references/data-lineage.md` before high-confidence trend/causal conclusions.
-6. Default to `Suggest` mode unless the user explicitly requests another mode and an external executor is available.
+6. When compact history needs decision-time measurement identity, use the read-only `scripts/project_measurement_history.py` projection contract rather than inventing lineage from current metrics.
+7. When evaluating whether a Skill adds value, use `schemas/skill-effectiveness-benchmark.json` plus `scripts/summarize_skill_effectiveness.py` only for completed paired trial records; actual model/harness execution remains external.
+8. Default to `Suggest` mode unless the user explicitly requests another mode and an external executor is available.
 
 ## Non-negotiable safety
 
 - Skills in this repository do not directly mutate live Amazon Ads accounts.
 - `Execute` means producing a validated action payload for an external connector/executor after explicit authorization.
 - Never fabricate missing metrics, source lineage, or silently mix marketplaces, profile/account scopes, currencies, timezones, attribution windows, date ranges, or incompatible source definitions.
+- Missing/retired historical reporting, unsupported connector fields, or absent report rows are not zero unless the source contract explicitly proves zero.
 - Distinguish when data was fetched from which event dates are actually complete; `extracted_at` does not imply `available_through`.
 - Detect promotional periods, operational confounders, and parent/variation-family retail changes before interpreting short-term child-ASIN performance changes.
+- Effectiveness summaries do not call models, claim statistical significance, or authorize live advertising mutation.
 - Never expose secrets or authentication material.
 
-See `AGENTS.md` for repository-wide conventions, `references/data-lineage.md` for cross-source evidence rules, and `references/decision-boundaries.md` for execution guardrails.
+See `AGENTS.md` for repository-wide conventions, `references/data-lineage.md` for cross-source evidence rules, `references/optimization-memory.md` for measurement-state memory, and `references/decision-boundaries.md` for execution guardrails.
