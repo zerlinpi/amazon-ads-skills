@@ -4,6 +4,12 @@
 
 This repository contains reusable Amazon Ads Agent Skills. The canonical business logic lives under `skills/<skill-name>/SKILL.md` and must remain portable across Codex, Claude Code, WorkBuddy, and other Agent Skills-compatible runtimes.
 
+## First-run / installation guidance
+
+For a fresh runtime, repository URL, or manual checkout, read `docs/GETTING-STARTED.md` before inventing runtime-specific install paths. The stable default is repository-workspace mode: clone the whole repository, open the repository root, keep `AGENTS.md` plus the canonical `skills/` tree and shared references together, then progressively load only the Skill needed for the task.
+
+A runtime manifest or cloned directory is not proof that Skill discovery succeeded. Verify a fresh setup with the bootstrap/smoke-test prompts in `docs/GETTING-STARTED.md`. If automatic discovery fails, explicitly load the matching `skills/<name>/SKILL.md`; for cross-domain work use `skills/amazon-ads-optimizer/SKILL.md`.
+
 ## Skill discovery
 
 - Treat every `skills/*/SKILL.md` as an independently invocable skill.
