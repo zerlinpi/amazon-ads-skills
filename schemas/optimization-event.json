@@ -9,51 +9,34 @@
     "event_id": {"type": "string", "minLength": 1},
     "parent_action_id": {"type": ["string", "null"]},
     "supersedes_event_id": {"type": ["string", "null"]},
-    "event_type": {
-      "type": "string",
-      "enum": ["proposed", "approved", "applied", "readback", "evaluated", "corrected", "rollback_proposed", "rolled_back", "failed", "unknown"]
-    },
+    "event_type": {"type": "string", "enum": ["proposed", "approved", "applied", "readback", "evaluated", "corrected", "rollback_proposed", "rolled_back", "failed", "unknown"]},
     "timestamp": {"type": "string", "format": "date-time"},
     "marketplace": {"type": ["string", "null"]},
     "profile_scope": {"type": ["string", "null"]},
-    "entity": {
-      "type": "object",
-      "required": ["type", "id"],
-      "properties": {
-        "type": {"type": "string"},
-        "id": {"type": "string", "minLength": 1}
-      },
-      "additionalProperties": true
-    },
+    "entity": {"type": "object", "required": ["type", "id"], "properties": {"type": {"type": "string"}, "id": {"type": "string", "minLength": 1}}, "additionalProperties": true},
     "action_type": {"type": "string"},
-    "before_value": {},
-    "intended_value": {},
-    "current_value": {},
-    "objective": {"type": ["string", "null"]},
-    "expected_mechanism": {"type": ["string", "null"]},
-    "application_status": {
-      "type": ["string", "null"],
-      "enum": ["Confirmed", "Partial", "Not Applied", "Drifted", "Unknown", null]
-    },
-    "outcome_status": {
-      "type": ["string", "null"],
-      "enum": ["Worked", "Likely Worked", "Monitoring", "Inconclusive", "Likely Failed", "Failed", "Application Failure", "Drifted", null]
-    },
+    "before_value": {}, "intended_value": {}, "current_value": {},
+    "objective": {"type": ["string", "null"]}, "expected_mechanism": {"type": ["string", "null"]},
+    "application_status": {"type": ["string", "null"], "enum": ["Confirmed", "Partial", "Not Applied", "Drifted", "Unknown", null]},
+    "outcome_status": {"type": ["string", "null"], "enum": ["Worked", "Likely Worked", "Monitoring", "Inconclusive", "Likely Failed", "Failed", "Application Failure", "Drifted", null]},
     "confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
-    "baseline_window": {"type": ["object", "null"]},
-    "post_change_window": {"type": ["object", "null"]},
+    "baseline_window": {"type": ["object", "null"]}, "post_change_window": {"type": ["object", "null"]},
     "evidence": {"type": "array", "items": {}},
     "evidence_snapshot": {
       "type": ["object", "null"],
-      "description": "Decision-time evidence identity for reproducibility when reporting history can restate.",
+      "description": "Decision-time evidence identity for reproducibility across mutable history and reporting-definition changes.",
       "properties": {
         "snapshot_id": {"type": ["string", "null"]},
+        "source_system": {"type": ["string", "null"]},
         "source_dataset": {"type": ["string", "null"]},
+        "acquisition_channel": {"type": ["string", "null"]},
+        "reporting_generation": {"type": ["string", "null"]},
         "semantic_version": {"type": ["string", "null"]},
+        "date_attribution_semantics": {"type": ["string", "null"], "enum": ["traffic_date", "conversion_date", "event_date", "unknown", null]},
+        "historical_availability_status": {"type": ["string", "null"], "enum": ["available", "partially_available", "unavailable", "retired_or_deleted", "unknown", null]},
+        "comparability_status": {"type": ["string", "null"], "enum": ["Comparable", "Reconcilable", "Directional", "Not Comparable", "Unknown", null]},
         "captured_at": {"type": ["string", "null"], "format": "date-time"},
-        "available_through": {"type": ["string", "null"]},
-        "maturity": {"type": ["string", "null"]},
-        "evidence_hash": {"type": ["string", "null"]}
+        "available_through": {"type": ["string", "null"]}, "maturity": {"type": ["string", "null"]}, "evidence_hash": {"type": ["string", "null"]}
       },
       "additionalProperties": true
     },
@@ -61,64 +44,19 @@
       "type": ["object", "null"],
       "description": "Canonical shopper-facing ad realization context when platform-managed surface, product, creative, or message selection can affect causal interpretation.",
       "properties": {
-        "snapshot_id": {"type": ["string", "null"]},
-        "captured_at": {"type": ["string", "null"], "format": "date-time"},
-        "realization_mode": {
-          "type": ["string", "null"],
-          "enum": ["manual", "platform_managed", "hybrid", "unknown", null]
-        },
-        "realized_surfaces": {
-          "type": "array",
-          "items": {"type": "string"}
-        },
-        "realized_product_ids": {
-          "type": "array",
-          "items": {"type": "string"}
-        },
-        "realized_creative_or_message_ids": {
-          "type": "array",
-          "items": {"type": "string"}
-        },
-        "source_dataset": {"type": ["string", "null"]},
-        "acquisition_channel": {"type": ["string", "null"]},
-        "coverage_status": {
-          "type": ["string", "null"],
-          "enum": ["Complete", "Partial", "Unavailable", "Unknown", null]
-        },
-        "comparability_status": {
-          "type": ["string", "null"],
-          "enum": ["Comparable", "Reconcilable", "Directional", "Not Comparable", "Unknown", null]
-        },
-        "identity_hash": {"type": ["string", "null"]},
-        "warnings": {
-          "type": "array",
-          "items": {"type": "string"}
-        }
-      },
-      "additionalProperties": true
+        "snapshot_id": {"type": ["string", "null"]}, "captured_at": {"type": ["string", "null"], "format": "date-time"},
+        "realization_mode": {"type": ["string", "null"], "enum": ["manual", "platform_managed", "hybrid", "unknown", null]},
+        "realized_surfaces": {"type": "array", "items": {"type": "string"}}, "realized_product_ids": {"type": "array", "items": {"type": "string"}}, "realized_creative_or_message_ids": {"type": "array", "items": {"type": "string"}},
+        "source_dataset": {"type": ["string", "null"]}, "acquisition_channel": {"type": ["string", "null"]},
+        "coverage_status": {"type": ["string", "null"], "enum": ["Complete", "Partial", "Unavailable", "Unknown", null]},
+        "comparability_status": {"type": ["string", "null"], "enum": ["Comparable", "Reconcilable", "Directional", "Not Comparable", "Unknown", null]},
+        "identity_hash": {"type": ["string", "null"]}, "warnings": {"type": "array", "items": {"type": "string"}}
+      }, "additionalProperties": true
     },
-    "restatement": {
-      "type": ["object", "null"],
-      "properties": {
-        "detected_at": {"type": ["string", "null"], "format": "date-time"},
-        "reason": {"type": ["string", "null"]},
-        "prior_snapshot_id": {"type": ["string", "null"]},
-        "replacement_snapshot_id": {"type": ["string", "null"]},
-        "material_to_outcome": {"type": ["boolean", "null"]}
-      },
-      "additionalProperties": true
-    },
+    "restatement": {"type": ["object", "null"], "properties": {"detected_at": {"type": ["string", "null"], "format": "date-time"}, "reason": {"type": ["string", "null"]}, "prior_snapshot_id": {"type": ["string", "null"]}, "replacement_snapshot_id": {"type": ["string", "null"]}, "material_to_outcome": {"type": ["boolean", "null"]}}, "additionalProperties": true},
     "confounders": {"type": "array", "items": {}},
-    "decision": {
-      "type": ["string", "null"],
-      "enum": ["Keep", "Keep Monitoring", "Rollback Candidate", "Follow-up Experiment", "Fix Application", "Manual Review", null]
-    },
-    "next_evaluation": {"type": ["string", "object", "null"]},
-    "rollback_condition": {},
-    "source_lineage": {"type": "array", "items": {}},
-    "mode": {
-      "type": "string",
-      "enum": ["Read-only", "Suggest", "Shadow", "Execute"]
-    }
+    "decision": {"type": ["string", "null"], "enum": ["Keep", "Keep Monitoring", "Rollback Candidate", "Follow-up Experiment", "Fix Application", "Manual Review", null]},
+    "next_evaluation": {"type": ["string", "object", "null"]}, "rollback_condition": {}, "source_lineage": {"type": "array", "items": {}},
+    "mode": {"type": "string", "enum": ["Read-only", "Suggest", "Shadow", "Execute"]}
   }
 }
