@@ -30,7 +30,7 @@ requested marketplace/profile/entity matches
 != verified requested history slice
 ```
 
-The account-identity request may be partial, but it must contain at least one strong advertiser/profile identifier (`global_advertiser_account_id`, `regional_advertiser_account_id`, `legacy_advertiser_account_id`, `advertiser_account_id`, or `regional_profile_id`). Every explicitly requested identity field must be present and equal in each relevant event; the projector must not infer equivalence across different identity fields or from manager/country alone.
+The account-identity request may be partial, but it must contain at least one strong advertiser/profile identifier (`global_advertiser_account_id`, `regional_advertiser_account_id`, `legacy_advertiser_account_id`, `advertiser_account_id`, or `regional_profile_id`). Every explicitly requested canonical scalar identity field must be present and equal in each relevant event; the projector must not infer equivalence across different identity fields or from manager/country alone. Mapping provenance remains evidence about how identities were related, not a substitute identity key.
 
 Legacy callers that omit `expected_scope.account_identity` remain backward-compatible and continue to use the existing intra-slice collision gate.
 
