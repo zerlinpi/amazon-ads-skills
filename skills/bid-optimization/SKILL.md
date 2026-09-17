@@ -23,7 +23,11 @@ metadata:
 
 - `../../references/action-sizing.md`
 
-不要为了普通诊断预加载该 reference。
+当 recommendation 依赖 Amazon 当前 bidding-strategy 行为、平台自动 up/down 范围、placement/audience adjustment capability、rule eligibility，或 console/API 是否支持某个控制时，再加载：
+
+- `../../references/platform-capability-lineage.md`
+
+不要为了普通诊断预加载这些 reference。平台规则发生版本/来源冲突时，先完成 capability lineage reconciliation；不要把旧 guide、不同 ad product 或不同 control surface 的数值直接当成当前 action-safe 规则。
 
 ## 必需上下文
 
@@ -107,6 +111,8 @@ metadata:
 
 如果 Top of Search modifier 很高，base bid 的实际竞价效果可能被放大。调整 bid 前读取 placement 数据；避免同时大幅改变 base bid 和 placement modifier，否则无法判断因果。
 
+如果该判断依赖 Amazon 对 dynamic bidding、placement adjustment 或其他 bidding control 的当前精确规则，必须先按 `../../references/platform-capability-lineage.md` 确认 capability scope 与 conflict status。`Conflicted` / `Unknown` 的 exact platform rule 不得用于生成假精度 bid。
+
 ## 输出格式
 
 每个候选：
@@ -147,4 +153,5 @@ metadata:
 - 不连续短周期调整同一实体；
 - 不在不知道币种/业务目标时输出“最优 bid”；
 - 不把第三方示例百分比、其他账户动作幅度或平台 UI 示例直接当作本账户默认调整幅度；
+- 不把未完成 capability lineage reconciliation 的旧/冲突 Amazon 文档数值写成当前确定的平台上限或自动调整公式；
 - 不声称算法可以保证排名、销售或 ACOS。
