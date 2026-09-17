@@ -20,6 +20,7 @@ A runtime manifest or cloned directory is not proof that Skill discovery succeed
 - When prior actions may overlap a new decision, load `references/optimization-memory.md` and retrieve only the bounded relevant entity history.
 - When compared windows come from different APIs, MCPs, exports, warehouses or semantic/report versions, load `references/data-lineage.md` before making high-confidence trend or causal claims.
 - When a bid, budget, placement or other monetary-control Skill must turn a direction/raw estimate into a concrete magnitude, load `references/action-sizing.md`; do not invent a repository-global change percentage or damping constant.
+- When a recommendation depends on a time-varying platform capability, exact platform limit, control eligibility, or console/API availability, load `references/platform-capability-lineage.md` and reconcile source date + capability scope before using the fact as action-safe.
 - Historical replay fixtures under `evals/` are test inputs, not reusable operating instructions; do not load them during ordinary account analysis unless explicitly running an eval.
 - Do not duplicate business logic into this file.
 
@@ -40,6 +41,7 @@ Modes:
 - A raw economic or directional estimate is not automatically an action-safe final magnitude; require an explicit account/caller policy, calibrated response, defensible marginal headroom, experiment design, or another auditable sizing basis for a concrete proposed value.
 - Check marketplace, profile/account scope, currency, timezone, attribution window, date range, promotion context, data freshness and source comparability before high-confidence recommendations.
 - Treat `extracted_at` and `available_through` as different concepts; a freshly fetched downstream table may still be incomplete for recent event dates.
+- Treat a time-varying platform capability as lineage-bearing evidence: if current official/API/account evidence materially conflicts or scope/supersession is unresolved, fail closed on the exact numeric rule instead of silently choosing a convenient percentage, limit or formula.
 - Treat Prime Day, Best Deal, Lightning Deal, Coupon, Prime-exclusive promotions, stockouts, listing suppression, major price changes, and parent/variation-family retail changes as potential confounders.
 - Before reversing or stacking another action on the same entity, check whether a recent action is still inside its validation window when history is available.
 - Distinguish `proposed`, `applied`, `readback confirmed`, and `worked`; none of these imply the next stage automatically.
@@ -57,6 +59,7 @@ Modes:
 - Optimization framework: `references/optimization-framework.md`
 - Decision boundaries: `references/decision-boundaries.md`
 - Contextual action sizing: `references/action-sizing.md`
+- Platform capability version/scope lineage: `references/platform-capability-lineage.md`
 - Benchmark policy: `references/benchmark-policy.md`
 - Optimization memory: `references/optimization-memory.md`
 - Canonical data model: `references/data-schema.md`
