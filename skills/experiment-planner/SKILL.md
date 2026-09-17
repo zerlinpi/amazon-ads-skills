@@ -21,7 +21,7 @@ Default mode: `Shadow` for design/simulation, otherwise `Suggest`. This Skill ne
 8. For long-running tests, re-verify control boundaries after material keyword/target/negative, audience-signal, automation, migration, budget-pool, variation-family or retail-scope changes; launch-time cleanliness is not permanent proof.
 9. Estimate the minimum decision-useful effect or practical business threshold when the economics support it; do not invent statistical precision from missing inputs.
 10. Define pre-test state, test window, observation window, stop conditions and rollback triggers before any mutation.
-11. Output a machine-readable experiment plan when needed using `../../schemas/experiment-plan.json`. A plan marked `Ready` must resolve collision-safe scope: marketplace, profile/account scope, entity type and non-empty entity IDs. A `Ready` holdout must also set `comparison.control_integrity = Clean` and carry at least one verified `comparison.isolation_evidence` item. Valid isolation mechanisms are platform randomization, a verified hard control, a verified routing partition, or a verified delivery partition; `optimization_signal` is not an isolation mechanism. When repository scripts are available, validate this readiness gate with `../../scripts/validate_experiment_plan.py`; unresolved identity or boundary evidence belongs in `Shadow Only`, `Redesign`, or `Hold` rather than fabricated scope/evidence.
+11. Output a machine-readable experiment plan when needed using `../../schemas/experiment-plan.json`. A plan marked `Ready` must resolve collision-safe scope: marketplace, profile/account scope, entity type and non-empty entity IDs. A `Ready` holdout must also set `comparison.control_integrity = Clean` and carry at least one verified `comparison.isolation_evidence` item. Valid isolation mechanisms are platform randomization, a verified hard control, a verified routing partition, or a verified delivery partition; `optimization_signal` is not an isolation mechanism. When material scope changes occur, record the latest trustworthy check in `comparison.boundary_monitoring.latest_verified_at` and the changes in `comparison.boundary_monitoring.material_scope_changes`; a boundary verification older than a material change is stale and cannot support `Ready`. When repository scripts are available, validate these readiness gates with `../../scripts/validate_experiment_plan.py`; unresolved identity or boundary evidence belongs in `Shadow Only`, `Redesign`, or `Hold` rather than fabricated scope/evidence.
 12. After an externally applied test, route outcome evaluation to `post-change-review` rather than judging success inside this planner.
 
 ## Progressive loading
@@ -42,7 +42,7 @@ Do not call an experiment decision-ready when any material issue remains unresol
 - baseline and treatment periods differ materially in promotion, stock, price, listing state or attribution maturity;
 - treatment and control share traffic or resources in a way that causes substantial leakage, displacement, or interference;
 - the proposed cohort boundary relies on an audience signal / `optimization_signal` whose product semantics do not prove hard targeting or exclusion and no separate verified isolation boundary exists;
-- a material scope-changing event occurred after the latest trustworthy control-boundary verification;
+- a material scope-changing event occurred after `boundary_monitoring.latest_verified_at`, or a `boundary_monitoring.material_scope_changes` item remains explicitly unreverified;
 - realized treatment/control allocation materially departs from the declared design without an explanation;
 - the test entity is mixed-ASIN and the proposed conclusion requires ASIN-level attribution that is not reliable;
 - the primary metric can improve while profitability or a critical guardrail deteriorates;
@@ -53,12 +53,12 @@ When blocked, return `Shadow Only`, `Redesign`, or `Hold` instead of forcing a t
 
 ## Status semantics
 
-- `Ready` — the experiment is decision-ready for **external execution review**, with collision-safe entity scope resolved and, for holdouts, a clean evidence-backed isolation boundary. It is not permission to mutate Amazon Ads.
+- `Ready` — the experiment is decision-ready for **external execution review**, with collision-safe entity scope resolved and, for holdouts, a clean evidence-backed and sufficiently fresh isolation boundary. It is not permission to mutate Amazon Ads.
 - `Shadow Only` — the design is useful for simulation/replay, but one or more action-safety, identity, or boundary prerequisites are not resolved.
 - `Redesign` — the current comparison/treatment structure cannot answer the declared question credibly without changing the design.
 - `Hold` — required evidence, retail/data state, validation maturity, or another prerequisite is not yet available.
 
-A plan must never upgrade itself from `Shadow Only`/`Redesign`/`Hold` to `Ready` by inventing marketplace, profile/account scope, entity IDs, audience semantics, `isolation_evidence`, sample sufficiency, or control integrity.
+A plan must never upgrade itself from `Shadow Only`/`Redesign`/`Hold` to `Ready` by inventing marketplace, profile/account scope, entity IDs, audience semantics, `isolation_evidence`, boundary verification time, sample sufficiency, or control integrity.
 
 ## Design principles
 
@@ -80,7 +80,7 @@ Return:
 1. **Decision question** — what uncertainty this test should resolve.
 2. **Hypothesis** — treatment → mechanism → expected outcome.
 3. **Scope** — marketplace, profile/account scope, ad type, entity IDs/ASINs, audience/optimization-signal semantics, and exclusions.
-4. **Design** — treatment, comparison method, baseline/control, allocation integrity, `control_integrity`, holdout `isolation_evidence`, boundary freshness and interference risk.
+4. **Design** — treatment, comparison method, baseline/control, allocation integrity, `control_integrity`, holdout `isolation_evidence`, `boundary_monitoring.latest_verified_at`, `boundary_monitoring.material_scope_changes`, and interference risk.
 5. **Metrics** — one primary metric, diagnostics and guardrails.
 6. **Readiness** — data quality, sample sufficiency, attribution maturity, overlap/interference and confounders.
 7. **Windows** — pre-test baseline, treatment period, conversion-lag/observation period and next review point.
