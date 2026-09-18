@@ -47,6 +47,7 @@ For material evaluated/corrected events, `evidence_snapshot` should preserve ava
 - `acquisition_channel`;
 - `reporting_generation`;
 - `semantic_version`;
+- per-metric `metric_semantics` when the outcome depends on conversion/attribution identity; for the decision-driving outcome metric, preserve `outcome_metric_semantics` with metric family, attribution family, and semantic version when known;
 - `date_attribution_semantics`;
 - `historical_availability_status`;
 - `comparability_status`;

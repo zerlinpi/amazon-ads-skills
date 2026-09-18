@@ -34,6 +34,17 @@
     "objective": {"type": ["string", "null"]}, "expected_mechanism": {"type": ["string", "null"]},
     "application_status": {"type": ["string", "null"], "enum": ["Confirmed", "Partial", "Not Applied", "Drifted", "Unknown", null]},
     "outcome_status": {"type": ["string", "null"], "enum": ["Worked", "Likely Worked", "Monitoring", "Inconclusive", "Likely Failed", "Failed", "Application Failure", "Drifted", null]},
+    "outcome_metric_semantics": {
+      "type": ["object", "null"],
+      "description": "Semantic identity of the decision-driving outcome metric. Preserve explicit family, attribution family, and semantic version when known; missing values remain unknown.",
+      "properties": {
+        "metric_name": {"type": ["string", "null"]},
+        "metric_family": {"type": ["string", "null"]},
+        "attribution_family": {"type": ["string", "null"]},
+        "semantic_version": {"type": ["string", "null"]}
+      },
+      "additionalProperties": true
+    },
     "confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
     "baseline_window": {"type": ["object", "null"]}, "post_change_window": {"type": ["object", "null"]},
     "evidence": {"type": "array", "items": {}},
@@ -47,6 +58,20 @@
         "acquisition_channel": {"type": ["string", "null"]},
         "reporting_generation": {"type": ["string", "null"]},
         "semantic_version": {"type": ["string", "null"]},
+        "metric_semantics": {
+          "type": "array",
+          "description": "Per-metric semantic identities used by this evidence snapshot. Do not infer omitted or unknown fields from display names.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "metric_name": {"type": ["string", "null"]},
+              "metric_family": {"type": ["string", "null"]},
+              "attribution_family": {"type": ["string", "null"]},
+              "semantic_version": {"type": ["string", "null"]}
+            },
+            "additionalProperties": true
+          }
+        },
         "date_attribution_semantics": {"type": ["string", "null"], "enum": ["traffic_date", "conversion_date", "event_date", "unknown", null]},
         "historical_availability_status": {"type": ["string", "null"], "enum": ["available", "partially_available", "unavailable", "retired_or_deleted", "unknown", null]},
         "comparability_status": {"type": ["string", "null"], "enum": ["Comparable", "Reconcilable", "Directional", "Not Comparable", "Unknown", null]},

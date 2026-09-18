@@ -71,7 +71,7 @@ Return:
 7. outcome classification with confidence;
 8. decision;
 9. next check and evidence needed;
-10. structured memory event when requested (`../../schemas/optimization-event.json`).
+10. structured memory event when requested (`../../schemas/optimization-event.json`), preserving the decision-driving outcome metric semantics and per-metric evidence semantics when known rather than inferring them from display names.
 
 ## Safety
 
