@@ -1,390 +1,49 @@
-# amazon-ads-skills
+# Amazon Ads Skills
 
-Amazon Ads AI Agent 技能库：监控、因果诊断、增长机会、受控实验、变更后复盘、优化记忆、安全优化与历史回放 Eval。
+A portable **Amazon Ads decision library for AI agents**.
 
-> 当前版本：`v1.0.0`  
-> 默认模式：`Suggest`  
-> 本仓库不直接修改真实 Amazon Ads 账户；写入由外部 Connector / Executor 负责。
+It packages 15 focused Agent Skills for account audit, monitoring, diagnosis, growth, experiments, post-change review, search terms, targeting, bids, budgets, placements, profitability and orchestration.
 
-## Quick Start / 安装与首次调用
+> **Default mode:** `Suggest`  
+> **Live Amazon Ads writes:** not performed by this repository  
+> **Runtime model:** Agent Skills + progressive loading + read-only deterministic helpers  
+> **Connector model:** external MCP / API / warehouse / export / executor
 
-最稳定的跨 Runtime 使用方式是直接克隆完整仓库，并把**仓库根目录**作为 Agent workspace：
+---
+
+## What this repository is
+
+Use this repository when an AI agent needs repeatable Amazon Ads reasoning instead of one-off prompting.
+
+The core design is:
+
+```text
+evidence
+→ scope / lineage / connector checks
+→ diagnosis or opportunity
+→ guarded recommendation
+→ optional experiment / shadow
+→ external execution only when explicitly authorized
+→ readback
+→ post-change review
+→ append-first optimization memory
+→ regression / effectiveness evaluation
+```
+
+The repository is intentionally **not** an Amazon Ads API client, credential store, write executor or autonomous campaign bot.
+
+---
+
+## Quick start
+
+Clone the complete repository and open the **repository root** in your agent runtime:
 
 ```bash
 git clone https://github.com/zerlinpi/amazon-ads-skills.git
 cd amazon-ads-skills
 ```
 
-然后让 Codex / Claude Code / WorkBuddy 读取仓库级 instructions，并按需加载一个 `skills/<name>/SKILL.md`。完整的 Codex、Claude Code、WorkBuddy、手动加载、原生 plugin/Skill installer、验证步骤与可复制 Bootstrap prompts 见 **`docs/GETTING-STARTED.md`**。
-
-首次会话可以直接使用这个最小提示词：
-
-```text
-Read the repository instructions first. Select the one Skill under skills/ that best matches my task, state which Skill you selected and the missing inputs, and default to Suggest. List missing inputs instead of guessing. Do not perform live Amazon Ads writes; real mutations belong to an explicitly authorized External Connector / Executor.
-```
-
-如果 Runtime 没有自动发现 Skill，显式指定路径；跨多个优化域的任务从 `skills/amazon-ads-optimizer/SKILL.md` 开始。不要只复制单个 `SKILL.md` 而丢失其 `references/`、shared `references/`、`schemas/` 或 `playbooks/` 依赖。
-
-## 核心闭环
-
-```text
-Data → Validate → Read relevant history
-  → Diagnose / Find Opportunity
-  → Action-safe? ─ yes → Suggest
-         │
-         no
-         ↓
-      Experiment / Shadow
-         ↓
-External Executor (optional, authorized)
-  → Readback → Reconcile → Post-change Review
-  → Keep / Monitor / Rollback Candidate
-  → Append event → Refresh entity history
-         ↓
-Historical Replay / Eval Fixtures
-  → detect decision regressions
-```
-
-## Progressive Loading
-
-只加载当前决策需要的内容：
-
-```text
-薄 SKILL.md / playbook
-→ skill-local reference
-→ 必要时 shared reference / schema
-→ 只读取相关实体的有限历史切片
-```
-
-`evals/` 仅用于测试和历史回放，普通账户分析不应加载。
-
-## Skills
-
-| Skill | 用途 |
-|---|---|
-| `amazon-ads-audit` | 账户级体检 |
-| `campaign-health-monitor` | Campaign 健康监控 |
-| `performance-drop-diagnosis` | 业绩突降因果诊断 |
-| `growth-opportunity-finder` | 增长机会与 Headroom |
-| `experiment-planner` | 受控实验设计 |
-| `post-change-review` | Readback、Reconciliation 与优化后效果复盘 |
-| `search-term-analysis` | Search Term 赢家、收割、流量质量 |
-| `keyword-optimization` | Keyword/Target 生命周期与结构 |
-| `bid-optimization` | Bid/CPC 建议 |
-| `budget-optimization` | Budget pacing、边际分配、预算池冲突与扩量 |
-| `placement-optimization` | Top of Search / Product Pages / Rest of Search |
-| `negative-targeting` | Negative 与误杀保护 |
-| `profitability-analysis` | Break-even ACOS、贡献利润、TACOS |
-| `anomaly-detection` | 历史基线异常检测 |
-| `amazon-ads-optimizer` | 总调度、记忆检查、去重与冲突消解 |
-
-当前保持 **15 个 Skills**。组合型运营流程优先进入 `playbooks/`；复杂细节优先进入按需 `references/`；可靠性验证优先进入 `evals/`，而不是继续拆新 Skill。
-
-## Historical Replay / Evals
-
-`evals/README.md` 定义 Contract checks + Capability replay。Capability Eval 使用 `met / not_met / insufficient_evidence`，比较决策行为而不是 exact wording。
-
-当前 regression pack 已覆盖 **46 类关键安全风险**，近期新增：
-
-- Attribution-variant cutover：Amazon Store ads 的 standard/default conversion metrics 与 `all views` metrics 可同时存在且方法不同；同属 Purchases/Sales/ROAS metric family 不代表可直接拼接，归因方法切换与 apparent performance break 同期时先做 lineage reconciliation；
-- Platform-managed delivery-surface confounding：没有人工 Campaign control change 不等于 delivery conditions 未变化；当 Amazon 自动把 eligible existing campaigns 接入新 surface/ad experience 时，先核对 rollout eligibility 与 realized surface-level traffic，再做因果归因或 traffic suppression；
-- Search Term origin semantics：Sponsored Products Search Term row 可能是 literal shopper query，也可能是 non-search context 的 inferred best match；后者不能仅按显示字符串机械转成 Exact harvest / Negative keyword；
-- Search Term Impression Share route ambiguity：SIS 是 query 的 account-wide visibility/share 证据，不把低 SIS 直接映射成某一个 Campaign 的 bid/budget headroom，也不把份额差额当成保证增量；
-- Report row-eligibility / selection bias：clicked-only 或 impression-qualified 报表即使完整生成，也不等于完整逻辑总体；禁止把缺失行自动补 0，或把 selected subset 当作全账户 query/target population；
-- Placement coupled-control confounding：Base/target bid、placement modifier、dynamic bidding、schedule/event rules 在同一窗口变化时，不把版位 ROAS lift 归因给单一 modifier；
-- Upstream budget-cap bottleneck：Campaign 提额前先核对 Sponsored Products account-level / portfolio / business cap；平台 estimated missed sales/clicks 只作为模型机会信号，不当作保证增量；
-- Contextual action sizing：禁止在账户没有 sizing policy / calibrated response 时，用仓库默认百分比把方向性 Bid/预算结论伪装成精确动作；
-- Historical restatement after decision：保留 decision-time evidence snapshot，并用 correction/re-evaluation 追加最新解释；
-- Audit pagination/truncation：未耗尽 `nextToken/cursor` 的实体结果不得伪装成完整账户覆盖或用于全量排名。
-
-其余覆盖继续包括 Mixed-ASIN、Negative scope、Previous Winner、source/semantic/backfill drift、aggregation integrity、retail shock、application/readback/retry、experiment leakage/interference、portfolio conflict、profitability conflict 等关键风险。
-
-关键原则：
-
-```text
-timeout ≠ failed write
-executor success ≠ trusted current state
-safe retry ≠ application confirmed
-same entity id/name across profiles ≠ same optimization identity
-verified cross-profile migration → bounded predecessor context, not state cloning
-verified cross-marketplace mapping ≠ portable bid/performance conclusion
-same metric name/table path ≠ same measurement definition
-same conversion metric family + different attribution variant ≠ comparable series
-same source + same semantic version ≠ same backfill maturity
-latest restated history ≠ evidence that was available at decision time
-extracted_at ≠ available_through
-successful report completion ≠ complete logical population
-clicked-only search-term rows ≠ all query impressions
-displayed search-term text ≠ literal shopper query when origin is inferred/unknown
-missing report row ≠ zero unless the report contract proves it
-first page + nextToken ≠ complete entity population
-account-wide SIS ≠ campaign-specific headroom
-low SIS ≠ guaranteed incremental clicks/sales/profit
-raw economic bid/budget anchor ≠ action-safe final magnitude
-no account sizing policy ≠ permission to invent a default ±X%
-campaign budget headroom ≠ account/portfolio budget headroom
-estimated missed sales/clicks ≠ guaranteed incrementality
-configured bid controls ≠ realized auction exposure
-placement ROAS lift under overlapping control changes ≠ single-modifier causality
-no manual campaign-control change ≠ unchanged delivery conditions under platform-managed auto-enrollment
-profile/campaign/keyword/search-term/placement views ≠ additive spend pools
-average(row ACOS/ROAS/CVR) ≠ account ratio
-higher ROAS ≠ higher contribution profit
-stale retail snapshot ≠ current retail state
-campaign-local lift ≠ incremental value when cohorts share demand/resources
-campaign-local optimum ≠ portfolio optimum
-```
-
-## Data Lineage
-
-统一数据模型见 `references/data-schema.md`。当 baseline/comparison 来自不同 API、MCP、CSV、Warehouse、BI、刷新路径、attribution variant、metric semantic version、report row-inclusion / eligibility contract，或历史快照成熟度不一致时，按需加载 `references/data-lineage.md`；当问题依赖“返回行是否代表完整总体”时，再按需加载 `references/report-coverage.md`。
-
-至少区分：
-
-```text
-source system / dataset
-acquisition channel
-extracted_at
-available_through
-attribution definition / variant / maturity
-date-attribution semantics
-aggregation grain
-filters / scope
-row-inclusion / eligibility contract
-dataset semantic version
-per-metric definition ID / semantic version
-completeness / backfill status
-snapshot/backfill maturity
-```
-
-比较可标记为 `Comparable / Reconcilable / Directional / Not Comparable / Unknown`。如果 apparent break/lift 与 source switch、attribution-methodology cutover、semantic cutover、row-eligibility switch 或不对称 backfill 同期发生，先 replay/reconcile，再做高置信动作或 Post-change 结论。
-
-对于 Amazon Store ads 2026-01-01 的 view-attribution 更新，仓库把 standard/default Purchases/Sales/ROAS 与 eligible `all views` conversion metrics 视为不同 `attribution_variant`。Amazon 对该特定更新说明 click-based attribution 未变化，但这只可作为兼容 click-side evidence 的辅助线索，不能把未受影响的 click semantics 推广成 conversion variants 已可比，也不能把变更范围推广到未列入 eligibility 的 Campaign/Inventory。
-
-## Report Coverage / Row Eligibility
-
-`references/report-coverage.md` 用于处理“报表成功生成，但逻辑总体并不一定全部出现在行中”的情况。
-
-当前 Amazon Ads 公共文档明确给出一些 outcome-based inclusion contract，例如 Sponsored Products Search Term report 只表示至少产生 1 次广告点击的搜索词，而 Targeting report 则面向至少有 impression 的交付目标。仓库因此要求：
-
-```text
-report complete under its contract
-→ 可以分析 represented population
-
-report complete under its contract
-≠ 可以自动推断 omitted rows = 0
-≠ 可以自动声称 full account/query/target population coverage
-```
-
-Search Term harvest / negative / clicked-query efficiency 仍可使用已表示的 clicked population；但 zero-click query identification、完整 query-impression coverage、全账户 query CTR denominator 或完整 population ranking 需要兼容的额外来源。不同报告之间做 reconciliation 时，要把 row-inclusion / eligibility 视为 measurement identity，而不只看列名或来源系统。
-
-## Search Term Impression Share / Query Headroom
-
-当 `search-term-analysis` 或 `growth-opportunity-finder` 使用 Search Term Impression Share (SIS) / Impression Rank 判断 share-of-voice 或 query growth headroom 时，按需加载 `references/search-term-impression-share.md`。
-
-Amazon 当前公开 Sponsored Products 文档把 SIS 描述为 search term 的 account-wide paid-impression share / rank，因此仓库要求先区分**份额信号的 account scope**和**实际可修改的 campaign/target control scope**：
-
-```text
-low account-wide SIS
-→ 可形成 visibility-headroom hypothesis
-
-low account-wide SIS
-≠ 某个 campaign 独占剩余 share headroom
-≠ 自动选择 bid / budget / placement 作为 binding control
-≠ 保证增加 clicks / sales / profit
-```
-
-只有在 query 商业价值、report/window 可比性、routing、retail readiness、budget headroom 和实际 binding control 都足够清晰时，才把 share 信号升级为具体增长动作；否则保持 `Directional / Experiment / Hold`。具体数值仍走 contextual action sizing，不从 SIS 生成仓库默认增幅。
-
-## Skill Effectiveness Evaluation
-
-`evals/SKILL-EFFECTIVENESS.md` 在现有 Contract checks + Capability replay 之外，增加 **with-skill vs without-skill** 的增量效果验证。
-
-对重要的新 Skill 或大改版，优先区分：
-
-```text
-Discovery         → 自然任务能否正确触发 Skill
-Forced invocation → Skill 已加载后方法是否有效
-Negative control  → 相邻任务是否避免误触发
-Ablation          → with-skill 是否优于 without-skill baseline
-Repeated trials   → 改善是否具有基本重复性
-```
-
-这套评估不把“文案更长”或“单次跑通”当作有效证明。任务、fixture、model/harness、工具权限和证据应尽量保持一致；机械可检查的 decision/safety 条件优先用 deterministic assertions，只有语义质量再交给 rubric/judge。对随机运行报告实际 trial count、pass rate / `pass@k` 等，但不把小样本差异伪装成统计显著性。
-
-v1.0 增加 provider-neutral 的 paired result contract 与 deterministic summarizer：
-
-```text
-schemas/skill-effectiveness-benchmark.json
-→ completed with_skill / without_skill trial pairs
-→ scripts/summarize_skill_effectiveness.py
-→ pair counts / full-pass rates / forbidden-behavior rates / measured deltas
-```
-
-`scripts/summarize_skill_effectiveness.py` 只汇总外部 harness 已产生的 trial records；它不会调用模型、不会伪造 repeated trials、不会把 measured delta 宣称成 statistical significance，也不会连接或修改真实 Amazon Ads 账户。真实 model/runtime benchmark 仍由外部 eval harness 执行，仓库负责稳定输入/结果契约和安全汇总。
-
-## Account Audit Integrity
-
-`amazon-ads-audit` 已改为薄入口，详细流程按需加载：
-
-`skills/amazon-ads-audit/references/account-audit-framework.md`
-
-账户体检现在明确：
-
-```text
-选择一个 canonical additive grain
-耗尽 nextToken/cursor 或使用可信完整导出
-记录 pages/rows/continuation/truncation 状态
-确认 report row-inclusion / eligibility 是否支持所需总体结论
-profile total ↔ complete campaign aggregate 做 reconciliation
-keyword / search term / placement 等用于分解，不重复累加
-先汇总 impressions/clicks/spend/orders/sales，再重新计算 CTR/CPC/CVR/ACOS/ROAS
-```
-
-缺失行不自动等于 0；未耗尽分页的结果只能做明确标注的局部/Directional 观察，clicked-only / delivered-only subset 也只能支持其 represented population 范围内的结论。profile/campaign 总量不一致时先查 coverage、pagination、row eligibility、truncation、filters、freshness 或 lineage，而不是直接评分。
-
-## Weekly Review Playbook
-
-`playbooks/weekly-review.md` 用于周期性账户复盘，并按发现的问题再调用必要 Skills。它不会把固定 ACoS/CTR/CVR 或点击/订单阈值当作自动执行规则，也允许明确输出 Hold。
-
-## Optimization Memory
-
-`references/optimization-memory.md` 采用 append-first event ledger + derived entity history：
-
-```text
-schemas/optimization-event.json
-→ compact entity history
-→ schemas/entity-history.json
-→ read-before-recommend gate
-```
-
-Memory identity：
-
-```text
-marketplace + profile/account scope + entity type + entity id + control dimension
-```
-
-对于会 restate 的历史数据，material `evaluated` event 应尽量保存 decision-time `evidence_snapshot`（source system/dataset、acquisition channel、reporting generation、semantic version、date-attribution semantics、historical availability、capture time、available-through、maturity 等）。后续 restatement 如果改变结论，不覆盖旧事件，而是追加 `corrected/evaluated` 事件并链接原事件；derived summary 同时区分当时结论与 latest-data interpretation。
-
-v1.0 提供只读 deterministic projector：
-
-```text
-optimization event slice
-→ scripts/project_measurement_history.py
-→ entity-history.latest_measurement_state
-```
-
-它按 measurement capture time 选择最新 traceable evidence identity，在请求了 expected scope 时对 marketplace/profile/entity mismatch fail closed，并显式保留 `unknown`、`retired_or_deleted`、`Not Comparable` 等状态。历史来源不可用不会被补成 0，旧 `Worked / Keep` 也不会自动覆盖当前 measurement comparability uncertainty。
-
-Deliberate migration 区分：
-
-```text
-same_scope
-cross_profile_same_marketplace
-cross_marketplace
-```
-
-Verified 同 Marketplace 跨 Profile 迁移可以继承 bounded mature evidence，但 successor 当前 Bid/Budget/State/Readback 必须独立读取。
-
-跨 Marketplace 默认 `Partial / Directional Only`：相关性、业务意图、失败模式可以作为假设；Bid、CPC、CVR、ACOS/ROAS、预算、版位倍率、利润阈值和验证时钟不能直接迁移为 action-safe 证据。
-
-## Budget Pool / Portfolio Conflicts
-
-当多个 Campaign 竞争固定业务预算、portfolio cap、Sponsored Products account-level daily budget cap 或外部 pacing pool 时，`budget-optimization` 按需加载 `skills/budget-optimization/references/portfolio-budget-conflicts.md`。
-
-核心约束：
-
-```text
-平均历史 ROAS ≠ 下一单位预算的边际回报
-campaign budget increase ≠ deliverable extra spend when an upstream cap is binding
-estimated missed opportunity = modeled directional evidence, not guaranteed incrementality
-固定总预算 → destination gain 必须同时计算 source opportunity cost
-protected spend / business role → 不能被局部效率排序静默覆盖
-```
-
-预算诊断现在区分 observed serving evidence（spend、budget、average time in budget、cap utilization）与 modeled opportunity evidence（estimated missed impressions/clicks/sales、recommended budget）。上游 cap 无足够 headroom 时，要么给出 source → destination 的平衡重分配，要么把上游 cap 变更作为单独业务预算决策；不能只提高 Campaign 数值后假定 delivery 会增加。
-
-## Contextual Action Sizing
-
-当 `bid-optimization`、`budget-optimization` 或其他 monetary-control Skill 需要把方向性结论转成具体金额/百分比时，按需加载 `references/action-sizing.md`。
-
-核心顺序：
-
-```text
-raw economic / directional anchor
-→ evidence strength + current-state confidence
-→ downside exposure + reversibility + coupled controls
-→ explicit account/caller policy or calibrated response
-→ proposed value / Probe / Hold / Experiment
-```
-
-仓库不再提供全账户通用的单次 Bid/预算调整百分比。公开案例、平台 UI 示例、第三方 Skill 阈值和其他账户历史都不能直接成为当前账户的默认幅度。没有账户策略、校准响应、边际 headroom 或明确实验约束时，允许保留方向而不制造 `proposed_value` 的假精度。
-
-## Placement Control Interaction
-
-`placement-optimization` 在 base/target bid、placement adjustment、dynamic bidding、schedule/event bid rules 等可能同时影响版位曝光时，按需加载：
-
-`skills/placement-optimization/references/realized-bid-exposure.md`
-
-核心区分：
-
-```text
-configured controls = intent
-placement delivery / CPC / traffic mix = realized evidence
-```
-
-仓库不会把配置值拼成未经平台行为证实的精确 auction-level effective-bid 公式。多个 material bidding controls 在同一 measurement window 变化时，版位效果应标记为 `Directional / Confounded`，优先重建 control timeline，再选择单一可解释控制、Hold 或 Shadow/Experiment。
-
-历史 Top of Search / Product Pages / Rest of Search ROAS/CVR 只是过去 realized traffic 的证据，不自动证明继续提高 modifier 后仍有同等 marginal efficiency。
-
-## Experiment Planner
-
-证据不足但可验证的优化优先进入 Experiment / Shadow。实验应预声明 decision question、hypothesis、treatment、control/holdout、primary metric、guardrails、attribution-mature window、contamination risk、allocation integrity、control integrity 与 stop/rollback rule。
-
-当 treatment/control 可能共享 query、target、ASIN、variation family、budget pool、routing、placement、auction 或 automation 时，按需加载 `skills/experiment-planner/references/interference-and-leakage.md`。
-
-长周期实验发生 Keyword/Target、Negative、Automation、Migration、Budget Pool 或 Variation Scope 变化后，需要重新验证 Control Boundary。
-
-## Post-change Review
-
-`post-change-review` 现在除 Readback/Attribution 外，还检查 measurement parity：
-
-```text
-baseline D+1 frozen
-post window D+7 mature
-historical rows mutable
-→ 不可直接把差异归因给优化动作
-```
-
-优先重新抽取同成熟度 baseline/post、使用一致 snapshot policy，或对 backfill revision 做 reconciliation。若历史在评估落账后发生 material restatement，则同时保留 decision-time snapshot 与 latest restated snapshot，避免 hindsight rewrite。
-
-## Safety
-
-| Mode | 行为 |
-|---|---|
-| `Read-only` | 读取和解释 |
-| `Suggest` | 生成建议；默认 |
-| `Shadow` | 模拟、回测、实验 |
-| `Execute` | 仅显式授权并交给外部 Executor |
-
-建议应尽量携带 evidence、confidence、data quality、sample sufficiency、guardrails、validation window、rollback condition。数值动作还应携带 raw/directional anchor、sizing basis 和 applied constraints；缺少可靠 sizing basis 时不强制输出精确动作幅度。
-
-## Multi-Agent Compatibility
-
-| Runtime | 入口 |
-|---|---|
-| OpenAI Codex | `.codex-plugin/plugin.json` + `skills/` + `AGENTS.md` |
-| Claude Code | `.claude-plugin/plugin.json` + `skills/` + `CLAUDE.md` |
-| WorkBuddy | `.workbuddy-plugin/plugin.json` + `skills/` |
-| 其他 Agent Skills Runtime | `skills/<name>/SKILL.md` |
-
-三套 Runtime 共用同一个 canonical `skills/` 树，不复制 Amazon Ads 业务逻辑。`SKILL.md` frontmatter 对齐 Agent Skills 规范：顶层仅使用 `name`、`description` 及规范允许的可选字段；作者、版本、双语显示名等仓库自定义信息统一放入 `metadata`，避免在严格 validator/runtime 下因未知顶层字段加载失败。
-
-首次安装、repo-root workspace、native plugin/Skill installer、手动显式加载和 smoke-test 提示词统一见 `docs/GETTING-STARTED.md`；不要根据 manifest 的存在就假设某个 Runtime 已完成安装或自动发现。
-
-## Deterministic Repository Validation
-
-为避免后续吸收第三方方法时引入“某个 Runtime 能读、另一个 Runtime 加载失败”或“Eval 索引存在但 fixture contract 已损坏”的静默漂移，仓库提供纯 Python 标准库校验器：
+Then validate the checkout:
 
 ```bash
 python -m unittest discover -s tests -v
@@ -392,71 +51,335 @@ python scripts/validate_skills.py .
 python scripts/validate_evals.py .
 ```
 
-`validate_skills.py` 检查：`skills/*/SKILL.md` 必须存在、`name/description` 必填、顶层 frontmatter 字段白名单、`name` 与目录一致、禁止 nested `SKILL.md`、以及 `SKILL.md` 中相对 Markdown 引用必须留在仓库内且真实存在。
+For first-time Codex, Claude Code, WorkBuddy and manual-loading setup, use:
 
-`validate_evals.py` 检查全部 `evals/fixtures/*.json`：JSON 可解析、字段/enum 符合 closed-world contract、fixture ID 与文件名一致且不冲突、entrypoint 在仓库内真实存在、rubric/required observation 不得正向要求 live mutation。
+**[docs/GETTING-STARTED.md](docs/GETTING-STARTED.md)**
 
-`.github/workflows/validate-skills.yml` 对相关 Push/PR 运行 unit tests + 两个 validator。v1.0 workflow 使用 Node 24 generation 的官方 GitHub Actions，同时固定 Python 3.12。Deterministic pass 只证明 packaging/fixture/tool contract integrity；Amazon Ads 决策质量仍由 capability replay 与外部 model/harness effectiveness runs 验证，二者不能互相替代。
+A simple bootstrap instruction is:
 
-## Development Rules
+```text
+Read the repository instructions first.
+Select the one Skill under skills/ that best matches my task.
+State the selected Skill, operating mode and missing inputs.
+Default to Suggest.
+Do not guess missing data and do not perform live Amazon Ads writes.
+```
 
-- `SKILL.md` 保持薄，详细知识按需加载；
-- `SKILL.md` 顶层 frontmatter 保持 Agent Skills spec-compatible，自定义字段进入 `metadata`；
-- 修改 Skill/reference/schema/playbook/eval 后运行 unit tests + Skill/Eval deterministic validators；
-- 新增/大改 Skill 时，重要场景优先做 Discovery / Forced invocation / Negative control / without-skill ablation；随机运行需要效果结论时记录 repeated trial count，而不是依赖单次 best run；
-- 不把固定经验阈值伪装成官方规则或默认动作幅度；
-- monetary-control 建议必须区分 raw anchor 与 final magnitude；无账户级 sizing basis 时不制造默认百分比；
-- 区分 Fact / Observation / Hypothesis / Cause / Action / Outcome；
-- 跨来源/归因变体/语义版本/快照成熟度/row-inclusion contract 趋势先检查 lineage comparability；
-- standard/default conversion metrics 与 `all views` conversion metrics 不因为 metric family 相同就直接拼接；attribution methodology cutover 与 performance break 同期时先做 reconciliation；
-- 报表行缺失先检查 row-inclusion / eligibility；除非 report contract 明确支持，否则不自动补 0、不声称完整总体；
-- Search Term row 在做意图、Exact 收割或 Negative 推理前先检查 `term_origin`；inferred non-search / unknown origin 不按显示字符串默认解释为 literal shopper query；
-- Search Term Impression Share 先保留 account-wide scope；没有 routing/binding-control 证据时不映射成单 Campaign 的 bid/budget headroom，也不把低 SIS 当增量保证；
-- Performance-drop diagnosis 不把“无人工 campaign control change”当作 delivery conditions 未变化的证明；platform-managed auto-enrollment / new delivery surface 与 break 同期时先做 surface-level traffic reconciliation；
-- 可变历史的重要 evaluation 保存 decision-time evidence identity；restatement 用 append-only correction，不 hindsight overwrite；
-- 账户级排名/覆盖结论先验证 pagination/truncation completeness 与 population-selection contract；
-- 聚合 base metrics 后再重算 ratio，禁止把重叠 entity grains 累加为账户总量；
-- placement optimization 必须区分 configured controls 与 realized exposure；多个 material bidding controls 同窗变化时不做单一 modifier 因果归因；
-- 同实体新动作先检查未完成验证和可信 readback；
-- memory 检索先匹配 marketplace/profile scope，scope 不完整或冲突时 fail closed；
-- deliberate migration 需要显式 lineage mapping；跨 Marketplace 性能证据默认不直接迁移；
-- stale memory / stale identity / stale retail snapshot 不等于当前状态；
-- Executor 的 unknown/timeout 结果先 reconcile，再决定 retry；
-- ROAS/ACoS 不能替代贡献利润和业务目标；
-- 预算优化先解析 campaign → portfolio → account/business/external constraint hierarchy；平台 missed-opportunity estimate 不当作保证增量；
-- 固定预算池先做 portfolio reconciliation，再给单 Campaign 预算动作；
-- 实验先验证 allocation、control integrity、leakage/interference；
-- Eval 判断行为而不是 exact wording；
-- 默认 Suggest/Shadow，不直接写真实账户。
+If the request spans several optimization domains, start with:
 
-## Sources & Licenses
+```text
+skills/amazon-ads-optimizer/SKILL.md
+```
 
-项目持续研究公开 Amazon Ads / PPC / Agent Skills 项目。采用流程：`discover → license check → extract generic idea → independently rewrite → Amazon Ads adaptation → safety gate → progressive loading`。已审阅来源见 `docs/SOURCES.md`，单轮专项研究可放在 `docs/research/` 并保持来源与采用边界可追溯。
+---
 
-## v1.0 Baseline
+## The 15 Skills
 
-v1.0 的稳定边界已经包含：
+| Area | Skill | Primary job |
+|---|---|---|
+| Account | `amazon-ads-audit` | Account-level integrity, waste, structure and opportunity review |
+| Orchestration | `amazon-ads-optimizer` | Route multi-domain work and resolve overlapping recommendations |
+| Monitoring | `campaign-health-monitor` | Routine campaign health and watchlist triage |
+| Monitoring | `anomaly-detection` | Separate meaningful anomalies from normal variance/events |
+| Diagnosis | `performance-drop-diagnosis` | Trace sustained performance declines to supported causes |
+| Growth | `growth-opportunity-finder` | Find qualified headroom after economics and readiness gates |
+| Experimentation | `experiment-planner` | Design guarded tests when direct action is not yet justified |
+| Learning loop | `post-change-review` | Verify application, evaluate outcome and detect confounders |
+| Search | `search-term-analysis` | Interpret Search Term evidence, winners and harvest candidates |
+| Targeting | `keyword-optimization` | Keyword/target structure, lifecycle and traffic ownership |
+| Targeting | `negative-targeting` | Guarded negative decisions with collateral-damage protection |
+| Control | `bid-optimization` | Evidence-bounded bid/CPC recommendations |
+| Control | `budget-optimization` | Pacing, budget constraints and marginal allocation |
+| Control | `placement-optimization` | Placement performance and coupled-control reasoning |
+| Economics | `profitability-analysis` | Break-even ACOS, contribution margin and profit-after-ads |
 
-- [x] Codex / Claude Code / WorkBuddy 共用 canonical Skill 根目录与一致 runtime manifest
-- [x] Agent Skills strict frontmatter compatibility + deterministic Skill validator
-- [x] Deterministic Eval fixture validator + CI gate
-- [x] 15 个核心 Amazon Ads Skills + progressive references/playbooks
-- [x] Audit / Monitor / Search Term / Bid / Budget / Placement / Negative / Profitability
-- [x] Performance Drop Diagnosis + Mixed-ASIN / retail / platform-managed-delivery safety
-- [x] Growth Opportunity Finder + query-headroom / SIS scope safety
-- [x] Experiment Planner + interference / leakage / control-boundary validation
-- [x] Post-change Review + readback / reconciliation / measurement parity
-- [x] Optimization Memory + Entity History + realized-ad state
-- [x] Decision-time evidence identity + deterministic measurement-state projector
-- [x] Contextual Benchmark Policy + contextual action sizing
-- [x] Weekly Review Playbook
-- [x] Historical replay / regression fixtures
-- [x] Source lineage + semantic / attribution / row-eligibility / backfill / historical-availability safety
-- [x] Paired with-Skill / without-Skill benchmark result schema + deterministic summarizer
-- [x] Node 24 generation GitHub Actions validation workflow
+The repository deliberately keeps this catalog small. New composite workflows should usually become a playbook or reference rather than a new Skill.
 
-Future changes are evidence-driven maintenance rather than a requirement to increase Skill count. Live Amazon Ads API writes, retry/idempotency mechanics, credentials and provider-specific model execution intentionally remain outside this repository in external Connector / Executor / eval harness integrations.
+---
 
-## Disclaimer
+## Progressive loading
 
-本项目是独立开源 Amazon Ads AI Agent Skills 项目，与 Amazon 官方无隶属或背书关系。
+The repository follows the Agent Skills model:
+
+```text
+skill metadata
+→ one selected SKILL.md
+→ only the references / schemas / scripts required by that decision
+```
+
+Do **not** load all 15 Skills or the full research tree into context for an ordinary task.
+
+Typical paths:
+
+```text
+skills/<skill>/SKILL.md
+skills/<skill>/references/*
+references/*
+schemas/*
+playbooks/*
+```
+
+`evals/` is for evaluation and historical replay, not normal account analysis.
+
+---
+
+## Safety model
+
+The default operating modes are:
+
+| Mode | Meaning |
+|---|---|
+| `Read-only` | Inspect and explain evidence |
+| `Suggest` | Produce guarded recommendations; **default** |
+| `Shadow` | Simulate or backtest without live mutation |
+| `Execute` | Produce a validated action payload for an explicitly authorized external executor |
+
+`Execute` does **not** mean this repository directly changes Amazon Ads.
+
+Credentials, OAuth/LWA handling, live writes, retry policy, idempotency enforcement, reconciliation workers and secret storage belong to an external Connector / Executor.
+
+Key safety invariants:
+
+```text
+missing data ≠ 0
+unsupported connector capability ≠ 0
+report completed ≠ full logical population
+executor success ≠ trusted current state
+proposed ≠ applied ≠ readback confirmed ≠ worked
+same metric label ≠ same measurement definition
+same entity id across scopes ≠ same optimization identity
+historical winner ≠ automatically action-safe now
+```
+
+See **[AGENTS.md](AGENTS.md)** and **[references/decision-boundaries.md](references/decision-boundaries.md)** for repository-wide rules.
+
+---
+
+## MCP / Connector capability layer
+
+The Skills are connector-neutral. They can consume evidence from an MCP server, API wrapper, export, warehouse or other authorized source.
+
+The connector path is explicitly gated:
+
+```text
+Skill + decision profile
+→ scripts/resolve_skill_capabilities.py
+→ canonical capability IDs
+→ active connector capability snapshot
+→ scripts/evaluate_connector_capability_gate.py
+→ Pass / Degraded / Blocked
+→ metric interpretation
+```
+
+Canonical capability IDs and Skill decision profiles live in:
+
+- `references/connector-capability-catalog.json`
+- `references/connector-capability.md`
+- `schemas/connector-capability-snapshot.json`
+
+Example:
+
+```bash
+echo '{"skill":"bid-optimization","profile":"action-safe-proposal"}' \
+  | python scripts/resolve_skill_capabilities.py
+```
+
+The resolver does not call Amazon. It only returns repository-owned required/optional capability IDs.
+
+When a connector snapshot is available:
+
+```bash
+echo '{"snapshot": {...}, "required_capabilities": [...]}' \
+  | python scripts/evaluate_connector_capability_gate.py
+```
+
+A `Degraded` or `Blocked` result caps the dependent decision to conservative outcomes such as Directional, Hold, Alternate Source, Missing Data or Manual Review.
+
+The capability system has a permanent rule:
+
+```text
+missing_evidence_policy = never_zero
+```
+
+---
+
+## Data reliability
+
+High-confidence recommendations require more than matching column names.
+
+The repository checks evidence dimensions such as:
+
+- source system and source dataset;
+- acquisition channel;
+- reporting generation;
+- marketplace / advertiser / profile identity;
+- date range, timezone and currency;
+- metric and attribution semantics;
+- row eligibility / represented population;
+- pagination and truncation;
+- historical availability;
+- freshness and `available_through`;
+- backfill maturity;
+- aggregation grain and filters.
+
+Use:
+
+- **[references/data-lineage.md](references/data-lineage.md)** for cross-source / cross-version comparability;
+- **[references/report-coverage.md](references/report-coverage.md)** for row-inclusion and logical-population questions;
+- **[references/cross-account-identity.md](references/cross-account-identity.md)** for account/profile identity;
+- **[references/platform-capability-lineage.md](references/platform-capability-lineage.md)** for time-varying Amazon platform behavior.
+
+Current Amazon reporting changes and other platform research are recorded under **[docs/research/](docs/research/)** instead of being duplicated into this README.
+
+---
+
+## Optimization memory
+
+The learning loop is append-first:
+
+```text
+schemas/optimization-event.json
+→ bounded read-only projectors
+→ schemas/entity-history.json
+→ read-before-recommend
+```
+
+Important helpers:
+
+- `scripts/project_measurement_history.py`
+- `scripts/project_realization_history.py`
+
+The event ledger remains authoritative. Derived history must not manufacture missing account identity, metric semantics, attribution family, historical availability or current state.
+
+See **[references/optimization-memory.md](references/optimization-memory.md)**.
+
+---
+
+## Experiments
+
+Use `experiment-planner` when a plausible optimization is not yet action-safe.
+
+The repository separates:
+
+```text
+Observation
+→ Hypothesis
+→ Cause evidence
+→ Action / treatment
+→ Outcome
+```
+
+A `Ready` experiment is ready for **external execution review**, not permission to mutate Amazon Ads.
+
+Machine-readable experiment plans use:
+
+- `schemas/experiment-plan.json`
+- `scripts/validate_experiment_plan.py`
+
+---
+
+## Evaluation
+
+There are three different validation layers:
+
+1. **Repository contract checks** — file/schema/routing invariants.
+2. **Synthetic capability replay** — decision and safety regressions under `evals/fixtures/`.
+3. **Skill effectiveness** — with-Skill vs without-Skill, discovery vs forced invocation, negative controls and repeated trials.
+
+Start with:
+
+- **[evals/README.md](evals/README.md)**
+- **[evals/SKILL-EFFECTIVENESS.md](evals/SKILL-EFFECTIVENESS.md)**
+- `schemas/skill-effectiveness-benchmark.json`
+- `scripts/summarize_skill_effectiveness.py`
+
+The repository's deterministic tests run before any claim that a behavioral change is safe.
+
+---
+
+## Repository structure
+
+```text
+amazon-ads-skills/
+├── skills/                 # 15 canonical Agent Skills
+├── references/             # shared decision/data/connector rules
+├── playbooks/              # multi-Skill operating workflows
+├── schemas/                # machine-readable contracts
+├── scripts/                # read-only validators/projectors/resolvers
+├── tests/                  # deterministic policy/unit tests
+├── evals/                  # synthetic replay + effectiveness contracts
+├── docs/
+│   ├── GETTING-STARTED.md
+│   ├── SOURCES.md
+│   └── research/
+├── AGENTS.md               # repository-wide agent instructions
+├── CLAUDE.md               # Claude Code entry instructions
+├── .codex-plugin/
+├── .claude-plugin/
+└── .workbuddy-plugin/
+```
+
+---
+
+## Runtime compatibility
+
+The same canonical `skills/` tree is used across runtimes.
+
+| Runtime | Repository entrypoints |
+|---|---|
+| Codex | `AGENTS.md`, `.codex-plugin/plugin.json`, `skills/` |
+| Claude Code | `CLAUDE.md`, `.claude-plugin/plugin.json`, `skills/` |
+| WorkBuddy | `.workbuddy-plugin/plugin.json`, `skills/` |
+| Other file-capable agents | explicit `skills/<name>/SKILL.md` |
+
+Runtime manifests describe packaging/discovery only. They do not create an Amazon Ads connection.
+
+See **[docs/GETTING-STARTED.md](docs/GETTING-STARTED.md)** for current setup guidance.
+
+---
+
+## Documentation map
+
+Use the narrowest document that owns the question:
+
+| Need | Read |
+|---|---|
+| Install / first run | `docs/GETTING-STARTED.md` |
+| External sources and adoption boundaries | `docs/SOURCES.md` |
+| Recent platform/engineering research | `docs/research/` |
+| Amazon metric definitions | `references/amazon-ads-metrics.md` |
+| Data comparability | `references/data-lineage.md` |
+| Report completeness | `references/report-coverage.md` |
+| Connector capability | `references/connector-capability.md` |
+| Optimization memory | `references/optimization-memory.md` |
+| Action sizing | `references/action-sizing.md` |
+| Execution boundaries | `references/decision-boundaries.md` |
+| Weekly operating flow | `playbooks/weekly-review.md` |
+| Regression/eval behavior | `evals/README.md` |
+
+---
+
+## Contributing decision logic
+
+For behavioral changes:
+
+```text
+prove the old failure with a deterministic RED test / eval
+→ implement the smallest useful change
+→ run unit tests
+→ validate Skills
+→ validate eval fixtures
+→ inspect GitHub Actions
+```
+
+Do not add rules only because another repository is popular or highly starred. External projects are evidence sources, not authority over Amazon Ads behavior.
+
+Third-party implementations, prompts, schemas, workflows and templates are not copied into this repository unless licensing and scope explicitly justify it. Generic ideas are independently rewritten and documented in `docs/SOURCES.md` or `docs/research/`.
+
+---
+
+## License
+
+Repository-owned code and Skills are distributed under **[MIT](LICENSE)**.
+
+Amazon documentation and third-party projects retain their own copyrights and licenses. See **[docs/SOURCES.md](docs/SOURCES.md)** for adoption boundaries.
