@@ -1,439 +1,242 @@
 #!/usr/bin/env python3
-"""Evaluate connector capability evidence before metric interpretation.
-
-Read-only, dependency-free gate. It never calls a connector, never mutates an
-advertiser account, and never converts missing/unsupported capability evidence
-into a numeric metric observation.
-"""
-
+"""Deterministically gate connector evidence before metric interpretation."""
 from __future__ import annotations
 
 import json
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-KNOWN_STATUSES = {"Supported", "Partial", "Unsupported", "Unknown"}
-BINDING_VERIFICATION_STATUSES = {"Verified", "Unverified", "Unknown"}
-BINDING_SURFACE_TYPES = {
-    "tool",
-    "report",
-    "dataset",
-    "stream",
-    "export",
-    "endpoint",
-    "warehouse_table",
-    "manual_export",
-}
-PASS_DECISIONS = ["High Confidence", "Suggest", "Shadow"]
-DEGRADED_DECISIONS = [
-    "Directional",
-    "Hold",
-    "Alternate Source",
-    "Missing Data",
-    "Manual Review",
-]
-BLOCKED_DECISIONS = ["Hold", "Alternate Source", "Missing Data", "Manual Review"]
-SCOPE_FIELDS = {
-    "region": "regions",
-    "marketplace": "marketplaces",
-    "ad_product": "ad_products",
-    "account_type": "account_types",
-}
-
 ROOT = Path(__file__).resolve().parents[1]
-CAPABILITY_CATALOG = ROOT / "references" / "connector-capability-catalog.json"
+CATALOG = ROOT / "references" / "connector-capability-catalog.json"
+KNOWN_STATUSES = {"Supported", "Partial", "Unsupported", "Unknown"}
+VERIFY = {"Verified", "Unverified", "Unknown"}
+SURFACES = {"tool", "report", "dataset", "stream", "export", "endpoint", "warehouse_table", "manual_export"}
+SCOPE_FIELDS = {"region": "regions", "marketplace": "marketplaces", "ad_product": "ad_products", "account_type": "account_types"}
+PASS = ["High Confidence", "Suggest", "Shadow"]
+DEGRADED = ["Directional", "Hold", "Alternate Source", "Missing Data", "Manual Review"]
+BLOCKED = ["Hold", "Alternate Source", "Missing Data", "Manual Review"]
 
 
-def _non_empty_string(value: Any) -> bool:
-    return isinstance(value, str) and bool(value.strip())
+def _s(v: Any) -> bool:
+    return isinstance(v, str) and bool(v.strip())
 
 
-def _load_capability_catalog() -> tuple[set[str], str | None]:
+def _catalog() -> tuple[set[str], str | None]:
     try:
-        catalog = json.loads(CAPABILITY_CATALOG.read_text(encoding="utf-8"))
+        obj = json.loads(CATALOG.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise ValueError("connector capability catalog is unavailable or invalid") from exc
-    if not isinstance(catalog, dict):
-        raise ValueError("connector capability catalog must be an object")
-
-    capabilities = catalog.get("capabilities")
-    if not isinstance(capabilities, list):
+    if not isinstance(obj, dict) or not isinstance(obj.get("capabilities"), list):
         raise ValueError("connector capability catalog capabilities must be an array")
-
-    registered: set[str] = set()
-    for index, item in enumerate(capabilities):
-        if not isinstance(item, dict) or not _non_empty_string(item.get("capability_id")):
-            raise ValueError(
-                f"connector capability catalog capabilities[{index}] has invalid capability_id"
-            )
-        capability_id = item["capability_id"].strip()
-        if capability_id in registered:
-            raise ValueError(
-                f"connector capability catalog contains duplicate capability_id {capability_id!r}"
-            )
-        registered.add(capability_id)
-
-    version = catalog.get("catalog_version")
-    if version is not None and not _non_empty_string(version):
+    ids: set[str] = set()
+    for i, item in enumerate(obj["capabilities"]):
+        if not isinstance(item, dict) or not _s(item.get("capability_id")):
+            raise ValueError(f"connector capability catalog capabilities[{i}] has invalid capability_id")
+        cid = item["capability_id"].strip()
+        if cid in ids:
+            raise ValueError(f"connector capability catalog contains duplicate capability_id {cid!r}")
+        ids.add(cid)
+    version = obj.get("catalog_version")
+    if version is not None and not _s(version):
         raise ValueError("connector capability catalog version must be a non-empty string or null")
-    return registered, version
+    return ids, version
 
 
-def _normalize_requirements(value: Any, registered: set[str]) -> list[str]:
-    if not isinstance(value, list) or not value:
+def _requirements(v: Any, registered: set[str]) -> list[str]:
+    if not isinstance(v, list) or not v:
         raise ValueError("required_capabilities must be a non-empty array")
-    result: list[str] = []
-    seen: set[str] = set()
-    for index, item in enumerate(value):
-        if not _non_empty_string(item):
-            raise ValueError(
-                f"required_capabilities[{index}] must be a non-empty string"
-            )
-        capability_id = item.strip()
-        if capability_id in seen:
-            raise ValueError(
-                f"required_capabilities contains duplicate capability_id {capability_id!r}"
-            )
-        if capability_id not in registered:
-            raise ValueError(
-                f"required_capabilities contains unregistered capability_id {capability_id!r}"
-            )
-        seen.add(capability_id)
-        result.append(capability_id)
-    return result
+    out: list[str] = []
+    for i, item in enumerate(v):
+        if not _s(item):
+            raise ValueError(f"required_capabilities[{i}] must be a non-empty string")
+        cid = item.strip()
+        if cid in out:
+            raise ValueError(f"required_capabilities contains duplicate capability_id {cid!r}")
+        if cid not in registered:
+            raise ValueError(f"required_capabilities contains unregistered capability_id {cid!r}")
+        out.append(cid)
+    return out
 
 
-def _normalize_expected_scope(value: Any) -> dict[str, str]:
-    if value is None:
+def _scope(v: Any) -> dict[str, str]:
+    if v is None:
         return {}
-    if not isinstance(value, dict):
+    if not isinstance(v, dict):
         raise ValueError("expected_scope must be an object or null")
-    unknown = sorted(set(value) - set(SCOPE_FIELDS))
+    unknown = sorted(set(v) - set(SCOPE_FIELDS))
     if unknown:
         raise ValueError(f"expected_scope contains unsupported fields: {unknown}")
-    normalized: dict[str, str] = {}
-    for field, item in value.items():
-        if not _non_empty_string(item):
-            raise ValueError(f"expected_scope.{field} must be a non-empty string")
-        normalized[field] = item.strip()
-    return normalized
+    out = {}
+    for k, item in v.items():
+        if not _s(item):
+            raise ValueError(f"expected_scope.{k} must be a non-empty string")
+        out[k] = item.strip()
+    return out
 
 
-def _index_capabilities(snapshot: Any) -> tuple[dict[str, dict[str, Any]], dict[str, Any]]:
+def _freshness(v: Any) -> dict[str, Any] | None:
+    if v is None:
+        return None
+    if not isinstance(v, dict):
+        raise ValueError("freshness_requirement must be an object or null")
+    if set(v) != {"as_of", "max_age_seconds"}:
+        raise ValueError("freshness_requirement must contain exactly as_of and max_age_seconds")
+    as_of = _time(v["as_of"], "freshness_requirement.as_of")
+    age = v["max_age_seconds"]
+    if isinstance(age, bool) or not isinstance(age, (int, float)) or age < 0:
+        raise ValueError("freshness_requirement.max_age_seconds must be a non-negative number")
+    return {"as_of": as_of, "as_of_raw": v["as_of"], "max_age_seconds": float(age)}
+
+
+def _time(v: Any, field: str) -> datetime:
+    if not _s(v):
+        raise ValueError(f"{field} must be a non-empty ISO-8601 timestamp")
+    text = v.strip()
+    try:
+        dt = datetime.fromisoformat(text[:-1] + "+00:00" if text.endswith("Z") else text)
+    except ValueError as exc:
+        raise ValueError(f"{field} must be a valid ISO-8601 timestamp") from exc
+    if dt.tzinfo is None:
+        raise ValueError(f"{field} must include a timezone")
+    return dt.astimezone(timezone.utc)
+
+
+def _index(snapshot: Any) -> tuple[dict[str, dict[str, Any]], dict[str, Any]]:
     if snapshot is None:
         return {}, {}
     if not isinstance(snapshot, dict):
         raise ValueError("snapshot must be an object or null")
-
-    capabilities = snapshot.get("capabilities")
-    if capabilities is None:
-        capabilities = []
-    if not isinstance(capabilities, list):
+    caps = snapshot.get("capabilities", [])
+    if not isinstance(caps, list):
         raise ValueError("snapshot.capabilities must be an array")
-
-    indexed: dict[str, dict[str, Any]] = {}
-    for index, capability in enumerate(capabilities):
-        if not isinstance(capability, dict):
-            raise ValueError(f"snapshot.capabilities[{index}] must be an object")
-        capability_id = capability.get("capability_id")
-        if not _non_empty_string(capability_id):
-            raise ValueError(
-                f"snapshot.capabilities[{index}].capability_id must be a non-empty string"
-            )
-        capability_id = capability_id.strip()
-        if capability_id in indexed:
-            raise ValueError(
-                f"snapshot.capabilities contains duplicate capability_id {capability_id!r}"
-            )
-        status = capability.get("status", "Unknown")
-        if status not in KNOWN_STATUSES:
-            raise ValueError(
-                f"snapshot.capabilities[{index}].status must be one of {sorted(KNOWN_STATUSES)}"
-            )
-        indexed[capability_id] = capability
-    return indexed, snapshot
+    out = {}
+    for i, cap in enumerate(caps):
+        if not isinstance(cap, dict) or not _s(cap.get("capability_id")):
+            raise ValueError(f"snapshot.capabilities[{i}].capability_id must be a non-empty string")
+        cid = cap["capability_id"].strip()
+        if cid in out:
+            raise ValueError(f"snapshot.capabilities contains duplicate capability_id {cid!r}")
+        if cap.get("status", "Unknown") not in KNOWN_STATUSES:
+            raise ValueError(f"snapshot.capabilities[{i}].status must be one of {sorted(KNOWN_STATUSES)}")
+        out[cid] = cap
+    return out, snapshot
 
 
-def _evaluate_scope(capability: dict[str, Any], expected_scope: dict[str, str]) -> tuple[str, list[str]]:
-    if not expected_scope:
-        return "not_evaluated", []
-
-    scope = capability.get("scope")
+def _scope_effect(obj: dict[str, Any], expected: dict[str, str], label: str) -> tuple[str, list[str]]:
+    if not expected:
+        return "not_evaluated" if label == "capability" else "pass", []
+    scope = obj.get("scope")
     if not isinstance(scope, dict):
-        return "unknown", [
-            "decision scope was requested but connector capability scope is not exposed"
-        ]
-
-    warnings: list[str] = []
-    unknown = False
-    blocked = False
-    for expected_field, expected_value in expected_scope.items():
-        capability_field = SCOPE_FIELDS[expected_field]
-        observed_values = scope.get(capability_field)
-        if not isinstance(observed_values, list) or not observed_values:
+        return "unknown", [f"{label} does not expose bounded decision scope"]
+    unknown = blocked = False
+    warnings = []
+    for field, wanted in expected.items():
+        vals = scope.get(SCOPE_FIELDS[field])
+        if not isinstance(vals, list) or not vals:
             unknown = True
-            warnings.append(
-                f"connector capability does not expose bounded {expected_field} scope"
-            )
-            continue
-        normalized_values = {
-            item.strip().casefold()
-            for item in observed_values
-            if _non_empty_string(item)
-        }
-        if expected_value.casefold() not in normalized_values:
+            warnings.append(f"{label} does not expose bounded {field} scope")
+        elif wanted.casefold() not in {x.strip().casefold() for x in vals if _s(x)}:
             blocked = True
-            warnings.append(
-                f"required capability is not supported for requested {expected_field} {expected_value!r}"
-            )
-
-    if blocked:
-        return "blocked", warnings
-    if unknown:
-        return "unknown", warnings
-    return "pass", warnings
+            warnings.append(f"{label} does not cover requested {field} {wanted!r}")
+    return ("blocked" if blocked else "unknown" if unknown else "pass"), warnings
 
 
-def _evaluate_binding_scope(
-    binding: dict[str, Any],
-    expected_scope: dict[str, str],
-) -> tuple[str, list[str]]:
-    if not expected_scope:
-        return "pass", []
-
-    scope = binding.get("scope")
-    if not isinstance(scope, dict):
-        return "unknown", [
-            "verified connector binding does not expose bounded decision scope"
-        ]
-
-    warnings: list[str] = []
-    unknown = False
-    blocked = False
-    for expected_field, expected_value in expected_scope.items():
-        binding_field = SCOPE_FIELDS[expected_field]
-        observed_values = scope.get(binding_field)
-        if not isinstance(observed_values, list) or not observed_values:
-            unknown = True
-            warnings.append(
-                f"connector binding does not expose bounded {expected_field} scope"
-            )
-            continue
-        normalized_values = {
-            item.strip().casefold()
-            for item in observed_values
-            if _non_empty_string(item)
-        }
-        if expected_value.casefold() not in normalized_values:
-            blocked = True
-            warnings.append(
-                f"connector binding does not cover requested {expected_field} {expected_value!r}"
-            )
-
-    if blocked:
-        return "blocked", warnings
-    if unknown:
-        return "unknown", warnings
-    return "pass", warnings
-
-
-def _evaluate_bindings(
-    capability: dict[str, Any],
-    expected_scope: dict[str, str],
-) -> tuple[str, list[str], list[str]]:
-    bindings = capability.get("bindings")
+def _binding_effect(cap: dict[str, Any], expected: dict[str, str], fresh: dict[str, Any] | None) -> tuple[str, list[str], str, list[str]]:
+    bindings = cap.get("bindings")
     if not bindings:
-        return "unknown", [], [
-            "supported capability has no verified connector surface binding"
-        ]
+        return "unknown", [], "not_evaluated" if fresh is None else "unknown", ["supported capability has no verified connector surface binding"]
     if not isinstance(bindings, list):
         raise ValueError("capability.bindings must be an array")
-
-    verified_binding_ids: list[str] = []
+    verified: list[str] = []
     warnings: list[str] = []
-    seen_ids: set[str] = set()
-    saw_unverified = False
-    saw_verified = False
-
-    for index, binding in enumerate(bindings):
-        field = f"capability.bindings[{index}]"
-        if not isinstance(binding, dict):
+    saw_unverified = saw_verified = saw_stale = False
+    seen: set[str] = set()
+    for i, b in enumerate(bindings):
+        field = f"capability.bindings[{i}]"
+        if not isinstance(b, dict):
             raise ValueError(f"{field} must be an object")
-
-        binding_id = binding.get("binding_id")
-        surface_type = binding.get("surface_type")
-        surface_id = binding.get("surface_id")
-        verification_status = binding.get("verification_status")
-        observed_at = binding.get("observed_at")
-        evidence = binding.get("evidence")
-
-        if not _non_empty_string(binding_id):
-            raise ValueError(f"{field}.binding_id must be a non-empty string")
-        binding_id = binding_id.strip()
-        if binding_id in seen_ids:
-            raise ValueError(f"capability.bindings contains duplicate binding_id {binding_id!r}")
-        seen_ids.add(binding_id)
-
-        if surface_type not in BINDING_SURFACE_TYPES:
-            raise ValueError(
-                f"{field}.surface_type must be one of {sorted(BINDING_SURFACE_TYPES)}"
-            )
-        if not _non_empty_string(surface_id):
-            raise ValueError(f"{field}.surface_id must be a non-empty string")
-        if verification_status not in BINDING_VERIFICATION_STATUSES:
-            raise ValueError(
-                f"{field}.verification_status must be one of "
-                f"{sorted(BINDING_VERIFICATION_STATUSES)}"
-            )
-        if not _non_empty_string(observed_at):
-            raise ValueError(f"{field}.observed_at must be a non-empty string")
-        if not isinstance(evidence, list):
-            raise ValueError(f"{field}.evidence must be an array")
-
-        if verification_status != "Verified":
-            if verification_status == "Unverified":
-                saw_unverified = True
+        bid = b.get("binding_id")
+        if not _s(bid): raise ValueError(f"{field}.binding_id must be a non-empty string")
+        bid = bid.strip()
+        if bid in seen: raise ValueError(f"capability.bindings contains duplicate binding_id {bid!r}")
+        seen.add(bid)
+        if b.get("surface_type") not in SURFACES: raise ValueError(f"{field}.surface_type must be one of {sorted(SURFACES)}")
+        if not _s(b.get("surface_id")): raise ValueError(f"{field}.surface_id must be a non-empty string")
+        status = b.get("verification_status")
+        if status not in VERIFY: raise ValueError(f"{field}.verification_status must be one of {sorted(VERIFY)}")
+        if not _s(b.get("observed_at")): raise ValueError(f"{field}.observed_at must be a non-empty string")
+        if not isinstance(b.get("evidence"), list): raise ValueError(f"{field}.evidence must be an array")
+        if status != "Verified":
+            saw_unverified |= status == "Unverified"
             continue
-
         saw_verified = True
-        if not evidence:
-            raise ValueError(
-                f"{field} is Verified but has no evidence supporting the binding"
-            )
-
-        scope_effect, scope_warnings = _evaluate_binding_scope(binding, expected_scope)
-        warnings.extend(scope_warnings)
-        if scope_effect == "pass":
-            verified_binding_ids.append(binding_id)
-
-    if verified_binding_ids:
-        return "pass", verified_binding_ids, warnings
+        if not b["evidence"]: raise ValueError(f"{field} is Verified but has no evidence supporting the binding")
+        se, sw = _scope_effect(b, expected, "connector binding")
+        warnings.extend(sw)
+        if se != "pass": continue
+        if fresh is not None:
+            observed = _time(b["observed_at"], f"{field}.observed_at")
+            age = (fresh["as_of"] - observed).total_seconds()
+            if age < 0:
+                warnings.append(f"{bid} observed_at is after freshness as_of")
+                continue
+            if age > fresh["max_age_seconds"]:
+                saw_stale = True
+                warnings.append(f"verified connector binding {bid!r} is stale for the explicit freshness horizon")
+                continue
+        verified.append(bid)
+    if verified:
+        return "pass", verified, "pass" if fresh else "not_evaluated", warnings
+    if saw_stale:
+        return "pass", [], "stale", warnings
     if saw_unverified:
-        warnings.append(
-            "connector surface binding exists but is not independently verified"
-        )
-        return "unverified", [], warnings
-    if saw_verified:
-        warnings.append(
-            "verified connector surface binding does not prove the requested decision scope"
-        )
-    return "unknown", [], warnings
+        warnings.append("connector surface binding exists but is not independently verified")
+        return "unverified", [], "unknown" if fresh else "not_evaluated", warnings
+    if saw_verified: warnings.append("verified connector surface binding does not prove the requested decision scope")
+    return "unknown", [], "unknown" if fresh else "not_evaluated", warnings
 
 
 def evaluate_connector_capability_gate(payload: Any) -> dict[str, Any]:
-    if not isinstance(payload, dict):
-        raise ValueError("input must be a JSON object")
-
-    registered_capabilities, catalog_version = _load_capability_catalog()
-    requirements = _normalize_requirements(
-        payload.get("required_capabilities"),
-        registered_capabilities,
-    )
-    expected_scope = _normalize_expected_scope(payload.get("expected_scope"))
-    indexed, snapshot = _index_capabilities(payload.get("snapshot"))
-
-    evaluated: list[dict[str, Any]] = []
-    has_partial = False
-    has_blocked = False
-
-    for capability_id in requirements:
-        capability = indexed.get(capability_id)
-        scope_effect = "not_evaluated"
-        binding_effect = "unknown"
-        verified_binding_ids: list[str] = []
-        if capability is None:
-            status = "Unknown"
-            access_mode = "unknown"
-            gate_effect = "blocked"
-            has_blocked = True
+    if not isinstance(payload, dict): raise ValueError("input must be a JSON object")
+    registered, version = _catalog()
+    reqs = _requirements(payload.get("required_capabilities"), registered)
+    expected = _scope(payload.get("expected_scope"))
+    fresh = _freshness(payload.get("freshness_requirement"))
+    indexed, snapshot = _index(payload.get("snapshot"))
+    evaluated = []
+    has_partial = has_blocked = False
+    for cid in reqs:
+        cap = indexed.get(cid)
+        scope_effect = "not_evaluated"; binding_effect = "unknown"; freshness_effect = "not_evaluated"; verified = []
+        if cap is None:
+            status = "Unknown"; access = "unknown"; effect = "blocked"; has_blocked = True
             warnings = ["required capability is absent from the observed connector snapshot"]
         else:
-            status = capability.get("status", "Unknown")
-            access_mode = capability.get("access_mode", "unknown")
-            warnings = list(capability.get("warnings") or [])
-            scope_effect, scope_warnings = _evaluate_scope(capability, expected_scope)
-            warnings.extend(scope_warnings)
-            binding_effect, verified_binding_ids, binding_warnings = _evaluate_bindings(
-                capability,
-                expected_scope,
-            )
-            warnings.extend(binding_warnings)
-
+            status = cap.get("status", "Unknown"); access = cap.get("access_mode", "unknown"); warnings = list(cap.get("warnings") or [])
+            scope_effect, sw = _scope_effect(cap, expected, "connector capability"); warnings += sw
+            binding_effect, verified, freshness_effect, bw = _binding_effect(cap, expected, fresh); warnings += bw
             if status == "Supported":
-                if scope_effect not in {"pass", "not_evaluated"}:
-                    gate_effect = "blocked"
-                    has_blocked = True
-                elif binding_effect == "pass":
-                    gate_effect = "pass"
-                else:
-                    gate_effect = "degraded"
-                    has_partial = True
-            elif status == "Partial" and scope_effect in {"pass", "not_evaluated"}:
-                gate_effect = "degraded"
-                has_partial = True
-            else:
-                gate_effect = "blocked"
-                has_blocked = True
-
-        evaluated.append(
-            {
-                "capability_id": capability_id,
-                "status": status,
-                "access_mode": access_mode,
-                "scope_effect": scope_effect,
-                "binding_effect": binding_effect,
-                "verified_binding_ids": verified_binding_ids,
-                "gate_effect": gate_effect,
-                "warnings": warnings,
-            }
-        )
-
-    if has_blocked:
-        gate_status = "Blocked"
-        allowed = BLOCKED_DECISIONS
-        high_confidence_allowed = False
-    elif has_partial:
-        gate_status = "Degraded"
-        allowed = DEGRADED_DECISIONS
-        high_confidence_allowed = False
-    else:
-        gate_status = "Pass"
-        allowed = PASS_DECISIONS
-        high_confidence_allowed = True
-
-    return {
-        "gate_status": gate_status,
-        "catalog_version": catalog_version,
-        "high_confidence_allowed": high_confidence_allowed,
-        "missing_evidence_policy": "never_zero",
-        "allowed_decision_classes": allowed,
-        "connector_id": snapshot.get("connector_id"),
-        "connector_version": snapshot.get("connector_version"),
-        "captured_at": snapshot.get("captured_at"),
-        "expected_scope": expected_scope or None,
-        "requirements": evaluated,
-    }
-
-
-def _load_payload() -> Any:
-    try:
-        return json.load(sys.stdin)
-    except json.JSONDecodeError as exc:
-        raise ValueError("stdin must contain valid JSON") from exc
+                if scope_effect not in {"pass", "not_evaluated"}: effect = "blocked"; has_blocked = True
+                elif freshness_effect in {"stale", "unknown"}: effect = "degraded"; has_partial = True
+                elif binding_effect == "pass" and verified: effect = "pass"
+                else: effect = "degraded"; has_partial = True
+            elif status == "Partial" and scope_effect in {"pass", "not_evaluated"}: effect = "degraded"; has_partial = True
+            else: effect = "blocked"; has_blocked = True
+        evaluated.append({"capability_id": cid, "status": status, "access_mode": access, "scope_effect": scope_effect, "binding_effect": binding_effect, "freshness_effect": freshness_effect, "verified_binding_ids": verified, "gate_effect": effect, "warnings": warnings})
+    if has_blocked: gate, allowed, high = "Blocked", BLOCKED, False
+    elif has_partial: gate, allowed, high = "Degraded", DEGRADED, False
+    else: gate, allowed, high = "Pass", PASS, True
+    return {"gate_status": gate, "catalog_version": version, "high_confidence_allowed": high, "missing_evidence_policy": "never_zero", "allowed_decision_classes": allowed, "connector_id": snapshot.get("connector_id"), "connector_version": snapshot.get("connector_version"), "captured_at": snapshot.get("captured_at"), "expected_scope": expected or None, "freshness_requirement": None if fresh is None else {"as_of": fresh["as_of_raw"], "max_age_seconds": fresh["max_age_seconds"]}, "requirements": evaluated}
 
 
 def main() -> int:
     try:
-        result = evaluate_connector_capability_gate(_load_payload())
-    except ValueError as exc:
-        print(f"error: {exc}", file=sys.stderr)
-        return 2
-
-    json.dump(result, sys.stdout, ensure_ascii=False, sort_keys=True)
-    sys.stdout.write("\n")
-    return 0
+        result = evaluate_connector_capability_gate(json.load(sys.stdin))
+    except (ValueError, json.JSONDecodeError) as exc:
+        print(f"error: {exc}", file=sys.stderr); return 2
+    json.dump(result, sys.stdout, ensure_ascii=False, sort_keys=True); sys.stdout.write("\n"); return 0
 
 
-if __name__ == "__main__":
-    raise SystemExit(main())
+if __name__ == "__main__": raise SystemExit(main())
