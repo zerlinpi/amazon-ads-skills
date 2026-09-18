@@ -73,6 +73,10 @@ class ConnectorCapabilityRuntimeGateTests(unittest.TestCase):
                         "capability_id": "campaign-performance-read",
                         "status": "Supported",
                         "access_mode": "report",
+                        "scope": {
+                            "marketplaces": ["US"],
+                            "ad_products": ["Sponsored Products"],
+                        },
                         "bindings": [
                             {
                                 "binding_id": "fixture:campaign-report",
