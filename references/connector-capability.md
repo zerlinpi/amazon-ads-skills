@@ -128,6 +128,24 @@ Prefer capability evidence in this order when available:
 
 Record `captured_at` or `observed_at`. Re-check a capability when a decision depends on an exact field, report generation, profile/region behavior, history range, or write/readback function that may have changed.
 
+## Canonical capability IDs
+
+Do not invent connector capability identifiers ad hoc. Use the repository-owned registry at `connector-capability-catalog.json`.
+
+For a Skill decision profile, resolve the canonical IDs with:
+
+```text
+echo '{"skill":"bid-optimization","profile":"action-safe-proposal"}'
+→ scripts/resolve_skill_capabilities.py
+→ required_capabilities[] / optional_capabilities[]
+```
+
+The registry is intentionally connector-neutral. A vendor may expose differently named tools, endpoints, packages, or datasets; the adapter/connector maps those external surfaces onto the canonical repository capability IDs. A hidden tool under progressive discovery is not automatically `Unsupported`; resolve the connector catalog/namespace state first, then publish the observed status into the capability snapshot.
+
+Current profile names are repository decision profiles such as `live-analysis`, `action-safe-proposal`, `ready-experiment`, and `outcome-review`. Unknown Skill/profile names fail closed in `../scripts/resolve_skill_capabilities.py` rather than creating a new identifier implicitly.
+
+The catalog contains only read/report/observe/stream capabilities. It does not register live mutation authority.
+
 ## Runtime decision gate
 
 When a Skill depends on live MCP/API/connector evidence, run the capability check **before metric interpretation** whenever a machine-readable snapshot is available. Use `../scripts/evaluate_connector_capability_gate.py` with the snapshot plus the exact capability IDs required for the decision.

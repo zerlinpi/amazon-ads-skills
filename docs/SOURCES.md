@@ -213,6 +213,16 @@ Repositories:
 
 License/adoption note: both repositories are MIT licensed. Version/runtime facts were verified from GitHub's official repositories; the repository continues to use its own minimal validation workflow and independent test contracts.
 
+## High-star agent / MCP / evaluation review — 2026-09-18
+
+A point-in-time GitHub review of widely adopted projects is recorded in `docs/research/high-star-agent-project-review-2026-09.md`. Projects include `mem0ai/mem0`, `microsoft/autogen`, `crewAIInc/crewAI`, `langchain-ai/langgraph`, `vercel-labs/agent-skills`, `agentskills/agentskills`, `promptfoo/promptfoo`, `letta-ai/letta`, `modelcontextprotocol/python-sdk`, `confident-ai/deepeval`, and `modelcontextprotocol/registry`.
+
+Stars are treated only as discovery metadata, not authority. The review records observed stars, license signals, engineering overlap, and explicit adoption/rejection reasons.
+
+This round independently adopted one generic idea from the MCP Registry / Agent Skills ecosystem: stable capability identity should live in an explicit catalog rather than transient model wording. The implementation is repository-authored in `references/connector-capability-catalog.json` and `scripts/resolve_skill_capabilities.py`; no third-party registry schema, code, prompt, workflow, or template was copied.
+
+Generic orchestration/memory/evaluation frameworks were not imported as dependencies because their runtime concerns belong outside this portable Amazon Ads decision library. Their own licenses and copyrights remain with their projects.
+
 ## Reviewed public MCP documentation
 
 ### Model Context Protocol tool annotations and server instructions

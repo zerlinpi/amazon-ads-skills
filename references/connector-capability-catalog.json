@@ -1,0 +1,528 @@
+{
+  "catalog_version": "1.0.0",
+  "description": "Canonical read-only connector capability IDs used by Amazon Ads Skills when live MCP/API/connector evidence is required. Offline/user-supplied data does not require a connector capability lookup.",
+  "capabilities": [
+    {
+      "capability_id": "profile-identity-read",
+      "access_mode": "read",
+      "category": "identity",
+      "description": "Resolve advertiser/profile/marketplace/region/currency/timezone identity for the active scope."
+    },
+    {
+      "capability_id": "campaign-performance-read",
+      "access_mode": "report",
+      "category": "performance",
+      "description": "Read campaign-level delivery and conversion performance for a bounded scope/window."
+    },
+    {
+      "capability_id": "target-performance-read",
+      "access_mode": "report",
+      "category": "performance",
+      "description": "Read keyword/product-target performance with stable target identity."
+    },
+    {
+      "capability_id": "search-term-performance-read",
+      "access_mode": "report",
+      "category": "performance",
+      "description": "Read represented Search Term performance rows under a known report contract."
+    },
+    {
+      "capability_id": "search-term-origin-read",
+      "access_mode": "read",
+      "category": "semantics",
+      "description": "Expose whether a Search Term row is literal query, inferred non-search, or unknown when available."
+    },
+    {
+      "capability_id": "placement-performance-read",
+      "access_mode": "report",
+      "category": "performance",
+      "description": "Read placement-level performance and placement identity."
+    },
+    {
+      "capability_id": "budget-state-read",
+      "access_mode": "read",
+      "category": "control-state",
+      "description": "Read current campaign/portfolio/account budget controls and relevant budget-status state."
+    },
+    {
+      "capability_id": "bid-state-read",
+      "access_mode": "read",
+      "category": "control-state",
+      "description": "Read current bid/target-bid and bidding-strategy state."
+    },
+    {
+      "capability_id": "entity-state-readback",
+      "access_mode": "read",
+      "category": "control-state",
+      "description": "Read trusted current entity/control state for reconciliation after a proposed or external change."
+    },
+    {
+      "capability_id": "change-history-read",
+      "access_mode": "read",
+      "category": "history",
+      "description": "Read recent material control/configuration changes with timestamps when exposed."
+    },
+    {
+      "capability_id": "report-completeness-observe",
+      "access_mode": "observe",
+      "category": "lineage",
+      "description": "Expose pagination/continuation/truncation and represented-population completeness signals."
+    },
+    {
+      "capability_id": "row-eligibility-observe",
+      "access_mode": "observe",
+      "category": "lineage",
+      "description": "Expose report row-inclusion or eligibility semantics when decision scope depends on omitted rows."
+    },
+    {
+      "capability_id": "metric-semantics-observe",
+      "access_mode": "observe",
+      "category": "lineage",
+      "description": "Expose metric family/definition/attribution semantic identity needed for comparability."
+    },
+    {
+      "capability_id": "date-attribution-observe",
+      "access_mode": "observe",
+      "category": "lineage",
+      "description": "Expose traffic-date/conversion-date/event-date attribution semantics when relevant."
+    },
+    {
+      "capability_id": "historical-availability-observe",
+      "access_mode": "observe",
+      "category": "lineage",
+      "description": "Expose history-range/retirement/unavailable state instead of coercing unavailable history to zero."
+    },
+    {
+      "capability_id": "freshness-observe",
+      "access_mode": "observe",
+      "category": "lineage",
+      "description": "Expose capture time/available-through/backfill maturity or equivalent freshness evidence."
+    },
+    {
+      "capability_id": "retail-readiness-read",
+      "access_mode": "read",
+      "category": "retail",
+      "description": "Read available retail readiness state such as availability, offer/listing/price context from an authorized source."
+    },
+    {
+      "capability_id": "inventory-read",
+      "access_mode": "read",
+      "category": "retail",
+      "description": "Read inventory/availability state from an authorized source when it materially gates advertising action."
+    },
+    {
+      "capability_id": "profitability-input-read",
+      "access_mode": "read",
+      "category": "economics",
+      "description": "Read authorized cost/fee/revenue inputs needed for contribution-margin or break-even analysis."
+    },
+    {
+      "capability_id": "search-share-read",
+      "access_mode": "report",
+      "category": "market-signal",
+      "description": "Read compatible Search Term Impression Share/rank or equivalent visibility evidence when available."
+    },
+    {
+      "capability_id": "experiment-boundary-read",
+      "access_mode": "read",
+      "category": "experimentation",
+      "description": "Read evidence needed to verify treatment/control boundary, routing, allocation, or contamination risk."
+    },
+    {
+      "capability_id": "realization-state-read",
+      "access_mode": "read",
+      "category": "realization",
+      "description": "Read platform-managed realized surface/product/creative/message identity when causal interpretation depends on it."
+    },
+    {
+      "capability_id": "stream-performance-read",
+      "access_mode": "stream",
+      "category": "performance",
+      "description": "Read near-real-time/hourly performance or change messages from an authorized stream when available."
+    }
+  ],
+  "skills": {
+    "amazon-ads-audit": {
+      "live-analysis": {
+        "required": [
+          "profile-identity-read",
+          "campaign-performance-read",
+          "report-completeness-observe",
+          "metric-semantics-observe",
+          "freshness-observe"
+        ],
+        "optional": [
+          "target-performance-read",
+          "search-term-performance-read",
+          "placement-performance-read",
+          "row-eligibility-observe",
+          "retail-readiness-read",
+          "profitability-input-read",
+          "change-history-read"
+        ]
+      }
+    },
+    "amazon-ads-optimizer": {
+      "live-analysis": {
+        "required": [
+          "profile-identity-read",
+          "campaign-performance-read",
+          "metric-semantics-observe",
+          "freshness-observe"
+        ],
+        "optional": [
+          "report-completeness-observe",
+          "change-history-read",
+          "retail-readiness-read",
+          "profitability-input-read",
+          "entity-state-readback"
+        ]
+      }
+    },
+    "anomaly-detection": {
+      "live-analysis": {
+        "required": [
+          "profile-identity-read",
+          "campaign-performance-read",
+          "metric-semantics-observe",
+          "freshness-observe"
+        ],
+        "optional": [
+          "stream-performance-read",
+          "change-history-read",
+          "retail-readiness-read",
+          "historical-availability-observe"
+        ]
+      }
+    },
+    "bid-optimization": {
+      "live-analysis": {
+        "required": [
+          "profile-identity-read",
+          "target-performance-read",
+          "bid-state-read",
+          "metric-semantics-observe",
+          "freshness-observe"
+        ],
+        "optional": [
+          "placement-performance-read",
+          "change-history-read",
+          "profitability-input-read",
+          "retail-readiness-read"
+        ]
+      },
+      "action-safe-proposal": {
+        "required": [
+          "profile-identity-read",
+          "target-performance-read",
+          "bid-state-read",
+          "entity-state-readback",
+          "metric-semantics-observe",
+          "freshness-observe"
+        ],
+        "optional": [
+          "change-history-read",
+          "placement-performance-read",
+          "profitability-input-read",
+          "retail-readiness-read"
+        ]
+      }
+    },
+    "budget-optimization": {
+      "live-analysis": {
+        "required": [
+          "profile-identity-read",
+          "campaign-performance-read",
+          "budget-state-read",
+          "metric-semantics-observe",
+          "freshness-observe"
+        ],
+        "optional": [
+          "change-history-read",
+          "profitability-input-read",
+          "retail-readiness-read"
+        ]
+      },
+      "action-safe-proposal": {
+        "required": [
+          "profile-identity-read",
+          "campaign-performance-read",
+          "budget-state-read",
+          "entity-state-readback",
+          "metric-semantics-observe",
+          "freshness-observe"
+        ],
+        "optional": [
+          "change-history-read",
+          "profitability-input-read",
+          "retail-readiness-read"
+        ]
+      }
+    },
+    "campaign-health-monitor": {
+      "live-analysis": {
+        "required": [
+          "profile-identity-read",
+          "campaign-performance-read",
+          "metric-semantics-observe",
+          "freshness-observe"
+        ],
+        "optional": [
+          "budget-state-read",
+          "placement-performance-read",
+          "retail-readiness-read",
+          "stream-performance-read"
+        ]
+      }
+    },
+    "experiment-planner": {
+      "live-analysis": {
+        "required": [
+          "profile-identity-read",
+          "campaign-performance-read",
+          "metric-semantics-observe",
+          "freshness-observe"
+        ],
+        "optional": [
+          "change-history-read",
+          "retail-readiness-read",
+          "profitability-input-read",
+          "realization-state-read"
+        ]
+      },
+      "ready-experiment": {
+        "required": [
+          "profile-identity-read",
+          "metric-semantics-observe",
+          "experiment-boundary-read",
+          "entity-state-readback",
+          "freshness-observe"
+        ],
+        "optional": [
+          "change-history-read",
+          "realization-state-read",
+          "retail-readiness-read"
+        ]
+      }
+    },
+    "growth-opportunity-finder": {
+      "live-analysis": {
+        "required": [
+          "profile-identity-read",
+          "campaign-performance-read",
+          "metric-semantics-observe",
+          "freshness-observe"
+        ],
+        "optional": [
+          "search-share-read",
+          "retail-readiness-read",
+          "inventory-read",
+          "profitability-input-read",
+          "budget-state-read"
+        ]
+      },
+      "action-safe-proposal": {
+        "required": [
+          "profile-identity-read",
+          "campaign-performance-read",
+          "entity-state-readback",
+          "metric-semantics-observe",
+          "freshness-observe"
+        ],
+        "optional": [
+          "search-share-read",
+          "retail-readiness-read",
+          "inventory-read",
+          "profitability-input-read",
+          "budget-state-read"
+        ]
+      }
+    },
+    "keyword-optimization": {
+      "live-analysis": {
+        "required": [
+          "profile-identity-read",
+          "target-performance-read",
+          "metric-semantics-observe",
+          "freshness-observe"
+        ],
+        "optional": [
+          "search-term-performance-read",
+          "search-term-origin-read",
+          "change-history-read"
+        ]
+      },
+      "action-safe-proposal": {
+        "required": [
+          "profile-identity-read",
+          "target-performance-read",
+          "entity-state-readback",
+          "metric-semantics-observe",
+          "freshness-observe"
+        ],
+        "optional": [
+          "search-term-performance-read",
+          "search-term-origin-read",
+          "change-history-read"
+        ]
+      }
+    },
+    "negative-targeting": {
+      "live-analysis": {
+        "required": [
+          "profile-identity-read",
+          "search-term-performance-read",
+          "search-term-origin-read",
+          "metric-semantics-observe",
+          "freshness-observe"
+        ],
+        "optional": [
+          "row-eligibility-observe",
+          "target-performance-read",
+          "change-history-read"
+        ]
+      },
+      "action-safe-proposal": {
+        "required": [
+          "profile-identity-read",
+          "search-term-performance-read",
+          "search-term-origin-read",
+          "entity-state-readback",
+          "metric-semantics-observe",
+          "freshness-observe"
+        ],
+        "optional": [
+          "row-eligibility-observe",
+          "target-performance-read",
+          "change-history-read"
+        ]
+      }
+    },
+    "performance-drop-diagnosis": {
+      "live-analysis": {
+        "required": [
+          "profile-identity-read",
+          "campaign-performance-read",
+          "metric-semantics-observe",
+          "freshness-observe"
+        ],
+        "optional": [
+          "change-history-read",
+          "retail-readiness-read",
+          "inventory-read",
+          "realization-state-read",
+          "placement-performance-read",
+          "search-term-performance-read",
+          "historical-availability-observe"
+        ]
+      }
+    },
+    "placement-optimization": {
+      "live-analysis": {
+        "required": [
+          "profile-identity-read",
+          "placement-performance-read",
+          "bid-state-read",
+          "metric-semantics-observe",
+          "freshness-observe"
+        ],
+        "optional": [
+          "change-history-read",
+          "campaign-performance-read"
+        ]
+      },
+      "action-safe-proposal": {
+        "required": [
+          "profile-identity-read",
+          "placement-performance-read",
+          "bid-state-read",
+          "entity-state-readback",
+          "metric-semantics-observe",
+          "freshness-observe"
+        ],
+        "optional": [
+          "change-history-read",
+          "campaign-performance-read"
+        ]
+      }
+    },
+    "post-change-review": {
+      "live-analysis": {
+        "required": [
+          "profile-identity-read",
+          "entity-state-readback",
+          "campaign-performance-read",
+          "metric-semantics-observe",
+          "freshness-observe"
+        ],
+        "optional": [
+          "change-history-read",
+          "realization-state-read",
+          "retail-readiness-read",
+          "historical-availability-observe"
+        ]
+      },
+      "outcome-review": {
+        "required": [
+          "profile-identity-read",
+          "entity-state-readback",
+          "metric-semantics-observe",
+          "freshness-observe",
+          "historical-availability-observe"
+        ],
+        "optional": [
+          "change-history-read",
+          "realization-state-read",
+          "retail-readiness-read"
+        ]
+      }
+    },
+    "profitability-analysis": {
+      "live-analysis": {
+        "required": [
+          "profile-identity-read",
+          "campaign-performance-read",
+          "profitability-input-read",
+          "metric-semantics-observe",
+          "freshness-observe"
+        ],
+        "optional": [
+          "retail-readiness-read"
+        ]
+      }
+    },
+    "search-term-analysis": {
+      "live-analysis": {
+        "required": [
+          "profile-identity-read",
+          "search-term-performance-read",
+          "metric-semantics-observe",
+          "freshness-observe"
+        ],
+        "optional": [
+          "search-term-origin-read",
+          "row-eligibility-observe",
+          "report-completeness-observe",
+          "search-share-read",
+          "target-performance-read"
+        ]
+      },
+      "action-safe-proposal": {
+        "required": [
+          "profile-identity-read",
+          "search-term-performance-read",
+          "search-term-origin-read",
+          "entity-state-readback",
+          "metric-semantics-observe",
+          "freshness-observe"
+        ],
+        "optional": [
+          "row-eligibility-observe",
+          "report-completeness-observe",
+          "search-share-read",
+          "target-performance-read"
+        ]
+      }
+    }
+  }
+}
