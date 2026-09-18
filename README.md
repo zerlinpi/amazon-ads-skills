@@ -362,6 +362,8 @@ Use the narrowest document that owns the question:
 
 ## Contributing decision logic
 
+Public contributions are welcome through pull requests. Start with **[CONTRIBUTING.md](CONTRIBUTING.md)**; do not commit directly to `main`.
+
 For behavioral changes:
 
 ```text

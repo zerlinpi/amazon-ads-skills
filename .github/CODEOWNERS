@@ -1,0 +1,11 @@
+# Default ownership for repository changes.
+* @zerlinpi
+
+# Runtime and safety contracts
+/AGENTS.md @zerlinpi
+/CLAUDE.md @zerlinpi
+/.github/ @zerlinpi
+/schemas/ @zerlinpi
+/scripts/ @zerlinpi
+/tests/ @zerlinpi
+/evals/ @zerlinpi
