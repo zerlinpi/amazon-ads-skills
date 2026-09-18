@@ -128,6 +128,40 @@ Prefer capability evidence in this order when available:
 
 Record `captured_at` or `observed_at`. Re-check a capability when a decision depends on an exact field, report generation, profile/region behavior, history range, or write/readback function that may have changed.
 
+## Runtime decision gate
+
+When a Skill depends on live MCP/API/connector evidence, run the capability check **before metric interpretation** whenever a machine-readable snapshot is available. Use `../scripts/evaluate_connector_capability_gate.py` with the snapshot plus the exact capability IDs required for the decision.
+
+The deterministic result is:
+
+- `Pass` — every required capability is `Supported`; high-confidence interpretation may proceed, subject to ordinary data-lineage, sufficiency and business-safety checks.
+- `Degraded` — at least one required capability is `Partial` and none are blocked; the maximum decision class is Directional/Hold/Alternate Source/Missing Data/Manual Review until the missing scope or semantics are resolved.
+- `Blocked` — at least one required capability is `Unsupported`, `Unknown`, or absent from the snapshot; do not promote the dependent observation into a high-confidence recommendation.
+
+The helper always emits `missing_evidence_policy = never_zero`. This is a semantic safety rule, not a numeric default: connector uncertainty must not be converted into zero spend, zero orders, zero inventory, unchanged state, no prior action, or any other fabricated observation.
+
+Example input:
+
+```json
+{
+  "snapshot": {
+    "connector_id": "example",
+    "captured_at": "2026-09-18T00:00:00Z",
+    "default_access_mode": "Read-only",
+    "capabilities": [
+      {
+        "capability_id": "campaign-performance-read",
+        "status": "Supported",
+        "access_mode": "read"
+      }
+    ]
+  },
+  "required_capabilities": ["campaign-performance-read"]
+}
+```
+
+The helper is read-only and dependency-free. It does not discover tools, call Amazon, validate metric values, grant write permission, or replace the stronger source-comparability and action-safety gates elsewhere in this repository.
+
 ## Decision gate
 
 Before a high-confidence recommendation that requires a connector field or operation:

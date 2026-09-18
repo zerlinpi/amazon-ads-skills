@@ -13,6 +13,17 @@ metadata:
 
 # Budget Optimization
 
+## Connector capability gate
+
+When a conclusion depends on live MCP/API/connector data, load `../../references/connector-capability.md` before interpreting missing or empty fields. If a machine-readable capability snapshot is available, identify the exact required capability IDs and run `../../scripts/evaluate_connector_capability_gate.py` **before metric interpretation**.
+
+- `Pass` — continue with the Skill's normal evidence, sufficiency, lineage and safety checks.
+- `Degraded` — do not make a high-confidence dependent recommendation; keep the result to `Directional`, `Hold`, `Alternate Source`, `Missing Data`, or `Manual Review`.
+- `Blocked` — do not treat the dependent observation as action-safe until the capability is resolved or an allowed alternate source is verified.
+- `missing_evidence_policy = never_zero` — `Partial`, `Unsupported`, `Unknown`, or absent connector capability is never a numeric zero, unchanged state, or proof that the platform lacks the feature.
+
+This gate is read-only and does not authorize live Amazon Ads mutation.
+
 ## 核心原则
 
 “预算花完”不是自动加预算信号；“预算没花完”也不等于 campaign 有问题。预算动作必须结合边际效率、业务目标和预算池约束。Campaign 预算只是约束层级之一；账户级、portfolio 或外部预算 cap 可能才是真正瓶颈。
