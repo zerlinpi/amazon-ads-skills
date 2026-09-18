@@ -76,6 +76,68 @@
             },
             "additionalProperties": true
           },
+          "bindings": {
+            "type": "array",
+            "description": "Concrete connector surfaces that justify mapping this canonical capability to the active connector. A high-confidence Supported claim requires at least one Verified binding applicable to the requested decision scope.",
+            "items": {
+              "type": "object",
+              "required": [
+                "binding_id",
+                "surface_type",
+                "surface_id",
+                "verification_status",
+                "observed_at",
+                "evidence"
+              ],
+              "properties": {
+                "binding_id": {"type": "string", "minLength": 1},
+                "surface_type": {
+                  "type": "string",
+                  "enum": [
+                    "tool",
+                    "report",
+                    "dataset",
+                    "stream",
+                    "export",
+                    "endpoint",
+                    "warehouse_table",
+                    "manual_export"
+                  ]
+                },
+                "surface_id": {"type": "string", "minLength": 1},
+                "surface_version": {"type": ["string", "null"]},
+                "verification_status": {
+                  "type": "string",
+                  "enum": ["Verified", "Unverified", "Unknown"]
+                },
+                "observed_at": {"type": "string", "format": "date-time"},
+                "scope": {
+                  "type": ["object", "null"],
+                  "properties": {
+                    "regions": {"type": "array", "items": {"type": "string"}},
+                    "marketplaces": {"type": "array", "items": {"type": "string"}},
+                    "ad_products": {"type": "array", "items": {"type": "string"}},
+                    "account_types": {"type": "array", "items": {"type": "string"}}
+                  },
+                  "additionalProperties": true
+                },
+                "evidence": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {"type": ["string", "null"]},
+                      "reference": {"type": ["string", "null"]},
+                      "observed_at": {"type": ["string", "null"], "format": "date-time"},
+                      "notes": {"type": ["string", "null"]}
+                    },
+                    "additionalProperties": true
+                  }
+                }
+              },
+              "additionalProperties": true
+            }
+          },
           "tool_annotations": {
             "type": ["object", "null"],
             "description": "MCP risk hints as observed from a tool surface. These values are advisory metadata, not authorization or enforcement.",
