@@ -67,6 +67,22 @@ class ExperimentMetricSemanticsTests(unittest.TestCase):
         })
         self.assertEqual(module.validate_experiment_plan(plan), [])
 
+    def test_ready_declared_conversion_family_cannot_bypass_gate_via_display_name(self):
+        plan = ready_plan({
+            "name": "Attributed orders",
+            "success_rule": "increase",
+            "metric_semantics": {
+                "metric_family": "conversion",
+                "attribution_family": None,
+                "semantic_version": None,
+            },
+        })
+        errors = module.validate_experiment_plan(plan)
+        self.assertTrue(
+            any("attribution_family" in error or "semantic_version" in error for error in errors),
+            errors,
+        )
+
     def test_non_ready_plan_may_leave_metric_semantics_unresolved(self):
         plan = ready_plan({"name": "Purchases", "success_rule": "increase"})
         plan["status"] = "Shadow Only"
