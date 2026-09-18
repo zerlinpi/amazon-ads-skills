@@ -204,6 +204,33 @@ def _binding_effect(cap: dict[str, Any], expected: dict[str, str], fresh: dict[s
                 saw_stale = True
                 warnings.append(f"verified connector binding {bid!r} is stale for the explicit freshness horizon")
                 continue
+            evidence_fresh = False
+            evidence_stale = False
+            for j, evidence in enumerate(b["evidence"]):
+                if not isinstance(evidence, dict):
+                    raise ValueError(f"{field}.evidence[{j}] must be an object")
+                evidence_at = evidence.get("observed_at")
+                if not _s(evidence_at):
+                    continue
+                try:
+                    evidence_time = _time(evidence_at, f"{field}.evidence[{j}].observed_at")
+                except ValueError:
+                    warnings.append(f"{bid} has invalid supporting evidence observed_at")
+                    continue
+                evidence_age = (fresh["as_of"] - evidence_time).total_seconds()
+                if evidence_age < 0:
+                    warnings.append(f"{bid} has supporting evidence observed_at after freshness as_of")
+                elif evidence_age > fresh["max_age_seconds"]:
+                    evidence_stale = True
+                else:
+                    evidence_fresh = True
+            if not evidence_fresh:
+                if evidence_stale:
+                    saw_stale = True
+                    warnings.append(f"verified connector binding {bid!r} has only stale supporting evidence for the explicit freshness horizon")
+                else:
+                    warnings.append(f"verified connector binding {bid!r} lacks current timestamped supporting evidence for the explicit freshness horizon")
+                continue
         verified.append(bid)
     if verified:
         return "pass", verified, "pass" if fresh else "not_evaluated", warnings
