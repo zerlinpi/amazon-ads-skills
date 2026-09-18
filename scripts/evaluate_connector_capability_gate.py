@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import sys
+from pathlib import Path
 from typing import Any
 
 KNOWN_STATUSES = {"Supported", "Partial", "Unsupported", "Unknown"}
@@ -29,12 +30,46 @@ SCOPE_FIELDS = {
     "account_type": "account_types",
 }
 
+ROOT = Path(__file__).resolve().parents[1]
+CAPABILITY_CATALOG = ROOT / "references" / "connector-capability-catalog.json"
+
 
 def _non_empty_string(value: Any) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
 
-def _normalize_requirements(value: Any) -> list[str]:
+def _load_capability_catalog() -> tuple[set[str], str | None]:
+    try:
+        catalog = json.loads(CAPABILITY_CATALOG.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError("connector capability catalog is unavailable or invalid") from exc
+    if not isinstance(catalog, dict):
+        raise ValueError("connector capability catalog must be an object")
+
+    capabilities = catalog.get("capabilities")
+    if not isinstance(capabilities, list):
+        raise ValueError("connector capability catalog capabilities must be an array")
+
+    registered: set[str] = set()
+    for index, item in enumerate(capabilities):
+        if not isinstance(item, dict) or not _non_empty_string(item.get("capability_id")):
+            raise ValueError(
+                f"connector capability catalog capabilities[{index}] has invalid capability_id"
+            )
+        capability_id = item["capability_id"].strip()
+        if capability_id in registered:
+            raise ValueError(
+                f"connector capability catalog contains duplicate capability_id {capability_id!r}"
+            )
+        registered.add(capability_id)
+
+    version = catalog.get("catalog_version")
+    if version is not None and not _non_empty_string(version):
+        raise ValueError("connector capability catalog version must be a non-empty string or null")
+    return registered, version
+
+
+def _normalize_requirements(value: Any, registered: set[str]) -> list[str]:
     if not isinstance(value, list) or not value:
         raise ValueError("required_capabilities must be a non-empty array")
     result: list[str] = []
@@ -48,6 +83,10 @@ def _normalize_requirements(value: Any) -> list[str]:
         if capability_id in seen:
             raise ValueError(
                 f"required_capabilities contains duplicate capability_id {capability_id!r}"
+            )
+        if capability_id not in registered:
+            raise ValueError(
+                f"required_capabilities contains unregistered capability_id {capability_id!r}"
             )
         seen.add(capability_id)
         result.append(capability_id)
@@ -149,7 +188,11 @@ def evaluate_connector_capability_gate(payload: Any) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError("input must be a JSON object")
 
-    requirements = _normalize_requirements(payload.get("required_capabilities"))
+    registered_capabilities, catalog_version = _load_capability_catalog()
+    requirements = _normalize_requirements(
+        payload.get("required_capabilities"),
+        registered_capabilities,
+    )
     expected_scope = _normalize_expected_scope(payload.get("expected_scope"))
     indexed, snapshot = _index_capabilities(payload.get("snapshot"))
 
@@ -207,6 +250,7 @@ def evaluate_connector_capability_gate(payload: Any) -> dict[str, Any]:
 
     return {
         "gate_status": gate_status,
+        "catalog_version": catalog_version,
         "high_confidence_allowed": high_confidence_allowed,
         "missing_evidence_policy": "never_zero",
         "allowed_decision_classes": allowed,
