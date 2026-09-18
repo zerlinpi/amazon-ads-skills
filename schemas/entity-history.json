@@ -71,6 +71,31 @@
         "acquisition_channel": {"type": ["string", "null"]},
         "reporting_generation": {"type": ["string", "null"]},
         "semantic_version": {"type": ["string", "null"]},
+        "metric_semantics": {
+          "type": "array",
+          "description": "Per-metric semantic identities preserved from the selected evidence snapshot. Missing metric-level identity remains absent/unknown and must not be inferred from the dataset semantic_version.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "metric_name": {"type": ["string", "null"]},
+              "metric_family": {"type": ["string", "null"]},
+              "attribution_family": {"type": ["string", "null"]},
+              "semantic_version": {"type": ["string", "null"]}
+            },
+            "additionalProperties": true
+          }
+        },
+        "outcome_metric_semantics": {
+          "type": ["object", "null"],
+          "description": "Semantic identity of the decision-driving outcome metric from the same event that supplied the selected evidence snapshot.",
+          "properties": {
+            "metric_name": {"type": ["string", "null"]},
+            "metric_family": {"type": ["string", "null"]},
+            "attribution_family": {"type": ["string", "null"]},
+            "semantic_version": {"type": ["string", "null"]}
+          },
+          "additionalProperties": true
+        },
         "date_attribution_semantics": {"type": ["string", "null"]},
         "historical_availability_status": {"type": ["string", "null"], "enum": ["available", "partially_available", "unavailable", "retired_or_deleted", "unknown", null]},
         "comparability_status": {"type": ["string", "null"], "enum": ["Comparable", "Reconcilable", "Directional", "Not Comparable", "Unknown", null]},
