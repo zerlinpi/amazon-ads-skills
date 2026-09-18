@@ -22,6 +22,12 @@ DEGRADED_DECISIONS = [
     "Manual Review",
 ]
 BLOCKED_DECISIONS = ["Hold", "Alternate Source", "Missing Data", "Manual Review"]
+SCOPE_FIELDS = {
+    "region": "regions",
+    "marketplace": "marketplaces",
+    "ad_product": "ad_products",
+    "account_type": "account_types",
+}
 
 
 def _non_empty_string(value: Any) -> bool:
@@ -46,6 +52,22 @@ def _normalize_requirements(value: Any) -> list[str]:
         seen.add(capability_id)
         result.append(capability_id)
     return result
+
+
+def _normalize_expected_scope(value: Any) -> dict[str, str]:
+    if value is None:
+        return {}
+    if not isinstance(value, dict):
+        raise ValueError("expected_scope must be an object or null")
+    unknown = sorted(set(value) - set(SCOPE_FIELDS))
+    if unknown:
+        raise ValueError(f"expected_scope contains unsupported fields: {unknown}")
+    normalized: dict[str, str] = {}
+    for field, item in value.items():
+        if not _non_empty_string(item):
+            raise ValueError(f"expected_scope.{field} must be a non-empty string")
+        normalized[field] = item.strip()
+    return normalized
 
 
 def _index_capabilities(snapshot: Any) -> tuple[dict[str, dict[str, Any]], dict[str, Any]]:
@@ -83,11 +105,52 @@ def _index_capabilities(snapshot: Any) -> tuple[dict[str, dict[str, Any]], dict[
     return indexed, snapshot
 
 
+def _evaluate_scope(capability: dict[str, Any], expected_scope: dict[str, str]) -> tuple[str, list[str]]:
+    if not expected_scope:
+        return "not_evaluated", []
+
+    scope = capability.get("scope")
+    if not isinstance(scope, dict):
+        return "unknown", [
+            "decision scope was requested but connector capability scope is not exposed"
+        ]
+
+    warnings: list[str] = []
+    unknown = False
+    blocked = False
+    for expected_field, expected_value in expected_scope.items():
+        capability_field = SCOPE_FIELDS[expected_field]
+        observed_values = scope.get(capability_field)
+        if not isinstance(observed_values, list) or not observed_values:
+            unknown = True
+            warnings.append(
+                f"connector capability does not expose bounded {expected_field} scope"
+            )
+            continue
+        normalized_values = {
+            item.strip().casefold()
+            for item in observed_values
+            if _non_empty_string(item)
+        }
+        if expected_value.casefold() not in normalized_values:
+            blocked = True
+            warnings.append(
+                f"required capability is not supported for requested {expected_field} {expected_value!r}"
+            )
+
+    if blocked:
+        return "blocked", warnings
+    if unknown:
+        return "unknown", warnings
+    return "pass", warnings
+
+
 def evaluate_connector_capability_gate(payload: Any) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError("input must be a JSON object")
 
     requirements = _normalize_requirements(payload.get("required_capabilities"))
+    expected_scope = _normalize_expected_scope(payload.get("expected_scope"))
     indexed, snapshot = _index_capabilities(payload.get("snapshot"))
 
     evaluated: list[dict[str, Any]] = []
@@ -96,6 +159,7 @@ def evaluate_connector_capability_gate(payload: Any) -> dict[str, Any]:
 
     for capability_id in requirements:
         capability = indexed.get(capability_id)
+        scope_effect = "not_evaluated"
         if capability is None:
             status = "Unknown"
             access_mode = "unknown"
@@ -106,9 +170,11 @@ def evaluate_connector_capability_gate(payload: Any) -> dict[str, Any]:
             status = capability.get("status", "Unknown")
             access_mode = capability.get("access_mode", "unknown")
             warnings = list(capability.get("warnings") or [])
-            if status == "Supported":
+            scope_effect, scope_warnings = _evaluate_scope(capability, expected_scope)
+            warnings.extend(scope_warnings)
+            if status == "Supported" and scope_effect in {"pass", "not_evaluated"}:
                 gate_effect = "pass"
-            elif status == "Partial":
+            elif status == "Partial" and scope_effect in {"pass", "not_evaluated"}:
                 gate_effect = "degraded"
                 has_partial = True
             else:
@@ -120,6 +186,7 @@ def evaluate_connector_capability_gate(payload: Any) -> dict[str, Any]:
                 "capability_id": capability_id,
                 "status": status,
                 "access_mode": access_mode,
+                "scope_effect": scope_effect,
                 "gate_effect": gate_effect,
                 "warnings": warnings,
             }
@@ -146,6 +213,7 @@ def evaluate_connector_capability_gate(payload: Any) -> dict[str, Any]:
         "connector_id": snapshot.get("connector_id"),
         "connector_version": snapshot.get("connector_version"),
         "captured_at": snapshot.get("captured_at"),
+        "expected_scope": expected_scope or None,
         "requirements": evaluated,
     }
 
