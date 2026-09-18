@@ -2,7 +2,7 @@
 
 ## Decision gap
 
-A Ready experiment can currently identify its primary metric by display name and success rule without binding the conversion metric to an attribution family or semantic version. That is unsafe when the same business concept can be reported under distinct attribution semantics.
+A Ready experiment must bind every decision-driving conversion metric to an attribution family and semantic version. The primary metric gate now covers this, but conversion guardrails can still trigger Stop/Rollback while remaining only a display-name string. That is unsafe when the same business concept can be reported under distinct attribution semantics.
 
 ## Public platform evidence
 
@@ -16,7 +16,7 @@ Sources:
 
 ## Repository adoption
 
-The repository should use a generic semantic envelope rather than hard-code a permanent list of Amazon API field names. For a Ready conversion experiment, the minimum decision identity is:
+The repository should use a generic semantic envelope rather than hard-code a permanent list of Amazon API field names. For a Ready conversion experiment, the minimum decision identity applies to the primary conversion metric and to any conversion guardrail that can trigger a stop, rollback, or safety downgrade:
 
 - `metric_family`
 - `attribution_family`
@@ -24,7 +24,7 @@ The repository should use a generic semantic envelope rather than hard-code a pe
 
 Unknown or unresolved semantics remain acceptable for `Shadow Only`, `Hold`, or `Redesign`; they must not be promoted to Ready evidence by guessing from missing data.
 
-The validator may use conservative name recognition only to identify obvious conversion metrics that require the gate. The semantic values themselves remain explicit caller evidence rather than inferred attribution truth.
+The validator may use conservative name recognition only to identify obvious conversion metrics that require the gate. The semantic values themselves remain explicit caller evidence rather than inferred attribution truth. Diagnostic metrics remain outside this strict Ready gate unless they become decision-driving; this keeps the change narrow and avoids forcing semantic metadata onto observational context.
 
 ## Copyright and implementation boundary
 

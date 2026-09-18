@@ -160,6 +160,31 @@ def _validate_ready_metric_semantics(primary_metric: Any) -> list[str]:
     return errors
 
 
+def _validate_ready_guardrail_metric_semantics(guardrails: Any) -> list[str]:
+    if not isinstance(guardrails, list):
+        return []
+
+    errors: list[str] = []
+    for index, guardrail in enumerate(guardrails):
+        if not isinstance(guardrail, dict):
+            continue
+        name = guardrail.get("metric")
+        if not _non_empty_string(name):
+            continue
+        if not any(token in name.lower() for token in CONVERSION_METRIC_TOKENS):
+            continue
+
+        semantics = guardrail.get("metric_semantics")
+        label = f"Ready conversion guardrail #{index + 1}"
+        if not isinstance(semantics, dict):
+            errors.append(f"{label} requires explicit metric semantics")
+            continue
+        for field in ("metric_family", "attribution_family", "semantic_version"):
+            if not _non_empty_string(semantics.get(field)):
+                errors.append(f"{label} requires non-empty metric semantics.{field}")
+    return errors
+
+
 def validate_experiment_plan(plan: Any) -> list[str]:
     """Return semantic readiness errors for one experiment plan.
 
@@ -191,6 +216,7 @@ def validate_experiment_plan(plan: Any) -> list[str]:
         errors.append("Ready experiment plan scope.entity_ids must contain only non-empty strings")
 
     errors.extend(_validate_ready_metric_semantics(plan.get("primary_metric")))
+    errors.extend(_validate_ready_guardrail_metric_semantics(plan.get("guardrails")))
 
     comparison = plan.get("comparison")
     if isinstance(comparison, dict) and comparison.get("design_type") == "holdout":
