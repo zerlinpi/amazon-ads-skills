@@ -213,7 +213,34 @@ Repositories:
 
 License/adoption note: both repositories are MIT licensed. Version/runtime facts were verified from GitHub's official repositories; the repository continues to use its own minimal validation workflow and independent test contracts.
 
+## Reviewed public MCP documentation
+
+### Model Context Protocol tool annotations and server instructions
+
+Current MCP documentation was reviewed for two connector-interface facts: tool annotations such as `readOnlyHint`, `destructiveHint`, `idempotentHint`, and `openWorldHint` are advisory hints rather than enforcement; and server instructions can explain cross-tool workflows but cannot guarantee critical security behavior. Those facts support preserving annotations/instructions as observed connector metadata while keeping authorization and safety gates deterministic.
+
+No MCP SDK/spec prose or implementation was copied. The repository independently defines its own connector capability evidence contract.
+
+Public references reviewed:
+
+- https://blog.modelcontextprotocol.io/posts/2026-03-16-tool-annotations/
+- https://blog.modelcontextprotocol.io/posts/2025-11-03-using-server-instructions/
+
+Licensing/adoption note: these are public protocol documentation sources used for factual protocol behavior. No SDK source or specification text is redistributed here.
+
 ## Reviewed public Amazon Ads documentation
+
+### Unified Reporting and Amazon Marketing Stream
+
+Current Amazon Ads public documentation was reviewed to verify that connector capability must distinguish reporting generation, cross-account/ad-product scope, history windows, and pull vs push acquisition paths. Unified Reporting can span multiple manager/advertiser accounts, ad products and countries and is replacing legacy Sponsored Ads/DSP reporting surfaces; Amazon Marketing Stream is a push-based source for hourly metrics and campaign-change messages for API-integrated advertisers.
+
+No Amazon API schema, report template, documentation prose or implementation was copied. These facts only inform the connector-neutral reporting lifecycle and acquisition-channel capability fields.
+
+Public references reviewed:
+
+- https://advertising.amazon.com/resources/whats-new/streamline-campaign-analysis-with-unified-reporting
+- https://advertising.amazon.com/solutions/products/amazon-marketing-stream
+
 
 ### Amazon Ads budget and bidding rules
 
