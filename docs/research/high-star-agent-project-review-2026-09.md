@@ -174,3 +174,24 @@ registered capability ID
 ```
 
 No MCP Registry schema, SDK implementation, server manifest, Anthropic/OpenAI runtime code, or third-party tool definition is copied. The implementation is independently authored against the repository's own capability catalog.
+
+
+## 2026-09-18 incremental scan
+
+### modelcontextprotocol/modelcontextprotocol — ~9.2k stars; specification repository; license metadata NOASSERTION
+
+Fresh review found an actively maintained upstream specification repository, with the 2026-07-28 protocol release documenting a stateless core, multi-round-trip requests, routing, cacheable list results, authorization hardening, and extensions. This is normative protocol evidence, not a reason to copy an MCP server implementation.
+
+Adoption boundary: retain only connector-neutral principles already compatible with this repository: explicit capability discovery, bounded context exposure, authorization separation, and evidence-bearing connector contracts. No specification prose, schemas, SDK code, examples, or workflows are copied. Repository license metadata is not sufficiently explicit for implementation reuse here, so adoption remains abstract/method-level only.
+
+### borghei/Claude-Skills — ~787 stars; active multi-runtime skill library; license metadata NOASSERTION
+
+Fresh review found substantial recent engineering around progressive disclosure across Claude Code, Codex, and other runtimes. The useful generic signal is that large skill bodies can be split into trigger-time maps plus on-demand references to reduce context cost without broadening execution authority.
+
+Adoption decision: reject direct content reuse and do not copy skills, prompts, templates, scripts, or reference text because repository license metadata is not sufficiently explicit. The repository already uses progressive loading through canonical `skills/` plus shared `references/`, so no behavior change is justified solely by this source.
+
+### tardigrde/agent-skill-eval — 1 star; MIT; recently active evaluation harness
+
+Not high-star, but retained as a lower-weight engineering comparison because it provides concrete multi-runtime evaluation mechanics: isolated workspaces, deterministic assertions before model grading, with/without-skill baselines, negative controls, side-effect classification, and cleanup tracking.
+
+Adoption decision: no dependency and no copied schema/workflow/assertion implementation. The repository already has deterministic eval contracts and paired Skill-effectiveness summaries; the remaining potentially useful idea is external runtime/harness execution against real Codex/Claude Code environments, which stays outside this repository until a concrete decision-quality gap requires it. Star count is recorded only as context, not as evidence quality.
