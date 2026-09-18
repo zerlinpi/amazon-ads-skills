@@ -12,8 +12,9 @@ def run_gate(payload):
     return subprocess.run([sys.executable, str(GATE)], input=json.dumps(payload), text=True, capture_output=True, check=False)
 
 
-def supported_snapshot(observed_at="2026-09-18T00:00:00Z"):
-    return {"connector_id": "fixture", "connector_version": "1.0.0", "captured_at": observed_at, "default_access_mode": "Read-only", "capabilities": [{"capability_id": "campaign-performance-read", "status": "Supported", "access_mode": "report", "bindings": [{"binding_id": "fixture:campaign-report", "surface_type": "report", "surface_id": "campaign-performance-v3", "verification_status": "Verified", "observed_at": observed_at, "evidence": [{"kind": "contract-test", "reference": "fixture", "observed_at": observed_at}]}]}]}
+def supported_snapshot(observed_at="2026-09-18T00:00:00Z", captured_at=None):
+    captured_at = observed_at if captured_at is None else captured_at
+    return {"connector_id": "fixture", "connector_version": "1.0.0", "captured_at": captured_at, "default_access_mode": "Read-only", "capabilities": [{"capability_id": "campaign-performance-read", "status": "Supported", "access_mode": "report", "bindings": [{"binding_id": "fixture:campaign-report", "surface_type": "report", "surface_id": "campaign-performance-v3", "verification_status": "Verified", "observed_at": observed_at, "evidence": [{"kind": "contract-test", "reference": "fixture", "observed_at": observed_at}]}]}]}
 
 
 class ConnectorCapabilityFreshnessTests(unittest.TestCase):
@@ -34,11 +35,29 @@ class ConnectorCapabilityFreshnessTests(unittest.TestCase):
         self.assertTrue(out["high_confidence_allowed"])
         self.assertEqual(out["requirements"][0]["freshness_effect"], "pass")
 
+    def test_stale_snapshot_cannot_be_rescued_by_recent_binding(self):
+        proc = run_gate({"snapshot": supported_snapshot("2026-09-17T12:00:00Z", captured_at="2026-09-01T00:00:00Z"), "required_capabilities": ["campaign-performance-read"], "freshness_requirement": {"as_of": "2026-09-18T00:00:00Z", "max_age_seconds": 86400}})
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        out = json.loads(proc.stdout)
+        self.assertEqual(out["snapshot_freshness_effect"], "stale")
+        self.assertEqual(out["gate_status"], "Degraded")
+        self.assertFalse(out["high_confidence_allowed"])
+        self.assertEqual(out["requirements"][0]["freshness_effect"], "pass")
+
+    def test_recent_snapshot_cannot_rescue_stale_binding(self):
+        proc = run_gate({"snapshot": supported_snapshot("2026-09-01T00:00:00Z", captured_at="2026-09-17T12:00:00Z"), "required_capabilities": ["campaign-performance-read"], "freshness_requirement": {"as_of": "2026-09-18T00:00:00Z", "max_age_seconds": 86400}})
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        out = json.loads(proc.stdout)
+        self.assertEqual(out["snapshot_freshness_effect"], "pass")
+        self.assertEqual(out["requirements"][0]["freshness_effect"], "stale")
+        self.assertEqual(out["gate_status"], "Degraded")
+
     def test_no_freshness_requirement_does_not_invent_global_ttl(self):
         proc = run_gate({"snapshot": supported_snapshot("2026-01-01T00:00:00Z"), "required_capabilities": ["campaign-performance-read"]})
         self.assertEqual(proc.returncode, 0, proc.stderr)
         out = json.loads(proc.stdout)
         self.assertEqual(out["gate_status"], "Pass")
+        self.assertEqual(out["snapshot_freshness_effect"], "not_evaluated")
         self.assertEqual(out["requirements"][0]["freshness_effect"], "not_evaluated")
 
 

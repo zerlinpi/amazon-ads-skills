@@ -124,6 +124,24 @@ def _index(snapshot: Any) -> tuple[dict[str, dict[str, Any]], dict[str, Any]]:
     return out, snapshot
 
 
+def _snapshot_freshness(snapshot: dict[str, Any], fresh: dict[str, Any] | None) -> tuple[str, list[str]]:
+    if fresh is None:
+        return "not_evaluated", []
+    captured_at = snapshot.get("captured_at")
+    if not _s(captured_at):
+        return "unknown", ["connector snapshot captured_at is missing for the explicit freshness horizon"]
+    try:
+        captured = _time(captured_at, "snapshot.captured_at")
+    except ValueError:
+        return "unknown", ["connector snapshot captured_at is invalid for the explicit freshness horizon"]
+    age = (fresh["as_of"] - captured).total_seconds()
+    if age < 0:
+        return "unknown", ["connector snapshot captured_at is after freshness as_of"]
+    if age > fresh["max_age_seconds"]:
+        return "stale", ["connector snapshot is stale for the explicit freshness horizon"]
+    return "pass", []
+
+
 def _scope_effect(obj: dict[str, Any], expected: dict[str, str], label: str) -> tuple[str, list[str]]:
     if not expected:
         return "not_evaluated" if label == "capability" else "pass", []
@@ -205,8 +223,10 @@ def evaluate_connector_capability_gate(payload: Any) -> dict[str, Any]:
     expected = _scope(payload.get("expected_scope"))
     fresh = _freshness(payload.get("freshness_requirement"))
     indexed, snapshot = _index(payload.get("snapshot"))
+    snapshot_freshness_effect, snapshot_warnings = _snapshot_freshness(snapshot, fresh)
     evaluated = []
-    has_partial = has_blocked = False
+    has_partial = snapshot_freshness_effect in {"stale", "unknown"}
+    has_blocked = False
     for cid in reqs:
         cap = indexed.get(cid)
         scope_effect = "not_evaluated"; binding_effect = "unknown"; freshness_effect = "not_evaluated"; verified = []
@@ -228,7 +248,7 @@ def evaluate_connector_capability_gate(payload: Any) -> dict[str, Any]:
     if has_blocked: gate, allowed, high = "Blocked", BLOCKED, False
     elif has_partial: gate, allowed, high = "Degraded", DEGRADED, False
     else: gate, allowed, high = "Pass", PASS, True
-    return {"gate_status": gate, "catalog_version": version, "high_confidence_allowed": high, "missing_evidence_policy": "never_zero", "allowed_decision_classes": allowed, "connector_id": snapshot.get("connector_id"), "connector_version": snapshot.get("connector_version"), "captured_at": snapshot.get("captured_at"), "expected_scope": expected or None, "freshness_requirement": None if fresh is None else {"as_of": fresh["as_of_raw"], "max_age_seconds": fresh["max_age_seconds"]}, "requirements": evaluated}
+    return {"gate_status": gate, "catalog_version": version, "high_confidence_allowed": high, "missing_evidence_policy": "never_zero", "allowed_decision_classes": allowed, "connector_id": snapshot.get("connector_id"), "connector_version": snapshot.get("connector_version"), "captured_at": snapshot.get("captured_at"), "snapshot_freshness_effect": snapshot_freshness_effect, "snapshot_warnings": snapshot_warnings, "expected_scope": expected or None, "freshness_requirement": None if fresh is None else {"as_of": fresh["as_of_raw"], "max_age_seconds": fresh["max_age_seconds"]}, "requirements": evaluated}
 
 
 def main() -> int:
