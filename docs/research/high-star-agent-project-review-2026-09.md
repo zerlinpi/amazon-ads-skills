@@ -141,3 +141,36 @@ Normative/public documentation used for current behavior:
 - Agent Skills specification and progressive disclosure: https://github.com/agentskills/agentskills/blob/main/docs/specification.mdx
 - MCP Registry project/documentation: https://github.com/modelcontextprotocol/registry
 - Amazon Ads Unified Reporting GA: https://advertising.amazon.com/resources/whats-new/streamline-campaign-analysis-with-unified-reporting
+
+
+## Incremental review — 2026-09-18
+
+A second pass focused on official/runtime-adjacent repositories that are even closer to the connector-capability boundary:
+
+| Project | Stars observed | License signal | Incremental finding | Decision |
+|---|---:|---|---|---|
+| `anthropics/skills` | ~176.9k | no SPDX license surfaced in repository metadata during this pass | strong ecosystem evidence that Skills should remain compact, composable, and resource-backed | No code/prose adoption. The normative `agentskills/agentskills` specification remains the implementation reference. |
+| `anthropics/claude-code` | ~146.0k | no open-source SPDX license surfaced; prior review treats current repository content as proprietary/all-rights-reserved | runtime discovery/workspace behavior only | No implementation reuse. Existing Claude onboarding remains factual-interface documentation only. |
+| `openai/codex` | ~125.0k | Apache-2.0 | durable repository instructions and Skill/runtime integration continue to support a repository-root, progressive-loading workflow | No new runtime dependency or copied implementation. |
+| `punkpeye/awesome-mcp-servers` | ~95.2k | MIT | broad ecosystem discovery only; popularity lists are not capability evidence | Rejected as a load-bearing source. A curated list cannot prove that a particular connector tool satisfies an Amazon Ads capability contract. |
+| `modelcontextprotocol/servers` | ~90.4k | mixed/no single SPDX signal surfaced at repository metadata level | official MCP examples reinforce that server/tool identity and implementation-specific surfaces vary across integrations | No source copying. Connector-specific tool names remain outside the canonical capability catalog. |
+| `mcp-use/mcp-use` | ~10.6k | MIT | useful MCP application/server framework, but solves runtime/app construction rather than Amazon Ads decision semantics | No dependency added. |
+
+The official MCP Registry documentation was also rechecked. It assigns servers stable names, versions, repository/package metadata and namespace-ownership verification. That is not the same as this repository's Amazon Ads capability catalog, but it reinforces the generic engineering principle that **identity should be validated against a registry rather than invented at call time**.
+
+This directly exposed a repository gap after the first capability-registry change: `scripts/evaluate_connector_capability_gate.py` still accepted arbitrary `required_capabilities[]` strings. A misspelled or invented ID therefore looked like a legitimate capability that the connector did not expose.
+
+The corrected contract is:
+
+```text
+unregistered required capability ID
+→ repository/caller configuration error
+→ fail closed
+
+registered capability ID
++ absent from connector snapshot
+→ connector evidence Unknown / Blocked
+→ never_zero
+```
+
+No MCP Registry schema, SDK implementation, server manifest, Anthropic/OpenAI runtime code, or third-party tool definition is copied. The implementation is independently authored against the repository's own capability catalog.

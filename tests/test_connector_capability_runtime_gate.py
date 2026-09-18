@@ -129,10 +129,10 @@ class ConnectorCapabilityRuntimeGateTests(unittest.TestCase):
                 "captured_at": "2026-09-18T00:00:00Z",
                 "default_access_mode": "Read-only",
                 "capabilities": [
-                    {"capability_id": "search-term-origin", "status": "Partial", "access_mode": "report"}
+                    {"capability_id": "search-term-origin-read", "status": "Partial", "access_mode": "report"}
                 ],
             },
-            "required_capabilities": ["search-term-origin"],
+            "required_capabilities": ["search-term-origin-read"],
         })
         self.assertEqual(proc.returncode, 0, proc.stderr)
         out = json.loads(proc.stdout)
@@ -149,10 +149,10 @@ class ConnectorCapabilityRuntimeGateTests(unittest.TestCase):
                 "captured_at": "2026-09-18T00:00:00Z",
                 "default_access_mode": "Read-only",
                 "capabilities": [
-                    {"capability_id": "current-bid-readback", "status": "Unsupported", "access_mode": "read"}
+                    {"capability_id": "entity-state-readback", "status": "Unsupported", "access_mode": "read"}
                 ],
             },
-            "required_capabilities": ["current-bid-readback"],
+            "required_capabilities": ["entity-state-readback"],
         })
         self.assertEqual(proc.returncode, 0, proc.stderr)
         out = json.loads(proc.stdout)
@@ -161,6 +161,19 @@ class ConnectorCapabilityRuntimeGateTests(unittest.TestCase):
         self.assertEqual(out["missing_evidence_policy"], "never_zero")
         self.assertIn("Alternate Source", out["allowed_decision_classes"])
         self.assertIn("Missing Data", out["allowed_decision_classes"])
+
+    def test_unregistered_required_capability_is_configuration_error(self):
+        proc = run_gate({
+            "snapshot": {
+                "connector_id": "fixture",
+                "captured_at": "2026-09-18T00:00:00Z",
+                "default_access_mode": "Read-only",
+                "capabilities": [],
+            },
+            "required_capabilities": ["invented-current-bid-capability"],
+        })
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("unregistered capability", proc.stderr.lower())
 
     def test_missing_or_unknown_capability_is_blocked_not_zero(self):
         proc = run_gate({

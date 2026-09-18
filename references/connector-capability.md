@@ -144,6 +144,8 @@ The registry is intentionally connector-neutral. A vendor may expose differently
 
 Current profile names are repository decision profiles such as `live-analysis`, `action-safe-proposal`, `ready-experiment`, and `outcome-review`. Unknown Skill/profile names fail closed in `../scripts/resolve_skill_capabilities.py` rather than creating a new identifier implicitly.
 
+The runtime gate also rejects an unregistered `required_capabilities[]` ID as a configuration error. This is deliberately different from a **registered** capability that is absent from the active connector snapshot: the former means the caller used an invalid repository capability identity; the latter remains connector evidence `Unknown / Blocked` and keeps `missing_evidence_policy = never_zero`.
+
 The catalog contains only read/report/observe/stream capabilities. It does not register live mutation authority.
 
 ## Runtime decision gate
