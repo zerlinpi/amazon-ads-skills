@@ -7,6 +7,17 @@ description: Evaluate whether an Amazon Ads optimization change was actually app
 
 Use this Skill after a proposed or externally executed optimization action. It closes the loop between `action -> observe -> evaluate -> rollback/keep`.
 
+## Connector capability gate
+
+When a conclusion depends on live MCP/API/connector data, load `../../references/connector-capability.md` before interpreting missing or empty fields. If a machine-readable capability snapshot is available, identify the exact required capability IDs and run `../../scripts/evaluate_connector_capability_gate.py` **before metric interpretation**.
+
+- `Pass` — continue with the Skill's normal evidence, sufficiency, lineage and safety checks.
+- `Degraded` — do not make a high-confidence dependent recommendation; keep the result to `Directional`, `Hold`, `Alternate Source`, `Missing Data`, or `Manual Review`.
+- `Blocked` — do not treat the dependent observation as action-safe until the capability is resolved or an allowed alternate source is verified.
+- `missing_evidence_policy = never_zero` — `Partial`, `Unsupported`, `Unknown`, or absent connector capability is never a numeric zero, unchanged state, or proof that the platform lacks the feature.
+
+This gate is read-only and does not authorize live Amazon Ads mutation.
+
 ## Progressive loading
 
 Load only what the case needs:
