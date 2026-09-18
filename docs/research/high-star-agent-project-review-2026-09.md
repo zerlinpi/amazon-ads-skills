@@ -1,0 +1,143 @@
+# High-star agent / MCP / evaluation project review — 2026-09-18
+
+## Purpose
+
+This review supports one repository question:
+
+> Which engineering ideas from widely adopted GitHub projects materially improve the current Amazon Ads Skills decision library without turning it into a framework-specific agent runtime?
+
+GitHub stars are used only as a discovery signal. They are mutable, can be gamed, and do not prove correctness, license compatibility, Amazon Ads relevance, or decision quality.
+
+Observed star counts below are a point-in-time snapshot from GitHub repository metadata on 2026-09-18.
+
+## Reviewed high-star projects
+
+| Project | Stars observed | License signal | Relevant engineering value | Repository decision |
+|---|---:|---|---|---|
+| `mem0ai/mem0` | ~65.5k | Apache-2.0 | persistent memory, append-oriented memory evolution, entity/time-aware retrieval | No SDK/runtime dependency. Existing append-first optimization ledger already captures the useful boundary; keep future retrieval ideas separate from authoritative event history. |
+| `microsoft/autogen` | ~61.0k | GitHub metadata reported CC-BY-4.0 in this review; verify per-path licensing before reuse | multi-agent orchestration and agent runtime abstractions | Rejected as a repository dependency. Orchestration runtime is external to these portable Skills. |
+| `crewAIInc/crewAI` | ~58.7k | MIT | explicit orchestration, flows, control-plane separation, observability | No framework dependency. The generic separation between domain decision logic and runtime/execution reinforces the current architecture. |
+| `langchain-ai/langgraph` | ~41.9k | MIT | durable state, human-in-the-loop, long-running workflow recovery, memory | No dependency. Durable execution/recovery belongs to an external runner/executor, not the Skill knowledge layer. |
+| `vercel-labs/agent-skills` | ~31.3k | no SPDX license surfaced in repository metadata during this review | large real-world Skill collection and ecosystem pressure toward progressive disclosure | No code/content adoption. Used only as ecosystem evidence; licensing must be checked before any future reuse. |
+| `agentskills/agentskills` | ~25.5k | Apache-2.0 code; documentation states CC-BY-4.0 | normative Skill format, discovery/activation/resources progressive disclosure | Already aligned. This round further simplifies README and keeps detail in references/resources instead of expanding Skill bodies. |
+| `promptfoo/promptfoo` | ~25.2k | MIT | repeatable LLM evals, CI integration, red-team/evaluation separation | No dependency added. Existing deterministic + capability replay + with/without-Skill contracts already cover the repository's immediate need. |
+| `letta-ai/letta` | ~24.8k | Apache-2.0 metadata; README says current active source moved to `letta-code` | stateful agents and durable memory | Rejected for direct adoption: active implementation lives elsewhere and full agent-state runtime is outside this repository's scope. |
+| `modelcontextprotocol/python-sdk` | ~24.3k | MIT | normative MCP client/server implementation and protocol tooling | No SDK dependency: this repository is not an MCP server. Protocol-facing concepts remain connector-neutral. |
+| `confident-ai/deepeval` | ~18.3k | Apache-2.0 | end-to-end/trajectory/step evaluation | No dependency added. Useful as confirmation that trajectory/step evaluation belongs in an external evaluation harness rather than in `SKILL.md`. |
+| `modelcontextprotocol/registry` | ~7.3k | repository license is in an MIT → Apache-2.0 transition; docs are CC-BY-4.0 | stable registry identity, namespace ownership/verification, validated catalog entries | Generic registry principle adopted independently: repository-owned canonical connector capability IDs and deterministic resolution. No registry API/schema/code copied. |
+
+## Direct Amazon Ads / seller projects reviewed alongside the high-star scan
+
+Direct Amazon Ads repositories remain much smaller than general agent-framework projects, so stars are not a sensible quality proxy in this niche.
+
+- `KuudoAI/amazon_ads_mcp` — MIT, ~69 stars observed. Still the strongest direct open Amazon Ads MCP engineering reference reviewed here for profile/region binding, report lifecycle and progressive tool exposure.
+- `nospicyplease/amazon-ppc-advanced-skills` — MIT, ~15 stars observed. Useful domain-level evidence for guarded preflight/readback and retail context; methods only, no implementation copied.
+- `TrackIQ-HQ/amazon-seller-skills` — MIT, very new/low-star in this snapshot. Useful only as emerging adjacent-retail capability taxonomy, not load-bearing engineering evidence.
+
+The repository therefore does not prefer a 60k-star generic agent framework over a 69-star Amazon Ads connector when the latter has more direct evidence for an Amazon-specific connector question.
+
+## Highest-value new gap found
+
+The connector capability runtime gate added previously expects exact `required_capabilities`, but those IDs were not canonicalized.
+
+That creates an interoperability problem:
+
+```text
+Skill A asks for current-bid-readback
+Skill B asks for bid-state-read
+Connector publishes current_bid
+→ semantically similar capability
+→ incompatible string identity
+→ false Unsupported / Unknown or ad hoc model guessing
+```
+
+The MCP Registry's registry/identity approach and the Agent Skills catalog/discovery model both reinforce a generic engineering principle:
+
+> stable capability identity belongs in an explicit catalog, not in transient model wording.
+
+This review therefore adds a repository-owned, connector-neutral catalog:
+
+`references/connector-capability-catalog.json`
+
+and a deterministic resolver:
+
+`scripts/resolve_skill_capabilities.py`
+
+The catalog maps the existing 15 Skills to bounded decision profiles such as:
+
+- `live-analysis`;
+- `action-safe-proposal`;
+- `ready-experiment`;
+- `outcome-review`.
+
+Each profile returns registered required and optional read/report/observe/stream capabilities. Unknown Skill/profile names fail closed.
+
+## Why no generic agent framework was imported
+
+This repository's job is Amazon Ads decision logic and evidence safety.
+
+Frameworks such as CrewAI, LangGraph, AutoGen, Letta and Mem0 solve broader runtime concerns:
+
+- process orchestration;
+- durable execution;
+- human interrupts;
+- provider/model routing;
+- agent lifecycle;
+- generic persistent memory;
+- infrastructure-level tracing.
+
+Embedding one of these frameworks would:
+
+1. increase dependencies and runtime assumptions;
+2. reduce Codex / Claude Code / WorkBuddy portability;
+3. duplicate functionality intentionally kept in the external Connector / Executor / evaluation harness;
+4. not improve an Amazon Ads decision by itself.
+
+Therefore those projects are reviewed as architecture evidence, not dependencies.
+
+## README restructuring lesson
+
+The normative Agent Skills guidance recommends progressive disclosure: compact metadata, focused Skill instructions, and on-demand resources.
+
+The old repository README had accumulated detailed rules for attribution variants, SIS, report eligibility, budget pools, action sizing, placement interactions, memory and individual regressions. Those details already have authoritative homes under `references/`, `evals/` and `docs/research/`.
+
+This round rewrites README as a first-use navigation document rather than a duplicate reference manual.
+
+## Copyright / license adoption boundary
+
+No third-party code, prompt, schema, workflow, template, test implementation or long documentation passage is copied in this change.
+
+Adopted content is limited to independently rewritten engineering principles:
+
+- stable registry identity;
+- progressive disclosure;
+- explicit runtime/decision-layer separation;
+- deterministic evaluation before semantic judgment;
+- append-first authoritative memory vs derived retrieval state.
+
+Where a repository had unclear/mixed licensing, it was used only as factual ecosystem evidence or excluded from implementation reuse.
+
+## Sources
+
+Repositories reviewed:
+
+- https://github.com/modelcontextprotocol/registry
+- https://github.com/modelcontextprotocol/python-sdk
+- https://github.com/agentskills/agentskills
+- https://github.com/vercel-labs/agent-skills
+- https://github.com/microsoft/autogen
+- https://github.com/crewAIInc/crewAI
+- https://github.com/promptfoo/promptfoo
+- https://github.com/confident-ai/deepeval
+- https://github.com/langchain-ai/langgraph
+- https://github.com/mem0ai/mem0
+- https://github.com/letta-ai/letta
+- https://github.com/KuudoAI/amazon_ads_mcp
+- https://github.com/nospicyplease/amazon-ppc-advanced-skills
+- https://github.com/TrackIQ-HQ/amazon-seller-skills
+
+Normative/public documentation used for current behavior:
+
+- Agent Skills specification and progressive disclosure: https://github.com/agentskills/agentskills/blob/main/docs/specification.mdx
+- MCP Registry project/documentation: https://github.com/modelcontextprotocol/registry
+- Amazon Ads Unified Reporting GA: https://advertising.amazon.com/resources/whats-new/streamline-campaign-analysis-with-unified-reporting
