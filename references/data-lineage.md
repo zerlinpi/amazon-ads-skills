@@ -6,6 +6,8 @@ The goal is to prevent a source, measurement-definition, coverage-selection, rep
 
 If a decision depends on whether returned rows represent the full logical population, load `report-coverage.md` for row-inclusion / eligibility handling.
 
+If a decision depends on whether the active MCP/connector can expose the required profile, report, metric, dimension, history, pagination, freshness, or semantic identity at all, load `connector-capability.md` first. When available, preserve a machine-readable observation using `../schemas/connector-capability-snapshot.json`. Connector `Unsupported`, `Partial`, or `Unknown` states are acquisition-path evidence gaps, not metric zeros or proof that the Amazon Ads product lacks the feature.
+
 ## 1. Same metric name does not guarantee the same measurement
 
 Two fields both named `orders`, `sales`, `spend`, `ACOS`, or `ROAS` may differ because of:
