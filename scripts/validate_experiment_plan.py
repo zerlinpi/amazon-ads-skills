@@ -30,6 +30,16 @@ def _non_empty_string(value: Any) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
 
+def _is_conversion_metric(name: Any, semantics: Any) -> bool:
+    if isinstance(semantics, dict):
+        metric_family = semantics.get("metric_family")
+        if _non_empty_string(metric_family):
+            return metric_family.strip().lower() == "conversion"
+    return _non_empty_string(name) and any(
+        token in name.lower() for token in CONVERSION_METRIC_TOKENS
+    )
+
+
 def _parse_timestamp(value: Any, label: str, errors: list[str]) -> datetime | None:
     if not _non_empty_string(value):
         errors.append(f"Ready holdout requires non-empty {label}")
@@ -144,12 +154,10 @@ def _validate_ready_metric_semantics(primary_metric: Any) -> list[str]:
         return ["Ready experiment plan requires a primary_metric object"]
 
     name = primary_metric.get("name")
-    if not _non_empty_string(name):
-        return []
-    if not any(token in name.lower() for token in CONVERSION_METRIC_TOKENS):
+    semantics = primary_metric.get("metric_semantics")
+    if not _is_conversion_metric(name, semantics):
         return []
 
-    semantics = primary_metric.get("metric_semantics")
     if not isinstance(semantics, dict):
         return ["Ready conversion primary metric requires explicit metric semantics"]
 
@@ -169,12 +177,10 @@ def _validate_ready_guardrail_metric_semantics(guardrails: Any) -> list[str]:
         if not isinstance(guardrail, dict):
             continue
         name = guardrail.get("metric")
-        if not _non_empty_string(name):
-            continue
-        if not any(token in name.lower() for token in CONVERSION_METRIC_TOKENS):
+        semantics = guardrail.get("metric_semantics")
+        if not _is_conversion_metric(name, semantics):
             continue
 
-        semantics = guardrail.get("metric_semantics")
         label = f"Ready conversion guardrail #{index + 1}"
         if not isinstance(semantics, dict):
             errors.append(f"{label} requires explicit metric semantics")
