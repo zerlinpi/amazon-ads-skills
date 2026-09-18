@@ -23,6 +23,7 @@ HOLDOUT_ISOLATION_MECHANISMS = {
     "verified_routing_partition",
     "verified_delivery_partition",
 }
+CONVERSION_METRIC_TOKENS = ("purchase", "sale", "roas", "conversion")
 
 
 def _non_empty_string(value: Any) -> bool:
@@ -138,6 +139,27 @@ def _validate_ready_holdout(comparison: dict[str, Any]) -> list[str]:
     return errors
 
 
+def _validate_ready_metric_semantics(primary_metric: Any) -> list[str]:
+    if not isinstance(primary_metric, dict):
+        return ["Ready experiment plan requires a primary_metric object"]
+
+    name = primary_metric.get("name")
+    if not _non_empty_string(name):
+        return []
+    if not any(token in name.lower() for token in CONVERSION_METRIC_TOKENS):
+        return []
+
+    semantics = primary_metric.get("metric_semantics")
+    if not isinstance(semantics, dict):
+        return ["Ready conversion primary metric requires explicit metric semantics"]
+
+    errors: list[str] = []
+    for field in ("metric_family", "attribution_family", "semantic_version"):
+        if not _non_empty_string(semantics.get(field)):
+            errors.append(f"Ready conversion primary metric requires non-empty metric semantics.{field}")
+    return errors
+
+
 def validate_experiment_plan(plan: Any) -> list[str]:
     """Return semantic readiness errors for one experiment plan.
 
@@ -167,6 +189,8 @@ def validate_experiment_plan(plan: Any) -> list[str]:
         errors.append("Ready experiment plan requires non-empty scope.entity_ids")
     elif any(not _non_empty_string(entity_id) for entity_id in entity_ids):
         errors.append("Ready experiment plan scope.entity_ids must contain only non-empty strings")
+
+    errors.extend(_validate_ready_metric_semantics(plan.get("primary_metric")))
 
     comparison = plan.get("comparison")
     if isinstance(comparison, dict) and comparison.get("design_type") == "holdout":

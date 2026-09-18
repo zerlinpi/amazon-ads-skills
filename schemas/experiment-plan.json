@@ -156,7 +156,17 @@
         "name": {"type": "string"},
         "success_rule": {"type": "string"},
         "minimum_decision_useful_effect": {"type": ["number", "string", "null"]},
-        "unit": {"type": ["string", "null"]}
+        "unit": {"type": ["string", "null"]},
+        "metric_semantics": {
+          "type": ["object", "null"],
+          "description": "Explicit measurement identity for comparison safety. Unknown semantics stay null or incomplete until verified; Ready conversion metrics are further gated by the semantic validator.",
+          "properties": {
+            "metric_family": {"type": ["string", "null"]},
+            "attribution_family": {"type": ["string", "null"]},
+            "semantic_version": {"type": ["string", "null"]}
+          },
+          "additionalProperties": false
+        }
       },
       "additionalProperties": false
     },
