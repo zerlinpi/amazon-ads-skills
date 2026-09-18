@@ -85,6 +85,18 @@ class ConnectorCapabilityFreshnessTests(unittest.TestCase):
         self.assertFalse(out["high_confidence_allowed"])
         self.assertEqual(out["requirements"][0]["freshness_effect"], "unknown")
 
+    def test_timestamp_only_evidence_cannot_prove_verified_binding(self):
+        snapshot = supported_snapshot("2026-09-17T12:00:00Z")
+        evidence = snapshot["capabilities"][0]["bindings"][0]["evidence"][0]
+        evidence["kind"] = None
+        evidence["reference"] = None
+        proc = run_gate({"snapshot": snapshot, "required_capabilities": ["campaign-performance-read"], "freshness_requirement": {"as_of": "2026-09-18T00:00:00Z", "max_age_seconds": 86400}})
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        out = json.loads(proc.stdout)
+        self.assertEqual(out["gate_status"], "Degraded")
+        self.assertFalse(out["high_confidence_allowed"])
+        self.assertEqual(out["requirements"][0]["freshness_effect"], "unknown")
+
     def test_no_freshness_requirement_does_not_invent_global_ttl(self):
         proc = run_gate({"snapshot": supported_snapshot("2026-01-01T00:00:00Z"), "required_capabilities": ["campaign-performance-read"]})
         self.assertEqual(proc.returncode, 0, proc.stderr)

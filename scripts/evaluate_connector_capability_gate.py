@@ -217,9 +217,14 @@ def _binding_effect(cap: dict[str, Any], expected: dict[str, str], fresh: dict[s
             evidence_fresh = False
             evidence_stale = False
             evidence_temporal_unknown = False
+            evidence_identity_unknown = False
             for j, evidence in enumerate(b["evidence"]):
                 if not isinstance(evidence, dict):
                     raise ValueError(f"{field}.evidence[{j}] must be an object")
+                if not _s(evidence.get("kind")) or not _s(evidence.get("reference")):
+                    evidence_identity_unknown = True
+                    warnings.append(f"verified connector binding {bid!r} has supporting evidence without kind/reference identity")
+                    continue
                 evidence_at = evidence.get("observed_at")
                 if not _s(evidence_at):
                     continue
@@ -240,7 +245,7 @@ def _binding_effect(cap: dict[str, Any], expected: dict[str, str], fresh: dict[s
                 else:
                     evidence_fresh = True
             if not evidence_fresh:
-                if evidence_temporal_unknown:
+                if evidence_temporal_unknown or evidence_identity_unknown:
                     saw_temporal_unknown = True
                 elif evidence_stale:
                     saw_stale = True
@@ -299,10 +304,13 @@ def evaluate_connector_capability_gate(payload: Any) -> dict[str, Any]:
 
 def main() -> int:
     try:
-        result = evaluate_connector_capability_gate(json.load(sys.stdin))
+        payload = json.load(sys.stdin)
+        print(json.dumps(evaluate_connector_capability_gate(payload), indent=2, sort_keys=True))
+        return 0
     except (ValueError, json.JSONDecodeError) as exc:
-        print(f"error: {exc}", file=sys.stderr); return 2
-    json.dump(result, sys.stdout, ensure_ascii=False, sort_keys=True); sys.stdout.write("\n"); return 0
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2
 
 
-if __name__ == "__main__": raise SystemExit(main())
+if __name__ == "__main__":
+    raise SystemExit(main())
