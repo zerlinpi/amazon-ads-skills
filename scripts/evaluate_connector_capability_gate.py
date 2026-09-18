@@ -14,6 +14,17 @@ from pathlib import Path
 from typing import Any
 
 KNOWN_STATUSES = {"Supported", "Partial", "Unsupported", "Unknown"}
+BINDING_VERIFICATION_STATUSES = {"Verified", "Unverified", "Unknown"}
+BINDING_SURFACE_TYPES = {
+    "tool",
+    "report",
+    "dataset",
+    "stream",
+    "export",
+    "endpoint",
+    "warehouse_table",
+    "manual_export",
+}
 PASS_DECISIONS = ["High Confidence", "Suggest", "Shadow"]
 DEGRADED_DECISIONS = [
     "Directional",
@@ -184,6 +195,132 @@ def _evaluate_scope(capability: dict[str, Any], expected_scope: dict[str, str]) 
     return "pass", warnings
 
 
+def _evaluate_binding_scope(
+    binding: dict[str, Any],
+    expected_scope: dict[str, str],
+) -> tuple[str, list[str]]:
+    if not expected_scope:
+        return "pass", []
+
+    scope = binding.get("scope")
+    if not isinstance(scope, dict):
+        return "unknown", [
+            "verified connector binding does not expose bounded decision scope"
+        ]
+
+    warnings: list[str] = []
+    unknown = False
+    blocked = False
+    for expected_field, expected_value in expected_scope.items():
+        binding_field = SCOPE_FIELDS[expected_field]
+        observed_values = scope.get(binding_field)
+        if not isinstance(observed_values, list) or not observed_values:
+            unknown = True
+            warnings.append(
+                f"connector binding does not expose bounded {expected_field} scope"
+            )
+            continue
+        normalized_values = {
+            item.strip().casefold()
+            for item in observed_values
+            if _non_empty_string(item)
+        }
+        if expected_value.casefold() not in normalized_values:
+            blocked = True
+            warnings.append(
+                f"connector binding does not cover requested {expected_field} {expected_value!r}"
+            )
+
+    if blocked:
+        return "blocked", warnings
+    if unknown:
+        return "unknown", warnings
+    return "pass", warnings
+
+
+def _evaluate_bindings(
+    capability: dict[str, Any],
+    expected_scope: dict[str, str],
+) -> tuple[str, list[str], list[str]]:
+    bindings = capability.get("bindings")
+    if not bindings:
+        return "unknown", [], [
+            "supported capability has no verified connector surface binding"
+        ]
+    if not isinstance(bindings, list):
+        raise ValueError("capability.bindings must be an array")
+
+    verified_binding_ids: list[str] = []
+    warnings: list[str] = []
+    seen_ids: set[str] = set()
+    saw_unverified = False
+    saw_verified = False
+
+    for index, binding in enumerate(bindings):
+        field = f"capability.bindings[{index}]"
+        if not isinstance(binding, dict):
+            raise ValueError(f"{field} must be an object")
+
+        binding_id = binding.get("binding_id")
+        surface_type = binding.get("surface_type")
+        surface_id = binding.get("surface_id")
+        verification_status = binding.get("verification_status")
+        observed_at = binding.get("observed_at")
+        evidence = binding.get("evidence")
+
+        if not _non_empty_string(binding_id):
+            raise ValueError(f"{field}.binding_id must be a non-empty string")
+        binding_id = binding_id.strip()
+        if binding_id in seen_ids:
+            raise ValueError(f"capability.bindings contains duplicate binding_id {binding_id!r}")
+        seen_ids.add(binding_id)
+
+        if surface_type not in BINDING_SURFACE_TYPES:
+            raise ValueError(
+                f"{field}.surface_type must be one of {sorted(BINDING_SURFACE_TYPES)}"
+            )
+        if not _non_empty_string(surface_id):
+            raise ValueError(f"{field}.surface_id must be a non-empty string")
+        if verification_status not in BINDING_VERIFICATION_STATUSES:
+            raise ValueError(
+                f"{field}.verification_status must be one of "
+                f"{sorted(BINDING_VERIFICATION_STATUSES)}"
+            )
+        if not _non_empty_string(observed_at):
+            raise ValueError(f"{field}.observed_at must be a non-empty string")
+        if not isinstance(evidence, list):
+            raise ValueError(f"{field}.evidence must be an array")
+
+        if verification_status != "Verified":
+            if verification_status == "Unverified":
+                saw_unverified = True
+            continue
+
+        saw_verified = True
+        if not evidence:
+            raise ValueError(
+                f"{field} is Verified but has no evidence supporting the binding"
+            )
+
+        scope_effect, scope_warnings = _evaluate_binding_scope(binding, expected_scope)
+        warnings.extend(scope_warnings)
+        if scope_effect == "pass":
+            verified_binding_ids.append(binding_id)
+
+    if verified_binding_ids:
+        return "pass", verified_binding_ids, warnings
+    if saw_unverified:
+        warnings.append(
+            "connector surface binding exists but is not independently verified"
+        )
+        return "unverified", [], warnings
+    if saw_verified:
+        warnings.append(
+            "verified connector surface binding does not prove the requested decision scope"
+        )
+    return "unknown", [], warnings
+
+
 def evaluate_connector_capability_gate(payload: Any) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError("input must be a JSON object")
@@ -203,6 +340,8 @@ def evaluate_connector_capability_gate(payload: Any) -> dict[str, Any]:
     for capability_id in requirements:
         capability = indexed.get(capability_id)
         scope_effect = "not_evaluated"
+        binding_effect = "unknown"
+        verified_binding_ids: list[str] = []
         if capability is None:
             status = "Unknown"
             access_mode = "unknown"
@@ -215,8 +354,21 @@ def evaluate_connector_capability_gate(payload: Any) -> dict[str, Any]:
             warnings = list(capability.get("warnings") or [])
             scope_effect, scope_warnings = _evaluate_scope(capability, expected_scope)
             warnings.extend(scope_warnings)
-            if status == "Supported" and scope_effect in {"pass", "not_evaluated"}:
-                gate_effect = "pass"
+            binding_effect, verified_binding_ids, binding_warnings = _evaluate_bindings(
+                capability,
+                expected_scope,
+            )
+            warnings.extend(binding_warnings)
+
+            if status == "Supported":
+                if scope_effect not in {"pass", "not_evaluated"}:
+                    gate_effect = "blocked"
+                    has_blocked = True
+                elif binding_effect == "pass":
+                    gate_effect = "pass"
+                else:
+                    gate_effect = "degraded"
+                    has_partial = True
             elif status == "Partial" and scope_effect in {"pass", "not_evaluated"}:
                 gate_effect = "degraded"
                 has_partial = True
@@ -230,6 +382,8 @@ def evaluate_connector_capability_gate(payload: Any) -> dict[str, Any]:
                 "status": status,
                 "access_mode": access_mode,
                 "scope_effect": scope_effect,
+                "binding_effect": binding_effect,
+                "verified_binding_ids": verified_binding_ids,
                 "gate_effect": gate_effect,
                 "warnings": warnings,
             }

@@ -221,6 +221,8 @@ Stars are treated only as discovery metadata, not authority. The review records 
 
 This round independently adopted one generic idea from the MCP Registry / Agent Skills ecosystem: stable capability identity should live in an explicit catalog rather than transient model wording. The implementation is repository-authored in `references/connector-capability-catalog.json` and `scripts/resolve_skill_capabilities.py`; no third-party registry schema, code, prompt, workflow, or template was copied.
 
+A later connector-binding pass reviewed the MCP Registry's server identity/version/namespace verification model and Amazon Ads' distinct reporting/push acquisition surfaces. The repository independently applies the narrower principle that a canonical Amazon Ads capability claim should be traceable to a concrete connector surface plus observed scope/evidence before high-confidence use. This is implemented in `schemas/connector-capability-snapshot.json` and the repository-authored runtime gate; no MCP Registry `server.json`, OpenAPI schema, Amazon report schema, third-party MCP tool definition, or connector implementation was copied.
+
 Generic orchestration/memory/evaluation frameworks were not imported as dependencies because their runtime concerns belong outside this portable Amazon Ads decision library. Their own licenses and copyrights remain with their projects.
 
 ## Reviewed public MCP documentation

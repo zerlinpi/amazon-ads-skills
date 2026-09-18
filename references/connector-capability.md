@@ -27,6 +27,45 @@ In particular:
 
 Do not infer support from a tool name alone. Do not infer absence from a missing tool alone when progressive discovery, package activation, permissions, advertiser eligibility, region/profile selection, or server-side feature flags can change the visible catalog.
 
+## Verified connector surface binding
+
+A canonical capability ID is not evidence by itself, and a connector/tool/report name is not evidence by itself.
+
+For a high-confidence `Supported` claim, bind the canonical capability to at least one concrete connector surface that has been verified for the relevant scope. Supported surface classes are connector-neutral and include:
+
+- MCP/tool surface;
+- report;
+- dataset;
+- stream;
+- export;
+- endpoint;
+- warehouse table;
+- manual export.
+
+Each binding should preserve:
+
+```text
+binding_id
+surface_type
+surface_id
+surface_version
+verification_status
+observed_at
+scope
+evidence[]
+```
+
+`Verified` means there is auditable evidence that this surface satisfies the canonical capability for the bounded scope. A similar name, nearby endpoint, package membership, server instructions, or tool description alone is not enough.
+
+Runtime interpretation:
+
+- `Supported + Verified binding + applicable scope` may proceed to `Pass`, subject to all other gates.
+- `Supported + no binding`, `Unverified`, or binding scope not proven becomes `Degraded`; high-confidence dependent recommendations are not allowed.
+- capability scope missing or conflicting with the requested decision scope remains `Blocked`.
+- `Unsupported` and `Unknown` remain blocked evidence states; adding a binding never upgrades them automatically.
+
+The binding inherits the snapshot's `connector_id` and `connector_version`. Do not infer a binding from a tool name or report title at runtime.
+
 ## Capability snapshot
 
 A snapshot should preserve:

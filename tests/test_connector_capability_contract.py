@@ -36,6 +36,27 @@ class ConnectorCapabilityContractTests(unittest.TestCase):
         for value in ("Supported", "Partial", "Unsupported", "Unknown"):
             self.assertIn(value, status_enum)
 
+    def test_capability_contract_exposes_verifiable_connector_surface_bindings(self):
+        schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
+        props = schema["properties"]["capabilities"]["items"]["properties"]
+        self.assertIn("bindings", props)
+        binding = props["bindings"]["items"]
+        binding_props = binding["properties"]
+        for field in (
+            "binding_id",
+            "surface_type",
+            "surface_id",
+            "surface_version",
+            "verification_status",
+            "observed_at",
+            "scope",
+            "evidence",
+        ):
+            self.assertIn(field, binding_props)
+        self.assertIn("Verified", binding_props["verification_status"]["enum"])
+        self.assertIn("Unverified", binding_props["verification_status"]["enum"])
+        self.assertIn("Unknown", binding_props["verification_status"]["enum"])
+
     def test_data_contract_exposes_decision_critical_reporting_boundaries(self):
         schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
         data_props = schema["properties"]["capabilities"]["items"]["properties"]["data_contract"]["properties"]
