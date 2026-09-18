@@ -1,4 +1,3 @@
-import importlib.util
 import json
 import subprocess
 import sys
@@ -9,7 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 GATE = ROOT / "scripts/evaluate_connector_capability_gate.py"
 REFERENCE = ROOT / "references/connector-capability.md"
-SKILLS = ["amazon-ads-audit","amazon-ads-optimizer","anomaly-detection","bid-optimization","budget-optimization","campaign-health-monitor","experiment-planner","growth-opportunity-finder","keyword-optimization","negative-targeting","performance-drop-diagnosis","placement-optimization","post-change-review","profitability-analysis","search-term-analysis"]
+SKILLS = sorted(path.parent.name for path in (ROOT / "skills").glob("*/SKILL.md"))
 
 
 def run_gate(payload):
@@ -25,6 +24,7 @@ def run_gate(payload):
 
 class ConnectorCapabilityRuntimeGateTests(unittest.TestCase):
     def test_all_skill_entrypoints_route_through_connector_capability_gate(self):
+        self.assertGreaterEqual(len(SKILLS), 15, "expected the repository Skill catalog to be discoverable")
         for name in SKILLS:
             text = (ROOT / "skills" / name / "SKILL.md").read_text(encoding="utf-8")
             self.assertIn(
