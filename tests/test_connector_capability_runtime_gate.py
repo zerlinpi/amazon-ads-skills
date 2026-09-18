@@ -153,7 +153,21 @@ class ConnectorCapabilityRuntimeGateTests(unittest.TestCase):
                 "captured_at": "2026-09-18T00:00:00Z",
                 "default_access_mode": "Read-only",
                 "capabilities": [
-                    {"capability_id": "campaign-performance-read", "status": "Supported", "access_mode": "read"}
+                    {
+                        "capability_id": "campaign-performance-read",
+                        "status": "Supported",
+                        "access_mode": "read",
+                        "bindings": [
+                            {
+                                "binding_id": "fixture:campaign-read",
+                                "surface_type": "endpoint",
+                                "surface_id": "campaign-performance",
+                                "verification_status": "Verified",
+                                "observed_at": "2026-09-18T00:00:00Z",
+                                "evidence": [{"kind": "contract-test", "reference": "fixture"}],
+                            }
+                        ],
+                    }
                 ],
             },
             "required_capabilities": ["campaign-performance-read"],
@@ -200,6 +214,20 @@ class ConnectorCapabilityRuntimeGateTests(unittest.TestCase):
                         "status": "Supported",
                         "access_mode": "report",
                         "scope": {"marketplaces": ["JP", "US"], "ad_products": ["Sponsored Products"]},
+                        "bindings": [
+                            {
+                                "binding_id": "fixture:jp-campaign-report",
+                                "surface_type": "report",
+                                "surface_id": "campaign-performance-v3",
+                                "verification_status": "Verified",
+                                "observed_at": "2026-09-18T00:00:00Z",
+                                "scope": {
+                                    "marketplaces": ["JP", "US"],
+                                    "ad_products": ["Sponsored Products"],
+                                },
+                                "evidence": [{"kind": "contract-test", "reference": "fixture"}],
+                            }
+                        ],
                     }
                 ],
             },
