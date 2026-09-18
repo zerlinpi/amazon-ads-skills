@@ -161,7 +161,7 @@ def _scope_effect(obj: dict[str, Any], expected: dict[str, str], label: str) -> 
     return ("blocked" if blocked else "unknown" if unknown else "pass"), warnings
 
 
-def _binding_effect(cap: dict[str, Any], expected: dict[str, str], fresh: dict[str, Any] | None) -> tuple[str, list[str], str, list[str]]:
+def _binding_effect(cap: dict[str, Any], expected: dict[str, str], fresh: dict[str, Any] | None, snapshot_captured_at: Any) -> tuple[str, list[str], str, list[str]]:
     bindings = cap.get("bindings")
     if not bindings:
         return "unknown", [], "not_evaluated" if fresh is None else "unknown", ["supported capability has no verified connector surface binding"]
@@ -169,8 +169,14 @@ def _binding_effect(cap: dict[str, Any], expected: dict[str, str], fresh: dict[s
         raise ValueError("capability.bindings must be an array")
     verified: list[str] = []
     warnings: list[str] = []
-    saw_unverified = saw_verified = saw_stale = False
+    saw_unverified = saw_verified = saw_stale = saw_temporal_unknown = False
     seen: set[str] = set()
+    snapshot_time = None
+    if fresh is not None and _s(snapshot_captured_at):
+        try:
+            snapshot_time = _time(snapshot_captured_at, "snapshot.captured_at")
+        except ValueError:
+            snapshot_time = None
     for i, b in enumerate(bindings):
         field = f"capability.bindings[{i}]"
         if not isinstance(b, dict):
@@ -196,6 +202,10 @@ def _binding_effect(cap: dict[str, Any], expected: dict[str, str], fresh: dict[s
         if se != "pass": continue
         if fresh is not None:
             observed = _time(b["observed_at"], f"{field}.observed_at")
+            if snapshot_time is not None and observed > snapshot_time:
+                saw_temporal_unknown = True
+                warnings.append(f"verified connector binding {bid!r} is observed after snapshot capture and cannot belong to that snapshot")
+                continue
             age = (fresh["as_of"] - observed).total_seconds()
             if age < 0:
                 warnings.append(f"{bid} observed_at is after freshness as_of")
@@ -206,6 +216,7 @@ def _binding_effect(cap: dict[str, Any], expected: dict[str, str], fresh: dict[s
                 continue
             evidence_fresh = False
             evidence_stale = False
+            evidence_temporal_unknown = False
             for j, evidence in enumerate(b["evidence"]):
                 if not isinstance(evidence, dict):
                     raise ValueError(f"{field}.evidence[{j}] must be an object")
@@ -217,6 +228,10 @@ def _binding_effect(cap: dict[str, Any], expected: dict[str, str], fresh: dict[s
                 except ValueError:
                     warnings.append(f"{bid} has invalid supporting evidence observed_at")
                     continue
+                if evidence_time > observed:
+                    evidence_temporal_unknown = True
+                    warnings.append(f"verified connector binding {bid!r} has supporting evidence observed after binding verification")
+                    continue
                 evidence_age = (fresh["as_of"] - evidence_time).total_seconds()
                 if evidence_age < 0:
                     warnings.append(f"{bid} has supporting evidence observed_at after freshness as_of")
@@ -225,7 +240,9 @@ def _binding_effect(cap: dict[str, Any], expected: dict[str, str], fresh: dict[s
                 else:
                     evidence_fresh = True
             if not evidence_fresh:
-                if evidence_stale:
+                if evidence_temporal_unknown:
+                    saw_temporal_unknown = True
+                elif evidence_stale:
                     saw_stale = True
                     warnings.append(f"verified connector binding {bid!r} has only stale supporting evidence for the explicit freshness horizon")
                 else:
@@ -234,6 +251,8 @@ def _binding_effect(cap: dict[str, Any], expected: dict[str, str], fresh: dict[s
         verified.append(bid)
     if verified:
         return "pass", verified, "pass" if fresh else "not_evaluated", warnings
+    if saw_temporal_unknown:
+        return "pass", [], "unknown", warnings
     if saw_stale:
         return "pass", [], "stale", warnings
     if saw_unverified:
@@ -263,7 +282,7 @@ def evaluate_connector_capability_gate(payload: Any) -> dict[str, Any]:
         else:
             status = cap.get("status", "Unknown"); access = cap.get("access_mode", "unknown"); warnings = list(cap.get("warnings") or [])
             scope_effect, sw = _scope_effect(cap, expected, "connector capability"); warnings += sw
-            binding_effect, verified, freshness_effect, bw = _binding_effect(cap, expected, fresh); warnings += bw
+            binding_effect, verified, freshness_effect, bw = _binding_effect(cap, expected, fresh, snapshot.get("captured_at")); warnings += bw
             if status == "Supported":
                 if scope_effect not in {"pass", "not_evaluated"}: effect = "blocked"; has_blocked = True
                 elif freshness_effect in {"stale", "unknown"}: effect = "degraded"; has_partial = True
