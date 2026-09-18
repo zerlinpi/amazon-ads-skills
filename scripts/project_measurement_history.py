@@ -44,6 +44,8 @@ COMPARABILITY_STATUSES = {
     "Unknown",
 }
 
+METRIC_SEMANTIC_FIELDS = ("metric_name", "metric_family", "attribution_family", "semantic_version")
+
 
 def _parse_timestamp(value: Any, *, field: str) -> datetime:
     if not isinstance(value, str) or not value:
@@ -200,6 +202,35 @@ def _merge_account_identity(
     return merged, False
 
 
+def _normalize_metric_semantic_item(value: Any, *, field: str) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise ValueError(f"{field} must be an object")
+    result: dict[str, Any] = {}
+    for name in METRIC_SEMANTIC_FIELDS:
+        item = value.get(name)
+        if item is not None and (not isinstance(item, str) or not item):
+            raise ValueError(f"{field}.{name} must be a non-empty string or null")
+        result[name] = item
+    return result
+
+
+def _normalize_metric_semantics(value: Any) -> list[dict[str, Any]]:
+    if value is None:
+        return []
+    if not isinstance(value, list):
+        raise ValueError("evidence_snapshot.metric_semantics must be an array")
+    return [
+        _normalize_metric_semantic_item(item, field=f"evidence_snapshot.metric_semantics[{index}]")
+        for index, item in enumerate(value)
+    ]
+
+
+def _normalize_outcome_metric_semantics(value: Any) -> dict[str, Any] | None:
+    if value is None:
+        return None
+    return _normalize_metric_semantic_item(value, field="outcome_metric_semantics")
+
+
 def _warnings(snapshot: dict[str, Any], history_status: str, comparability: str) -> list[str]:
     warnings = list(snapshot.get("warnings") or [])
     for field in ("reporting_generation", "date_attribution_semantics"):
@@ -216,7 +247,11 @@ def _warnings(snapshot: dict[str, Any], history_status: str, comparability: str)
     return warnings
 
 
-def _project(snapshot: dict[str, Any], observed_at: str) -> dict[str, Any]:
+def _project(
+    snapshot: dict[str, Any],
+    observed_at: str,
+    outcome_metric_semantics: Any,
+) -> dict[str, Any]:
     history_status = snapshot.get("historical_availability_status")
     if history_status not in HISTORY_STATUSES:
         history_status = "unknown"
@@ -231,6 +266,8 @@ def _project(snapshot: dict[str, Any], observed_at: str) -> dict[str, Any]:
         "acquisition_channel": snapshot.get("acquisition_channel"),
         "reporting_generation": snapshot.get("reporting_generation"),
         "semantic_version": snapshot.get("semantic_version"),
+        "metric_semantics": _normalize_metric_semantics(snapshot.get("metric_semantics")),
+        "outcome_metric_semantics": _normalize_outcome_metric_semantics(outcome_metric_semantics),
         "date_attribution_semantics": snapshot.get("date_attribution_semantics"),
         "historical_availability_status": history_status,
         "comparability_status": comparability,
@@ -243,7 +280,7 @@ def project_measurement_history(
 ) -> dict[str, Any]:
     expected = _normalize_expected_scope(expected_scope)
     expected_account_identity = _normalize_expected_account_identity(expected_scope)
-    candidates: list[tuple[datetime, int, str, dict[str, Any]]] = []
+    candidates: list[tuple[datetime, int, str, dict[str, Any], Any]] = []
     observed_scope: tuple[Any, Any, Any, Any] | None = None
     account_identity: dict[str, Any] | None = None
     missing_account_identity_seen = False
@@ -274,14 +311,20 @@ def project_measurement_history(
 
         raw_time = snapshot.get("captured_at") or event.get("timestamp")
         parsed = _parse_timestamp(raw_time, field="measurement observation time")
-        candidates.append((parsed, index, raw_time, snapshot))
+        candidates.append((parsed, index, raw_time, snapshot, event.get("outcome_metric_semantics")))
 
     if not candidates:
         return {"latest_measurement_state": None}
 
     candidates.sort(key=lambda item: (item[0], item[1]))
-    _, _, observed_at, snapshot = candidates[-1]
-    result = {"latest_measurement_state": _project(snapshot, observed_at)}
+    _, _, observed_at, snapshot, outcome_metric_semantics = candidates[-1]
+    result = {
+        "latest_measurement_state": _project(
+            snapshot,
+            observed_at,
+            outcome_metric_semantics,
+        )
+    }
     if account_identity is not None:
         result["account_identity"] = account_identity
     return result
