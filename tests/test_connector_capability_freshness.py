@@ -36,14 +36,14 @@ class ConnectorCapabilityFreshnessTests(unittest.TestCase):
         self.assertTrue(out["high_confidence_allowed"])
         self.assertEqual(out["requirements"][0]["freshness_effect"], "pass")
 
-    def test_stale_snapshot_cannot_be_rescued_by_recent_binding(self):
+    def test_stale_snapshot_with_newer_binding_claim_remains_degraded(self):
         proc = run_gate({"snapshot": supported_snapshot("2026-09-17T12:00:00Z", captured_at="2026-09-01T00:00:00Z"), "required_capabilities": ["campaign-performance-read"], "freshness_requirement": {"as_of": "2026-09-18T00:00:00Z", "max_age_seconds": 86400}})
         self.assertEqual(proc.returncode, 0, proc.stderr)
         out = json.loads(proc.stdout)
         self.assertEqual(out["snapshot_freshness_effect"], "stale")
         self.assertEqual(out["gate_status"], "Degraded")
         self.assertFalse(out["high_confidence_allowed"])
-        self.assertEqual(out["requirements"][0]["freshness_effect"], "pass")
+        self.assertEqual(out["requirements"][0]["freshness_effect"], "unknown")
 
     def test_recent_snapshot_cannot_rescue_stale_binding(self):
         proc = run_gate({"snapshot": supported_snapshot("2026-09-01T00:00:00Z", captured_at="2026-09-17T12:00:00Z"), "required_capabilities": ["campaign-performance-read"], "freshness_requirement": {"as_of": "2026-09-18T00:00:00Z", "max_age_seconds": 86400}})
@@ -68,6 +68,22 @@ class ConnectorCapabilityFreshnessTests(unittest.TestCase):
         self.assertEqual(out["gate_status"], "Pass")
         self.assertTrue(out["high_confidence_allowed"])
         self.assertEqual(out["requirements"][0]["freshness_effect"], "pass")
+
+    def test_evidence_after_binding_verification_is_not_causal_support(self):
+        proc = run_gate({"snapshot": supported_snapshot("2026-09-17T10:00:00Z", captured_at="2026-09-17T12:00:00Z", evidence_observed_at="2026-09-17T11:00:00Z"), "required_capabilities": ["campaign-performance-read"], "freshness_requirement": {"as_of": "2026-09-18T00:00:00Z", "max_age_seconds": 86400}})
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        out = json.loads(proc.stdout)
+        self.assertEqual(out["gate_status"], "Degraded")
+        self.assertFalse(out["high_confidence_allowed"])
+        self.assertEqual(out["requirements"][0]["freshness_effect"], "unknown")
+
+    def test_binding_after_snapshot_capture_is_not_part_of_that_snapshot(self):
+        proc = run_gate({"snapshot": supported_snapshot("2026-09-17T12:00:00Z", captured_at="2026-09-17T10:00:00Z", evidence_observed_at="2026-09-17T09:00:00Z"), "required_capabilities": ["campaign-performance-read"], "freshness_requirement": {"as_of": "2026-09-18T00:00:00Z", "max_age_seconds": 86400}})
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        out = json.loads(proc.stdout)
+        self.assertEqual(out["gate_status"], "Degraded")
+        self.assertFalse(out["high_confidence_allowed"])
+        self.assertEqual(out["requirements"][0]["freshness_effect"], "unknown")
 
     def test_no_freshness_requirement_does_not_invent_global_ttl(self):
         proc = run_gate({"snapshot": supported_snapshot("2026-01-01T00:00:00Z"), "required_capabilities": ["campaign-performance-read"]})
