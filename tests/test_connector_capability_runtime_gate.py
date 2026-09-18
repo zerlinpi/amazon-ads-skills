@@ -129,10 +129,10 @@ class ConnectorCapabilityRuntimeGateTests(unittest.TestCase):
                 "captured_at": "2026-09-18T00:00:00Z",
                 "default_access_mode": "Read-only",
                 "capabilities": [
-                    {"capability_id": "search-term-origin", "status": "Partial", "access_mode": "report"}
+                    {"capability_id": "search-term-origin-read", "status": "Partial", "access_mode": "report"}
                 ],
             },
-            "required_capabilities": ["search-term-origin"],
+            "required_capabilities": ["search-term-origin-read"],
         })
         self.assertEqual(proc.returncode, 0, proc.stderr)
         out = json.loads(proc.stdout)
@@ -149,10 +149,10 @@ class ConnectorCapabilityRuntimeGateTests(unittest.TestCase):
                 "captured_at": "2026-09-18T00:00:00Z",
                 "default_access_mode": "Read-only",
                 "capabilities": [
-                    {"capability_id": "current-bid-readback", "status": "Unsupported", "access_mode": "read"}
+                    {"capability_id": "entity-state-readback", "status": "Unsupported", "access_mode": "read"}
                 ],
             },
-            "required_capabilities": ["current-bid-readback"],
+            "required_capabilities": ["entity-state-readback"],
         })
         self.assertEqual(proc.returncode, 0, proc.stderr)
         out = json.loads(proc.stdout)
