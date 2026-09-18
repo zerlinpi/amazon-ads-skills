@@ -38,6 +38,114 @@ class ConnectorCapabilityRuntimeGateTests(unittest.TestCase):
                 msg=f"{name} must point to the deterministic gate helper",
             )
 
+    def test_supported_capability_without_verified_binding_is_degraded(self):
+        proc = run_gate({
+            "snapshot": {
+                "connector_id": "fixture",
+                "connector_version": "1.0.0",
+                "captured_at": "2026-09-18T00:00:00Z",
+                "default_access_mode": "Read-only",
+                "capabilities": [
+                    {
+                        "capability_id": "campaign-performance-read",
+                        "status": "Supported",
+                        "access_mode": "report",
+                    }
+                ],
+            },
+            "required_capabilities": ["campaign-performance-read"],
+        })
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        out = json.loads(proc.stdout)
+        self.assertEqual(out["gate_status"], "Degraded")
+        self.assertFalse(out["high_confidence_allowed"])
+        self.assertEqual(out["requirements"][0]["binding_effect"], "unknown")
+
+    def test_supported_capability_with_verified_binding_passes(self):
+        proc = run_gate({
+            "snapshot": {
+                "connector_id": "fixture",
+                "connector_version": "1.0.0",
+                "captured_at": "2026-09-18T00:00:00Z",
+                "default_access_mode": "Read-only",
+                "capabilities": [
+                    {
+                        "capability_id": "campaign-performance-read",
+                        "status": "Supported",
+                        "access_mode": "report",
+                        "bindings": [
+                            {
+                                "binding_id": "fixture:campaign-report",
+                                "surface_type": "report",
+                                "surface_id": "campaign-performance-v3",
+                                "surface_version": "3",
+                                "verification_status": "Verified",
+                                "observed_at": "2026-09-18T00:00:00Z",
+                                "scope": {
+                                    "marketplaces": ["US"],
+                                    "ad_products": ["Sponsored Products"],
+                                },
+                                "evidence": [
+                                    {
+                                        "kind": "contract-test",
+                                        "reference": "fixture",
+                                        "observed_at": "2026-09-18T00:00:00Z",
+                                    }
+                                ],
+                            }
+                        ],
+                    }
+                ],
+            },
+            "required_capabilities": ["campaign-performance-read"],
+            "expected_scope": {
+                "marketplace": "US",
+                "ad_product": "Sponsored Products",
+            },
+        })
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        out = json.loads(proc.stdout)
+        self.assertEqual(out["gate_status"], "Pass")
+        self.assertTrue(out["high_confidence_allowed"])
+        self.assertEqual(out["requirements"][0]["binding_effect"], "pass")
+        self.assertEqual(
+            out["requirements"][0]["verified_binding_ids"],
+            ["fixture:campaign-report"],
+        )
+
+    def test_unverified_binding_cannot_preserve_high_confidence(self):
+        proc = run_gate({
+            "snapshot": {
+                "connector_id": "fixture",
+                "connector_version": "1.0.0",
+                "captured_at": "2026-09-18T00:00:00Z",
+                "default_access_mode": "Read-only",
+                "capabilities": [
+                    {
+                        "capability_id": "campaign-performance-read",
+                        "status": "Supported",
+                        "access_mode": "report",
+                        "bindings": [
+                            {
+                                "binding_id": "fixture:guessed-tool",
+                                "surface_type": "tool",
+                                "surface_id": "campaign_report",
+                                "verification_status": "Unverified",
+                                "observed_at": "2026-09-18T00:00:00Z",
+                                "evidence": [],
+                            }
+                        ],
+                    }
+                ],
+            },
+            "required_capabilities": ["campaign-performance-read"],
+        })
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        out = json.loads(proc.stdout)
+        self.assertEqual(out["gate_status"], "Degraded")
+        self.assertFalse(out["high_confidence_allowed"])
+        self.assertEqual(out["requirements"][0]["binding_effect"], "unverified")
+
     def test_supported_requirement_passes(self):
         proc = run_gate({
             "snapshot": {
