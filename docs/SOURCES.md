@@ -28,6 +28,39 @@ A repository-level license was not found during this review. Therefore no Arcana
 
 Repository: https://github.com/Ecom-Wizards-Agency/Arcana
 
+
+### KuudoAI/amazon_ads_mcp
+
+MIT-licensed Amazon Ads MCP implementation reviewed for connector-layer engineering rather than PPC decision rules. Useful generic ideas included explicit profile/region scope, asynchronous report/export lifecycle, progressive tool disclosure for very large tool catalogs, tool-catalog auditing, structured schema validation, and corrective error hints.
+
+No MCP tool names, package catalog, field aliases, auth flow, middleware, prompts, report-field tables, code-mode implementation or error-envelope code were copied. These ideas were independently rewritten into the connector-neutral capability snapshot and reference.
+
+Repository: https://github.com/KuudoAI/amazon_ads_mcp
+
+### TrackIQ-HQ/amazon-seller-skills
+
+MIT-licensed Amazon seller Skill repository reviewed for the generic lesson that advertising decisions may require adjacent retail evidence such as sales/traffic, inventory, returns, offer/Buy Box state, Brand Analytics/Search Query Performance and rank context.
+
+No TrackIQ MCP interface, commercial workflow, tool names, skill prose or implementation was copied. The review only informed the optional retail-readiness capability classes documented in the connector capability research note.
+
+Repository: https://github.com/TrackIQ-HQ/amazon-seller-skills
+
+### ppcprophet/amazon-ads-mcp
+
+Public repository with an MIT license file reviewed only as a capability-taxonomy reference; its README describes the hosted PPC Prophet MCP service as proprietary. Generic categories such as campaign/search-term/ASIN performance, period comparison, diagnosis, profile management and rule/change history were useful as a coverage check.
+
+No hosted-service API, thresholds, commercial workflow, widget behavior, tool schema or proprietary implementation was copied.
+
+Repository: https://github.com/ppcprophet/amazon-ads-mcp
+
+### 2446573/amazon-ads-agent
+
+MIT-licensed project reviewed as lower-weight evidence for the common pattern of combining exported advertising data with external competitor/retail context.
+
+No scraper, rule engine, prompt, fixed thresholds or workflow was copied. External competitive data remains optional and must carry independent provenance.
+
+Repository: https://github.com/2446573/amazon-ads-agent
+
 ### LittleAksMax/amazon-ads-api-sdk-go
 
 MIT-licensed public Amazon Ads SDK reviewed for a narrow, implementation-neutral reporting/query lesson: Amazon Ads entity-query surfaces can use `nextToken` pagination, while Reporting API v3 follows an asynchronous request → poll/fetch → download lifecycle. The repository itself explicitly describes its coverage as partial and Sponsored Products-oriented.
