@@ -55,6 +55,73 @@ class ConnectorCapabilityRuntimeGateTests(unittest.TestCase):
         self.assertEqual(out["gate_status"], "Pass")
         self.assertTrue(out["high_confidence_allowed"])
 
+    def test_supported_capability_outside_requested_marketplace_is_blocked(self):
+        proc = run_gate({
+            "snapshot": {
+                "connector_id": "fixture",
+                "captured_at": "2026-09-18T00:00:00Z",
+                "default_access_mode": "Read-only",
+                "capabilities": [
+                    {
+                        "capability_id": "campaign-performance-read",
+                        "status": "Supported",
+                        "access_mode": "report",
+                        "scope": {"marketplaces": ["US"], "ad_products": ["Sponsored Products"]},
+                    }
+                ],
+            },
+            "required_capabilities": ["campaign-performance-read"],
+            "expected_scope": {"marketplace": "JP", "ad_product": "Sponsored Products"},
+        })
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        out = json.loads(proc.stdout)
+        self.assertEqual(out["gate_status"], "Blocked")
+        self.assertFalse(out["high_confidence_allowed"])
+        self.assertEqual(out["requirements"][0]["scope_effect"], "blocked")
+        self.assertIn("marketplace", " ".join(out["requirements"][0]["warnings"]).lower())
+
+    def test_supported_capability_with_matching_scope_passes(self):
+        proc = run_gate({
+            "snapshot": {
+                "connector_id": "fixture",
+                "captured_at": "2026-09-18T00:00:00Z",
+                "default_access_mode": "Read-only",
+                "capabilities": [
+                    {
+                        "capability_id": "campaign-performance-read",
+                        "status": "Supported",
+                        "access_mode": "report",
+                        "scope": {"marketplaces": ["JP", "US"], "ad_products": ["Sponsored Products"]},
+                    }
+                ],
+            },
+            "required_capabilities": ["campaign-performance-read"],
+            "expected_scope": {"marketplace": "JP", "ad_product": "Sponsored Products"},
+        })
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        out = json.loads(proc.stdout)
+        self.assertEqual(out["gate_status"], "Pass")
+        self.assertEqual(out["requirements"][0]["scope_effect"], "pass")
+
+    def test_expected_scope_without_connector_scope_is_blocked_not_assumed_global(self):
+        proc = run_gate({
+            "snapshot": {
+                "connector_id": "fixture",
+                "captured_at": "2026-09-18T00:00:00Z",
+                "default_access_mode": "Read-only",
+                "capabilities": [
+                    {"capability_id": "campaign-performance-read", "status": "Supported", "access_mode": "report"}
+                ],
+            },
+            "required_capabilities": ["campaign-performance-read"],
+            "expected_scope": {"marketplace": "JP"},
+        })
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        out = json.loads(proc.stdout)
+        self.assertEqual(out["gate_status"], "Blocked")
+        self.assertEqual(out["requirements"][0]["scope_effect"], "unknown")
+        self.assertEqual(out["missing_evidence_policy"], "never_zero")
+
     def test_partial_requirement_forces_directional_or_hold(self):
         proc = run_gate({
             "snapshot": {
