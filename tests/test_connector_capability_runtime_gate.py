@@ -162,6 +162,19 @@ class ConnectorCapabilityRuntimeGateTests(unittest.TestCase):
         self.assertIn("Alternate Source", out["allowed_decision_classes"])
         self.assertIn("Missing Data", out["allowed_decision_classes"])
 
+    def test_unregistered_required_capability_is_configuration_error(self):
+        proc = run_gate({
+            "snapshot": {
+                "connector_id": "fixture",
+                "captured_at": "2026-09-18T00:00:00Z",
+                "default_access_mode": "Read-only",
+                "capabilities": [],
+            },
+            "required_capabilities": ["invented-current-bid-capability"],
+        })
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("unregistered capability", proc.stderr.lower())
+
     def test_missing_or_unknown_capability_is_blocked_not_zero(self):
         proc = run_gate({
             "snapshot": {
