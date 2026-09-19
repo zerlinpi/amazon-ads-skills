@@ -30,7 +30,7 @@ class MeasurementProjectorMetricSemanticsTests(unittest.TestCase):
 
         metric_props = props["metric_semantics"]["items"]["properties"]
         outcome_props = props["outcome_metric_semantics"]["properties"]
-        for field in ("metric_name", "metric_family", "attribution_family", "semantic_version"):
+        for field in ("metric_name", "metric_family", "attribution_family", "semantic_version", "aggregation_semantics"):
             self.assertIn(field, metric_props)
             self.assertIn(field, outcome_props)
 
