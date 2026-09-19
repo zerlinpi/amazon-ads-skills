@@ -44,7 +44,13 @@ COMPARABILITY_STATUSES = {
     "Unknown",
 }
 
-METRIC_SEMANTIC_FIELDS = ("metric_name", "metric_family", "attribution_family", "semantic_version")
+METRIC_SEMANTIC_FIELDS = (
+    "metric_name",
+    "metric_family",
+    "attribution_family",
+    "semantic_version",
+    "aggregation_semantics",
+)
 
 
 def _parse_timestamp(value: Any, *, field: str) -> datetime:

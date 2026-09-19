@@ -24,6 +24,7 @@ class MeasurementProjectorMetricSemanticsTests(unittest.TestCase):
 
     def test_entity_history_schema_preserves_per_metric_and_outcome_semantics(self):
         schema = json.loads((ROOT / "schemas/entity-history.json").read_text(encoding="utf-8"))
+        event_schema = json.loads((ROOT / "schemas/optimization-event.json").read_text(encoding="utf-8"))
         props = schema["properties"]["latest_measurement_state"]["properties"]
         self.assertIn("metric_semantics", props)
         self.assertIn("outcome_metric_semantics", props)
@@ -33,6 +34,12 @@ class MeasurementProjectorMetricSemanticsTests(unittest.TestCase):
         for field in ("metric_name", "metric_family", "attribution_family", "semantic_version", "aggregation_semantics"):
             self.assertIn(field, metric_props)
             self.assertIn(field, outcome_props)
+
+        event_props = event_schema["properties"]
+        event_metric_props = event_props["evidence_snapshot"]["properties"]["metric_semantics"]["items"]["properties"]
+        event_outcome_props = event_props["outcome_metric_semantics"]["properties"]
+        self.assertIn("aggregation_semantics", event_metric_props)
+        self.assertIn("aggregation_semantics", event_outcome_props)
 
     def test_projector_preserves_semantics_from_selected_newest_snapshot_event(self):
         projected = self.run_projector([
@@ -73,7 +80,8 @@ class MeasurementProjectorMetricSemanticsTests(unittest.TestCase):
                     "metric_name": "Purchases",
                     "metric_family": "conversion",
                     "attribution_family": "shopping-signal-enhanced-last-touch",
-                    "semantic_version": "metric-v2"
+                    "semantic_version": "metric-v2",
+                    "aggregation_semantics": "non_additive_deduplicated"
                 },
                 "evidence_snapshot": {
                     "snapshot_id": "s2",
@@ -84,13 +92,15 @@ class MeasurementProjectorMetricSemanticsTests(unittest.TestCase):
                             "metric_name": "Purchases",
                             "metric_family": "conversion",
                             "attribution_family": "shopping-signal-enhanced-last-touch",
-                            "semantic_version": "metric-v2"
+                            "semantic_version": "metric-v2",
+                            "aggregation_semantics": "non_additive_deduplicated"
                         },
                         {
                             "metric_name": "Sales",
                             "metric_family": "conversion",
                             "attribution_family": "shopping-signal-enhanced-last-touch",
-                            "semantic_version": "metric-v2"
+                            "semantic_version": "metric-v2",
+                            "aggregation_semantics": "additive"
                         }
                     ],
                     "date_attribution_semantics": "traffic_date"
@@ -109,6 +119,14 @@ class MeasurementProjectorMetricSemanticsTests(unittest.TestCase):
         self.assertEqual(
             state["outcome_metric_semantics"]["semantic_version"],
             "metric-v2",
+        )
+        self.assertEqual(
+            state["metric_semantics"][0]["aggregation_semantics"],
+            "non_additive_deduplicated",
+        )
+        self.assertEqual(
+            state["outcome_metric_semantics"]["aggregation_semantics"],
+            "non_additive_deduplicated",
         )
 
     def test_missing_semantics_remain_unknown_not_inferred_from_dataset_version(self):
