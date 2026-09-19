@@ -203,7 +203,7 @@ The deterministic result is:
 
 When a decision depends on an exact reporting generation or historical retrieval, pass a `data_requirements` object keyed by the relevant required capability ID. When the task names an exact date range and grain, add `history_window = {start_date, end_date, grain}`; this implies historical data is required. The gate compares the request only against an exact matching observed grain. It never treats a monthly range as proof of daily coverage or vice versa. Missing grain/range evidence degrades to Unknown; a request outside the verified range blocks the dependency without manufacturing zero-valued history.
 
- `required_reporting_generation` fails closed on a mismatched/retired generation; `requires_historical_data=true` blocks unavailable/retired history and degrades partial/unknown history. A `sunset_scheduled` or `read_only` generation remains usable for current read-only analysis when otherwise valid, but the gate emits a migration warning.
+`required_reporting_generation` fails closed on a mismatched/retired generation; `requires_historical_data=true` blocks unavailable/retired history and degrades partial/unknown history. A `sunset_scheduled` or `read_only` generation remains usable for current read-only analysis when otherwise valid, but the gate emits a migration warning.
 
 The helper always emits `missing_evidence_policy = never_zero`. This is a semantic safety rule, not a numeric default: connector uncertainty must not be converted into zero spend, zero orders, zero inventory, unchanged state, no prior action, or any other fabricated observation.
 
