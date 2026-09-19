@@ -1,5 +1,5 @@
 {
-  "catalog_version": "1.0.0",
+  "catalog_version": "1.1.0",
   "description": "Canonical read-only connector capability IDs used by Amazon Ads Skills when live MCP/API/connector evidence is required. Offline/user-supplied data does not require a connector capability lookup.",
   "capabilities": [
     {
@@ -466,6 +466,7 @@
         "required": [
           "profile-identity-read",
           "entity-state-readback",
+          "campaign-performance-read",
           "metric-semantics-observe",
           "freshness-observe",
           "historical-availability-observe"
@@ -474,7 +475,12 @@
           "change-history-read",
           "realization-state-read",
           "retail-readiness-read"
-        ]
+        ],
+        "data_requirements": {
+          "campaign-performance-read": {
+            "requires_historical_data": true
+          }
+        }
       }
     },
     "profitability-analysis": {
