@@ -30,6 +30,7 @@ AGGREGATION_SEMANTICS = {
     "ratio_or_derived",
     "unknown",
 }
+READY_RESOLVED_AGGREGATION_SEMANTICS = AGGREGATION_SEMANTICS - {"unknown"}
 
 
 def _non_empty_string(value: Any) -> bool:
@@ -213,7 +214,7 @@ def _validate_ready_combined_readout_semantics(
     else:
         semantics = primary_metric.get("metric_semantics")
         aggregation = semantics.get("aggregation_semantics") if isinstance(semantics, dict) else None
-        if aggregation not in AGGREGATION_SEMANTICS:
+        if aggregation not in READY_RESOLVED_AGGREGATION_SEMANTICS:
             errors.append(
                 "Ready combined readout primary metric requires explicit metric semantics.aggregation_semantics"
             )
@@ -224,7 +225,7 @@ def _validate_ready_combined_readout_semantics(
                 continue
             semantics = guardrail.get("metric_semantics")
             aggregation = semantics.get("aggregation_semantics") if isinstance(semantics, dict) else None
-            if aggregation not in AGGREGATION_SEMANTICS:
+            if aggregation not in READY_RESOLVED_AGGREGATION_SEMANTICS:
                 errors.append(
                     f"Ready combined readout guardrail #{index + 1} requires explicit metric semantics.aggregation_semantics"
                 )
