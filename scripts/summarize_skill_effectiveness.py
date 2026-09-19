@@ -15,6 +15,44 @@ from statistics import mean
 from typing import Any
 
 VARIANTS = ("with_skill", "without_skill")
+MEASUREMENT_STATUSES = (
+    "measured",
+    "insufficient_evidence",
+    "scorer_error",
+    "harness_error",
+)
+DECISION_FIELDS = (
+    "acceptable_decision",
+    "forbidden_behavior",
+    "required_observations_met",
+)
+
+
+def _measurement_status(trial: dict[str, Any]) -> str:
+    status = trial.get("measurement_status", "measured")
+    if status not in MEASUREMENT_STATUSES:
+        raise ValueError(
+            "trial.measurement_status must be measured, insufficient_evidence, scorer_error, or harness_error"
+        )
+    return status
+
+
+def _validate_measurement(trial: dict[str, Any]) -> str:
+    status = _measurement_status(trial)
+    if status == "measured":
+        for field in DECISION_FIELDS:
+            _require_bool(trial, field)
+        return status
+
+    for field in DECISION_FIELDS:
+        if field not in trial:
+            raise ValueError(f"non-measured trial must preserve explicit null trial.{field}")
+        if trial.get(field) is not None:
+            raise ValueError(
+                f"non-measured trial.{field} must be null rather than an invented pass/fail value"
+            )
+    return status
+
 
 
 def _require_bool(trial: dict[str, Any], field: str) -> bool:
@@ -32,8 +70,8 @@ def _full_pass(trial: dict[str, Any]) -> bool:
     )
 
 
-def _rate(values: list[bool]) -> float:
-    return sum(1 for value in values if value) / len(values) if values else 0.0
+def _rate(values: list[bool]) -> float | None:
+    return sum(1 for value in values if value) / len(values) if values else None
 
 
 def _mean_optional(trials: list[dict[str, Any]], field: str) -> float | None:
@@ -68,7 +106,7 @@ def summarize(payload: dict[str, Any]) -> dict[str, Any]:
         raise ValueError("benchmark trials must be a non-empty array")
 
     pairs: dict[str, dict[str, dict[str, Any]]] = defaultdict(dict)
-    by_variant: dict[str, list[dict[str, Any]]] = {variant: [] for variant in VARIANTS}
+    measurement_status_counts = {status: 0 for status in MEASUREMENT_STATUSES}
 
     for trial in trials:
         if not isinstance(trial, dict):
@@ -82,25 +120,41 @@ def summarize(payload: dict[str, Any]) -> dict[str, Any]:
             raise ValueError("each trial must have a non-empty trial_id")
         if variant not in VARIANTS:
             raise ValueError("trial.variant must be with_skill or without_skill")
-        _require_bool(trial, "acceptable_decision")
-        _require_bool(trial, "forbidden_behavior")
-        _require_bool(trial, "required_observations_met")
+        status = _validate_measurement(trial)
+        measurement_status_counts[status] += 1
         if variant in pairs[pair_id]:
             raise ValueError(f"pair {pair_id} contains duplicate {variant} trials")
         pairs[pair_id][variant] = trial
-        by_variant[variant].append(trial)
 
     for pair_id, variants in pairs.items():
         if set(variants) != set(VARIANTS):
             raise ValueError(f"pair {pair_id} must contain exactly one with_skill and one without_skill trial")
 
+    comparable_pairs = {
+        pair_id: variants
+        for pair_id, variants in pairs.items()
+        if all(_measurement_status(variants[variant]) == "measured" for variant in VARIANTS)
+    }
+    by_variant: dict[str, list[dict[str, Any]]] = {
+        variant: [variants[variant] for variants in comparable_pairs.values()]
+        for variant in VARIANTS
+    }
+
     with_summary = _summarize_variant(by_variant["with_skill"])
     without_summary = _summarize_variant(by_variant["without_skill"])
+
+    def paired_delta(field: str) -> float | None:
+        left = with_summary[field]
+        right = without_summary[field]
+        if left is None or right is None:
+            return None
+        return left - right
+
     delta = {
-        "full_pass_rate": with_summary["full_pass_rate"] - without_summary["full_pass_rate"],
-        "acceptable_decision_rate": with_summary["acceptable_decision_rate"] - without_summary["acceptable_decision_rate"],
-        "forbidden_behavior_rate": with_summary["forbidden_behavior_rate"] - without_summary["forbidden_behavior_rate"],
-        "required_observations_rate": with_summary["required_observations_rate"] - without_summary["required_observations_rate"],
+        "full_pass_rate": paired_delta("full_pass_rate"),
+        "acceptable_decision_rate": paired_delta("acceptable_decision_rate"),
+        "forbidden_behavior_rate": paired_delta("forbidden_behavior_rate"),
+        "required_observations_rate": paired_delta("required_observations_rate"),
     }
     return {
         "benchmark_id": payload.get("benchmark_id"),
@@ -108,11 +162,23 @@ def summarize(payload: dict[str, Any]) -> dict[str, Any]:
         "fixture_id": payload.get("fixture_id"),
         "mode": payload.get("mode"),
         "pair_count": len(pairs),
+        "comparable_pair_count": len(comparable_pairs),
+        "excluded_pair_count": len(pairs) - len(comparable_pairs),
+        "measurement_status_counts": measurement_status_counts,
+        "effectiveness_status": "Measured" if comparable_pairs else "Insufficient Evidence",
         "with_skill": with_summary,
         "without_skill": without_summary,
         "delta": delta,
-        "safety_violation_present": any(_require_bool(trial, "forbidden_behavior") for trial in trials),
-        "interpretation": "measured_delta_only_no_significance_claim",
+        "safety_violation_present": any(
+            _measurement_status(trial) == "measured"
+            and _require_bool(trial, "forbidden_behavior")
+            for trial in trials
+        ),
+        "interpretation": (
+            "measured_delta_only_no_significance_claim"
+            if comparable_pairs
+            else "insufficient_evidence_no_zero_imputation"
+        ),
     }
 
 

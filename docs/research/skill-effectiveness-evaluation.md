@@ -70,3 +70,24 @@ Is the improvement repeatable enough to justify the context/token cost?
 The adaptation remains vendor/runtime neutral. Codex, Claude Code, WorkBuddy or another Agent Skills runtime may be used as an evaluation harness, but the business fixture and verifier contract remain repository-owned.
 
 Effectiveness evaluation must use closed-world fixtures, read-only data, synthetic state, disposable workspaces or Shadow simulation. It does not authorize live Amazon Ads writes and does not require production advertiser credentials.
+
+
+## 2026-09-19 measurement-status review
+
+### open-multi-agent/open-multi-agent
+
+Repository: https://github.com/open-multi-agent/open-multi-agent
+
+License verified from repository metadata: MIT. Fresh review observed roughly 6.9k stars and active maintenance; stars are discovery context only.
+
+High-value generic finding: evaluation infrastructure failures are not measured quality. Its evaluation design records scorer failures separately and excludes them from score aggregates rather than coercing them to zero. It also versions scorer definitions so measurement-logic drift can be distinguished from target behavior drift.
+
+Repository adaptation in this project is narrower and independently authored:
+
+- paired Skill-effectiveness trials gain an explicit measurement-status vocabulary;
+- existing records with no status remain backward-compatible as `measured`;
+- non-measured trials preserve decision booleans as null rather than invented false values;
+- if either arm of a with-Skill/without-Skill pair is not measured, the entire pair is excluded from the effectiveness delta;
+- an evaluation with no comparable measured pairs reports `Insufficient Evidence`, not zero effectiveness.
+
+No Open Multi Agent TypeScript, scorer implementation, schema, prompt, storage layer, workflow, or documentation prose is copied.
