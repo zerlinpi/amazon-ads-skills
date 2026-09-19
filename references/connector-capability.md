@@ -172,13 +172,15 @@ Record `captured_at` or `observed_at`. Re-check a capability when a decision dep
 
 Do not invent connector capability identifiers ad hoc. Use the repository-owned registry at `connector-capability-catalog.json`.
 
-For a Skill decision profile, resolve the canonical IDs with:
+For a Skill decision profile, resolve the canonical IDs **and any profile-owned data requirements** with:
 
 ```text
 echo '{"skill":"bid-optimization","profile":"action-safe-proposal"}'
 → scripts/resolve_skill_capabilities.py
-→ required_capabilities[] / optional_capabilities[]
+→ required_capabilities[] / optional_capabilities[] / data_requirements{}
 ```
+
+When the resolver returns non-empty `data_requirements`, pass them unchanged into `evaluate_connector_capability_gate.py`. Do not silently drop them and do not invent additional requirements that are not owned by the selected profile or explicit task intent. A profile may require historical data without hard-coding a vendor-specific reporting generation.
 
 The registry is intentionally connector-neutral. A vendor may expose differently named tools, endpoints, packages, or datasets; the adapter/connector maps those external surfaces onto the canonical repository capability IDs. A hidden tool under progressive discovery is not automatically `Unsupported`; resolve the connector catalog/namespace state first, then publish the observed status into the capability snapshot.
 
