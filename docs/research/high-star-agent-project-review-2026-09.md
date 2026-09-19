@@ -222,3 +222,16 @@ Adoption decision: lower-weight corroboration only. Existing repository separati
 Fresh review found a real monorepo with Amazon Ads + Seller MCP surfaces, async report tools, cross-MCP retail/ads correlation, tests, CI, and explicit read/write tool families.
 
 Adoption decision: because no clear repository license surfaced, only abstract capability evidence is retained. The useful connector-neutral signal is that ad performance and retail/seller evidence may arrive through separate surfaces and that report lifecycle/read/write separation should remain explicit. No code, tool names, auth/retry implementation, schemas, optimization rules, prompts, or workflows are copied. Low stars also make it non-load-bearing evidence.
+
+
+### benchflow-ai/skillsbench — ~1.8k stars; Apache-2.0; benchmark engineering
+
+Fresh review found a real benchmark repository with tests, CI, versioned dataset registry, pinned git-tag/commit identity and task content digests. High stars are context only; the engineering value is explicit benchmark-version provenance.
+
+Adoption decision: method-level only. We use the generic rule that longitudinal Skill-effectiveness results must not cross fixture/evaluator/rubric versions without an explicit comparability decision. No task packages, oracle/verifier code, registry schema, scripts, prompts or leaderboard implementation are copied.
+
+### TiesPetersen/SkillBenchmark — ~14 stars; MIT; lower-weight
+
+Reviewed for paired with-Skill/without-Skill runs and rubric-based judging. It has a real implementation but lower adoption/engineering depth than SkillsBench and overlaps the repository's existing paired-effectiveness protocol.
+
+Adoption decision: no implementation change sourced from this project; retained only as corroboration. No code, rubric, statistical implementation or config copied.

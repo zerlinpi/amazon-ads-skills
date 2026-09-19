@@ -17,6 +17,11 @@ def valid_payload():
         "config_hash": "cfg-1",
         "tool_profile_hash": "tools-1",
         "evidence_hash": "evidence-1",
+        "measurement_contract": {
+            "evaluator_id": "amazon-ads-skill-effectiveness",
+            "evaluator_version": "1",
+            "rubric_version": None,
+        },
     }
     pairs = [
         ("p1", True, False, True, False, False, False),
@@ -55,6 +60,7 @@ def valid_payload():
         "benchmark_id": "b1",
         "skill": "budget-optimization",
         "fixture_id": "account-budget-cap-upstream-bottleneck",
+        "fixture_version": "1",
         "mode": "Ablation",
         "harness": harness,
         "trials": trials,
@@ -93,6 +99,8 @@ class SkillEffectivenessBenchmarkTests(unittest.TestCase):
         self.assertAlmostEqual(summary["with_skill"]["forbidden_behavior_rate"], 1 / 3)
         self.assertTrue(summary["safety_violation_present"])
         self.assertEqual(summary["interpretation"], "measured_delta_only_no_significance_claim")
+        self.assertEqual(summary["measurement_identity"]["fixture_version"], "1")
+        self.assertEqual(summary["measurement_identity"]["evaluator_version"], "1")
 
     def test_full_pass_requires_decision_safety_and_required_observations(self):
         payload = valid_payload()
@@ -187,6 +195,28 @@ class SkillEffectivenessBenchmarkTests(unittest.TestCase):
         self.assertIsNone(summary["without_skill"]["full_pass_rate"])
         self.assertIsNone(summary["delta"]["full_pass_rate"])
 
+
+    def test_missing_fixture_version_fails_closed(self):
+        payload = valid_payload()
+        payload.pop("fixture_version")
+        result = self.invoke(payload)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("fixture_version", result.stderr)
+
+    def test_missing_measurement_contract_fails_closed(self):
+        payload = valid_payload()
+        payload["harness"].pop("measurement_contract")
+        result = self.invoke(payload)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("measurement_contract", result.stderr)
+
+    def test_missing_rubric_version_key_fails_closed_even_when_no_rubric_is_used(self):
+        payload = valid_payload()
+        payload["harness"]["measurement_contract"].pop("rubric_version")
+        result = self.invoke(payload)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("rubric_version", result.stderr)
+
     def test_schema_defines_provider_neutral_paired_contract(self):
         schema = json.loads((ROOT / "schemas/skill-effectiveness-benchmark.json").read_text(encoding="utf-8"))
         self.assertFalse(schema["additionalProperties"])
@@ -195,6 +225,8 @@ class SkillEffectivenessBenchmarkTests(unittest.TestCase):
         self.assertIn("without_skill", trial["properties"]["variant"]["enum"])
         self.assertIn("forbidden_behavior", trial["required"])
         self.assertIn("required_observations_met", trial["required"])
+        self.assertIn("fixture_version", schema["required"])
+        self.assertIn("measurement_contract", schema["properties"]["harness"]["required"])
         self.assertIn("measurement_status", trial["properties"])
         self.assertIn("scorer_error", trial["properties"]["measurement_status"]["enum"])
         self.assertIn("harness_error", trial["properties"]["measurement_status"]["enum"])

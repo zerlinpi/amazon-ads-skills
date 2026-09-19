@@ -4,23 +4,34 @@
   "title": "Amazon Ads Skill Effectiveness Benchmark",
   "type": "object",
   "additionalProperties": false,
-  "required": ["benchmark_id", "skill", "fixture_id", "mode", "harness", "trials"],
+  "required": ["benchmark_id", "skill", "fixture_id", "fixture_version", "mode", "harness", "trials"],
   "properties": {
     "benchmark_id": {"type": "string", "minLength": 1},
     "skill": {"type": "string", "minLength": 1},
     "fixture_id": {"type": "string", "minLength": 1},
+    "fixture_version": {"type": "string", "minLength": 1},
     "mode": {"enum": ["Discovery", "Forced invocation", "Negative control", "Ablation"]},
     "harness": {
       "type": "object",
       "additionalProperties": true,
-      "required": ["runtime", "model", "model_version"],
+      "required": ["runtime", "model", "model_version", "measurement_contract"],
       "properties": {
         "runtime": {"type": "string", "minLength": 1},
         "model": {"type": "string", "minLength": 1},
         "model_version": {"type": "string", "minLength": 1},
         "config_hash": {"type": ["string", "null"]},
         "tool_profile_hash": {"type": ["string", "null"]},
-        "evidence_hash": {"type": ["string", "null"]}
+        "evidence_hash": {"type": ["string", "null"]},
+        "measurement_contract": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["evaluator_id", "evaluator_version", "rubric_version"],
+          "properties": {
+            "evaluator_id": {"type": "string", "minLength": 1},
+            "evaluator_version": {"type": "string", "minLength": 1},
+            "rubric_version": {"type": ["string", "null"]}
+          }
+        }
       }
     },
     "trials": {

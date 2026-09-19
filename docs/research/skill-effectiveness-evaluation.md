@@ -91,3 +91,26 @@ Repository adaptation in this project is narrower and independently authored:
 - an evaluation with no comparable measured pairs reports `Insufficient Evidence`, not zero effectiveness.
 
 No Open Multi Agent TypeScript, scorer implementation, schema, prompt, storage layer, workflow, or documentation prose is copied.
+
+
+## 2026-09-19 measurement-provenance review
+
+### benchflow-ai/skillsbench
+
+Repository: https://github.com/benchflow-ai/skillsbench
+
+Fresh GitHub metadata during this review showed roughly 1.8k stars, Apache-2.0 licensing, a non-fork repository, tests/CI, and a versioned benchmark registry. Its dataset-versioning documentation namespaces results by dataset version and pins published benchmark sets to git tags/commits; task content is also tied to content digests.
+
+Adoption: method-level only. This repository independently applies the narrower principle that an effectiveness trend is meaningful only when the fixture and evaluator/rubric measurement contract are version-identical. No SkillsBench task packages, verifier/oracle implementation, registry schema, benchmark scripts, prompts, leaderboard code, or prose are copied.
+
+### open-multi-agent/open-multi-agent follow-up
+
+The prior review already adopted its fail-honest scorer-error principle. A fresh code search also confirmed explicit scorer versions and run metadata such as prompt-version labels. The additional generic lesson is that measurement logic itself is part of result provenance, not an invisible implementation detail.
+
+Adoption: independently authored `fixture_version` plus `measurement_contract.evaluator_id/evaluator_version/rubric_version`, and a read-only comparability helper. No OMA scorer code, record schema, CLI, storage logic, prompts, or tests are copied.
+
+### fitchmultz/agent-eval — low-star corroboration, MIT
+
+Fresh review found a small but concrete TypeScript project with tests and machine-readable output bundles that carry engine/schema versions plus release/config provenance. Its adoption signal is low, so it is not load-bearing evidence.
+
+Adoption: corroboration only; no code/schema/workflow reuse.

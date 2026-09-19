@@ -140,18 +140,20 @@ A Skill is not automatically beneficial if it improves one rubric score but mate
 
 ## 7. Harness parity
 
-For a with-skill / without-skill comparison, hold constant as much as possible:
+For a with-skill / without-skill comparison, hold constant as much as possible. Every persisted benchmark must also version its fixture and measurement contract so a later trend does not silently combine different verifier/rubric logic:
 
 - model/provider/version;
 - agent runtime and system instructions;
 - tool availability and permissions;
 - task prompt and synthetic evidence;
-- fixture version;
 - temperature/reasoning settings when configurable;
 - external source access;
-- starting filesystem/workspace state.
+- starting filesystem/workspace state;
+- fixture version;
+- evaluator/verifier ID and version;
+- rubric version, or explicit null when no semantic rubric is used (null means not applicable, not unknown).
 
-Record unavoidable differences. If the runtime automatically changes context/tool behavior when Skills are installed, treat that as part of the tested system but disclose it.
+Record unavoidable differences. Before comparing benchmark records longitudinally, use `../scripts/evaluate_skill_effectiveness_comparability.py` when available. A mismatch is `Not Comparable`; missing config/tool/evidence identity is `Unknown`, never silently comparable. If the runtime automatically changes context/tool behavior when Skills are installed, treat that as part of the tested system but disclose it.
 
 ## 8. Scratch and execution safety
 
