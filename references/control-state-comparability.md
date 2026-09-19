@@ -22,6 +22,8 @@ When control evidence is exchanged between a Skill, connector, replay fixture, o
 
 The schema is an evidence contract, not an Amazon API response schema and not an execution payload. It does not require a connector to expose controls it cannot read.
 
+When two schema-valid snapshots are available, `scripts/compare_control_state.py` provides a deterministic, read-only first-pass classification. It fails closed to `Unknown` for marketplace/profile mismatch, missing material controls, stale/unsupported/unknown evidence, or changed controls without effective timestamps. With an explicitly named intended treatment, it returns `Treatment Isolated` only when that treatment changed and no other evidenced material control changed; overlapping evidenced changes are `Confounded`. Without an intended treatment, stable evidenced controls are `Comparable` and changed controls are only `Directional`. The comparator does not prove causality and does not override stronger experiment/reconciliation evidence.
+
 Do not invent an auction-level composition formula from configured controls. Treat them as a control graph whose realized effect is observed through delivery, CPC, traffic mix, placement/audience mix, conversion, and economic outcomes.
 
 ## States
@@ -72,9 +74,10 @@ Before `Worked`, `Failed`, aggressive scale, rollback, or precise marginal-effec
 1. verify the intended change/readback;
 2. verify measurement comparability using `data-lineage.md` when needed;
 3. reconstruct the material control timeline, preserving source and effective timestamps in `schemas/control-state-snapshot.json` when machine-readable evidence is available;
-4. identify binding controls and overlapping changes;
-5. check whether traffic/product/query/target/placement/audience mix changed consistently with those controls;
-6. downgrade causal language when isolation is not supported;
-7. prefer a follow-up experiment or clean validation window when the action is important and confounding remains material.
+4. use `scripts/compare_control_state.py` for deterministic first-pass classification when two snapshots are available;
+5. identify binding controls and overlapping changes;
+6. check whether traffic/product/query/target/placement/audience mix changed consistently with those controls;
+7. downgrade causal language when isolation is not supported;
+8. prefer a follow-up experiment or clean validation window when the action is important and confounding remains material.
 
 This reference is read-only. It does not authorize Amazon Ads writes; execution, retry, idempotency, and reconciliation remain external Connector/Executor concerns.
