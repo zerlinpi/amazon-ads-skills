@@ -55,7 +55,7 @@ class ExperimentGuardrailMetricSemanticsTests(unittest.TestCase):
         guardrail_props = schema["properties"]["guardrails"]["items"]["properties"]
         self.assertIn("metric_semantics", guardrail_props)
         semantic_props = guardrail_props["metric_semantics"]["properties"]
-        for field in ("metric_family", "attribution_family", "semantic_version"):
+        for field in ("metric_family", "attribution_family", "semantic_version", "aggregation_semantics"):
             self.assertIn(field, semantic_props)
 
     def test_ready_conversion_guardrail_requires_explicit_metric_semantics(self):
@@ -74,6 +74,40 @@ class ExperimentGuardrailMetricSemanticsTests(unittest.TestCase):
             "metric_family": "conversion",
             "attribution_family": "standard",
             "semantic_version": "amazon-store-attribution-2026-01-01",
+        }
+
+        self.assertEqual(module.validate_experiment_plan(plan), [])
+
+    def test_ready_combined_readout_requires_guardrail_aggregation_semantics(self):
+        plan = ready_plan()
+        plan["comparison"]["requires_combined_readout"] = True
+        plan["guardrails"][0]["metric_semantics"] = {
+            "metric_family": "conversion",
+            "attribution_family": "standard",
+            "semantic_version": "amazon-store-attribution-2026-01-01",
+        }
+
+        errors = module.validate_experiment_plan(plan)
+
+        self.assertTrue(
+            any("guardrail" in error.lower() and "aggregation_semantics" in error for error in errors),
+            errors,
+        )
+
+    def test_ready_combined_readout_accepts_guardrail_aggregation_semantics(self):
+        plan = ready_plan()
+        plan["comparison"]["requires_combined_readout"] = True
+        plan["guardrails"][0]["metric_semantics"] = {
+            "metric_family": "conversion",
+            "attribution_family": "standard",
+            "semantic_version": "amazon-store-attribution-2026-01-01",
+            "aggregation_semantics": "ratio_or_derived",
+        }
+        plan["primary_metric"]["metric_semantics"] = {
+            "metric_family": "traffic",
+            "attribution_family": "not_applicable",
+            "semantic_version": "traffic-v1",
+            "aggregation_semantics": "ratio_or_derived",
         }
 
         self.assertEqual(module.validate_experiment_plan(plan), [])
