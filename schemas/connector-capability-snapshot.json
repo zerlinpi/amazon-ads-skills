@@ -77,6 +77,19 @@
                 "type": ["string", "null"],
                 "enum": ["available", "partial", "unavailable", "retired", "unknown", null]
               },
+              "historical_windows": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["grain", "available_from", "available_through"],
+                  "properties": {
+                    "grain": {"type": "string", "minLength": 1},
+                    "available_from": {"type": ["string", "null"], "format": "date"},
+                    "available_through": {"type": ["string", "null"], "format": "date"}
+                  },
+                  "additionalProperties": true
+                }
+              },
               "freshness_exposed": {"type": ["boolean", "null"]},
               "available_through_exposed": {"type": ["boolean", "null"]},
               "metric_semantics_exposed": {"type": ["boolean", "null"]},
