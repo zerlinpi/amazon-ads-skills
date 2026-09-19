@@ -2,8 +2,9 @@
 """Resolve canonical connector capability IDs for a Skill decision profile.
 
 Read-only helper. It loads the repository-owned capability catalog and returns
-registered required/optional IDs. It does not call a connector or grant write
-authority.
+registered required/optional IDs plus a monotonic merge of profile-owned and
+explicit task-level data requirements. It does not call a connector or grant
+write authority.
 """
 
 from __future__ import annotations
