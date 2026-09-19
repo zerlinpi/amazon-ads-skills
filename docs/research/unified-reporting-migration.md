@@ -56,3 +56,17 @@ The connector-neutral capability contract therefore records, when observed:
 The runtime capability gate accepts per-capability `data_requirements`. It never hard-codes Amazon's migration dates and never advances a state merely because wall-clock time passed; the snapshot must be refreshed from current evidence. For a history-dependent decision, partial/unknown history lowers confidence and unavailable/retired history blocks the dependency without manufacturing zero-valued history.
 
 Current Amazon factual evidence: the old Sponsored Ads and Amazon DSP report centers are scheduled for shutdown on December 31, 2026; Amazon's September 1 migration guidance says net-new creation/editing is disabled on December 17 while existing reports remain read-only, and remaining saved reports/schedules/historical data are deleted at shutdown. Dates remain subject to Amazon change. No Amazon report schema, UI workflow, API implementation, or documentation prose is copied.
+
+
+## 2026-09-19 profile-owned historical-data routing
+
+Amazon Ads' June 8, 2026 Unified Reporting GA announcement documents history limits that depend on report grain: daily/weekly history is available up to 15 months, while monthly/yearly/summary history can extend up to 6 years. Amazon's September 1 migration guidance separately documents retirement/deletion of legacy report-center history. Therefore a Skill profile that inherently compares pre/post windows should declare the need for historical performance data as part of its machine-readable decision contract, rather than relying on a caller to remember an extra gate input.
+
+Repository adaptation:
+
+- `post-change-review:outcome-review` now requires `campaign-performance-read` in addition to historical-availability observation;
+- the same profile owns `data_requirements.campaign-performance-read.requires_historical_data = true`;
+- `resolve_skill_capabilities.py` validates and emits profile-owned data requirements so callers can pass them unchanged into the connector runtime gate;
+- no specific Amazon reporting generation is hard-coded because a valid outcome review may use any verified compatible generation/source.
+
+No Amazon documentation prose, report schema, API implementation, or UI workflow is copied.
