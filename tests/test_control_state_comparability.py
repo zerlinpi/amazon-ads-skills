@@ -61,6 +61,16 @@ class ControlStateComparabilityTests(unittest.TestCase):
         self.assertIn("fixture_control_comparison", registry["decision_surfaces"])
         self.assertEqual(registry["decision_surfaces"]["fixture_control_comparison"]["required_control_types"], ["base_bid"])
 
+    def test_registry_has_evidence_backed_sp_bid_change_surface(self):
+        registry = json.loads((ROOT / "references/control-requirement-registry.json").read_text(encoding="utf-8"))
+        surface = registry["decision_surfaces"]["sponsored_products_bid_change"]
+        self.assertEqual(
+            set(surface["required_control_types"]),
+            {"base_bid", "bidding_strategy", "placement_bid_adjustment", "audience_bid_adjustment", "schedule_or_event_bid_rule", "budget_or_pacing"},
+        )
+        self.assertGreaterEqual(len(surface["evidence_basis"]), 4)
+        self.assertTrue(all(item.startswith("amazon-ads-official:") for item in surface["evidence_basis"]))
+
     def test_shared_reference_routes_machine_contract(self):
         text = self.read("references/control-state-comparability.md")
         for token in ["schemas/control-state-snapshot.json", "missing", "unknown", "coverage", "requirement provenance", "control-requirement-registry.json"]:
@@ -114,7 +124,6 @@ class ControlStateComparabilityTests(unittest.TestCase):
         after["coverage"]["required_control_types"].append("budget_or_pacing")
         before["controls"].append({"control_type": "budget_or_pacing", "state": 10, "effective_at": "2026-09-18T00:00:00Z", "evidence_status": "observed"})
         after["controls"].append({"control_type": "budget_or_pacing", "state": 20, "effective_at": "2026-09-19T00:00:00Z", "evidence_status": "observed"})
-        # This fixture deliberately overrides the registry contract to exercise overlap classification.
         before["coverage"]["requirement_provenance"]["decision_surface"] = "fixture_control_comparison_with_budget"
         after["coverage"]["requirement_provenance"]["decision_surface"] = "fixture_control_comparison_with_budget"
         self.assertEqual(compare_control_state(before, after, "base_bid")["classification"], "Confounded")
