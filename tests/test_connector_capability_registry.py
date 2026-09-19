@@ -69,6 +69,88 @@ class ConnectorCapabilityRegistryTests(unittest.TestCase):
         self.assertIn("entity-state-readback", result["required_capabilities"])
         self.assertTrue(result["catalog_version"])
 
+
+    def test_outcome_review_requires_performance_and_historical_data(self):
+        catalog = self.load_catalog()
+        spec = catalog["skills"]["post-change-review"]["outcome-review"]
+        self.assertIn("campaign-performance-read", spec["required"])
+        self.assertIn("historical-availability-observe", spec["required"])
+        self.assertEqual(
+            spec["data_requirements"],
+            {
+                "campaign-performance-read": {
+                    "requires_historical_data": True,
+                }
+            },
+        )
+
+    def test_profile_data_requirements_only_target_required_capabilities(self):
+        catalog = self.load_catalog()
+        allowed_fields = {
+            "required_reporting_generation",
+            "requires_historical_data",
+        }
+        for skill, profiles in catalog["skills"].items():
+            for profile, spec in profiles.items():
+                requirements = spec.get("data_requirements", {})
+                self.assertIsInstance(requirements, dict, f"{skill}:{profile}")
+                for capability_id, requirement in requirements.items():
+                    self.assertIn(
+                        capability_id,
+                        spec["required"],
+                        f"{skill}:{profile}:{capability_id}",
+                    )
+                    self.assertIsInstance(requirement, dict)
+                    self.assertTrue(requirement)
+                    self.assertTrue(
+                        set(requirement).issubset(allowed_fields),
+                        f"{skill}:{profile}:{capability_id}",
+                    )
+
+    def test_resolver_emits_profile_data_requirements(self):
+        proc = subprocess.run(
+            [sys.executable, str(RESOLVER)],
+            input=json.dumps({
+                "skill": "post-change-review",
+                "profile": "outcome-review",
+            }),
+            text=True,
+            capture_output=True,
+            cwd=ROOT,
+            check=False,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        result = json.loads(proc.stdout)
+        self.assertIn("campaign-performance-read", result["required_capabilities"])
+        self.assertEqual(
+            result["data_requirements"],
+            {
+                "campaign-performance-read": {
+                    "requires_historical_data": True,
+                }
+            },
+        )
+        self.assertEqual(
+            result["policy"]["use_with"],
+            "scripts/evaluate_connector_capability_gate.py",
+        )
+
+    def test_resolver_emits_empty_data_requirements_for_unconstrained_profile(self):
+        proc = subprocess.run(
+            [sys.executable, str(RESOLVER)],
+            input=json.dumps({
+                "skill": "bid-optimization",
+                "profile": "action-safe-proposal",
+            }),
+            text=True,
+            capture_output=True,
+            cwd=ROOT,
+            check=False,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        result = json.loads(proc.stdout)
+        self.assertEqual(result["data_requirements"], {})
+
     def test_resolver_fails_closed_on_unknown_profile(self):
         proc = subprocess.run(
             [sys.executable, str(RESOLVER)],
