@@ -29,3 +29,17 @@ The validator may use conservative name recognition only to identify obvious con
 ## Copyright and implementation boundary
 
 Only public platform facts are summarized here. No Amazon API schema, implementation, prompt, workflow, UI, or protected template is copied. Repository tests, field names, and validation behavior are independently designed. No live Amazon Ads write capability is introduced.
+
+
+## 2026-09-19 aggregation-semantics extension
+
+Amazon Ads dynamic reach and frequency reporting provides de-duplicated measurement across campaign combinations and can span advertiser accounts, manager accounts, supply sources, and custom time periods. That creates a second experiment-readout identity dimension beyond attribution family/version: whether the decision metric is additive, de-duplicated/non-additive, ratio/derived, or still unknown.
+
+Repository adoption remains deliberately narrow:
+
+- `aggregation_semantics` is added to experiment primary/guardrail metric identity;
+- only a `Ready` plan that explicitly declares `comparison.requires_combined_readout = true` must resolve this field;
+- non-combined exploratory/read-only plans are not forced to invent it;
+- the field does not itself authorize summation. Direct sums still route through the repository-owned metric aggregation gate.
+
+Primary factual source: Amazon Ads, “Measure custom cross-campaign and time period de-duplicated reach and frequency…” (2026-04-02). No Amazon API schema, report template, documentation prose, or implementation is copied.
