@@ -71,6 +71,8 @@ Do not claim the Skill caused the delta if model/version, tools, prompt, fixture
 
 One successful run is weak evidence for an LLM-based Skill.
 
+A harness/scorer failure is not a failed business decision. Record whether each trial was actually measured; scorer errors, harness errors, and insufficient-evidence trials must not be coerced into boolean quality outcomes or zero scores. For paired with-Skill/without-Skill deltas, exclude the entire pair when either arm is not measured so denominators remain comparable.
+
 After the task and verifier are stable, run repeated trials when the runtime is stochastic and record the actual number of trials `k`. Do not impose one repository-wide fixed `k`; choose enough repetitions for the decision being made and report the count transparently.
 
 Useful summaries include:
@@ -200,6 +202,7 @@ harness + model/version
 mode: Discovery | Forced invocation | Negative control | Ablation
 with-skill / without-skill
 trial count k
+measurement status: measured | insufficient_evidence | scorer_error | harness_error
 trigger result
 acceptable decision result
 forbidden behaviors
