@@ -5,6 +5,7 @@ from pathlib import Path
 from scripts.compare_control_state import compare_control_state
 
 ROOT = Path(__file__).resolve().parents[1]
+REGISTRY_ID = "control-requirements@2026-09-20"
 
 
 def snapshot(state=1, status="observed", control="base_bid", marketplace="ATVPDKIKX0DER", profile="p1", effective="2026-09-18T00:00:00Z"):
@@ -19,6 +20,7 @@ def snapshot(state=1, status="observed", control="base_bid", marketplace="ATVPDK
                 "decision_surface": "fixture_control_comparison",
                 "derivation_status": "Verified",
                 "capability_snapshot_id": "fixture-capability-snapshot",
+                "requirement_registry_id": REGISTRY_ID,
                 "evidence_note": "Deterministic test fixture requirement set."
             },
         },
@@ -47,15 +49,21 @@ class ControlStateComparabilityTests(unittest.TestCase):
         self.assertTrue({"required_control_types", "coverage_status", "requirement_provenance"}.issubset(set(coverage["required"])))
         self.assertIn("Unknown", coverage["properties"]["coverage_status"]["enum"])
         provenance = coverage["properties"]["requirement_provenance"]
-        self.assertTrue({"decision_surface", "derivation_status"}.issubset(set(provenance["required"])))
+        self.assertTrue({"decision_surface", "derivation_status", "requirement_registry_id"}.issubset(set(provenance["required"])))
         self.assertIn("Verified", provenance["properties"]["derivation_status"]["enum"])
         control = schema["properties"]["controls"]["items"]
         self.assertTrue({"control_type", "state", "effective_at", "evidence_status"}.issubset(set(control["required"])))
         self.assertIn("unknown", control["properties"]["evidence_status"]["enum"])
 
+    def test_versioned_requirement_registry_exists(self):
+        registry = json.loads((ROOT / "references/control-requirement-registry.json").read_text(encoding="utf-8"))
+        self.assertEqual(registry["registry_id"], REGISTRY_ID)
+        self.assertIn("fixture_control_comparison", registry["decision_surfaces"])
+        self.assertEqual(registry["decision_surfaces"]["fixture_control_comparison"]["required_control_types"], ["base_bid"])
+
     def test_shared_reference_routes_machine_contract(self):
         text = self.read("references/control-state-comparability.md")
-        for token in ["schemas/control-state-snapshot.json", "missing", "unknown", "coverage", "requirement provenance"]:
+        for token in ["schemas/control-state-snapshot.json", "missing", "unknown", "coverage", "requirement provenance", "control-requirement-registry.json"]:
             self.assertIn(token, text)
 
     def test_comparator_classifies_stable_state_as_comparable(self):
@@ -69,6 +77,19 @@ class ControlStateComparabilityTests(unittest.TestCase):
     def test_comparator_fails_closed_when_requirement_provenance_is_unverified(self):
         before, after = snapshot(), snapshot()
         before["coverage"]["requirement_provenance"]["derivation_status"] = "Unknown"
+        self.assertEqual(compare_control_state(before, after)["classification"], "Unknown")
+
+    def test_comparator_fails_closed_when_registry_identity_is_missing(self):
+        before, after = snapshot(), snapshot()
+        before["coverage"]["requirement_provenance"].pop("requirement_registry_id")
+        self.assertEqual(compare_control_state(before, after)["classification"], "Unknown")
+
+    def test_comparator_fails_closed_when_required_set_disagrees_with_registry(self):
+        before, after = snapshot(), snapshot()
+        before["coverage"]["required_control_types"] = ["budget_or_pacing"]
+        after["coverage"]["required_control_types"] = ["budget_or_pacing"]
+        before["controls"] = [{"control_type": "budget_or_pacing", "state": 10, "effective_at": "2026-09-18T00:00:00Z", "evidence_status": "observed"}]
+        after["controls"] = [{"control_type": "budget_or_pacing", "state": 10, "effective_at": "2026-09-18T00:00:00Z", "evidence_status": "observed"}]
         self.assertEqual(compare_control_state(before, after)["classification"], "Unknown")
 
     def test_comparator_fails_closed_when_required_control_is_not_evidenced(self):
@@ -93,6 +114,9 @@ class ControlStateComparabilityTests(unittest.TestCase):
         after["coverage"]["required_control_types"].append("budget_or_pacing")
         before["controls"].append({"control_type": "budget_or_pacing", "state": 10, "effective_at": "2026-09-18T00:00:00Z", "evidence_status": "observed"})
         after["controls"].append({"control_type": "budget_or_pacing", "state": 20, "effective_at": "2026-09-19T00:00:00Z", "evidence_status": "observed"})
+        # This fixture deliberately overrides the registry contract to exercise overlap classification.
+        before["coverage"]["requirement_provenance"]["decision_surface"] = "fixture_control_comparison_with_budget"
+        after["coverage"]["requirement_provenance"]["decision_surface"] = "fixture_control_comparison_with_budget"
         self.assertEqual(compare_control_state(before, after, "base_bid")["classification"], "Confounded")
 
 
