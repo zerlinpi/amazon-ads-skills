@@ -71,7 +71,6 @@
         "acquisition_channel": {"type": ["string", "null"]},
         "reporting_generation": {"type": ["string", "null"]},
         "semantic_version": {"type": ["string", "null"]},
-              "aggregation_semantics": {"type": ["string", "null"], "enum": ["additive", "non_additive_deduplicated", "ratio_or_derived", "unknown", null]},
         "metric_semantics": {
           "type": "array",
           "description": "Per-metric semantic identities preserved from the selected evidence snapshot. Missing metric-level identity remains absent/unknown and must not be inferred from the dataset semantic_version.",
@@ -81,7 +80,8 @@
               "metric_name": {"type": ["string", "null"]},
               "metric_family": {"type": ["string", "null"]},
               "attribution_family": {"type": ["string", "null"]},
-              "semantic_version": {"type": ["string", "null"]}
+              "semantic_version": {"type": ["string", "null"]},
+              "aggregation_semantics": {"type": ["string", "null"], "enum": ["additive", "non_additive_deduplicated", "ratio_or_derived", "unknown", null]}
             },
             "additionalProperties": true
           }
