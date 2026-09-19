@@ -6,7 +6,9 @@ The purpose is to use SIS as **market-visibility evidence** without turning it i
 
 ## 1. What SIS can establish
 
-For supported Sponsored Products / Sponsored Brands reporting, Amazon describes Search Term Impression Share as the account-level share of eligible ad impressions captured for a search term relative to other advertisers, with a numeric impression rank for the same term.
+For supported Sponsored Products / Sponsored Brands reporting, Amazon describes Search Term Impression Share as an account-level share of ad impressions captured for a search term relative to other advertisers, with a numeric impression rank for the same term.
+
+Do **not** silently redefine this denominator as `eligible impressions`. Amazon separately defines **top-of-search impression share** as the percentage of top-of-search impressions a campaign received out of the total top-of-search impressions it was eligible to serve on. That is a different metric, scope, and denominator. Eligibility wording from top-of-search impression share must not be transferred into SIS semantics unless current source documentation for the exact SIS surface explicitly says so.
 
 Treat these fields as useful for questions such as:
 
@@ -15,7 +17,7 @@ Treat these fields as useful for questions such as:
 - Which proven high-value queries appear to have additional visibility headroom?
 - Which queries are strategically important enough to monitor for defensive share loss?
 
-SIS is not the same thing as conversion rate, profitability, total consumer demand, organic share, sales share, or incrementality.
+SIS is not the same thing as conversion rate, profitability, total consumer demand, organic share, sales share, incrementality, or top-of-search impression share.
 
 ## 2. Scope and acquisition contract
 
@@ -24,15 +26,19 @@ Before joining SIS to search-term performance, capture when available:
 - ad product;
 - marketplace and profile/account scope;
 - search term text / normalized identity;
+- exact metric identity (`search_term_impression_share` vs `top_of_search_impression_share` or another share metric);
 - report window and time unit;
 - report lookback availability;
-- account scope represented by the SIS report;
+- account/campaign scope represented by the metric;
+- denominator/eligibility semantics when documented for that exact metric surface;
 - search-term report row-inclusion / eligibility contract;
 - source/reporting generation and extraction timestamp;
 - `acquisition_channel` — advertising console download, Amazon Ads API, MCP/connector, warehouse import, manual export, or another concrete path;
 - `channel_capability_status` — verified available, unavailable, unsupported, unknown, or transformed downstream.
 
 Amazon's current public Sponsored Products help documentation describes SIS as an **account-wide** search-term measure and documents a 90-day lookback with summary or daily time units. Treat those limits as source/report characteristics, not universal constants for every ad product, marketplace, API version, connector, or future reporting generation.
+
+Amazon's public top-of-search impression-share documentation uses an eligibility denominator and campaign scope. Treat that as evidence for that different metric only; do not use it to fill missing SIS denominator semantics.
 
 A metric being available in the Amazon Ads product or report center does not prove that the active API, MCP, connector, or warehouse path exposes the same field. Conversely, a field missing from the active connector is not evidence that SIS is zero, unavailable to the advertiser, or absent from Amazon Ads entirely.
 
@@ -46,17 +52,18 @@ When SIS is decision-relevant but the current acquisition path does not expose i
 
 ## 3. Join safety
 
-Do not assume that a row in a clicked-only Search Term performance report has the same population contract as a SIS row.
+Do not assume that a row in a clicked-only Search Term performance report has the same population contract as a SIS row, or that two metrics containing the words `impression share` have interchangeable denominators.
 
-Before combining the two, verify:
+Before combining them, verify:
 
 1. same marketplace/profile/account scope;
 2. compatible ad product;
-3. same normalized search term identity;
-4. compatible date window/time grain;
-5. compatible reporting generation/date semantics;
-6. no unresolved row-eligibility or truncation issue;
-7. acquisition channels preserve compatible metric semantics and scope.
+3. same normalized search term identity where applicable;
+4. exact metric identity and denominator semantics;
+5. compatible date window/time grain;
+6. compatible reporting generation/date semantics;
+7. no unresolved row-eligibility or truncation issue;
+8. acquisition channels preserve compatible metric semantics and scope.
 
 A successful string join is not evidence that the measurements describe the same population.
 
@@ -128,9 +135,11 @@ This reference never authorizes a live Amazon Ads write.
 Include when useful:
 
 - `search_term`;
+- `metric_identity`;
 - `sis_window` / time unit;
 - `impression_share`;
 - `impression_rank`;
+- `denominator_semantics` or `unknown`;
 - `acquisition_channel`;
 - `channel_capability_status`;
 - `scope_status`;
