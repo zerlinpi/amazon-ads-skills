@@ -37,11 +37,12 @@ This gate is read-only and does not authorize live Amazon Ads mutation.
 - current base/target bid；
 - current placement modifier；
 - campaign bidding strategy；
+- current audience bid adjustment state when the campaign/surface supports it；
 - active schedule/event bid rules or other material modifiers；
 - material control-change timestamps；
 - 日期窗口和目标。
 
-当 recommendation 依赖 base bid、placement modifier、dynamic bidding、schedule/event rules 等控制的交互时，按需加载：
+当 recommendation 依赖 base bid、placement modifier、dynamic/rule-based bidding、audience bid adjustment、schedule/event rules 等控制的交互时，按需加载：
 
 `references/realized-bid-exposure.md`
 
@@ -61,15 +62,15 @@ This gate is read-only and does not authorize live Amazon Ads mutation.
 - CVR；
 - ACOS/ROAS；
 - 样本量；
-- query/target/product mix 是否可比。
+- query/target/product/audience mix 是否可比。
 
 ### 2. 区分配置控制与 realized exposure
 
-Base/target bid、placement adjustment、campaign bidding strategy、schedule/event rule 都是配置控制；placement report 中的实际流量、CPC、CVR 和效率是 realized outcome。
+Base/target bid、placement adjustment、campaign bidding strategy、audience bid adjustment、schedule/event rule 都是配置控制；placement report 中的实际流量、CPC、CVR 和效率是 realized outcome。
 
 不要从配置值自行发明一个精确 auction-level effective bid。控制组合与 Amazon 的 auction-time logic 共同影响实际 exposure，应该通过控制时间线 + placement delivery/CPC 来诊断。
 
-当“Amazon 会如何自动提高/降低 bid、某 placement 最大 adjustment、某 control 是否在当前 surface/marketplace 可用”等事实影响推理时，先按 `../../references/platform-capability-lineage.md` 标记 capability scope 和 conflict status。`Conflicted` / `Unknown` 的 exact platform rule 不能支撑精确 effective-bid 推断或 modifier 建议。
+当“Amazon 会如何自动提高/降低 bid、某 placement 最大 adjustment、某 audience control 是否可用、某 control 是否在当前 surface/marketplace 可用”等事实影响推理时，先按 `../../references/platform-capability-lineage.md` 标记 capability scope 和 conflict status。`Conflicted` / `Unknown` 的 exact platform rule 不能支撑精确 effective-bid 推断或 modifier 建议。
 
 ### 3. 看增量潜力
 
@@ -77,15 +78,15 @@ Base/target bid、placement adjustment、campaign bidding strategy、schedule/ev
 - 当前 impression/click 规模；
 - base bid 是否本身偏低/偏高；
 - modifier 提升可能带来的边际 CPC；
-- dynamic bidding / bid rules 是否已经改变 exposure；
+- dynamic/rule-based bidding、audience bid adjustment 或 bid rules 是否已经改变 exposure；
 - 目标是否偏增长还是利润；
 - 是否存在可解释的 marginal headroom，而不只是历史平均 ROAS/ACOS 好看。
 
 ### 4. 识别放大与归因风险
 
-Base bid、dynamic bidding、placement modifier、schedule/event rules 可能共同影响实际竞价。不要把 modifier 当作独立旋钮。
+Base bid、dynamic/rule-based bidding、placement modifier、audience bid adjustment、schedule/event rules 可能共同影响实际竞价。不要把 modifier 当作独立旋钮。
 
-如果多个 material controls 在同一 attribution/measurement window 内变化，placement 结果只能 `Directional / Confounded`，除非有额外设计能分离影响。
+如果多个 material controls 在同一 attribution/measurement window 内变化，placement 结果只能 `Directional / Confounded`，除非有额外设计能分离影响。尤其不要把 audience bid adjustment 引起的 traffic/audience mix 变化归因为 placement modifier 的独立效果。
 
 ## 常见状态
 
@@ -113,7 +114,7 @@ Base bid、dynamic bidding、placement modifier、schedule/event rules 可能共
 
 - 一次只做可归因的单一/最小控制变化，除非实验明确设计组合 treatment；
 - 若同时需要改 base bid 和 placement，优先分阶段；
-- 已有 base bid / placement / bidding-strategy / bid-rule 变化 pending evaluation 时，不叠加同一路由上的另一个 material change；
+- 已有 base bid / placement / bidding-strategy / audience bid adjustment / bid-rule 变化 pending evaluation 时，不叠加同一路由上的另一个 material change；
 - 数值幅度需要账户策略、校准响应或明确实验约束；必要时加载 `../../references/action-sizing.md`；
 - 平台允许范围/自动 multiplier 与 advertiser-specific sizing 分开；前者按 `../../references/platform-capability-lineage.md` 验证，后者按 action-sizing 决定；
 - 设验证窗口，避免短期反向调整；
@@ -124,7 +125,7 @@ Base bid、dynamic bidding、placement modifier、schedule/event rules 可能共
 每个 placement：
 - current modifier；
 - current base/target bid；
-- bidding strategy / active bid-rule state；
+- bidding strategy / audience bid adjustment / active bid-rule state；
 - control state as-of / material change timeline；
 - platform capability scope / conflict status（当平台规则影响结论时）；
 - spend share / sales share；
@@ -144,7 +145,7 @@ Base bid、dynamic bidding、placement modifier、schedule/event rules 可能共
 ## 禁止
 
 - 不因为 Top of Search CVR/ROAS 高就默认提高 modifier；
-- 不忽略 dynamic bids strategy、schedule/event rules 或其他 material bidding controls；
+- 不忽略 dynamic/rule-based bidding、audience bid adjustment、schedule/event rules 或其他 material bidding controls；
 - 不把配置值拼成未经平台行为证实的精确 effective-bid 公式；
 - 不把历史 placement 平均效率当成增加 modifier 后的保证边际效率；
 - 不在 placement 样本很小的时候做大幅动作；
