@@ -70,3 +70,18 @@ Repository adaptation:
 - no specific Amazon reporting generation is hard-coded because a valid outcome review may use any verified compatible generation/source.
 
 No Amazon documentation prose, report schema, API implementation, or UI workflow is copied.
+
+
+## 2026-09-19 exact history window + grain gate
+
+Unified Reporting's published retention differs by grain: Amazon states that daily/weekly reporting can reach up to 15 months, while monthly/yearly/summary reporting can reach up to 6 years. Therefore `historical_availability_status = available` is insufficient to prove that a specific request is retrievable.
+
+Independent repository adaptation:
+
+- connector snapshots may expose `historical_windows[]` with exact `grain / available_from / available_through`;
+- a task-level `data_requirements.history_window` identifies the requested date range and grain;
+- the runtime gate requires an exact grain match and blocks a requested range outside the verified boundaries;
+- an unobserved grain, missing boundaries, or ambiguous duplicate grain windows is `Unknown/Degraded`, not Unsupported and not zero;
+- no Amazon retention constant is hard-coded into the evaluator. The connector snapshot carries the currently observed boundaries so platform changes can be represented without code changes.
+
+Source facts are used only to justify the generic safety rule. No Amazon report schema, UI, API implementation, or prose is copied.
