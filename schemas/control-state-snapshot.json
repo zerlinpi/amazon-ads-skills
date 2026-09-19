@@ -34,8 +34,8 @@
     "coverage": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Explicit proof boundary for the material controls expected for this decision. Complete means every required control type is represented in controls with source-supported evidence; absence from controls is never evidence of absence.",
-      "required": ["required_control_types", "coverage_status"],
+      "description": "Explicit proof boundary for the material controls expected for this decision. Complete means every required control type is represented in controls with source-supported evidence and the requirement set itself has verified provenance; absence from controls is never evidence of absence.",
+      "required": ["required_control_types", "coverage_status", "requirement_provenance"],
       "properties": {
         "required_control_types": {
           "type": "array",
@@ -44,6 +44,19 @@
           "items": {"$ref": "#/$defs/controlType"}
         },
         "coverage_status": {"type": "string", "enum": ["Complete", "Partial", "Unknown"]},
+        "requirement_provenance": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Evidence for why this decision surface requires this material-control set. Connector limitations may reduce evidence coverage but must not shrink the required set.",
+          "required": ["decision_surface", "derivation_status"],
+          "properties": {
+            "decision_surface": {"type": "string", "minLength": 1},
+            "derivation_status": {"type": "string", "enum": ["Verified", "Unverified", "Unknown"]},
+            "capability_snapshot_id": {"type": ["string", "null"]},
+            "requirement_registry_id": {"type": ["string", "null"]},
+            "evidence_note": {"type": ["string", "null"]}
+          }
+        },
         "evidence_note": {"type": ["string", "null"]}
       }
     },

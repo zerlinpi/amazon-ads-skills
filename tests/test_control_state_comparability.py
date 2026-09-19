@@ -12,7 +12,16 @@ def snapshot(state=1, status="observed", control="base_bid", marketplace="ATVPDK
         "scope": {"marketplace_id": marketplace, "profile_id": profile},
         "observed_at": "2026-09-19T00:00:00Z",
         "source": {"source_system": "fixture", "acquisition_channel": "test"},
-        "coverage": {"required_control_types": [control], "coverage_status": "Complete"},
+        "coverage": {
+            "required_control_types": [control],
+            "coverage_status": "Complete",
+            "requirement_provenance": {
+                "decision_surface": "fixture_control_comparison",
+                "derivation_status": "Verified",
+                "capability_snapshot_id": "fixture-capability-snapshot",
+                "evidence_note": "Deterministic test fixture requirement set."
+            },
+        },
         "controls": [{"control_type": control, "state": state, "effective_at": effective, "evidence_status": status}],
     }
 
@@ -35,15 +44,18 @@ class ControlStateComparabilityTests(unittest.TestCase):
         schema = json.loads((ROOT / "schemas/control-state-snapshot.json").read_text(encoding="utf-8"))
         self.assertTrue({"scope", "observed_at", "source", "coverage", "controls"}.issubset(set(schema["required"])))
         coverage = schema["properties"]["coverage"]
-        self.assertTrue({"required_control_types", "coverage_status"}.issubset(set(coverage["required"])))
+        self.assertTrue({"required_control_types", "coverage_status", "requirement_provenance"}.issubset(set(coverage["required"])))
         self.assertIn("Unknown", coverage["properties"]["coverage_status"]["enum"])
+        provenance = coverage["properties"]["requirement_provenance"]
+        self.assertTrue({"decision_surface", "derivation_status"}.issubset(set(provenance["required"])))
+        self.assertIn("Verified", provenance["properties"]["derivation_status"]["enum"])
         control = schema["properties"]["controls"]["items"]
         self.assertTrue({"control_type", "state", "effective_at", "evidence_status"}.issubset(set(control["required"])))
         self.assertIn("unknown", control["properties"]["evidence_status"]["enum"])
 
     def test_shared_reference_routes_machine_contract(self):
         text = self.read("references/control-state-comparability.md")
-        for token in ["schemas/control-state-snapshot.json", "missing", "unknown", "coverage"]:
+        for token in ["schemas/control-state-snapshot.json", "missing", "unknown", "coverage", "requirement provenance"]:
             self.assertIn(token, text)
 
     def test_comparator_classifies_stable_state_as_comparable(self):
@@ -52,6 +64,11 @@ class ControlStateComparabilityTests(unittest.TestCase):
     def test_comparator_fails_closed_when_coverage_is_unknown(self):
         before, after = snapshot(), snapshot()
         before["coverage"]["coverage_status"] = "Unknown"
+        self.assertEqual(compare_control_state(before, after)["classification"], "Unknown")
+
+    def test_comparator_fails_closed_when_requirement_provenance_is_unverified(self):
+        before, after = snapshot(), snapshot()
+        before["coverage"]["requirement_provenance"]["derivation_status"] = "Unknown"
         self.assertEqual(compare_control_state(before, after)["classification"], "Unknown")
 
     def test_comparator_fails_closed_when_required_control_is_not_evidenced(self):
