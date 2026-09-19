@@ -85,3 +85,18 @@ Independent repository adaptation:
 - no Amazon retention constant is hard-coded into the evaluator. The connector snapshot carries the currently observed boundaries so platform changes can be represented without code changes.
 
 Source facts are used only to justify the generic safety rule. No Amazon report schema, UI, API implementation, or prose is copied.
+
+
+## 2026-09-19 task-level requirement merge
+
+Exact history windows are task-specific and should not be frozen into a static Skill profile. Conversely, allowing each caller to hand-merge task constraints with profile policy creates a relaxation risk: a caller can accidentally omit `requires_historical_data=true` or overwrite a profile-owned reporting constraint.
+
+The repository now treats profile policy and task intent as separate provenance layers:
+
+- the profile owns stable minimum requirements;
+- the task may explicitly add `required_reporting_generation`, `requires_historical_data=true`, or an exact `history_window`;
+- task requirements must target a capability already required by the selected profile;
+- task constraints can only strengthen the profile and cannot turn required history off or replace a conflicting profile reporting generation;
+- the resolver emits a single merged gate envelope plus the profile/task provenance used to build it.
+
+This is repository-owned control-plane logic. It does not infer requirements from natural-language task text, call Amazon Ads, or authorize writes.
