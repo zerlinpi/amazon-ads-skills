@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -14,7 +14,7 @@ KNOWN_STATUSES = {"Supported", "Partial", "Unsupported", "Unknown"}
 VERIFY = {"Verified", "Unverified", "Unknown"}
 SURFACES = {"tool", "report", "dataset", "stream", "export", "endpoint", "warehouse_table", "manual_export"}
 SCOPE_FIELDS = {"region": "regions", "marketplace": "marketplaces", "ad_product": "ad_products", "account_type": "account_types"}
-DATA_REQUIREMENT_FIELDS = {"required_reporting_generation", "requires_historical_data"}
+DATA_REQUIREMENT_FIELDS = {"required_reporting_generation", "requires_historical_data", "history_window"}
 REPORTING_GENERATION_STATUSES = {"active", "read_only", "sunset_scheduled", "retired", "unknown"}
 HISTORICAL_AVAILABILITY_STATUSES = {"available", "partial", "unavailable", "retired", "unknown"}
 PASS = ["High Confidence", "Suggest", "Shadow"]
@@ -74,6 +74,32 @@ def _time(v,field):
     return dt.astimezone(timezone.utc)
 
 
+def _date(v,field):
+    if not _s(v):raise ValueError(f"{field} must be a non-empty ISO date")
+    text=v.strip()
+    try:value=date.fromisoformat(text)
+    except ValueError as exc:raise ValueError(f"{field} must be a valid ISO date (YYYY-MM-DD)") from exc
+    return value
+
+
+def _history_window(v,field):
+    if v is None:return None
+    if not isinstance(v,dict):raise ValueError(f"{field} must be an object or null")
+    if set(v)!={"start_date","end_date","grain"}:
+        raise ValueError(f"{field} must contain exactly start_date, end_date, and grain")
+    start=_date(v["start_date"],f"{field}.start_date")
+    end=_date(v["end_date"],f"{field}.end_date")
+    if start>end:raise ValueError(f"{field} start_date must be on or before end_date")
+    if not _s(v["grain"]):raise ValueError(f"{field}.grain must be a non-empty string")
+    return {
+        "start":start,
+        "end":end,
+        "start_raw":v["start_date"].strip(),
+        "end_raw":v["end_date"].strip(),
+        "grain":v["grain"].strip(),
+    }
+
+
 def _freshness(v):
     if v is None:return None
     if not isinstance(v,dict):raise ValueError("freshness_requirement must be an object or null")
@@ -103,6 +129,10 @@ def _data_requirements(v, required_capabilities):
             )
         generation = requirement.get("required_reporting_generation")
         history = requirement.get("requires_historical_data")
+        history_window = _history_window(
+            requirement.get("history_window"),
+            f"data_requirements[{cid!r}].history_window",
+        )
         if generation is not None and not _s(generation):
             raise ValueError(
                 f"data_requirements[{cid!r}].required_reporting_generation must be a non-empty string or null"
@@ -111,13 +141,22 @@ def _data_requirements(v, required_capabilities):
             raise ValueError(
                 f"data_requirements[{cid!r}].requires_historical_data must be boolean or null"
             )
-        if generation is None and history is None:
+        if history_window is not None and history is False:
             raise ValueError(
-                f"data_requirements[{cid!r}] must declare required_reporting_generation and/or requires_historical_data"
+                f"data_requirements[{cid!r}].history_window conflicts with requires_historical_data=false"
+            )
+        if generation is None and history is None and history_window is None:
+            raise ValueError(
+                f"data_requirements[{cid!r}] must declare required_reporting_generation, requires_historical_data, and/or history_window"
             )
         out[cid] = {
             "required_reporting_generation": generation.strip() if _s(generation) else None,
-            "requires_historical_data": history is True,
+            "requires_historical_data": history is True or history_window is not None,
+            "history_window": None if history_window is None else {
+                "start_date": history_window["start_raw"],
+                "end_date": history_window["end_raw"],
+                "grain": history_window["grain"],
+            },
         }
     return out
 
@@ -202,6 +241,62 @@ def _data_contract_effect(cap, requirement):
             warnings.append(
                 "required historical data is unavailable or retired; missing history must not be interpreted as zero activity"
             )
+
+        requested = requirement.get("history_window")
+        if requested is not None and history_status not in {"unavailable", "retired"}:
+            requested_window = _history_window(
+                requested,
+                "data_requirements.history_window",
+            )
+            observed_windows = contract.get("historical_windows")
+            if not isinstance(observed_windows, list) or not observed_windows:
+                effect = _combine_data_effect(effect, "unknown")
+                warnings.append(
+                    "requested history window has no observed per-grain availability range"
+                )
+            else:
+                matches = []
+                for index, observed in enumerate(observed_windows):
+                    field = f"capability.data_contract.historical_windows[{index}]"
+                    if not isinstance(observed, dict):
+                        raise ValueError(f"{field} must be an object")
+                    grain = observed.get("grain")
+                    if not _s(grain):
+                        raise ValueError(f"{field}.grain must be a non-empty string")
+                    if grain.strip().casefold() == requested_window["grain"].casefold():
+                        matches.append((field, observed))
+                if not matches:
+                    effect = _combine_data_effect(effect, "unknown")
+                    warnings.append(
+                        f"no verified historical availability window is observed for requested grain {requested_window['grain']!r}"
+                    )
+                elif len(matches) > 1:
+                    effect = _combine_data_effect(effect, "unknown")
+                    warnings.append(
+                        f"multiple historical availability windows are observed for requested grain {requested_window['grain']!r}; scope is ambiguous"
+                    )
+                else:
+                    field, observed = matches[0]
+                    available_from = observed.get("available_from")
+                    available_through = observed.get("available_through")
+                    if available_from is None or available_through is None:
+                        effect = _combine_data_effect(effect, "unknown")
+                        warnings.append(
+                            f"historical availability boundaries are incomplete for requested grain {requested_window['grain']!r}"
+                        )
+                    else:
+                        start = _date(available_from, f"{field}.available_from")
+                        end = _date(available_through, f"{field}.available_through")
+                        if start > end:
+                            raise ValueError(
+                                f"{field}.available_from must be on or before available_through"
+                            )
+                        if requested_window["start"] < start or requested_window["end"] > end:
+                            effect = _combine_data_effect(effect, "blocked")
+                            warnings.append(
+                                "requested history window is outside the verified available range for "
+                                f"{requested_window['grain']!r}: {available_from} through {available_through}"
+                            )
 
     return effect, warnings
 
