@@ -14,6 +14,9 @@ KNOWN_STATUSES = {"Supported", "Partial", "Unsupported", "Unknown"}
 VERIFY = {"Verified", "Unverified", "Unknown"}
 SURFACES = {"tool", "report", "dataset", "stream", "export", "endpoint", "warehouse_table", "manual_export"}
 SCOPE_FIELDS = {"region": "regions", "marketplace": "marketplaces", "ad_product": "ad_products", "account_type": "account_types"}
+DATA_REQUIREMENT_FIELDS = {"required_reporting_generation", "requires_historical_data"}
+REPORTING_GENERATION_STATUSES = {"active", "read_only", "sunset_scheduled", "retired", "unknown"}
+HISTORICAL_AVAILABILITY_STATUSES = {"available", "partial", "unavailable", "retired", "unknown"}
 PASS = ["High Confidence", "Suggest", "Shadow"]
 DEGRADED = ["Directional", "Hold", "Alternate Source", "Missing Data", "Manual Review"]
 BLOCKED = ["Hold", "Alternate Source", "Missing Data", "Manual Review"]
@@ -78,6 +81,129 @@ def _freshness(v):
     as_of=_time(v["as_of"],"freshness_requirement.as_of");age=v["max_age_seconds"]
     if isinstance(age,bool) or not isinstance(age,(int,float)) or age<0:raise ValueError("freshness_requirement.max_age_seconds must be a non-negative number")
     return {"as_of":as_of,"as_of_raw":v["as_of"],"max_age_seconds":float(age)}
+
+
+def _data_requirements(v, required_capabilities):
+    if v is None:
+        return {}
+    if not isinstance(v, dict):
+        raise ValueError("data_requirements must be an object or null")
+    out = {}
+    for cid, requirement in v.items():
+        if cid not in required_capabilities:
+            raise ValueError(
+                f"data_requirements capability_id {cid!r} must also appear in required_capabilities"
+            )
+        if not isinstance(requirement, dict):
+            raise ValueError(f"data_requirements[{cid!r}] must be an object")
+        unknown = sorted(set(requirement) - DATA_REQUIREMENT_FIELDS)
+        if unknown:
+            raise ValueError(
+                f"data_requirements[{cid!r}] contains unsupported fields: {unknown}"
+            )
+        generation = requirement.get("required_reporting_generation")
+        history = requirement.get("requires_historical_data")
+        if generation is not None and not _s(generation):
+            raise ValueError(
+                f"data_requirements[{cid!r}].required_reporting_generation must be a non-empty string or null"
+            )
+        if history is not None and not isinstance(history, bool):
+            raise ValueError(
+                f"data_requirements[{cid!r}].requires_historical_data must be boolean or null"
+            )
+        if generation is None and history is None:
+            raise ValueError(
+                f"data_requirements[{cid!r}] must declare required_reporting_generation and/or requires_historical_data"
+            )
+        out[cid] = {
+            "required_reporting_generation": generation.strip() if _s(generation) else None,
+            "requires_historical_data": history is True,
+        }
+    return out
+
+
+def _combine_data_effect(current, candidate):
+    rank = {
+        "not_evaluated": 0,
+        "pass": 1,
+        "unknown": 2,
+        "degraded": 3,
+        "blocked": 4,
+    }
+    return candidate if rank[candidate] > rank[current] else current
+
+
+def _data_contract_effect(cap, requirement):
+    if requirement is None:
+        return "not_evaluated", []
+    contract = cap.get("data_contract")
+    if not isinstance(contract, dict):
+        return "unknown", [
+            "required reporting/history decision has no observed capability data_contract"
+        ]
+
+    effect = "pass"
+    warnings = []
+    generation = requirement.get("required_reporting_generation")
+
+    if generation is not None:
+        observed_generation = contract.get("reporting_generation")
+        if not _s(observed_generation):
+            effect = _combine_data_effect(effect, "unknown")
+            warnings.append("required reporting generation is not identified by the connector snapshot")
+        elif observed_generation.strip().casefold() != generation.casefold():
+            effect = _combine_data_effect(effect, "blocked")
+            warnings.append(
+                f"observed reporting generation {observed_generation!r} does not match required generation {generation!r}"
+            )
+
+        generation_status = contract.get("reporting_generation_status")
+        if generation_status is None or generation_status == "unknown":
+            effect = _combine_data_effect(effect, "unknown")
+            warnings.append("reporting generation status is unknown")
+        elif generation_status not in REPORTING_GENERATION_STATUSES:
+            raise ValueError(
+                "capability.data_contract.reporting_generation_status must be one of "
+                f"{sorted(REPORTING_GENERATION_STATUSES)} or null"
+            )
+        elif generation_status == "retired":
+            effect = _combine_data_effect(effect, "blocked")
+            warnings.append("required reporting generation is retired")
+        elif generation_status == "sunset_scheduled":
+            warnings.append(
+                "required reporting generation has a scheduled sunset; verify migration timing before relying on future retrieval"
+            )
+        elif generation_status == "read_only":
+            warnings.append(
+                "required reporting generation is currently read-only; analysis may proceed but report creation/editing is unavailable"
+            )
+
+        sunset_at = contract.get("sunset_at")
+        if sunset_at is not None:
+            _time(sunset_at, "capability.data_contract.sunset_at")
+
+    if requirement.get("requires_historical_data") is True:
+        history_status = contract.get("historical_availability_status")
+        if history_status is None or history_status == "unknown":
+            effect = _combine_data_effect(effect, "unknown")
+            warnings.append("historical availability state is unknown for a history-dependent decision")
+        elif history_status not in HISTORICAL_AVAILABILITY_STATUSES:
+            raise ValueError(
+                "capability.data_contract.historical_availability_status must be one of "
+                f"{sorted(HISTORICAL_AVAILABILITY_STATUSES)} or null"
+            )
+        elif history_status == "partial":
+            effect = _combine_data_effect(effect, "degraded")
+            warnings.append(
+                "historical availability is partial; bound the decision to the verified history window"
+            )
+        elif history_status in {"unavailable", "retired"}:
+            effect = _combine_data_effect(effect, "blocked")
+            warnings.append(
+                "required historical data is unavailable or retired; missing history must not be interpreted as zero activity"
+            )
+
+    return effect, warnings
 
 
 def _index(snapshot):
@@ -186,25 +312,26 @@ def _binding_effect(cap,expected,fresh,snapshot_captured_at):
 
 def evaluate_connector_capability_gate(payload):
     if not isinstance(payload,dict):raise ValueError("input must be a JSON object")
-    registered,version=_catalog();reqs=_requirements(payload.get("required_capabilities"),registered);expected=_scope(payload.get("expected_scope"));fresh=_freshness(payload.get("freshness_requirement"));indexed,snapshot=_index(payload.get("snapshot"));snapshot_freshness_effect,snapshot_warnings=_snapshot_freshness(snapshot,fresh)
+    registered,version=_catalog();reqs=_requirements(payload.get("required_capabilities"),registered);expected=_scope(payload.get("expected_scope"));fresh=_freshness(payload.get("freshness_requirement"));data_requirements=_data_requirements(payload.get("data_requirements"),reqs);indexed,snapshot=_index(payload.get("snapshot"));snapshot_freshness_effect,snapshot_warnings=_snapshot_freshness(snapshot,fresh)
     evaluated=[];has_partial=snapshot_freshness_effect in {"stale","unknown"};has_blocked=False
     for cid in reqs:
-        cap=indexed.get(cid);scope_effect="not_evaluated";binding_effect="unknown";freshness_effect="not_evaluated";verified=[]
+        cap=indexed.get(cid);scope_effect="not_evaluated";binding_effect="unknown";freshness_effect="not_evaluated";data_contract_effect="not_evaluated";verified=[]
         if cap is None:status="Unknown";access="unknown";effect="blocked";has_blocked=True;warnings=["required capability is absent from the observed connector snapshot"]
         else:
-            status=cap.get("status","Unknown");access=cap.get("access_mode","unknown");warnings=list(cap.get("warnings") or []);scope_effect,sw=_scope_effect(cap,expected,"connector capability");warnings+=sw;binding_effect,verified,freshness_effect,bw=_binding_effect(cap,expected,fresh,snapshot.get("captured_at"));warnings+=bw
-            if status=="Supported":
+            status=cap.get("status","Unknown");access=cap.get("access_mode","unknown");warnings=list(cap.get("warnings") or []);scope_effect,sw=_scope_effect(cap,expected,"connector capability");warnings+=sw;binding_effect,verified,freshness_effect,bw=_binding_effect(cap,expected,fresh,snapshot.get("captured_at"));warnings+=bw;data_contract_effect,dw=_data_contract_effect(cap,data_requirements.get(cid));warnings+=dw
+            if data_contract_effect=="blocked":effect="blocked";has_blocked=True
+            elif status=="Supported":
                 if scope_effect not in {"pass","not_evaluated"}:effect="blocked";has_blocked=True
-                elif freshness_effect in {"stale","unknown"}:effect="degraded";has_partial=True
+                elif freshness_effect in {"stale","unknown"} or data_contract_effect in {"degraded","unknown"}:effect="degraded";has_partial=True
                 elif binding_effect=="pass" and verified:effect="pass"
                 else:effect="degraded";has_partial=True
             elif status=="Partial" and scope_effect in {"pass","not_evaluated"}:effect="degraded";has_partial=True
             else:effect="blocked";has_blocked=True
-        evaluated.append({"capability_id":cid,"status":status,"access_mode":access,"scope_effect":scope_effect,"binding_effect":binding_effect,"freshness_effect":freshness_effect,"verified_binding_ids":verified,"gate_effect":effect,"warnings":warnings})
+        evaluated.append({"capability_id":cid,"status":status,"access_mode":access,"scope_effect":scope_effect,"binding_effect":binding_effect,"freshness_effect":freshness_effect,"data_contract_effect":data_contract_effect,"verified_binding_ids":verified,"gate_effect":effect,"warnings":warnings})
     if has_blocked:gate,allowed,high="Blocked",BLOCKED,False
     elif has_partial:gate,allowed,high="Degraded",DEGRADED,False
     else:gate,allowed,high="Pass",PASS,True
-    return {"gate_status":gate,"catalog_version":version,"high_confidence_allowed":high,"missing_evidence_policy":"never_zero","allowed_decision_classes":allowed,"connector_id":snapshot.get("connector_id"),"connector_version":snapshot.get("connector_version"),"snapshot_captured_at":snapshot.get("captured_at"),"snapshot_freshness_effect":snapshot_freshness_effect,"freshness_requirement":None if fresh is None else {"as_of":fresh["as_of_raw"],"max_age_seconds":fresh["max_age_seconds"]},"requirements":evaluated,"warnings":snapshot_warnings}
+    return {"gate_status":gate,"catalog_version":version,"high_confidence_allowed":high,"missing_evidence_policy":"never_zero","allowed_decision_classes":allowed,"connector_id":snapshot.get("connector_id"),"connector_version":snapshot.get("connector_version"),"snapshot_captured_at":snapshot.get("captured_at"),"snapshot_freshness_effect":snapshot_freshness_effect,"freshness_requirement":None if fresh is None else {"as_of":fresh["as_of_raw"],"max_age_seconds":fresh["max_age_seconds"]},"data_requirements":data_requirements or None,"requirements":evaluated,"warnings":snapshot_warnings}
 
 
 def main():
