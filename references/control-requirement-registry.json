@@ -11,6 +11,25 @@
       "required_control_types": ["base_bid", "budget_or_pacing"],
       "evidence_basis": ["deterministic-test-fixture"],
       "notes": "Test-only surface used to prove overlapping-control classification."
+    },
+    "sponsored_products_bid_change": {
+      "required_control_types": [
+        "base_bid",
+        "bidding_strategy",
+        "placement_bid_adjustment",
+        "audience_bid_adjustment",
+        "schedule_or_event_bid_rule",
+        "budget_or_pacing"
+      ],
+      "evidence_basis": [
+        "amazon-ads-official:bidding-strategies-for-sponsored-products:2026-09-14",
+        "amazon-ads-official:rest-of-search-bid-adjustment:2024-01-09",
+        "amazon-ads-official:audience-bid-boosting-sponsored-products:2024-11-04",
+        "amazon-ads-official:schedule-based-bid-rules:2023-11-06",
+        "amazon-ads-official:event-based-bid-rules:2025-01-02",
+        "amazon-ads-official:sponsored-products-budget-basics"
+      ],
+      "notes": "Production causal-review surface for an intended Sponsored Products base-bid change. A post-change effect cannot be isolated to base bid unless bidding strategy, placement and audience adjustments, scheduled/event bid rules, and budget/pacing are also evidenced for the comparison window. Connector support may make coverage Partial or Unknown; it must not remove these requirements. This registry records material advertiser/platform controls, not an Amazon API response schema or write payload."
     }
   }
 }
