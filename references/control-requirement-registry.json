@@ -1,0 +1,16 @@
+{
+  "registry_id": "control-requirements@2026-09-20",
+  "description": "Versioned, repository-owned requirement mapping for material control-state comparisons. This registry defines what must be observed for a decision surface; connector capability may reduce observability but must never shrink these requirements.",
+  "decision_surfaces": {
+    "fixture_control_comparison": {
+      "required_control_types": ["base_bid"],
+      "evidence_basis": ["deterministic-test-fixture"],
+      "notes": "Test-only surface used to prove registry binding."
+    },
+    "fixture_control_comparison_with_budget": {
+      "required_control_types": ["base_bid", "budget_or_pacing"],
+      "evidence_basis": ["deterministic-test-fixture"],
+      "notes": "Test-only surface used to prove overlapping-control classification."
+    }
+  }
+}
