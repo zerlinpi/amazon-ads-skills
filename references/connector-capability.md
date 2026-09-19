@@ -90,6 +90,7 @@ Each decision-relevant capability should identify its bounded scope and, where o
 - pagination model and whether truncation/continuation is observable;
 - row-inclusion / eligibility visibility;
 - historical-availability limits plus current state (`available / partial / unavailable / retired / unknown`);
+- when exact historical retrieval matters, per-grain observed windows with `grain / available_from / available_through`;
 - freshness and `available_through` visibility;
 - per-metric semantic / attribution identity visibility;
 - date-attribution semantics visibility;
@@ -200,7 +201,9 @@ The deterministic result is:
 - `Degraded` — at least one required capability is `Partial` and none are blocked; the maximum decision class is Directional/Hold/Alternate Source/Missing Data/Manual Review until the missing scope or semantics are resolved.
 - `Blocked` — at least one required capability is `Unsupported`, `Unknown`, or absent from the snapshot; do not promote the dependent observation into a high-confidence recommendation.
 
-When a decision depends on an exact reporting generation or historical retrieval, pass a `data_requirements` object keyed by the relevant required capability ID. `required_reporting_generation` fails closed on a mismatched/retired generation; `requires_historical_data=true` blocks unavailable/retired history and degrades partial/unknown history. A `sunset_scheduled` or `read_only` generation remains usable for current read-only analysis when otherwise valid, but the gate emits a migration warning.
+When a decision depends on an exact reporting generation or historical retrieval, pass a `data_requirements` object keyed by the relevant required capability ID. When the task names an exact date range and grain, add `history_window = {start_date, end_date, grain}`; this implies historical data is required. The gate compares the request only against an exact matching observed grain. It never treats a monthly range as proof of daily coverage or vice versa. Missing grain/range evidence degrades to Unknown; a request outside the verified range blocks the dependency without manufacturing zero-valued history.
+
+ `required_reporting_generation` fails closed on a mismatched/retired generation; `requires_historical_data=true` blocks unavailable/retired history and degrades partial/unknown history. A `sunset_scheduled` or `read_only` generation remains usable for current read-only analysis when otherwise valid, but the gate emits a migration warning.
 
 The helper always emits `missing_evidence_policy = never_zero`. This is a semantic safety rule, not a numeric default: connector uncertainty must not be converted into zero spend, zero orders, zero inventory, unchanged state, no prior action, or any other fabricated observation.
 
