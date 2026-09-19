@@ -7,48 +7,20 @@
   "additionalProperties": false,
   "required": ["scope", "observed_at", "source", "coverage", "controls"],
   "properties": {
-    "scope": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["marketplace_id", "profile_id"],
-      "properties": {
-        "marketplace_id": {"type": "string", "minLength": 1},
-        "profile_id": {"type": "string", "minLength": 1},
-        "campaign_id": {"type": ["string", "null"]},
-        "ad_group_id": {"type": ["string", "null"]},
-        "entity_id": {"type": ["string", "null"]}
-      }
-    },
+    "scope": {"type": "object", "additionalProperties": false, "required": ["marketplace_id", "profile_id"], "properties": {"marketplace_id": {"type": "string", "minLength": 1}, "profile_id": {"type": "string", "minLength": 1}, "campaign_id": {"type": ["string", "null"]}, "ad_group_id": {"type": ["string", "null"]}, "entity_id": {"type": ["string", "null"]}}},
     "observed_at": {"type": "string", "format": "date-time"},
-    "source": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["source_system", "acquisition_channel"],
-      "properties": {
-        "source_system": {"type": "string", "minLength": 1},
-        "acquisition_channel": {"type": "string", "minLength": 1},
-        "connector_id": {"type": ["string", "null"]},
-        "readback_id": {"type": ["string", "null"]}
-      }
-    },
+    "source": {"type": "object", "additionalProperties": false, "required": ["source_system", "acquisition_channel"], "properties": {"source_system": {"type": "string", "minLength": 1}, "acquisition_channel": {"type": "string", "minLength": 1}, "connector_id": {"type": ["string", "null"]}, "readback_id": {"type": ["string", "null"]}}},
     "coverage": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Explicit proof boundary for the material controls expected for this decision. Complete means every required control type is represented in controls with source-supported evidence and the requirement set itself has verified provenance; absence from controls is never evidence of absence.",
+      "type": "object", "additionalProperties": false,
+      "description": "Explicit proof boundary for material controls. Complete requires every registry-required control to be represented with source-supported evidence; connector limitations may reduce coverage but never shrink requirements.",
       "required": ["required_control_types", "coverage_status", "requirement_provenance"],
       "properties": {
-        "required_control_types": {
-          "type": "array",
-          "minItems": 1,
-          "uniqueItems": true,
-          "items": {"$ref": "#/$defs/controlType"}
-        },
+        "required_control_types": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/controlType"}},
         "coverage_status": {"type": "string", "enum": ["Complete", "Partial", "Unknown"]},
         "requirement_provenance": {
-          "type": "object",
-          "additionalProperties": false,
-          "description": "Evidence for why this decision surface requires this material-control set. Connector limitations may reduce evidence coverage but must not shrink the required set.",
-          "required": ["decision_surface", "derivation_status"],
+          "type": "object", "additionalProperties": false,
+          "description": "Evidence for why this decision surface requires this material-control set. Verified derivation requires a versioned repository-owned requirement_registry_id; connector capability is observational evidence only.",
+          "required": ["decision_surface", "derivation_status", "requirement_registry_id"],
           "properties": {
             "decision_surface": {"type": "string", "minLength": 1},
             "derivation_status": {"type": "string", "enum": ["Verified", "Unverified", "Unknown"]},
@@ -60,29 +32,7 @@
         "evidence_note": {"type": ["string", "null"]}
       }
     },
-    "controls": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["control_type", "state", "effective_at", "evidence_status"],
-        "properties": {
-          "control_type": {"$ref": "#/$defs/controlType"},
-          "state": {
-            "description": "Source-supported configured state. Use null when evidence is missing or unsupported; never synthesize zero/false/unchanged.",
-            "type": ["object", "array", "string", "number", "boolean", "null"]
-          },
-          "effective_at": {"type": ["string", "null"], "format": "date-time"},
-          "evidence_status": {"type": "string", "enum": ["observed", "derived", "stale", "unsupported", "unknown"]},
-          "evidence_note": {"type": ["string", "null"]}
-        }
-      }
-    }
+    "controls": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["control_type", "state", "effective_at", "evidence_status"], "properties": {"control_type": {"$ref": "#/$defs/controlType"}, "state": {"description": "Source-supported configured state. Use null when evidence is missing or unsupported; never synthesize zero/false/unchanged.", "type": ["object", "array", "string", "number", "boolean", "null"]}, "effective_at": {"type": ["string", "null"], "format": "date-time"}, "evidence_status": {"type": "string", "enum": ["observed", "derived", "stale", "unsupported", "unknown"]}, "evidence_note": {"type": ["string", "null"]}}}}
   },
-  "$defs": {
-    "controlType": {
-      "type": "string",
-      "enum": ["base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing", "targeting_or_routing", "experiment_assignment", "other_material_control"]
-    }
-  }
+  "$defs": {"controlType": {"type": "string", "enum": ["base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing", "targeting_or_routing", "experiment_assignment", "other_material_control"]}}
 }
