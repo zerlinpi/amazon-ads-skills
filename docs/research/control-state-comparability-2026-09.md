@@ -4,7 +4,7 @@ Reviewed: 2026-09-19
 
 ## Gap
 
-The repository already had strong measurement comparability and placement-specific coupled-control rules, but the post-change causal loop did not have one shared gate requiring baseline/post advertiser-control state to be comparable. A clean metric series could therefore be over-interpreted when another material control changed during the evaluation window.
+The repository already had strong measurement comparability and placement-specific coupled-control rules, but the post-change causal loop did not have one shared gate requiring baseline/post advertiser-control state to be comparable. That gate was added first. A follow-up gap remained: the policy was prose-only, so connector evidence, replay fixtures, and reviewers had no shared machine-readable envelope for scope, provenance, effective timestamps, or explicit unknown control state.
 
 ## Current Amazon evidence
 
@@ -20,15 +20,28 @@ Amazon Ads separately documents Sponsored Products audience bid boosting, where 
 
 Source: https://advertising.amazon.com/resources/whats-new/audience-bid-boosting-in-sponsored-products
 
-Amazon Ads also documents event-based schedule bid rules that can automatically increase bids during declared high-traffic events.
+Amazon Ads' Sponsored Products bidding help, updated 2026-09-14, documents dynamic, fixed, and rule-based bidding and audience bid adjustment. This reinforces that control identity can change independently of metric/report identity.
 
-Source: https://advertising.amazon.com/resources/whats-new/event-based-bid-rules-for-sponsored-products-advertisers
+Source: https://advertising.amazon.com/help/GCU2BUWJH2W3A8Z7
 
 Together these official sources support a conservative decision-safety conclusion: multiple advertiser controls can coexist and alter realized exposure, so a before/after metric comparison is not sufficient evidence that one intended control caused the outcome.
 
+## Machine-readable adoption
+
+`schemas/control-state-snapshot.json` is repository-owned and independently designed. It is intentionally an evidence envelope rather than a copy of an Amazon API schema. It records:
+
+- marketplace/profile scope plus optional narrower entity scope;
+- observation timestamp;
+- source system and acquisition channel provenance;
+- material control type and source-supported state;
+- effective timestamp;
+- explicit evidence status including `unsupported` and `unknown`.
+
+The contract preserves the existing invariant that missing or unsupported evidence is not zero, false, absent, or unchanged. It does not authorize writes and does not require connectors to expose unsupported controls.
+
 ## Adoption boundary
 
-Adopt only the abstract causal-safety rule:
+Adopt only the abstract causal-safety rule and independently authored evidence contract:
 
 - measurement comparability and control-state comparability are separate gates;
 - capture material control state and effective timestamps when causal attribution matters;
@@ -37,8 +50,8 @@ Adopt only the abstract causal-safety rule:
 - cap causal language at `Directional` / `Confounded` / `Unknown` when isolation is unsupported;
 - do not invent an auction-level formula for how Amazon composes controls.
 
-No Amazon prose, API schema, prompt, workflow, implementation, or private interface is copied. Amazon documentation retains Amazon copyright. Repository-owned policy and tests remain MIT.
+No Amazon prose, API schema, prompt, workflow, implementation, or private interface is copied. Amazon documentation retains Amazon copyright. Repository-owned policy, schema, and tests remain MIT.
 
 ## GitHub review note
 
-This round also re-ran multiple GitHub discovery queries for Amazon Ads/PPC/MCP and agent/evaluation projects. The directly relevant Amazon Ads repositories surfaced were already reviewed in `docs/SOURCES.md` (including `nospicyplease/amazon-ppc-advanced-skills` and `ppcprophet/amazon-ads-mcp`). Search also surfaced obvious same-name copies of `amazon-ppc-advanced-skills` and `advertising-hub`; these were not counted as independent evidence. No newly discovered repository supplied stronger platform evidence for this specific control-interaction gap than current Amazon official documentation, so no third-party code, prompt, schema, threshold, or workflow was adopted in this change.
+This round re-ran multiple discovery queries for Amazon Ads/PPC/MCP and agent/evaluation/data-lineage projects. `KuudoAI/amazon_ads_mcp` (MIT; about 69 stars when reviewed) remains useful engineering evidence for identity/tool separation but does not define Amazon measurement semantics; the surfaced `vaibuep/amazon-ads-mcp` explicitly identifies itself as a fork and was therefore not counted as independent evidence. `ppcprophet/amazon-ads-mcp` surfaced again with a proprietary hosted-service boundary and only a small public repository footprint, so it was not used as implementation evidence. `hologrow/hologrow-mcp` surfaced as a connector/skills architecture candidate with explicit coverage/freshness middleware, but this round did not establish enough license/reuse evidence from the search result to copy any implementation; only the already-independent repository principle of checking coverage/freshness is retained. No third-party code, prompt, schema, threshold, or workflow was copied into this change.

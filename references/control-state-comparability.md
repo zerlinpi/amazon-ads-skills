@@ -18,7 +18,11 @@ For each decision-relevant window, capture when supported and relevant:
 - experiment/treatment assignment when applicable;
 - effective timestamps for material control changes.
 
-Do not invent an auction-level composition formula from these configured controls. Treat them as a control graph whose realized effect is observed through delivery, CPC, traffic mix, placement/audience mix, conversion, and economic outcomes.
+When control evidence is exchanged between a Skill, connector, replay fixture, or reviewer, use `schemas/control-state-snapshot.json` as the machine-readable evidence envelope. Preserve marketplace/profile scope, observation time, source/acquisition provenance, each material control's effective timestamp, and its evidence status. A missing, unsupported, or stale control remains `unknown`; it must not be synthesized as zero, false, absent, or unchanged.
+
+The schema is an evidence contract, not an Amazon API response schema and not an execution payload. It does not require a connector to expose controls it cannot read.
+
+Do not invent an auction-level composition formula from configured controls. Treat them as a control graph whose realized effect is observed through delivery, CPC, traffic mix, placement/audience mix, conversion, and economic outcomes.
 
 ## States
 
@@ -67,7 +71,7 @@ Before `Worked`, `Failed`, aggressive scale, rollback, or precise marginal-effec
 
 1. verify the intended change/readback;
 2. verify measurement comparability using `data-lineage.md` when needed;
-3. reconstruct the material control timeline;
+3. reconstruct the material control timeline, preserving source and effective timestamps in `schemas/control-state-snapshot.json` when machine-readable evidence is available;
 4. identify binding controls and overlapping changes;
 5. check whether traffic/product/query/target/placement/audience mix changed consistently with those controls;
 6. downgrade causal language when isolation is not supported;
