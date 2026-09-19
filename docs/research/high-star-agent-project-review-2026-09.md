@@ -195,3 +195,30 @@ Adoption decision: reject direct content reuse and do not copy skills, prompts, 
 Not high-star, but retained as a lower-weight engineering comparison because it provides concrete multi-runtime evaluation mechanics: isolated workspaces, deterministic assertions before model grading, with/without-skill baselines, negative controls, side-effect classification, and cleanup tracking.
 
 Adoption decision: no dependency and no copied schema/workflow/assertion implementation. The repository already has deterministic eval contracts and paired Skill-effectiveness summaries; the remaining potentially useful idea is external runtime/harness execution against real Codex/Claude Code environments, which stays outside this repository until a concrete decision-quality gap requires it. Star count is recorded only as context, not as evidence quality.
+
+
+## 2026-09-19 full-repository incremental scan
+
+### open-multi-agent/open-multi-agent — ~6.9k stars; MIT; actively maintained
+
+Fresh review found a substantial evaluation subsystem with versioned scorers, deterministic/offline evaluation, explicit scorer-error states that are excluded from quality averages instead of coerced to zero, privacy-bounded payload persistence, and experimental memory-quality measures such as staleness annotation, omission, pollution, and scope leakage.
+
+Adoption decision: no dependency and no copied TypeScript, schemas, scorer prompts, storage implementation, or workflow. The useful generic lesson is retained for a future repository gap: evaluator/scorer failure is missing evidence rather than a zero-quality observation, and scorer/rubric configuration should be versioned when effectiveness claims depend on it. The current Amazon Ads decision-safety priority remains experiment aggregation semantics, so no eval behavior is changed in this PR.
+
+### NVIDIA/skills — ~3.35k stars; Apache-2.0 code with repository documentation carrying its own stated licensing; very active
+
+Fresh review found an actively maintained cross-runtime skill catalog with explicit evaluation/trust-pipeline documentation, benchmark metadata, scanning, release checks, and runtime projections for multiple agent clients.
+
+Adoption decision: use only the generic governance principle that skill trust should combine structural validation, behavioral evaluation, and release evidence rather than relying on popularity or a README claim. No NVIDIA Skill text, benchmark definitions, trust-pipeline implementation, manifests, prompts, or docs are copied. This repository already has structural validation + deterministic eval fixtures, so no duplicate framework is imported.
+
+### eigent-ai/agent-skills — ~23 stars; Apache-2.0; evaluation-oriented but lower adoption signal
+
+The repository separates structural skill review, rubric/judge material, scenarios, score artifacts, and CI review workflow.
+
+Adoption decision: lower-weight corroboration only. Existing repository separation between canonical Skills and `evals/` already covers the useful architecture. No evaluator code, rubric, judge prompt, scenario schema, or CI workflow is copied.
+
+### jhrendon/amazon-mcp — ~2 stars; active code/tests/CI present; no repository license metadata surfaced
+
+Fresh review found a real monorepo with Amazon Ads + Seller MCP surfaces, async report tools, cross-MCP retail/ads correlation, tests, CI, and explicit read/write tool families.
+
+Adoption decision: because no clear repository license surfaced, only abstract capability evidence is retained. The useful connector-neutral signal is that ad performance and retail/seller evidence may arrive through separate surfaces and that report lifecycle/read/write separation should remain explicit. No code, tool names, auth/retry implementation, schemas, optimization rules, prompts, or workflows are copied. Low stars also make it non-load-bearing evidence.
