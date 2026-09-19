@@ -98,6 +98,29 @@ def _summarize_variant(trials: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _measurement_identity(payload: dict[str, Any]) -> dict[str, Any]:
+    harness = payload.get("harness")
+    if not isinstance(harness, dict):
+        harness = {}
+    contract = harness.get("measurement_contract")
+    if not isinstance(contract, dict):
+        contract = {}
+    return {
+        "fixture_id": payload.get("fixture_id"),
+        "fixture_version": payload.get("fixture_version"),
+        "mode": payload.get("mode"),
+        "runtime": harness.get("runtime"),
+        "model": harness.get("model"),
+        "model_version": harness.get("model_version"),
+        "config_hash": harness.get("config_hash"),
+        "tool_profile_hash": harness.get("tool_profile_hash"),
+        "evidence_hash": harness.get("evidence_hash"),
+        "evaluator_id": contract.get("evaluator_id"),
+        "evaluator_version": contract.get("evaluator_version"),
+        "rubric_version": contract.get("rubric_version"),
+    }
+
+
 def summarize(payload: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError("benchmark payload must be an object")
@@ -161,6 +184,7 @@ def summarize(payload: dict[str, Any]) -> dict[str, Any]:
         "skill": payload.get("skill"),
         "fixture_id": payload.get("fixture_id"),
         "mode": payload.get("mode"),
+        "measurement_identity": _measurement_identity(payload),
         "pair_count": len(pairs),
         "comparable_pair_count": len(comparable_pairs),
         "excluded_pair_count": len(pairs) - len(comparable_pairs),
