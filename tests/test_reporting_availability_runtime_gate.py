@@ -26,6 +26,18 @@ def base_snapshot():
                     "reporting_generation_status": "active",
                     "historical_availability_exposed": True,
                     "historical_availability_status": "available",
+                    "historical_windows": [
+                        {
+                            "grain": "daily",
+                            "available_from": "2025-06-19",
+                            "available_through": "2026-09-18"
+                        },
+                        {
+                            "grain": "monthly",
+                            "available_from": "2020-09-01",
+                            "available_through": "2026-09-01"
+                        }
+                    ],
                 },
                 "bindings": [
                     {
@@ -138,6 +150,116 @@ class ReportingAvailabilityRuntimeGateTests(unittest.TestCase):
         self.assertEqual(out["gate_status"], "Degraded")
         self.assertEqual(out["requirements"][0]["data_contract_effect"], "unknown")
         self.assertFalse(out["high_confidence_allowed"])
+
+
+    def test_requested_daily_history_window_inside_verified_range_passes(self):
+        proc = run_gate(
+            base_snapshot(),
+            {
+                "history_window": {
+                    "start_date": "2025-09-01",
+                    "end_date": "2026-08-31",
+                    "grain": "daily",
+                }
+            },
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        out = json.loads(proc.stdout)
+        self.assertEqual(out["gate_status"], "Pass")
+        self.assertEqual(out["requirements"][0]["data_contract_effect"], "pass")
+
+    def test_requested_daily_history_before_verified_range_blocks(self):
+        proc = run_gate(
+            base_snapshot(),
+            {
+                "history_window": {
+                    "start_date": "2024-09-01",
+                    "end_date": "2026-08-31",
+                    "grain": "daily",
+                }
+            },
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        out = json.loads(proc.stdout)
+        self.assertEqual(out["gate_status"], "Blocked")
+        self.assertEqual(out["requirements"][0]["data_contract_effect"], "blocked")
+        self.assertEqual(out["missing_evidence_policy"], "never_zero")
+
+    def test_same_long_window_can_pass_monthly_while_daily_blocks(self):
+        daily = run_gate(
+            base_snapshot(),
+            {
+                "history_window": {
+                    "start_date": "2024-09-01",
+                    "end_date": "2026-08-31",
+                    "grain": "daily",
+                }
+            },
+        )
+        monthly = run_gate(
+            base_snapshot(),
+            {
+                "history_window": {
+                    "start_date": "2024-09-01",
+                    "end_date": "2026-08-31",
+                    "grain": "monthly",
+                }
+            },
+        )
+        self.assertEqual(daily.returncode, 0, daily.stderr)
+        self.assertEqual(monthly.returncode, 0, monthly.stderr)
+        self.assertEqual(json.loads(daily.stdout)["gate_status"], "Blocked")
+        self.assertEqual(json.loads(monthly.stdout)["gate_status"], "Pass")
+
+    def test_unobserved_requested_grain_degrades_not_assumes_support(self):
+        proc = run_gate(
+            base_snapshot(),
+            {
+                "history_window": {
+                    "start_date": "2026-01-01",
+                    "end_date": "2026-08-31",
+                    "grain": "weekly",
+                }
+            },
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        out = json.loads(proc.stdout)
+        self.assertEqual(out["gate_status"], "Degraded")
+        self.assertEqual(out["requirements"][0]["data_contract_effect"], "unknown")
+        self.assertFalse(out["high_confidence_allowed"])
+
+    def test_history_window_after_available_through_blocks(self):
+        proc = run_gate(
+            base_snapshot(),
+            {
+                "history_window": {
+                    "start_date": "2026-09-01",
+                    "end_date": "2026-09-19",
+                    "grain": "daily",
+                }
+            },
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        out = json.loads(proc.stdout)
+        self.assertEqual(out["gate_status"], "Blocked")
+        self.assertIn(
+            "available",
+            " ".join(out["requirements"][0]["warnings"]).lower(),
+        )
+
+    def test_invalid_history_window_is_configuration_error(self):
+        proc = run_gate(
+            base_snapshot(),
+            {
+                "history_window": {
+                    "start_date": "2026-09-10",
+                    "end_date": "2026-09-01",
+                    "grain": "daily",
+                }
+            },
+        )
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("history_window", proc.stderr)
 
     def test_sunset_scheduled_generation_is_currently_usable_but_warned(self):
         snapshot = base_snapshot()
