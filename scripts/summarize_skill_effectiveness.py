@@ -98,6 +98,42 @@ def _summarize_variant(trials: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+
+def _require_non_empty_string(value: Any, field: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{field} must be a non-empty string")
+    return value
+
+
+def _validate_measurement_identity(payload: dict[str, Any]) -> None:
+    _require_non_empty_string(payload.get("fixture_version"), "fixture_version")
+    harness = payload.get("harness")
+    if not isinstance(harness, dict):
+        raise ValueError("harness must be an object")
+    contract = harness.get("measurement_contract")
+    if not isinstance(contract, dict):
+        raise ValueError("harness.measurement_contract must be an object")
+    _require_non_empty_string(
+        contract.get("evaluator_id"),
+        "harness.measurement_contract.evaluator_id",
+    )
+    _require_non_empty_string(
+        contract.get("evaluator_version"),
+        "harness.measurement_contract.evaluator_version",
+    )
+    if "rubric_version" not in contract:
+        raise ValueError(
+            "harness.measurement_contract.rubric_version must be explicit; use null when no semantic rubric is used"
+        )
+    rubric_version = contract.get("rubric_version")
+    if rubric_version is not None and (
+        not isinstance(rubric_version, str) or not rubric_version.strip()
+    ):
+        raise ValueError(
+            "harness.measurement_contract.rubric_version must be a non-empty string or null"
+        )
+
+
 def _measurement_identity(payload: dict[str, Any]) -> dict[str, Any]:
     harness = payload.get("harness")
     if not isinstance(harness, dict):
@@ -124,6 +160,7 @@ def _measurement_identity(payload: dict[str, Any]) -> dict[str, Any]:
 def summarize(payload: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError("benchmark payload must be an object")
+    _validate_measurement_identity(payload)
     trials = payload.get("trials")
     if not isinstance(trials, list) or not trials:
         raise ValueError("benchmark trials must be a non-empty array")
