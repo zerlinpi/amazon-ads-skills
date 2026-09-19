@@ -67,6 +67,8 @@ class ConnectorCapabilityContractTests(unittest.TestCase):
             "truncation_signal_exposed",
             "row_eligibility_exposed",
             "historical_availability_exposed",
+            "historical_availability_status",
+            "historical_windows",
             "freshness_exposed",
             "available_through_exposed",
             "metric_semantics_exposed",
