@@ -2,10 +2,10 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/zerlinpi/amazon-ads-skills/schemas/control-state-snapshot.json",
   "title": "Control State Snapshot",
-  "description": "Read-only evidence contract for material advertiser controls at a decision-relevant point in time. Missing or unsupported evidence remains unknown and must never be coerced to zero or unchanged.",
+  "description": "Read-only evidence contract for material advertiser controls at a decision-relevant point in time. Missing, unsupported, or unproven coverage remains unknown and must never be coerced to zero or unchanged.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["scope", "observed_at", "source", "controls"],
+  "required": ["scope", "observed_at", "source", "coverage", "controls"],
   "properties": {
     "scope": {
       "type": "object",
@@ -31,6 +31,22 @@
         "readback_id": {"type": ["string", "null"]}
       }
     },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Explicit proof boundary for the material controls expected for this decision. Complete means every required control type is represented in controls with source-supported evidence; absence from controls is never evidence of absence.",
+      "required": ["required_control_types", "coverage_status"],
+      "properties": {
+        "required_control_types": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/controlType"}
+        },
+        "coverage_status": {"type": "string", "enum": ["Complete", "Partial", "Unknown"]},
+        "evidence_note": {"type": ["string", "null"]}
+      }
+    },
     "controls": {
       "type": "array",
       "items": {
@@ -38,10 +54,7 @@
         "additionalProperties": false,
         "required": ["control_type", "state", "effective_at", "evidence_status"],
         "properties": {
-          "control_type": {
-            "type": "string",
-            "enum": ["base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing", "targeting_or_routing", "experiment_assignment", "other_material_control"]
-          },
+          "control_type": {"$ref": "#/$defs/controlType"},
           "state": {
             "description": "Source-supported configured state. Use null when evidence is missing or unsupported; never synthesize zero/false/unchanged.",
             "type": ["object", "array", "string", "number", "boolean", "null"]
@@ -51,6 +64,12 @@
           "evidence_note": {"type": ["string", "null"]}
         }
       }
+    }
+  },
+  "$defs": {
+    "controlType": {
+      "type": "string",
+      "enum": ["base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing", "targeting_or_routing", "experiment_assignment", "other_material_control"]
     }
   }
 }
