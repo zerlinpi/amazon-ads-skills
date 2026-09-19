@@ -64,8 +64,11 @@ def resolve_skill_capabilities(payload: Any) -> dict[str, Any]:
 
     required = spec.get("required", [])
     optional = spec.get("optional", [])
+    data_requirements = spec.get("data_requirements", {})
     if not isinstance(required, list) or not isinstance(optional, list):
         raise ValueError(f"invalid required/optional lists for {skill}:{profile}")
+    if not isinstance(data_requirements, dict):
+        raise ValueError(f"invalid data_requirements for {skill}:{profile}")
 
     unresolved = [item for item in required + optional if item not in known]
     if unresolved:
@@ -73,18 +76,61 @@ def resolve_skill_capabilities(payload: Any) -> dict[str, Any]:
             f"catalog profile references unregistered capability IDs: {sorted(set(unresolved))}"
         )
 
+    allowed_data_requirement_fields = {
+        "required_reporting_generation",
+        "requires_historical_data",
+    }
+    normalized_data_requirements = {}
+    for capability_id, requirement in data_requirements.items():
+        if capability_id not in required:
+            raise ValueError(
+                f"data_requirements capability_id {capability_id!r} must also be required for {skill}:{profile}"
+            )
+        if not isinstance(requirement, dict) or not requirement:
+            raise ValueError(
+                f"data_requirements[{capability_id!r}] must be a non-empty object"
+            )
+        unknown_fields = sorted(set(requirement) - allowed_data_requirement_fields)
+        if unknown_fields:
+            raise ValueError(
+                f"data_requirements[{capability_id!r}] contains unsupported fields: {unknown_fields}"
+            )
+        normalized = {}
+        if "required_reporting_generation" in requirement:
+            generation = requirement.get("required_reporting_generation")
+            if generation is not None and (
+                not isinstance(generation, str) or not generation.strip()
+            ):
+                raise ValueError(
+                    f"data_requirements[{capability_id!r}].required_reporting_generation must be a non-empty string or null"
+                )
+            if isinstance(generation, str):
+                normalized["required_reporting_generation"] = generation.strip()
+            elif generation is not None:
+                normalized["required_reporting_generation"] = generation
+        if "requires_historical_data" in requirement:
+            history = requirement.get("requires_historical_data")
+            if not isinstance(history, bool):
+                raise ValueError(
+                    f"data_requirements[{capability_id!r}].requires_historical_data must be boolean"
+                )
+            normalized["requires_historical_data"] = history
+        normalized_data_requirements[capability_id] = normalized
+
     return {
         "catalog_version": catalog.get("catalog_version"),
         "skill": skill,
         "profile": profile,
         "required_capabilities": required,
         "optional_capabilities": optional,
+        "data_requirements": normalized_data_requirements,
         "capabilities": {
             capability_id: known[capability_id]
             for capability_id in required + optional
         },
         "policy": {
             "use_with": "scripts/evaluate_connector_capability_gate.py",
+            "pass_data_requirements_to_gate": True,
             "missing_evidence_policy": "never_zero",
             "write_authority": "none",
         },
