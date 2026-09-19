@@ -80,7 +80,8 @@
               "metric_name": {"type": ["string", "null"]},
               "metric_family": {"type": ["string", "null"]},
               "attribution_family": {"type": ["string", "null"]},
-              "semantic_version": {"type": ["string", "null"]}
+              "semantic_version": {"type": ["string", "null"]},
+              "aggregation_semantics": {"type": ["string", "null"], "enum": ["additive", "non_additive_deduplicated", "ratio_or_derived", "unknown", null]}
             },
             "additionalProperties": true
           }
@@ -92,7 +93,8 @@
             "metric_name": {"type": ["string", "null"]},
             "metric_family": {"type": ["string", "null"]},
             "attribution_family": {"type": ["string", "null"]},
-            "semantic_version": {"type": ["string", "null"]}
+            "semantic_version": {"type": ["string", "null"]},
+            "aggregation_semantics": {"type": ["string", "null"], "enum": ["additive", "non_additive_deduplicated", "ratio_or_derived", "unknown", null]}
           },
           "additionalProperties": true
         },
