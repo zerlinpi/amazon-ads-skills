@@ -56,7 +56,7 @@ Collect or mark missing:
 
 1. **Reliability gate** — validate scope, dates, attribution, freshness and source comparability.
 2. **Canonical totals** — choose one additive account grain and reconcile it to a complete campaign view when possible.
-3. **Metric integrity** — sum compatible base metrics, then recompute ratios; never add overlapping entity grains or simple-average ratio KPIs.
+3. **Metric integrity** — sum compatible base metrics only when their `aggregation_semantics` is explicitly additive and source rows are disjoint; use `../../scripts/evaluate_metric_aggregation_gate.py` when the semantic envelope is available. Never add overlapping entity grains, de-duplicated/non-additive metrics, or ratio KPIs; recompute ratios from compatible base components.
 4. **Account result** — establish spend, attributed sales/orders, efficiency and business-objective fit.
 5. **Driver analysis** — rank material contributors by absolute impact, then decompose through campaign/product/target/query/placement views.
 6. **Structure and routing** — identify conflicting intents, Mixed-ASIN risk, unclear query routing, duplication, fragmentation or budget interdependence.
@@ -84,6 +84,7 @@ Return:
 - Missing rows are not automatically zero.
 - Profile/campaign/keyword/search-term/placement totals are not additive when they describe overlapping traffic.
 - Account ratios must be recomputed from compatible aggregate components rather than averaged across rows.
+- `aggregation_semantics = unknown` is not permission to sum. `non_additive_deduplicated` and `ratio_or_derived` metrics are never direct-sum safe; use a source-provided aggregate or recompute from compatible base metrics as appropriate.
 - TACOS requires compatible total retail sales; profit claims require sufficient cost/economic inputs.
 - Do not make high-confidence optimization decisions from unresolved marketplace/currency/date/attribution/source mismatches.
 - Conversion-led issues must consider stock, Featured Offer / Buy Box, price, promotions, listing and variation-family changes.

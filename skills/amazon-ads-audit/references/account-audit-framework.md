@@ -41,6 +41,8 @@ If coverage is incomplete, local observations about returned rows may still be u
 
 Choose one canonical additive grain for account totals, preferably a trusted profile/account total or a complete campaign aggregation for the exact same scope/window.
 
+When metric-level `aggregation_semantics` is available, use `../../../scripts/evaluate_metric_aggregation_gate.py` before direct summation. A direct sum is permitted only when the metric is explicitly `additive` **and** the source rows are explicitly disjoint. `unknown` must never be promoted to additive. `non_additive_deduplicated` metrics require a source-provided de-duplicated aggregate for the required scope; `ratio_or_derived` metrics should be recomputed from compatible base components when the formula is defined.
+
 Entity levels such as campaign, keyword/target, search term, placement and advertised product are usually **overlapping decompositions** of the same traffic. Do not sum them together as separate pools of spend, sales or orders.
 
 Reconcile when possible:
