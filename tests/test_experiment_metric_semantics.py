@@ -83,6 +83,38 @@ class ExperimentMetricSemanticsTests(unittest.TestCase):
             errors,
         )
 
+    def test_ready_combined_readout_requires_primary_aggregation_semantics(self):
+        plan = ready_plan({
+            "name": "Reach",
+            "success_rule": "increase",
+            "metric_semantics": {
+                "metric_family": "reach",
+                "attribution_family": "not_applicable",
+                "semantic_version": "reach-v1",
+            },
+        })
+        plan["comparison"]["requires_combined_readout"] = True
+
+        errors = module.validate_experiment_plan(plan)
+
+        self.assertTrue(
+            any("aggregation_semantics" in error for error in errors),
+            errors,
+        )
+
+    def test_ready_non_combined_readout_does_not_invent_aggregation_requirement(self):
+        plan = ready_plan({
+            "name": "Reach",
+            "success_rule": "increase",
+            "metric_semantics": {
+                "metric_family": "reach",
+                "attribution_family": "not_applicable",
+                "semantic_version": "reach-v1",
+            },
+        })
+
+        self.assertEqual(module.validate_experiment_plan(plan), [])
+
     def test_non_ready_plan_may_leave_metric_semantics_unresolved(self):
         plan = ready_plan({"name": "Purchases", "success_rule": "increase"})
         plan["status"] = "Shadow Only"
