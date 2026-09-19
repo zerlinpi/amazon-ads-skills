@@ -24,6 +24,12 @@ HOLDOUT_ISOLATION_MECHANISMS = {
     "verified_delivery_partition",
 }
 CONVERSION_METRIC_TOKENS = ("purchase", "sale", "roas", "conversion")
+AGGREGATION_SEMANTICS = {
+    "additive",
+    "non_additive_deduplicated",
+    "ratio_or_derived",
+    "unknown",
+}
 
 
 def _non_empty_string(value: Any) -> bool:
@@ -191,6 +197,41 @@ def _validate_ready_guardrail_metric_semantics(guardrails: Any) -> list[str]:
     return errors
 
 
+
+def _validate_ready_combined_readout_semantics(
+    primary_metric: Any,
+    guardrails: Any,
+    comparison: Any,
+) -> list[str]:
+    if not isinstance(comparison, dict) or comparison.get("requires_combined_readout") is not True:
+        return []
+
+    errors: list[str] = []
+
+    if not isinstance(primary_metric, dict):
+        errors.append("Ready combined readout requires a primary_metric object")
+    else:
+        semantics = primary_metric.get("metric_semantics")
+        aggregation = semantics.get("aggregation_semantics") if isinstance(semantics, dict) else None
+        if aggregation not in AGGREGATION_SEMANTICS:
+            errors.append(
+                "Ready combined readout primary metric requires explicit metric semantics.aggregation_semantics"
+            )
+
+    if isinstance(guardrails, list):
+        for index, guardrail in enumerate(guardrails):
+            if not isinstance(guardrail, dict):
+                continue
+            semantics = guardrail.get("metric_semantics")
+            aggregation = semantics.get("aggregation_semantics") if isinstance(semantics, dict) else None
+            if aggregation not in AGGREGATION_SEMANTICS:
+                errors.append(
+                    f"Ready combined readout guardrail #{index + 1} requires explicit metric semantics.aggregation_semantics"
+                )
+
+    return errors
+
+
 def validate_experiment_plan(plan: Any) -> list[str]:
     """Return semantic readiness errors for one experiment plan.
 
@@ -225,6 +266,13 @@ def validate_experiment_plan(plan: Any) -> list[str]:
     errors.extend(_validate_ready_guardrail_metric_semantics(plan.get("guardrails")))
 
     comparison = plan.get("comparison")
+    errors.extend(
+        _validate_ready_combined_readout_semantics(
+            plan.get("primary_metric"),
+            plan.get("guardrails"),
+            comparison,
+        )
+    )
     if isinstance(comparison, dict) and comparison.get("design_type") == "holdout":
         errors.extend(_validate_ready_holdout(comparison))
 
