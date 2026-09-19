@@ -40,6 +40,11 @@ class ControlStateComparabilityTests(unittest.TestCase):
         self.assertIn("missing", text)
         self.assertIn("unknown", text)
 
+    def test_deterministic_comparator_exists_and_is_fail_closed(self):
+        text = self.read("scripts/compare_control_state.py")
+        for token in ["treatment isolated", "directional", "confounded", "unknown", "marketplace_id", "profile_id", "effective_at", "evidence_status"]:
+            self.assertIn(token, text)
+
 
 if __name__ == "__main__":
     unittest.main()
