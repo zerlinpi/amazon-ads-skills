@@ -9,7 +9,7 @@ Use this Skill after a proposed or externally executed optimization action. It c
 
 ## Connector capability gate
 
-When a conclusion depends on live MCP/API/connector data, load `../../references/connector-capability.md` before interpreting missing or empty fields. If a machine-readable capability snapshot is available, identify the exact required capability IDs and run `../../scripts/evaluate_connector_capability_gate.py` **before metric interpretation**.
+When a conclusion depends on live MCP/API/connector data, load `../../references/connector-capability.md` before interpreting missing or empty fields. If a machine-readable capability snapshot is available, resolve the selected decision profile with `../../scripts/resolve_skill_capabilities.py`, pass both its `required_capabilities` and any returned `data_requirements` into `../../scripts/evaluate_connector_capability_gate.py`, and run the gate **before metric interpretation**. For the `outcome-review` profile, live performance evidence requires historical campaign performance rather than history metadata alone.
 
 - `Pass` — continue with the Skill's normal evidence, sufficiency, lineage and safety checks.
 - `Degraded` — do not make a high-confidence dependent recommendation; keep the result to `Directional`, `Hold`, `Alternate Source`, `Missing Data`, or `Manual Review`.
