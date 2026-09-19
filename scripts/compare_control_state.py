@@ -23,6 +23,11 @@ def _coverage_problem(snapshot: dict[str, Any], control_map: dict[str, dict[str,
         return f"{side} material-control coverage is missing"
     if coverage.get("coverage_status") != "Complete":
         return f"{side} material-control coverage is not Complete"
+    provenance = coverage.get("requirement_provenance")
+    if not isinstance(provenance, dict) or provenance.get("derivation_status") != "Verified":
+        return f"{side} material-control requirement provenance is not Verified"
+    if not provenance.get("decision_surface"):
+        return f"{side} material-control requirement decision surface is missing"
     required = coverage.get("required_control_types")
     if not isinstance(required, list) or not required:
         return f"{side} required material-control set is missing"
@@ -50,6 +55,11 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
     required_after = set(post["coverage"]["required_control_types"])
     if required_before != required_after:
         return {"classification": "Unknown", "reasons": ["material-control requirement set changed between snapshots"]}
+
+    provenance_before = baseline["coverage"]["requirement_provenance"]
+    provenance_after = post["coverage"]["requirement_provenance"]
+    if provenance_before.get("decision_surface") != provenance_after.get("decision_surface"):
+        return {"classification": "Unknown", "reasons": ["material-control requirement decision surface changed between snapshots"]}
 
     all_types = sorted(set(bmap) | set(pmap))
     if not all_types:
@@ -85,11 +95,11 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
             return {"classification": "Unknown", "reasons": ["intended treatment has no observed state change"]}
         overlaps = [c for c in changed if c != intended_treatment]
         if not overlaps:
-            return {"classification": "Treatment Isolated", "reasons": ["only intended treatment changed within a complete material-control set"], "changed_controls": changed}
+            return {"classification": "Treatment Isolated", "reasons": ["only intended treatment changed within a complete, provenance-verified material-control set"], "changed_controls": changed}
         return {"classification": "Confounded", "reasons": ["overlapping material controls changed: " + ", ".join(overlaps)], "changed_controls": changed}
 
     if not changed:
-        return {"classification": "Comparable", "reasons": ["no evidenced material control changes within a complete material-control set"], "changed_controls": []}
+        return {"classification": "Comparable", "reasons": ["no evidenced material control changes within a complete, provenance-verified material-control set"], "changed_controls": []}
     return {"classification": "Directional", "reasons": ["material controls changed without an identified treatment"], "changed_controls": changed}
 
 
