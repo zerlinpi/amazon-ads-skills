@@ -195,6 +195,28 @@ class SkillEffectivenessBenchmarkTests(unittest.TestCase):
         self.assertIsNone(summary["without_skill"]["full_pass_rate"])
         self.assertIsNone(summary["delta"]["full_pass_rate"])
 
+
+    def test_missing_fixture_version_fails_closed(self):
+        payload = valid_payload()
+        payload.pop("fixture_version")
+        result = self.invoke(payload)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("fixture_version", result.stderr)
+
+    def test_missing_measurement_contract_fails_closed(self):
+        payload = valid_payload()
+        payload["harness"].pop("measurement_contract")
+        result = self.invoke(payload)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("measurement_contract", result.stderr)
+
+    def test_missing_rubric_version_key_fails_closed_even_when_no_rubric_is_used(self):
+        payload = valid_payload()
+        payload["harness"]["measurement_contract"].pop("rubric_version")
+        result = self.invoke(payload)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("rubric_version", result.stderr)
+
     def test_schema_defines_provider_neutral_paired_contract(self):
         schema = json.loads((ROOT / "schemas/skill-effectiveness-benchmark.json").read_text(encoding="utf-8"))
         self.assertFalse(schema["additionalProperties"])
