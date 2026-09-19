@@ -146,13 +146,12 @@ For a with-skill / without-skill comparison, hold constant as much as possible. 
 - agent runtime and system instructions;
 - tool availability and permissions;
 - task prompt and synthetic evidence;
-- fixture version;
 - temperature/reasoning settings when configurable;
 - external source access;
 - starting filesystem/workspace state;
 - fixture version;
 - evaluator/verifier ID and version;
-- rubric version, or explicit null when no semantic rubric is used.
+- rubric version, or explicit null when no semantic rubric is used (null means not applicable, not unknown).
 
 Record unavoidable differences. Before comparing benchmark records longitudinally, use `../scripts/evaluate_skill_effectiveness_comparability.py` when available. A mismatch is `Not Comparable`; missing config/tool/evidence identity is `Unknown`, never silently comparable. If the runtime automatically changes context/tool behavior when Skills are installed, treat that as part of the tested system but disclose it.
 
