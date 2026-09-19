@@ -151,6 +151,135 @@ class ConnectorCapabilityRegistryTests(unittest.TestCase):
         result = json.loads(proc.stdout)
         self.assertEqual(result["data_requirements"], {})
 
+
+    def test_task_history_window_merges_without_relaxing_profile_requirement(self):
+        proc = subprocess.run(
+            [sys.executable, str(RESOLVER)],
+            input=json.dumps({
+                "skill": "post-change-review",
+                "profile": "outcome-review",
+                "task_data_requirements": {
+                    "campaign-performance-read": {
+                        "history_window": {
+                            "start_date": "2026-08-01",
+                            "end_date": "2026-09-15",
+                            "grain": "daily",
+                        }
+                    }
+                },
+            }),
+            text=True,
+            capture_output=True,
+            cwd=ROOT,
+            check=False,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        result = json.loads(proc.stdout)
+        self.assertEqual(
+            result["data_requirements"]["campaign-performance-read"],
+            {
+                "requires_historical_data": True,
+                "history_window": {
+                    "start_date": "2026-08-01",
+                    "end_date": "2026-09-15",
+                    "grain": "daily",
+                },
+            },
+        )
+
+    def test_task_requirement_cannot_relax_profile_historical_requirement(self):
+        proc = subprocess.run(
+            [sys.executable, str(RESOLVER)],
+            input=json.dumps({
+                "skill": "post-change-review",
+                "profile": "outcome-review",
+                "task_data_requirements": {
+                    "campaign-performance-read": {
+                        "requires_historical_data": False,
+                    }
+                },
+            }),
+            text=True,
+            capture_output=True,
+            cwd=ROOT,
+            check=False,
+        )
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("cannot relax", proc.stderr.lower())
+
+    def test_task_requirement_must_target_required_capability(self):
+        proc = subprocess.run(
+            [sys.executable, str(RESOLVER)],
+            input=json.dumps({
+                "skill": "post-change-review",
+                "profile": "outcome-review",
+                "task_data_requirements": {
+                    "change-history-read": {
+                        "requires_historical_data": True,
+                    }
+                },
+            }),
+            text=True,
+            capture_output=True,
+            cwd=ROOT,
+            check=False,
+        )
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("required", proc.stderr.lower())
+
+    def test_task_can_strengthen_unconstrained_profile_with_explicit_generation(self):
+        proc = subprocess.run(
+            [sys.executable, str(RESOLVER)],
+            input=json.dumps({
+                "skill": "bid-optimization",
+                "profile": "action-safe-proposal",
+                "task_data_requirements": {
+                    "target-performance-read": {
+                        "required_reporting_generation": "unified-reporting",
+                    }
+                },
+            }),
+            text=True,
+            capture_output=True,
+            cwd=ROOT,
+            check=False,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        result = json.loads(proc.stdout)
+        self.assertEqual(
+            result["data_requirements"],
+            {
+                "target-performance-read": {
+                    "required_reporting_generation": "unified-reporting",
+                }
+            },
+        )
+
+    def test_task_history_window_rejects_invalid_or_reversed_dates(self):
+        for window in (
+            {"start_date": "2026-09-20", "end_date": "2026-09-01", "grain": "daily"},
+            {"start_date": "not-a-date", "end_date": "2026-09-01", "grain": "daily"},
+        ):
+            with self.subTest(window=window):
+                proc = subprocess.run(
+                    [sys.executable, str(RESOLVER)],
+                    input=json.dumps({
+                        "skill": "post-change-review",
+                        "profile": "outcome-review",
+                        "task_data_requirements": {
+                            "campaign-performance-read": {
+                                "history_window": window,
+                            }
+                        },
+                    }),
+                    text=True,
+                    capture_output=True,
+                    cwd=ROOT,
+                    check=False,
+                )
+                self.assertEqual(proc.returncode, 2)
+                self.assertIn("history_window", proc.stderr)
+
     def test_resolver_fails_closed_on_unknown_profile(self):
         proc = subprocess.run(
             [sys.executable, str(RESOLVER)],
