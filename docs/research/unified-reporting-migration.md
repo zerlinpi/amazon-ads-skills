@@ -41,3 +41,18 @@ A safe longitudinal review should preserve reporting generation and date-attribu
 A legacy-history retrieval failure after a documented retirement/deletion boundary must be classified as `historical availability unavailable/unknown` (or an equivalent explicit state), not coerced to zero. If a required baseline was not migrated or independently preserved, the correct action is to use a verified alternate source, shorten/reframe the comparison, or downgrade confidence; do not fabricate continuity across a permanently unavailable source.
 
 This adaptation remains connector-neutral and does not require private Amazon Ads interfaces or authorize live mutations.
+
+
+## 2026-09-19 machine-readable availability gate
+
+The September 1, 2026 Amazon migration guidance makes a generic runtime distinction operationally important: a report surface can still exist while its generation is read-only or scheduled for sunset, and after retirement its historical artifacts can become unavailable. These states must not collapse into a metric value of zero.
+
+The connector-neutral capability contract therefore records, when observed:
+
+- `reporting_generation_status = active | read_only | sunset_scheduled | retired | unknown`;
+- optional `sunset_at`;
+- `historical_availability_status = available | partial | unavailable | retired | unknown`.
+
+The runtime capability gate accepts per-capability `data_requirements`. It never hard-codes Amazon's migration dates and never advances a state merely because wall-clock time passed; the snapshot must be refreshed from current evidence. For a history-dependent decision, partial/unknown history lowers confidence and unavailable/retired history blocks the dependency without manufacturing zero-valued history.
+
+Current Amazon factual evidence: the old Sponsored Ads and Amazon DSP report centers are scheduled for shutdown on December 31, 2026; Amazon's September 1 migration guidance says net-new creation/editing is disabled on December 17 while existing reports remain read-only, and remaining saved reports/schedules/historical data are deleted at shutdown. Dates remain subject to Amazon change. No Amazon report schema, UI workflow, API implementation, or documentation prose is copied.
