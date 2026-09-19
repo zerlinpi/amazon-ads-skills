@@ -235,3 +235,24 @@ Adoption decision: method-level only. We use the generic rule that longitudinal 
 Reviewed for paired with-Skill/without-Skill runs and rubric-based judging. It has a real implementation but lower adoption/engineering depth than SkillsBench and overlaps the repository's existing paired-effectiveness protocol.
 
 Adoption decision: no implementation change sourced from this project; retained only as corroboration. No code, rubric, statistical implementation or config copied.
+
+
+## 2026-09-19 incremental Skill/evaluation scan
+
+### NVIDIA/SkillEvaluator — ~481 stars; Apache-2.0; actively maintained
+
+Fresh review found a non-fork repository with dedicated tests, CI/security workflows, explicit governance, and a three-tier evaluation model covering deterministic validation, semantic overlap/deduplication, and live agent evaluation. It is part of NVIDIA's Verified Skills pipeline and requires tests for behavior changes.
+
+Adoption decision: no dependency or copied implementation. The generic principle that deterministic structural/security checks should remain separate from live behavioral evaluation is already present in this repository's validators + eval fixtures. It does not address the current Amazon Ads connector-profile/data-requirement routing gap, so importing its evaluator framework would add duplication rather than decision safety. No NVIDIA code, prompts, rubrics, schemas, workflows, or documentation prose are copied.
+
+### EverMind-AI/SkillCorpus — ~656 stars; Apache-2.0; actively maintained
+
+Fresh review found a real multi-source skill corpus project with CI/release workflows, explicit corpus schema/governance docs, and a license-safe source audit artifact.
+
+Adoption decision: retain only the abstract governance lesson that source ingestion and license eligibility should be auditable independently of popularity. This repository already records source/license/adoption boundaries in `docs/SOURCES.md` and research notes, so no corpus ingestion layer is added. No SkillCorpus schema, crawler, ranking logic, plugin design, data, or workflow is copied.
+
+### HUST-AI-HYZ/MemoryAgentBench — ~457 stars; MIT; research benchmark
+
+Fresh review found an ICLR 2026 memory benchmark with multiple memory competencies, dataset/config separation, and LLM-based evaluation utilities.
+
+Adoption decision: no implementation change. Its benchmark targets general conversational/agent memory retrieval and long-range understanding, while this repository's optimization memory is a typed advertising decision/event lineage problem with explicit scope, measurement semantics, and action safety. The domains are not interchangeable. No benchmark data, evaluation prompts, metric code, or configs are copied.
