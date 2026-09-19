@@ -84,17 +84,18 @@ Each decision-relevant capability should identify its bounded scope and, where o
 
 - marketplace/region/ad product/account type;
 - advertiser/profile/account identity fields exposed;
-- reporting generation;
+- reporting generation plus current generation state (`active / read_only / sunset_scheduled / retired / unknown`) when observed;
+- scheduled sunset timestamp when the connector/platform exposes one;
 - synchronous, asynchronous, push, or export lifecycle;
 - pagination model and whether truncation/continuation is observable;
 - row-inclusion / eligibility visibility;
-- historical-availability limits;
+- historical-availability limits plus current state (`available / partial / unavailable / retired / unknown`);
 - freshness and `available_through` visibility;
 - per-metric semantic / attribution identity visibility;
 - date-attribution semantics visibility;
 - structured error behavior and whether unsupported/unauthorized/empty states are distinguishable.
 
-The snapshot is evidence observed at `captured_at`; it is not a permanent truth about the vendor or Amazon Ads.
+The snapshot is evidence observed at `captured_at`; it is not a permanent truth about the vendor or Amazon Ads. Do not infer a future retirement merely from `sunset_at`; refresh the observed state when the decision occurs.
 
 ## Progressive tool discovery
 
@@ -196,6 +197,8 @@ The deterministic result is:
 - `Pass` — every required capability is `Supported`; high-confidence interpretation may proceed, subject to ordinary data-lineage, sufficiency and business-safety checks.
 - `Degraded` — at least one required capability is `Partial` and none are blocked; the maximum decision class is Directional/Hold/Alternate Source/Missing Data/Manual Review until the missing scope or semantics are resolved.
 - `Blocked` — at least one required capability is `Unsupported`, `Unknown`, or absent from the snapshot; do not promote the dependent observation into a high-confidence recommendation.
+
+When a decision depends on an exact reporting generation or historical retrieval, pass a `data_requirements` object keyed by the relevant required capability ID. `required_reporting_generation` fails closed on a mismatched/retired generation; `requires_historical_data=true` blocks unavailable/retired history and degrades partial/unknown history. A `sunset_scheduled` or `read_only` generation remains usable for current read-only analysis when otherwise valid, but the gate emits a migration warning.
 
 The helper always emits `missing_evidence_policy = never_zero`. This is a semantic safety rule, not a numeric default: connector uncertainty must not be converted into zero spend, zero orders, zero inventory, unchanged state, no prior action, or any other fabricated observation.
 
