@@ -57,6 +57,11 @@
             "type": ["object", "null"],
             "properties": {
               "reporting_generation": {"type": ["string", "null"]},
+              "reporting_generation_status": {
+                "type": ["string", "null"],
+                "enum": ["active", "read_only", "sunset_scheduled", "retired", "unknown", null]
+              },
+              "sunset_at": {"type": ["string", "null"], "format": "date-time"},
               "report_lifecycle": {
                 "type": ["string", "null"],
                 "enum": ["synchronous", "asynchronous", "push", "export", "unknown", null]
@@ -68,6 +73,10 @@
               "truncation_signal_exposed": {"type": ["boolean", "null"]},
               "row_eligibility_exposed": {"type": ["boolean", "null"]},
               "historical_availability_exposed": {"type": ["boolean", "null"]},
+              "historical_availability_status": {
+                "type": ["string", "null"],
+                "enum": ["available", "partial", "unavailable", "retired", "unknown", null]
+              },
               "freshness_exposed": {"type": ["boolean", "null"]},
               "available_through_exposed": {"type": ["boolean", "null"]},
               "metric_semantics_exposed": {"type": ["boolean", "null"]},
