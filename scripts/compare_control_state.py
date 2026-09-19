@@ -17,6 +17,21 @@ def _control_map(snapshot: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return {item["control_type"]: item for item in snapshot.get("controls", [])}
 
 
+def _coverage_problem(snapshot: dict[str, Any], control_map: dict[str, dict[str, Any]], side: str) -> str | None:
+    coverage = snapshot.get("coverage")
+    if not isinstance(coverage, dict):
+        return f"{side} material-control coverage is missing"
+    if coverage.get("coverage_status") != "Complete":
+        return f"{side} material-control coverage is not Complete"
+    required = coverage.get("required_control_types")
+    if not isinstance(required, list) or not required:
+        return f"{side} required material-control set is missing"
+    missing = sorted(set(required) - set(control_map))
+    if missing:
+        return f"{side} required controls are not evidenced: " + ", ".join(missing)
+    return None
+
+
 def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intended_treatment: str | None = None) -> dict[str, Any]:
     """Return a fail-closed comparability classification and evidence reasons."""
     reasons: list[str] = []
@@ -26,6 +41,16 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
             return {"classification": "Unknown", "reasons": [f"scope mismatch or missing {key}"]}
 
     bmap, pmap = _control_map(baseline), _control_map(post)
+    for snapshot, control_map, side in ((baseline, bmap, "baseline"), (post, pmap, "post")):
+        problem = _coverage_problem(snapshot, control_map, side)
+        if problem:
+            return {"classification": "Unknown", "reasons": [problem]}
+
+    required_before = set(baseline["coverage"]["required_control_types"])
+    required_after = set(post["coverage"]["required_control_types"])
+    if required_before != required_after:
+        return {"classification": "Unknown", "reasons": ["material-control requirement set changed between snapshots"]}
+
     all_types = sorted(set(bmap) | set(pmap))
     if not all_types:
         return {"classification": "Unknown", "reasons": ["no material control evidence"]}
@@ -54,18 +79,17 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
         return {"classification": "Unknown", "reasons": reasons, "changed_controls": changed}
 
     if intended_treatment:
-        if intended_treatment not in all_types:
-            return {"classification": "Unknown", "reasons": ["intended treatment is not evidenced"]}
+        if intended_treatment not in required_before:
+            return {"classification": "Unknown", "reasons": ["intended treatment is outside the evidenced material-control set"]}
         if intended_treatment not in changed:
             return {"classification": "Unknown", "reasons": ["intended treatment has no observed state change"]}
         overlaps = [c for c in changed if c != intended_treatment]
         if not overlaps:
-            return {"classification": "Treatment Isolated", "reasons": ["only intended treatment changed"], "changed_controls": changed}
-        # The comparator cannot infer whether overlapping controls are harmless.
+            return {"classification": "Treatment Isolated", "reasons": ["only intended treatment changed within a complete material-control set"], "changed_controls": changed}
         return {"classification": "Confounded", "reasons": ["overlapping material controls changed: " + ", ".join(overlaps)], "changed_controls": changed}
 
     if not changed:
-        return {"classification": "Comparable", "reasons": ["no evidenced material control changes"], "changed_controls": []}
+        return {"classification": "Comparable", "reasons": ["no evidenced material control changes within a complete material-control set"], "changed_controls": []}
     return {"classification": "Directional", "reasons": ["material controls changed without an identified treatment"], "changed_controls": changed}
 
 

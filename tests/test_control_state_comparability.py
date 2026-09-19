@@ -12,6 +12,7 @@ def snapshot(state=1, status="observed", control="base_bid", marketplace="ATVPDK
         "scope": {"marketplace_id": marketplace, "profile_id": profile},
         "observed_at": "2026-09-19T00:00:00Z",
         "source": {"source_system": "fixture", "acquisition_channel": "test"},
+        "coverage": {"required_control_types": [control], "coverage_status": "Complete"},
         "controls": [{"control_type": control, "state": state, "effective_at": effective, "evidence_status": status}],
     }
 
@@ -30,25 +31,34 @@ class ControlStateComparabilityTests(unittest.TestCase):
         for token in ["control-state-comparability.md", "baseline", "post-change", "directional"]:
             self.assertIn(token, text)
 
-    def test_machine_readable_snapshot_preserves_unknown_and_provenance(self):
+    def test_machine_readable_snapshot_preserves_unknown_provenance_and_coverage(self):
         schema = json.loads((ROOT / "schemas/control-state-snapshot.json").read_text(encoding="utf-8"))
-        self.assertTrue({"scope", "observed_at", "source", "controls"}.issubset(set(schema["required"])))
+        self.assertTrue({"scope", "observed_at", "source", "coverage", "controls"}.issubset(set(schema["required"])))
+        coverage = schema["properties"]["coverage"]
+        self.assertTrue({"required_control_types", "coverage_status"}.issubset(set(coverage["required"])))
+        self.assertIn("Unknown", coverage["properties"]["coverage_status"]["enum"])
         control = schema["properties"]["controls"]["items"]
         self.assertTrue({"control_type", "state", "effective_at", "evidence_status"}.issubset(set(control["required"])))
         self.assertIn("unknown", control["properties"]["evidence_status"]["enum"])
 
     def test_shared_reference_routes_machine_contract(self):
         text = self.read("references/control-state-comparability.md")
-        for token in ["schemas/control-state-snapshot.json", "missing", "unknown"]:
-            self.assertIn(token, text)
-
-    def test_deterministic_comparator_exists_and_is_fail_closed(self):
-        text = self.read("scripts/compare_control_state.py")
-        for token in ["treatment isolated", "directional", "confounded", "unknown", "marketplace_id", "profile_id", "effective_at", "evidence_status"]:
+        for token in ["schemas/control-state-snapshot.json", "missing", "unknown", "coverage"]:
             self.assertIn(token, text)
 
     def test_comparator_classifies_stable_state_as_comparable(self):
         self.assertEqual(compare_control_state(snapshot(), snapshot())["classification"], "Comparable")
+
+    def test_comparator_fails_closed_when_coverage_is_unknown(self):
+        before, after = snapshot(), snapshot()
+        before["coverage"]["coverage_status"] = "Unknown"
+        self.assertEqual(compare_control_state(before, after)["classification"], "Unknown")
+
+    def test_comparator_fails_closed_when_required_control_is_not_evidenced(self):
+        before, after = snapshot(), snapshot()
+        before["coverage"]["required_control_types"].append("audience_bid_adjustment")
+        after["coverage"]["required_control_types"].append("audience_bid_adjustment")
+        self.assertEqual(compare_control_state(before, after)["classification"], "Unknown")
 
     def test_comparator_isolates_intended_treatment(self):
         self.assertEqual(compare_control_state(snapshot(1), snapshot(2), "base_bid")["classification"], "Treatment Isolated")
@@ -62,6 +72,8 @@ class ControlStateComparabilityTests(unittest.TestCase):
     def test_comparator_marks_overlapping_change_confounded(self):
         before = snapshot(1)
         after = snapshot(2)
+        before["coverage"]["required_control_types"].append("budget_or_pacing")
+        after["coverage"]["required_control_types"].append("budget_or_pacing")
         before["controls"].append({"control_type": "budget_or_pacing", "state": 10, "effective_at": "2026-09-18T00:00:00Z", "evidence_status": "observed"})
         after["controls"].append({"control_type": "budget_or_pacing", "state": 20, "effective_at": "2026-09-19T00:00:00Z", "evidence_status": "observed"})
         self.assertEqual(compare_control_state(before, after, "base_bid")["classification"], "Confounded")
