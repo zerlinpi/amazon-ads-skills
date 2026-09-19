@@ -181,7 +181,9 @@ echo '{"skill":"bid-optimization","profile":"action-safe-proposal"}'
 → required_capabilities[] / optional_capabilities[] / data_requirements{}
 ```
 
-When the resolver returns non-empty `data_requirements`, pass them unchanged into `evaluate_connector_capability_gate.py`. Do not silently drop them and do not invent additional requirements that are not owned by the selected profile or explicit task intent. A profile may require historical data without hard-coding a vendor-specific reporting generation.
+When the resolver returns non-empty `data_requirements`, pass them unchanged into `evaluate_connector_capability_gate.py`. Do not silently drop them.
+
+When the current task has an explicit connector data constraint that cannot be static in the profile—for example a concrete pre/post `history_window`—supply it to the resolver as `task_data_requirements`, keyed only by a capability already required by the selected profile. Task requirements may add or strengthen a reporting generation/history constraint, but may not relax a profile-owned requirement. The resolver emits the merged `data_requirements` plus profile/task provenance; callers should not hand-merge the two envelopes after resolution.
 
 The registry is intentionally connector-neutral. A vendor may expose differently named tools, endpoints, packages, or datasets; the adapter/connector maps those external surfaces onto the canonical repository capability IDs. A hidden tool under progressive discovery is not automatically `Unsupported`; resolve the connector catalog/namespace state first, then publish the observed status into the capability snapshot.
 
