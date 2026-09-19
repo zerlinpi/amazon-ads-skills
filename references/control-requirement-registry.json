@@ -16,9 +16,9 @@
       "required_control_types": [
         "base_bid",
         "bidding_strategy",
-        "placement_bid_adjustment",
+        "placement_adjustment",
         "audience_bid_adjustment",
-        "schedule_or_event_bid_rule",
+        "schedule_or_event_rule",
         "budget_or_pacing"
       ],
       "evidence_basis": [

@@ -48,7 +48,7 @@ class ControlStateComparabilityTests(unittest.TestCase):
         coverage = schema["properties"]["coverage"]
         self.assertTrue({"required_control_types", "coverage_status", "requirement_provenance"}.issubset(set(coverage["required"])))
         self.assertIn("Unknown", coverage["properties"]["coverage_status"]["enum"])
-        provenance = coverage["properties"]["requirement_provenance"]
+        provenance = coverage["properties"]["coverage"]["requirement_provenance"] if False else coverage["properties"]["requirement_provenance"]
         self.assertTrue({"decision_surface", "derivation_status", "requirement_registry_id"}.issubset(set(provenance["required"])))
         self.assertIn("Verified", provenance["properties"]["derivation_status"]["enum"])
         control = schema["properties"]["controls"]["items"]
@@ -66,7 +66,7 @@ class ControlStateComparabilityTests(unittest.TestCase):
         surface = registry["decision_surfaces"]["sponsored_products_bid_change"]
         self.assertEqual(
             set(surface["required_control_types"]),
-            {"base_bid", "bidding_strategy", "placement_bid_adjustment", "audience_bid_adjustment", "schedule_or_event_bid_rule", "budget_or_pacing"},
+            {"base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing"},
         )
         self.assertGreaterEqual(len(surface["evidence_basis"]), 4)
         self.assertTrue(all(item.startswith("amazon-ads-official:") for item in surface["evidence_basis"]))
