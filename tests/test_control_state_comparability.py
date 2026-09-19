@@ -1,3 +1,4 @@
+import json
 import unittest
 from pathlib import Path
 
@@ -23,6 +24,21 @@ class ControlStateComparabilityTests(unittest.TestCase):
         self.assertIn("baseline", text)
         self.assertIn("post-change", text)
         self.assertIn("directional", text)
+
+    def test_machine_readable_snapshot_preserves_unknown_and_provenance(self):
+        schema = json.loads((ROOT / "schemas/control-state-snapshot.json").read_text(encoding="utf-8"))
+        required = set(schema["required"])
+        self.assertTrue({"scope", "observed_at", "source", "controls"}.issubset(required))
+        control = schema["properties"]["controls"]["items"]
+        self.assertTrue({"control_type", "state", "effective_at", "evidence_status"}.issubset(set(control["required"])))
+        self.assertIn("unknown", control["properties"]["evidence_status"]["enum"])
+        self.assertNotIn(0, control["properties"]["state"].get("enum", []))
+
+    def test_shared_reference_routes_machine_contract(self):
+        text = self.read("references/control-state-comparability.md")
+        self.assertIn("schemas/control-state-snapshot.json", text)
+        self.assertIn("missing", text)
+        self.assertIn("unknown", text)
 
 
 if __name__ == "__main__":
