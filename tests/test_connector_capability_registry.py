@@ -186,6 +186,27 @@ class ConnectorCapabilityRegistryTests(unittest.TestCase):
                 },
             },
         )
+        self.assertEqual(
+            result["data_requirement_provenance"]["profile"],
+            {
+                "campaign-performance-read": {
+                    "requires_historical_data": True,
+                }
+            },
+        )
+        self.assertEqual(
+            result["data_requirement_provenance"]["task"],
+            {
+                "campaign-performance-read": {
+                    "requires_historical_data": True,
+                    "history_window": {
+                        "start_date": "2026-08-01",
+                        "end_date": "2026-09-15",
+                        "grain": "daily",
+                    },
+                }
+            },
+        )
 
     def test_task_requirement_cannot_relax_profile_historical_requirement(self):
         proc = subprocess.run(
