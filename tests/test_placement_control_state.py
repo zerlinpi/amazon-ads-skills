@@ -6,10 +6,10 @@ REGISTRY_ID = "control-requirements@2026-09-20"
 REQUIRED = ["base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing"]
 
 
-def snapshot(base_bid, placement_state):
+def snapshot(base_bid, placement_state, bidding_strategy="dynamic_down_only"):
     states = {
         "base_bid": base_bid,
-        "bidding_strategy": "dynamic_down_only",
+        "bidding_strategy": bidding_strategy,
         "placement_adjustment": placement_state,
         "audience_bid_adjustment": [],
         "schedule_or_event_rule": {"schedule_rules": [], "event_rules": []},
@@ -38,6 +38,15 @@ class PlacementControlStateTests(unittest.TestCase):
         complete = {"top_of_search": 0, "product_pages": 0, "rest_of_search": 0}
         result = compare_control_state(snapshot(1.0, complete), snapshot(1.2, complete), "base_bid")
         self.assertEqual(result["classification"], "Treatment Isolated")
+
+    def test_unknown_bidding_strategy_cannot_isolate_sp_base_bid_change(self):
+        complete = {"top_of_search": 0, "product_pages": 0, "rest_of_search": 0}
+        result = compare_control_state(
+            snapshot(1.0, complete, bidding_strategy=None),
+            snapshot(1.2, complete, bidding_strategy=None),
+            "base_bid",
+        )
+        self.assertEqual(result["classification"], "Unknown")
 
 
 if __name__ == "__main__":
