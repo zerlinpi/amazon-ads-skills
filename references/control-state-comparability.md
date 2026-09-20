@@ -28,6 +28,18 @@ When two schema-valid snapshots are available, `scripts/compare_control_state.py
 
 Do not invent an auction-level composition formula from configured controls. Treat them as a control graph whose realized effect is observed through delivery, CPC, traffic mix, placement/audience mix, conversion, and economic outcomes.
 
+## Sponsored Products budget-change state
+
+For `decision_surface=sponsored_products_budget_change`, generic evidence that a campaign has a budget is not enough. The repository-owned `budget_or_pacing.state` must preserve at least:
+
+- `base_average_daily_budget` — the source-supported configured average daily budget;
+- `effective_daily_budget` — the budget actually in force for the decision window after applicable automated budget rules;
+- `active_budget_rules` — source-supported rule evidence for that window. An empty list means the source positively observed no active rules; connector non-support or missing rule evidence remains unknown and must not be encoded as `[]`.
+
+Amazon currently documents schedule-based and performance-based Sponsored Ads budget rules that can automatically raise daily budgets, with multiple applicable rules able to combine. Amazon also documents Sponsored Ads daily budgets as average daily budgets whose day-level spend can vary under the account policy. Therefore configured budget, effective budget, observed spend, and rule state are distinct evidence. A day where spend exceeds the configured average daily budget is not by itself proof of a manual budget edit, policy breach, or executor action.
+
+The deterministic comparator applies this stronger structured-state check only to the registered Sponsored Products budget-change surface. If base/effective budget or active-rule evidence is missing, the comparison fails closed to `Unknown`. This does not model Amazon's budget-rule implementation and does not authorize any write.
+
 ## States
 
 - `Comparable` — no decision-material control difference outside the intended treatment/change.

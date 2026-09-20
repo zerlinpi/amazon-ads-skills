@@ -397,3 +397,20 @@ Before adopting an external idea:
 46. Declared experiment allocation does not prove realized allocation integrity.
 47. Fixed budget pools require source/destination opportunity-cost reconciliation.
 48. Record reviewed sources here when they materially influence the project.
+
+## Sponsored Products budget-control and incremental source scan — 2026-09-20
+
+Detailed review: `docs/research/sponsored-products-budget-control-state-2026-09.md`.
+
+Amazon official documentation reviewed this round establishes two decision-safety facts used by the repository: Sponsored Ads budget rules can automatically change a campaign's effective daily budget based on schedule/event or performance conditions, and the configured daily budget is an average-daily concept whose realized day-level spend can differ under the applicable policy/settings. These facts are independently adapted into a `sponsored_products_budget_change` control-state surface and effective-budget evidence gate; no Amazon prose, API schema, UI, examples or proprietary implementation is copied.
+
+New GitHub candidates reviewed and de-duplicated:
+
+- `MarketplaceAdPros/amazon-ads-mcp-server` — ~29 stars observed, MIT, last code push 2025-05-21; real TypeScript MCP wrapper but no repository CI/test suite surfaced and core value depends on a hosted service. Rejected for implementation reuse.
+- `Xnurta/Xnurta-MCP` — ~14 stars observed, active through 2026-09-18; no root license file/license metadata surfaced. Abstract connector-domain context only; no code/Skill/prompt/schema/workflow reused.
+- `jshorwitz/awesome-agentic-advertising` — ~40 stars observed, no license surfaced, README-only curated index. Discovery aid only; not counted as independent engineering evidence.
+- `elementary-data/elementary` — ~2.4k stars observed, Apache-2.0, active with substantial CI. Strong generic data-quality/observability reference, but its runtime overlaps lineage/freshness/backfill controls already present here; no dependency added.
+- `langfuse/langfuse` — ~34.8k stars observed, very active; core MIT with separately licensed enterprise directories. Strong external eval/trace infrastructure, but it does not improve the specific Amazon budget control-state proof boundary enough to justify a runtime dependency; no code/schema/prompt/evaluator copied.
+
+Stars/activity are recorded only to reduce repeated discovery work; none of them override license, engineering fit, duplication, or action-safety criteria.
+

@@ -63,6 +63,30 @@ def _coverage_problem(snapshot: dict[str, Any], control_map: dict[str, dict[str,
     return None
 
 
+def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[str, dict[str, Any]], side: str) -> str | None:
+    """Validate decision-surface state that generic control presence cannot prove."""
+    coverage = snapshot.get("coverage", {})
+    provenance = coverage.get("requirement_provenance", {}) if isinstance(coverage, dict) else {}
+    if provenance.get("decision_surface") != "sponsored_products_budget_change":
+        return None
+
+    budget_control = control_map.get("budget_or_pacing")
+    state = budget_control.get("state") if isinstance(budget_control, dict) else None
+    if not isinstance(state, dict):
+        return f"{side} Sponsored Products budget state is not structured enough to prove effective budget controls"
+
+    required_fields = {"base_average_daily_budget", "effective_daily_budget", "active_budget_rules"}
+    missing = sorted(required_fields - set(state))
+    if missing:
+        return f"{side} Sponsored Products budget state is missing: " + ", ".join(missing)
+    for field in ("base_average_daily_budget", "effective_daily_budget"):
+        if state.get(field) is None:
+            return f"{side} Sponsored Products budget state has unknown {field}"
+    if not isinstance(state.get("active_budget_rules"), list):
+        return f"{side} Sponsored Products active_budget_rules must be source-supported list evidence"
+    return None
+
+
 def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intended_treatment: str | None = None) -> dict[str, Any]:
     """Return a fail-closed comparability classification and evidence reasons."""
     reasons: list[str] = []
@@ -86,6 +110,9 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
         problem = _coverage_problem(snapshot, control_map, side)
         if problem:
             return {"classification": "Unknown", "reasons": [problem]}
+        state_problem = _surface_specific_state_problem(snapshot, control_map, side)
+        if state_problem:
+            return {"classification": "Unknown", "reasons": [state_problem]}
 
     required_before = set(baseline["coverage"]["required_control_types"])
     required_after = set(post["coverage"]["required_control_types"])

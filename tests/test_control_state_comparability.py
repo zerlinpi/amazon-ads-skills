@@ -80,6 +80,88 @@ class ControlStateComparabilityTests(unittest.TestCase):
         self.assertGreaterEqual(len(surface["evidence_basis"]), 4)
         self.assertTrue(all(item.startswith("amazon-ads-official:") for item in surface["evidence_basis"]))
 
+    def test_registry_has_evidence_backed_sp_budget_change_surface(self):
+        registry = json.loads((ROOT / "references/control-requirement-registry.json").read_text(encoding="utf-8"))
+        surface = registry["decision_surfaces"]["sponsored_products_budget_change"]
+        self.assertEqual(
+            set(surface["required_control_types"]),
+            {"base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing"},
+        )
+        self.assertGreaterEqual(len(surface["evidence_basis"]), 5)
+        self.assertTrue(all(item.startswith("amazon-ads-official:") for item in surface["evidence_basis"]))
+
+    def test_comparator_isolates_sp_budget_change_with_full_material_control_set(self):
+        required = [
+            "base_bid",
+            "bidding_strategy",
+            "placement_adjustment",
+            "audience_bid_adjustment",
+            "schedule_or_event_rule",
+            "budget_or_pacing",
+        ]
+
+        def budget_snapshot(base_budget, effective_budget):
+            states = {
+                "base_bid": 1.0,
+                "bidding_strategy": "dynamic_down_only",
+                "placement_adjustment": {"top_of_search": 0, "product_pages": 0, "rest_of_search": 0},
+                "audience_bid_adjustment": [],
+                "schedule_or_event_rule": [],
+                "budget_or_pacing": {
+                    "base_average_daily_budget": base_budget,
+                    "effective_daily_budget": effective_budget,
+                    "active_budget_rules": [],
+                },
+            }
+            return {
+                "scope": {"marketplace_id": "ATVPDKIKX0DER", "profile_id": "p1", "campaign_id": "sp-campaign-1"},
+                "observed_at": "2026-09-20T00:00:00Z",
+                "source": {"source_system": "fixture", "acquisition_channel": "test"},
+                "coverage": {
+                    "required_control_types": required,
+                    "coverage_status": "Complete",
+                    "requirement_provenance": {
+                        "decision_surface": "sponsored_products_budget_change",
+                        "derivation_status": "Verified",
+                        "capability_snapshot_id": "fixture-capability-snapshot",
+                        "requirement_registry_id": REGISTRY_ID,
+                        "evidence_note": "Deterministic Sponsored Products budget-change fixture.",
+                    },
+                },
+                "controls": [
+                    {
+                        "control_type": control_type,
+                        "state": state,
+                        "effective_at": "2026-09-20T00:00:00Z",
+                        "evidence_status": "observed",
+                    }
+                    for control_type, state in states.items()
+                ],
+            }
+
+        before = budget_snapshot(100, 100)
+        after = budget_snapshot(120, 120)
+        self.assertEqual(compare_control_state(before, after, "budget_or_pacing")["classification"], "Treatment Isolated")
+
+        after["controls"][0]["state"] = 1.2
+        self.assertEqual(compare_control_state(before, after, "budget_or_pacing")["classification"], "Confounded")
+
+        incomplete = budget_snapshot(120, 120)
+        incomplete["controls"][-1]["state"].pop("active_budget_rules")
+        self.assertEqual(compare_control_state(before, incomplete, "budget_or_pacing")["classification"], "Unknown")
+
+    def test_budget_skill_routes_causal_review_through_effective_budget_state(self):
+        text = self.read("skills/budget-optimization/SKILL.md")
+        for token in [
+            "control-state-comparability.md",
+            "sponsored_products_budget_change",
+            "base_average_daily_budget",
+            "effective_daily_budget",
+            "active_budget_rules",
+            "missing rule evidence is never zero rules",
+        ]:
+            self.assertIn(token, text)
+
     def test_shared_reference_routes_machine_contract(self):
         text = self.read("references/control-state-comparability.md")
         for token in ["schemas/control-state-snapshot.json", "missing", "unknown", "coverage", "requirement provenance", "control-requirement-registry.json"]:
