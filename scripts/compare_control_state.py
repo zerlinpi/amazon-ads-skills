@@ -74,6 +74,13 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
         if bscope.get(key) != pscope.get(key):
             return {"classification": "Unknown", "reasons": [f"decision-scope identity changed for {key}"]}
 
+    if bscope.get("entity_id") is not None:
+        before_type, after_type = bscope.get("entity_type"), pscope.get("entity_type")
+        if not before_type or not after_type:
+            return {"classification": "Unknown", "reasons": ["entity_id is present without a complete entity_type identity"]}
+        if before_type != after_type:
+            return {"classification": "Unknown", "reasons": ["decision-scope identity changed for entity_type"]}
+
     bmap, pmap = _control_map(baseline), _control_map(post)
     for snapshot, control_map, side in ((baseline, bmap, "baseline"), (post, pmap, "post")):
         problem = _coverage_problem(snapshot, control_map, side)
