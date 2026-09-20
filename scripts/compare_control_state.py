@@ -38,6 +38,20 @@ def _registry_requirement(provenance: dict[str, Any]) -> tuple[set[str] | None, 
     return set(required), None
 
 
+def _collection_problem(control: dict[str, Any], control_type: str, side: str) -> str | None:
+    state = control.get("state")
+    if not isinstance(state, list) or state:
+        return None
+    evidence = control.get("collection_evidence")
+    if not isinstance(evidence, dict):
+        return f"{side} empty {control_type} collection lacks completeness evidence"
+    expected = {"enumeration_status": "Complete", "pagination_status": "Complete", "capability_status": "Supported"}
+    incomplete = [key for key, value in expected.items() if evidence.get(key) != value]
+    if incomplete:
+        return f"{side} empty {control_type} collection completeness is unproven: " + ", ".join(incomplete)
+    return None
+
+
 def _coverage_problem(snapshot: dict[str, Any], control_map: dict[str, dict[str, Any]], side: str) -> str | None:
     coverage = snapshot.get("coverage")
     if not isinstance(coverage, dict):
@@ -63,6 +77,10 @@ def _coverage_problem(snapshot: dict[str, Any], control_map: dict[str, dict[str,
     null_state = sorted(control_type for control_type in required if control_map[control_type].get("state") is None)
     if null_state:
         return f"{side} required controls have unknown state: " + ", ".join(null_state)
+    for control_type in sorted(required):
+        problem = _collection_problem(control_map[control_type], control_type, side)
+        if problem:
+            return problem
     return None
 
 
