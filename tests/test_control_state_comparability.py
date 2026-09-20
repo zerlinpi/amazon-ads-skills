@@ -116,6 +116,10 @@ class ControlStateComparabilityTests(unittest.TestCase):
     def test_comparator_classifies_stable_state_as_comparable(self):
         self.assertEqual(compare_control_state(snapshot(), snapshot())["classification"], "Comparable")
 
+    def test_comparator_fails_closed_when_required_control_state_is_null(self):
+        before, after = snapshot(state=None), snapshot(state=None)
+        self.assertEqual(compare_control_state(before, after)["classification"], "Unknown")
+
     def test_comparator_fails_closed_when_coverage_is_unknown(self):
         before, after = snapshot(), snapshot(); before["coverage"]["coverage_status"] = "Unknown"
         self.assertEqual(compare_control_state(before, after)["classification"], "Unknown")
