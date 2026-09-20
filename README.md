@@ -202,6 +202,16 @@ The capability system has a permanent rule:
 missing_evidence_policy = never_zero
 ```
 
+For a custom advertising platform or agent host that does **not** implement native Agent Skills discovery, use the metadata-first context resolver instead of preloading all 15 Skills:
+
+```bash
+echo '{"operation":"catalog"}' | python scripts/resolve_skill_context.py
+echo '{"operation":"resolve","skill":"bid-optimization","profile":"action-safe-proposal"}' \
+  | python scripts/resolve_skill_context.py
+```
+
+The catalog exposes only Skill metadata; the resolver preloads one selected `SKILL.md`, keeps supporting resources deferred, and reuses the canonical connector-capability profile. See **[docs/PLATFORM-INTEGRATION.md](docs/PLATFORM-INTEGRATION.md)**.
+
 ---
 
 ## Data reliability
@@ -345,7 +355,7 @@ Use the narrowest document that owns the question:
 
 | Need | Read |
 |---|---|
-| Install / first run | `docs/GETTING-STARTED.md` |
+| Install / first run | `docs/GETTING-STARTED.md` |\n| Custom advertising-platform integration | `docs/PLATFORM-INTEGRATION.md` |
 | External sources and adoption boundaries | `docs/SOURCES.md` |
 | Recent platform/engineering research | `docs/research/` |
 | Amazon metric definitions | `references/amazon-ads-metrics.md` |
