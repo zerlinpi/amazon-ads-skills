@@ -7,7 +7,7 @@
   "additionalProperties": false,
   "required": ["scope", "observed_at", "source", "coverage", "controls"],
   "properties": {
-    "scope": {"type": "object", "additionalProperties": false, "required": ["marketplace_id", "profile_id"], "properties": {"marketplace_id": {"type": "string", "minLength": 1}, "profile_id": {"type": "string", "minLength": 1}, "campaign_id": {"type": ["string", "null"]}, "ad_group_id": {"type": ["string", "null"]}, "entity_id": {"type": ["string", "null"]}}},
+    "scope": {"type": "object", "additionalProperties": false, "required": ["marketplace_id", "profile_id"], "properties": {"marketplace_id": {"type": "string", "minLength": 1}, "profile_id": {"type": "string", "minLength": 1}, "campaign_id": {"type": ["string", "null"]}, "ad_group_id": {"type": ["string", "null"]}, "entity_id": {"type": ["string", "null"]}, "entity_type": {"type": ["string", "null"], "minLength": 1, "description": "Semantic namespace/type for entity_id, such as keyword or targeting_expression. Required when entity_id is populated; an identifier without its type is not a complete optimization identity."}}, "allOf": [{"if": {"properties": {"entity_id": {"type": "string"}}, "required": ["entity_id"]}, "then": {"required": ["entity_type"], "properties": {"entity_type": {"type": "string", "minLength": 1}}}}]},
     "observed_at": {"type": "string", "format": "date-time"},
     "source": {"type": "object", "additionalProperties": false, "required": ["source_system", "acquisition_channel"], "properties": {"source_system": {"type": "string", "minLength": 1}, "acquisition_channel": {"type": "string", "minLength": 1}, "connector_id": {"type": ["string", "null"]}, "readback_id": {"type": ["string", "null"]}}},
     "coverage": {
