@@ -22,7 +22,7 @@ def budget_snapshot(base_budget=100, effective_budget=100, policy="monthly_avera
         "bidding_strategy": "dynamic_down_only",
         "placement_adjustment": {"top_of_search": 0, "product_pages": 0, "rest_of_search": 0},
         "audience_bid_adjustment": [],
-        "schedule_or_event_rule": [],
+        "schedule_or_event_rule": {"schedule_rules": [], "event_rules": []},
         "budget_or_pacing": {
             "base_average_daily_budget": base_budget,
             "effective_daily_budget": effective_budget,
@@ -52,6 +52,10 @@ def budget_snapshot(base_budget=100, effective_budget=100, policy="monthly_avera
     }
 
 
+def control(snapshot, control_type):
+    return next(item for item in snapshot["controls"] if item["control_type"] == control_type)
+
+
 class BudgetPolicyControlStateTests(unittest.TestCase):
     def test_budget_change_contract_requires_average_daily_budget_policy_state(self):
         registry = json.loads((ROOT / "references/control-requirement-registry.json").read_text(encoding="utf-8"))
@@ -64,7 +68,7 @@ class BudgetPolicyControlStateTests(unittest.TestCase):
     def test_comparator_fails_closed_when_average_daily_budget_policy_is_missing(self):
         before = budget_snapshot(100, 100)
         after = budget_snapshot(120, 120)
-        after["controls"][-1]["state"].pop("average_daily_budget_policy")
+        control(after, "budget_or_pacing")["state"].pop("average_daily_budget_policy")
         result = compare_control_state(before, after, "budget_or_pacing")
         self.assertEqual(result["classification"], "Unknown")
         self.assertTrue(any("average_daily_budget_policy" in reason for reason in result["reasons"]))
@@ -75,6 +79,21 @@ class BudgetPolicyControlStateTests(unittest.TestCase):
         result = compare_control_state(before, after, "budget_or_pacing")
         self.assertEqual(result["classification"], "Unknown")
         self.assertTrue(any("average_daily_budget_policy" in reason for reason in result["reasons"]))
+
+    def test_budget_change_cannot_isolate_with_collapsed_bid_rule_state(self):
+        before = budget_snapshot(100, 100)
+        after = budget_snapshot(120, 120)
+        control(before, "schedule_or_event_rule")["state"] = []
+        control(after, "schedule_or_event_rule")["state"] = []
+        result = compare_control_state(before, after, "budget_or_pacing")
+        self.assertEqual(result["classification"], "Unknown")
+        self.assertTrue(any("bid-rule state" in reason for reason in result["reasons"]))
+
+    def test_budget_change_can_isolate_when_both_bid_rule_surfaces_are_observed(self):
+        before = budget_snapshot(100, 100)
+        after = budget_snapshot(120, 120)
+        result = compare_control_state(before, after, "budget_or_pacing")
+        self.assertEqual(result["classification"], "Treatment Isolated")
 
 
 if __name__ == "__main__":
