@@ -355,7 +355,8 @@ Use the narrowest document that owns the question:
 
 | Need | Read |
 |---|---|
-| Install / first run | `docs/GETTING-STARTED.md` |\n| Custom advertising-platform integration | `docs/PLATFORM-INTEGRATION.md` |
+| Install / first run | `docs/GETTING-STARTED.md` |
+| Custom advertising-platform integration | `docs/PLATFORM-INTEGRATION.md` |
 | External sources and adoption boundaries | `docs/SOURCES.md` |
 | Recent platform/engineering research | `docs/research/` |
 | Amazon metric definitions | `references/amazon-ads-metrics.md` |
