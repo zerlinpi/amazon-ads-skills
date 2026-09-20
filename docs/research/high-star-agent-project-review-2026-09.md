@@ -256,3 +256,49 @@ Adoption decision: retain only the abstract governance lesson that source ingest
 Fresh review found an ICLR 2026 memory benchmark with multiple memory competencies, dataset/config separation, and LLM-based evaluation utilities.
 
 Adoption decision: no implementation change. Its benchmark targets general conversational/agent memory retrieval and long-range understanding, while this repository's optimization memory is a typed advertising decision/event lineage problem with explicit scope, measurement semantics, and action safety. The domains are not interchangeable. No benchmark data, evaluation prompts, metric code, or configs are copied.
+
+## 2026-09-20 platform-integration and token-efficiency scan
+
+This pass focused on the user's next deployment target: running these Skills behind an advertising platform without paying to preload every Skill/reference/tool definition on every turn.
+
+Point-in-time GitHub/web metadata observed on 2026-09-20:
+
+| Project | Stars observed | License signal | Relevant finding | Decision |
+|---|---:|---|---|---|
+| `anthropics/skills` | ~177.2k | mixed/per-path: repository README says many Skills are Apache-2.0 while document Skills are source-available | strong production evidence for dynamic Skill loading and self-contained Skill packages | No content/code reuse because licensing is not uniform. Use only the abstract metadata-first/progressive-loading pattern already standardized by Agent Skills. |
+| `openai/openai-agents-python` | ~29.6k | MIT | deferred tool loading/tool search, runtime-local context, usage/token accounting | No SDK dependency. Independently apply the generic rule that large tool surfaces and host policy state should stay out of model-visible context until needed. |
+| `google/skills` | ~20.2k | Apache-2.0 | generated `index.json` carrying only Skill name/description/entrypoint; large multi-product catalog; plugin packaging | Adopt the generic catalog-before-body pattern only. No index schema/code/descriptions copied. |
+| `microsoft/agent-framework` | ~13.6k | MIT | Agent Skills progressive disclosure and multi-agent/runtime context separation | No framework dependency; corroborates the same host-level context boundary. |
+| `cloudflare/agent-skills-discovery-rfc` | ~345 | Apache-2.0 | explicit discovery index, content digests, cache invalidation and progressive Skill/resource loading | Lower-star but directly relevant protocol experiment. No RFC schema/code copied; retain the generic ideas of metadata discovery, cacheability and integrity-aware distribution for possible future hosted Skill delivery. |
+
+Fresh activity also showed Google Skills and Microsoft Agent Framework receiving updates on 2026-09-18, OpenAI Agents Python on 2026-09-17, and Anthropic Skills on 2026-09-10. Activity is context only; it does not override license/scope fit.
+
+### Gap exposed in this repository
+
+Native Agent Skills runtimes already advertise metadata before loading a Skill body. A custom advertising platform, however, had no repository-owned machine helper for that same behavior. A naive host could therefore:
+
+```text
+load all 15 SKILL.md bodies
++ load shared references
++ expose a large connector/MCP tool catalog
+→ unnecessary input tokens
+→ weaker attention allocation
+→ harder platform integration
+```
+
+The independently authored fix is `scripts/resolve_skill_context.py`:
+
+1. `catalog` returns only canonical `name + description + entrypoint`;
+2. `resolve` preloads one selected Skill only;
+3. referenced resources remain pointers for on-demand loading;
+4. connector capability requirements are reused from the existing canonical resolver;
+5. the result explicitly carries `write_authority = none`.
+
+No Google index generator, Cloudflare discovery schema, OpenAI SDK code, Microsoft runtime code, Anthropic Skill text, prompt, workflow or manifest implementation is copied.
+
+### Why not shrink every Skill aggressively
+
+Fresh size measurement found the 15 current `SKILL.md` files are already roughly ~1.0k–2.7k tokens by a conservative character-based estimate, below the commonly recommended <5k-token activation budget. The higher-value optimization is therefore **loading fewer files/tools**, not deleting domain safeguards solely to reduce file length.
+
+Future compaction should be evidence-driven: measure with/without changes in the external runtime harness and prefer lower token cost only when decision quality and forbidden-behavior rates do not regress.
+
