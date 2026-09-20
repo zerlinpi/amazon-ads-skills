@@ -76,6 +76,13 @@ class BudgetPolicyControlStateTests(unittest.TestCase):
         self.assertEqual(result["classification"], "Unknown")
         self.assertTrue(any("average_daily_budget_policy" in reason for reason in result["reasons"]))
 
+    def test_budget_change_cannot_isolate_with_collapsed_bid_rule_state(self):
+        before = budget_snapshot(100, 100)
+        after = budget_snapshot(120, 120)
+        result = compare_control_state(before, after, "budget_or_pacing")
+        self.assertEqual(result["classification"], "Unknown")
+        self.assertTrue(any("bid-rule state" in reason for reason in result["reasons"]))
+
 
 if __name__ == "__main__":
     unittest.main()
