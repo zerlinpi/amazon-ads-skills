@@ -70,6 +70,18 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
     surface = provenance.get("decision_surface")
 
     if surface in {"sponsored_products_bid_change", "sponsored_products_budget_change"}:
+        placement_control = control_map.get("placement_adjustment")
+        placement_state = placement_control.get("state") if isinstance(placement_control, dict) else None
+        if not isinstance(placement_state, dict):
+            return f"{side} Sponsored Products placement state is not structured enough to prove all placement surfaces"
+        required_placements = {"top_of_search", "rest_of_search", "product_pages"}
+        missing_placements = sorted(required_placements - set(placement_state))
+        if missing_placements:
+            return f"{side} Sponsored Products placement state is missing: " + ", ".join(missing_placements)
+        for field in sorted(required_placements):
+            if placement_state.get(field) is None:
+                return f"{side} Sponsored Products placement state has unknown {field}"
+
         rule_control = control_map.get("schedule_or_event_rule")
         rule_state = rule_control.get("state") if isinstance(rule_control, dict) else None
         if not isinstance(rule_state, dict):
