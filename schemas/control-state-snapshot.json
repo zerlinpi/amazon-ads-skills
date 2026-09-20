@@ -32,7 +32,10 @@
         "evidence_note": {"type": ["string", "null"]}
       }
     },
-    "controls": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["control_type", "state", "effective_at", "evidence_status"], "properties": {"control_type": {"$ref": "#/$defs/controlType"}, "state": {"description": "Source-supported configured state. Use null when evidence is missing or unsupported; never synthesize zero/false/unchanged.", "type": ["object", "array", "string", "number", "boolean", "null"]}, "effective_at": {"type": ["string", "null"], "format": "date-time"}, "evidence_status": {"type": "string", "enum": ["observed", "derived", "stale", "unsupported", "unknown"]}, "evidence_note": {"type": ["string", "null"]}}}}
+    "controls": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["control_type", "state", "effective_at", "evidence_status"], "properties": {"control_type": {"$ref": "#/$defs/controlType"}, "state": {"description": "Source-supported configured state. Use null when evidence is missing or unsupported; never synthesize zero/false/unchanged.", "type": ["object", "array", "string", "number", "boolean", "null"]}, "effective_at": {"type": ["string", "null"], "format": "date-time"}, "evidence_status": {"type": "string", "enum": ["observed", "derived", "stale", "unsupported", "unknown"]}, "collection_evidence": {"$ref": "#/$defs/collectionEvidence"}, "evidence_note": {"type": ["string", "null"]}}}}
   },
-  "$defs": {"controlType": {"type": "string", "enum": ["base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing", "targeting_or_routing", "experiment_assignment", "other_material_control"]}}
+  "$defs": {
+    "controlType": {"type": "string", "enum": ["base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing", "targeting_or_routing", "experiment_assignment", "other_material_control"]},
+    "collectionEvidence": {"type": "object", "additionalProperties": false, "required": ["enumeration_status", "pagination_status", "capability_status"], "properties": {"enumeration_status": {"type": "string", "enum": ["Complete", "Partial", "Unknown"]}, "pagination_status": {"type": "string", "enum": ["Complete", "Truncated", "Unknown"]}, "capability_status": {"type": "string", "enum": ["Supported", "Partial", "Unsupported", "Unknown"]}}}
+  }
 }

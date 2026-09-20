@@ -86,12 +86,18 @@ class ControlStateComparabilityTests(unittest.TestCase):
                 "schedule_or_event_rule": {"schedule_rules": [], "event_rules": []},
                 "budget_or_pacing": {"base_average_daily_budget": base_budget, "effective_daily_budget": effective_budget, "active_budget_rules": [], "average_daily_budget_policy": "monthly_average_with_daily_flexibility"},
             }
+            controls = []
+            for control_type, state in states.items():
+                item = {"control_type": control_type, "state": state, "effective_at": "2026-09-20T00:00:00Z", "evidence_status": "observed"}
+                if control_type == "audience_bid_adjustment":
+                    item["collection_evidence"] = {"enumeration_status": "Complete", "pagination_status": "Complete", "capability_status": "Supported"}
+                controls.append(item)
             return {
                 "scope": {"marketplace_id": "ATVPDKIKX0DER", "profile_id": "p1", "campaign_id": "sp-campaign-1"},
                 "observed_at": "2026-09-20T00:00:00Z",
                 "source": {"source_system": "fixture", "acquisition_channel": "test"},
                 "coverage": {"required_control_types": required, "coverage_status": "Complete", "requirement_provenance": {"decision_surface": "sponsored_products_budget_change", "derivation_status": "Verified", "capability_snapshot_id": "fixture-capability-snapshot", "requirement_registry_id": REGISTRY_ID, "evidence_note": "Deterministic Sponsored Products budget-change fixture."}},
-                "controls": [{"control_type": control_type, "state": state, "effective_at": "2026-09-20T00:00:00Z", "evidence_status": "observed"} for control_type, state in states.items()],
+                "controls": controls,
             }
 
         before = budget_snapshot(100, 100)
