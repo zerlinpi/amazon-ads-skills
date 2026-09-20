@@ -75,11 +75,11 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
     if not isinstance(state, dict):
         return f"{side} Sponsored Products budget state is not structured enough to prove effective budget controls"
 
-    required_fields = {"base_average_daily_budget", "effective_daily_budget", "active_budget_rules"}
+    required_fields = {"base_average_daily_budget", "effective_daily_budget", "active_budget_rules", "average_daily_budget_policy"}
     missing = sorted(required_fields - set(state))
     if missing:
         return f"{side} Sponsored Products budget state is missing: " + ", ".join(missing)
-    for field in ("base_average_daily_budget", "effective_daily_budget"):
+    for field in ("base_average_daily_budget", "effective_daily_budget", "average_daily_budget_policy"):
         if state.get(field) is None:
             return f"{side} Sponsored Products budget state has unknown {field}"
     if not isinstance(state.get("active_budget_rules"), list):
