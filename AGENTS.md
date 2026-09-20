@@ -14,6 +14,7 @@ A runtime manifest or cloned directory is not proof that Skill discovery succeed
 
 - Treat every `skills/*/SKILL.md` as an independently invocable skill.
 - Read only the matching skill first; load shared files from `references/`, `playbooks/` and `schemas/` only when needed.
+- For a custom host without native Skill discovery, use `scripts/resolve_skill_context.py`: expose only the metadata catalog at discovery time, preload exactly one selected `SKILL.md`, and treat returned resources as on-demand pointers. Do not preload all Skill bodies, `docs/research/`, or `evals/` merely because they exist.
 - For cross-domain requests, use `skills/amazon-ads-optimizer/SKILL.md` as the orchestrator.
 - For recurring weekly/Monday account reviews, start with `playbooks/weekly-review.md`, then load only specialist Skills required by material findings.
 - When the task asks whether a previous optimization worked, route to `skills/post-change-review/SKILL.md` before proposing another edit on the same entity.

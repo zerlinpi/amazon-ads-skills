@@ -256,6 +256,18 @@ Licensing/adoption note: these are public protocol documentation sources used fo
 
 ## Reviewed public Amazon Ads documentation
 
+### Amazon Ads MCP Server open beta
+
+Amazon's official February 2, 2026 announcement was reviewed because the user plans to pair this Skill library with an advertising platform. Amazon describes the Amazon Ads MCP Server as an agent-facing translation layer for Amazon Ads API functionality, available in open beta to Amazon Ads partners with active API credentials, with reporting plus workflows that can include creating, updating, or deleting advertising objects.
+
+Repository adoption is deliberately narrower: the MCP server is treated as an external Connector/Executor candidate. Its write-capable tools do not grant this repository mutation authority, and transient MCP tool/workflow names are not copied into canonical Skills. A custom host should map observed capabilities into the repository-owned connector capability snapshot/catalog and keep authorization, secrets, retry/idempotency and reconciliation outside the Skill layer.
+
+Official source reviewed:
+
+- https://advertising.amazon.com/library/news/amazon-ads-mcp-server-open-beta
+
+Licensing/adoption note: this is public vendor documentation used for factual product/capability behavior. No Amazon prose, MCP tool schema, API request, workflow template, connector implementation, or proprietary code was copied.
+
 ### Sponsored Ads Reporting v3 targeting identity
 
 Amazon's official Sponsored Ads Reporting v3 documentation was reviewed for entity-identity semantics. The `spTargeting` report contains both ordinary keywords and targeting expressions. Amazon documents `keywordType` as the discriminator: `BROAD`, `PHRASE`, and `EXACT` identify keyword rows, while `TARGETING_EXPRESSION` and `TARGETING_EXPRESSION_PREDEFINED` identify targeting-expression rows. The v2→v3 migration guide also maps the former `targetId` field into the v3 `keywordId` field.
