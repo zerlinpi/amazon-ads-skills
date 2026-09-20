@@ -54,6 +54,7 @@ class ControlStateComparabilityTests(unittest.TestCase):
         control = schema["properties"]["controls"]["items"]
         self.assertTrue({"control_type", "state", "effective_at", "evidence_status"}.issubset(set(control["required"])))
         self.assertIn("unknown", control["properties"]["evidence_status"]["enum"])
+        self.assertIn("entity_type", schema["properties"]["scope"]["properties"])
 
     def test_versioned_requirement_registry_exists(self):
         registry = json.loads((ROOT / "references/control-requirement-registry.json").read_text(encoding="utf-8"))
@@ -142,6 +143,44 @@ class ControlStateComparabilityTests(unittest.TestCase):
         before["scope"].update({"campaign_id": "campaign-a", "ad_group_id": "ad-group-a", "entity_id": "keyword-a"})
         after["scope"].update({"campaign_id": "campaign-a", "ad_group_id": "ad-group-a", "entity_id": "keyword-b"})
         self.assertEqual(compare_control_state(before, after)["classification"], "Unknown")
+
+    def test_comparator_fails_closed_when_entity_id_has_no_entity_type(self):
+        before, after = snapshot(), snapshot()
+        before["scope"].update({"campaign_id": "campaign-a", "ad_group_id": "ad-group-a", "entity_id": "123"})
+        after["scope"].update({"campaign_id": "campaign-a", "ad_group_id": "ad-group-a", "entity_id": "123"})
+        self.assertEqual(compare_control_state(before, after)["classification"], "Unknown")
+
+    def test_comparator_fails_closed_on_entity_type_mismatch_for_same_entity_id(self):
+        before, after = snapshot(), snapshot()
+        before["scope"].update({
+            "campaign_id": "campaign-a",
+            "ad_group_id": "ad-group-a",
+            "entity_id": "123",
+            "entity_type": "keyword",
+        })
+        after["scope"].update({
+            "campaign_id": "campaign-a",
+            "ad_group_id": "ad-group-a",
+            "entity_id": "123",
+            "entity_type": "targeting_expression",
+        })
+        self.assertEqual(compare_control_state(before, after)["classification"], "Unknown")
+
+    def test_comparator_accepts_same_typed_entity_identity(self):
+        before, after = snapshot(), snapshot()
+        before["scope"].update({
+            "campaign_id": "campaign-a",
+            "ad_group_id": "ad-group-a",
+            "entity_id": "123",
+            "entity_type": "keyword",
+        })
+        after["scope"].update({
+            "campaign_id": "campaign-a",
+            "ad_group_id": "ad-group-a",
+            "entity_id": "123",
+            "entity_type": "keyword",
+        })
+        self.assertEqual(compare_control_state(before, after)["classification"], "Comparable")
 
     def test_comparator_marks_overlapping_change_confounded(self):
         before = snapshot(1)
