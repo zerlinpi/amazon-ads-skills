@@ -48,7 +48,7 @@ class ControlStateComparabilityTests(unittest.TestCase):
         coverage = schema["properties"]["coverage"]
         self.assertTrue({"required_control_types", "coverage_status", "requirement_provenance"}.issubset(set(coverage["required"])))
         self.assertIn("Unknown", coverage["properties"]["coverage_status"]["enum"])
-        provenance = coverage["properties"]["coverage"]["requirement_provenance"] if False else coverage["properties"]["requirement_provenance"]
+        provenance = coverage["properties"]["requirement_provenance"]
         self.assertTrue({"decision_surface", "derivation_status", "requirement_registry_id"}.issubset(set(provenance["required"])))
         self.assertIn("Verified", provenance["properties"]["derivation_status"]["enum"])
         control = schema["properties"]["controls"]["items"]
@@ -60,6 +60,14 @@ class ControlStateComparabilityTests(unittest.TestCase):
         self.assertEqual(registry["registry_id"], REGISTRY_ID)
         self.assertIn("fixture_control_comparison", registry["decision_surfaces"])
         self.assertEqual(registry["decision_surfaces"]["fixture_control_comparison"]["required_control_types"], ["base_bid"])
+
+    def test_registry_control_types_are_schema_canonical(self):
+        registry = json.loads((ROOT / "references/control-requirement-registry.json").read_text(encoding="utf-8"))
+        schema = json.loads((ROOT / "schemas/control-state-snapshot.json").read_text(encoding="utf-8"))
+        allowed = set(schema["$defs"]["controlType"]["enum"])
+        for name, surface in registry["decision_surfaces"].items():
+            with self.subTest(surface=name):
+                self.assertTrue(set(surface["required_control_types"]).issubset(allowed))
 
     def test_registry_has_evidence_backed_sp_bid_change_surface(self):
         registry = json.loads((ROOT / "references/control-requirement-registry.json").read_text(encoding="utf-8"))
@@ -116,6 +124,24 @@ class ControlStateComparabilityTests(unittest.TestCase):
 
     def test_comparator_fails_closed_on_scope_mismatch(self):
         self.assertEqual(compare_control_state(snapshot(), snapshot(profile="p2"))["classification"], "Unknown")
+
+    def test_comparator_fails_closed_on_campaign_scope_mismatch(self):
+        before, after = snapshot(), snapshot()
+        before["scope"]["campaign_id"] = "campaign-a"
+        after["scope"]["campaign_id"] = "campaign-b"
+        self.assertEqual(compare_control_state(before, after)["classification"], "Unknown")
+
+    def test_comparator_fails_closed_on_ad_group_scope_mismatch(self):
+        before, after = snapshot(), snapshot()
+        before["scope"].update({"campaign_id": "campaign-a", "ad_group_id": "ad-group-a"})
+        after["scope"].update({"campaign_id": "campaign-a", "ad_group_id": "ad-group-b"})
+        self.assertEqual(compare_control_state(before, after)["classification"], "Unknown")
+
+    def test_comparator_fails_closed_on_entity_scope_mismatch(self):
+        before, after = snapshot(), snapshot()
+        before["scope"].update({"campaign_id": "campaign-a", "ad_group_id": "ad-group-a", "entity_id": "keyword-a"})
+        after["scope"].update({"campaign_id": "campaign-a", "ad_group_id": "ad-group-a", "entity_id": "keyword-b"})
+        self.assertEqual(compare_control_state(before, after)["classification"], "Unknown")
 
     def test_comparator_marks_overlapping_change_confounded(self):
         before = snapshot(1)

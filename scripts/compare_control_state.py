@@ -70,6 +70,9 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
     for key in ("marketplace_id", "profile_id"):
         if not bscope.get(key) or bscope.get(key) != pscope.get(key):
             return {"classification": "Unknown", "reasons": [f"scope mismatch or missing {key}"]}
+    for key in ("campaign_id", "ad_group_id", "entity_id"):
+        if bscope.get(key) != pscope.get(key):
+            return {"classification": "Unknown", "reasons": [f"decision-scope identity changed for {key}"]}
 
     bmap, pmap = _control_map(baseline), _control_map(post)
     for snapshot, control_map, side in ((baseline, bmap, "baseline"), (post, pmap, "post")):
