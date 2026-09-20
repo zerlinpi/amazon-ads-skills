@@ -69,7 +69,7 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
     provenance = coverage.get("requirement_provenance", {}) if isinstance(coverage, dict) else {}
     surface = provenance.get("decision_surface")
 
-    if surface == "sponsored_products_bid_change":
+    if surface in {"sponsored_products_bid_change", "sponsored_products_budget_change"}:
         rule_control = control_map.get("schedule_or_event_rule")
         rule_state = rule_control.get("state") if isinstance(rule_control, dict) else None
         if not isinstance(rule_state, dict):
