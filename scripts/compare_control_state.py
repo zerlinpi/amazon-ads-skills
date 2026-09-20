@@ -67,7 +67,22 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
     """Validate decision-surface state that generic control presence cannot prove."""
     coverage = snapshot.get("coverage", {})
     provenance = coverage.get("requirement_provenance", {}) if isinstance(coverage, dict) else {}
-    if provenance.get("decision_surface") != "sponsored_products_budget_change":
+    surface = provenance.get("decision_surface")
+
+    if surface == "sponsored_products_bid_change":
+        rule_control = control_map.get("schedule_or_event_rule")
+        rule_state = rule_control.get("state") if isinstance(rule_control, dict) else None
+        if not isinstance(rule_state, dict):
+            return f"{side} Sponsored Products bid-rule state is not structured enough to prove schedule and event rule coverage"
+        required_rule_surfaces = {"schedule_rules", "event_rules"}
+        missing_rule_surfaces = sorted(required_rule_surfaces - set(rule_state))
+        if missing_rule_surfaces:
+            return f"{side} Sponsored Products bid-rule state is missing: " + ", ".join(missing_rule_surfaces)
+        for field in sorted(required_rule_surfaces):
+            if not isinstance(rule_state.get(field), list):
+                return f"{side} Sponsored Products {field} must be source-supported list evidence"
+
+    if surface != "sponsored_products_budget_change":
         return None
 
     budget_control = control_map.get("budget_or_pacing")
