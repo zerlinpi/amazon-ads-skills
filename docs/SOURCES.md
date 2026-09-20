@@ -225,6 +225,20 @@ A later connector-binding pass reviewed the MCP Registry's server identity/versi
 
 Generic orchestration/memory/evaluation frameworks were not imported as dependencies because their runtime concerns belong outside this portable Amazon Ads decision library. Their own licenses and copyrights remain with their projects.
 
+### Incremental high-star / active-project scan — 2026-09-20
+
+A fresh GitHub discovery pass used multiple domain queries rather than a fixed repository shortlist. Generic Agent Skills, MCP, evaluation, multi-agent and lineage searches were filtered toward projects with substantial adoption (including `stars:>1000` or `stars:>5000` where applicable) and recent pushes; Amazon Ads/MCP discovery used a lower `stars:>10` floor because the domain is much smaller. Stars are discovery context only, not an adoption criterion.
+
+- `anthropics/skills` — surfaced in the >1k-star Agent Skills scan and had recent commits through 2026-09-10. No repository-root license file was found in this review, so no code, prompt, Skill, schema or workflow was reused. Its packaging/runtime concerns overlap methods already covered by the Agent Skills sources above.
+- `google/skills` — Apache-2.0; actively updated through 2026-09-18. Reviewed for routing/catalog packaging only. No implementation was adopted because the current gap is Amazon targeting identity, not Skill discovery.
+- `openai/openai-agents-python` — MIT; actively updated through 2026-09-17. Reviewed for execution/evaluation safety context. Its agent runtime and approval machinery remain outside this repository's read-only Amazon Ads decision layer.
+- `microsoft/agent-framework` — MIT; actively updated through 2026-09-18. Reviewed for general validation/execution-safety engineering. No runtime dependency or implementation was adopted because it does not improve the specific Amazon Ads evidence-identity gap.
+- `apache/hamilton` — Apache-2.0; recent maintenance through 2026-08-19. Reviewed as a mature lineage/dataflow reference; the repository's existing lineage contracts already cover the decision need, so no DAG/runtime dependency was added.
+- `KuudoAI/amazon_ads_mcp` — MIT; still active through 2026-09-06 and already reviewed above. Re-discovered in the Amazon Ads MCP scan and de-duplicated rather than counted as new evidence.
+- `zach22-1999/lingxing-mcp` — MIT; public initial implementation in 2026 with later documentation maintenance. Reviewed as connector-domain context only; no code/schema/workflow was reused because connector-specific implementation does not resolve the current Amazon reporting identity issue.
+
+This scan produced no third-party implementation worth importing. The actionable evidence for this round came instead from Amazon's official Reporting v3 semantics below.
+
 ## Reviewed public MCP documentation
 
 ### Model Context Protocol tool annotations and server instructions
@@ -241,6 +255,20 @@ Public references reviewed:
 Licensing/adoption note: these are public protocol documentation sources used for factual protocol behavior. No SDK source or specification text is redistributed here.
 
 ## Reviewed public Amazon Ads documentation
+
+### Sponsored Ads Reporting v3 targeting identity
+
+Amazon's official Sponsored Ads Reporting v3 documentation was reviewed for entity-identity semantics. The `spTargeting` report contains both ordinary keywords and targeting expressions. Amazon documents `keywordType` as the discriminator: `BROAD`, `PHRASE`, and `EXACT` identify keyword rows, while `TARGETING_EXPRESSION` and `TARGETING_EXPRESSION_PREDEFINED` identify targeting-expression rows. The v2→v3 migration guide also maps the former `targetId` field into the v3 `keywordId` field.
+
+That means an identifier field/value alone is not sufficient proof of the same targeting entity across reporting generations or targeting kinds. The repository independently applies the narrower safety rule that a populated control-state `entity_id` must be paired with a semantic `entity_type`, and baseline/post snapshots with a missing or changed type fail closed instead of being treated as comparable.
+
+Public references reviewed:
+
+- https://d3a0d0y2hgofx6.cloudfront.net/ja-jp/guides/reporting/v3/report-types.html
+- https://d3a0d0y2hgofx6.cloudfront.net/ja-jp/reference/migration-guides/reporting-v2-v3.html
+- https://d3a0d0y2hgofx6.cloudfront.net/ja-jp/guides/reporting/v2/metrics.html
+
+Licensing/adoption note: these are Amazon public vendor documentation pages used only for factual reporting semantics. No Amazon prose, API request examples, report schema, templates, or proprietary implementation was copied; the schema/comparator changes are repository-authored.
 
 ### Unified Reporting and Amazon Marketing Stream
 
