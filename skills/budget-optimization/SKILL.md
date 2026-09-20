@@ -24,6 +24,14 @@ When a conclusion depends on live MCP/API/connector data, load `../../references
 
 This gate is read-only and does not authorize live Amazon Ads mutation.
 
+## Budget control-state causal gate
+
+When the question is whether a Sponsored Products budget change **worked**, whether a budget increase caused a result, or whether a surprising spend change came from a manual budget edit, load `../../references/control-state-comparability.md` and use `decision_surface=sponsored_products_budget_change` when the required evidence is available.
+
+For this causal surface, `budget_or_pacing` must distinguish the source-supported `base_average_daily_budget`, the `effective_daily_budget` that was actually in force for the comparison window, and `active_budget_rules`. If the connector cannot observe budget-rule state, keep material-control coverage `Partial/Unknown`; do not encode missing rule evidence as an empty list or unchanged state.
+
+Use `../../scripts/compare_control_state.py` only as a read-only evidence classifier. `Treatment Isolated` means the evidenced registered controls isolate the intended budget treatment; it does not prove incrementality or authorize another budget mutation.
+
 ## 核心原则
 
 “预算花完”不是自动加预算信号；“预算没花完”也不等于 campaign 有问题。预算动作必须结合边际效率、业务目标和预算池约束。Campaign 预算只是约束层级之一；账户级、portfolio 或外部预算 cap 可能才是真正瓶颈。
@@ -61,6 +69,24 @@ This gate is read-only and does not authorize live Amazon Ads mutation.
 - promotion plan；
 - campaign priority/role；
 - 同账户可调配预算池、protected floor 或外部 pacing 约束。
+
+## Configured budget vs effective budget
+
+Keep these observations separate before diagnosis:
+
+- **base average daily budget** — the configured campaign budget from a trusted source;
+- **effective daily budget** — the budget in force after source-supported automated budget rules for the relevant date/time;
+- **observed spend / serving coverage** — realized delivery evidence such as spend, budget status and average time in budget;
+- **budget-rule state** — schedule/performance rule status and effective interval when the active source supports it;
+- **upstream constraint state** — portfolio/account/business/external caps and pacing when decision-relevant.
+
+Amazon currently documents Sponsored Ads budget rules that can automatically increase daily budget based on schedules/events or performance conditions, and multiple applicable rules can combine. A performance-triggered rule is an adaptive control: its activation may be related to the same performance signal being evaluated, so it is a potential control/confounding change rather than proof that a manual action caused the outcome.
+
+Amazon also documents Sponsored Ads daily budgets as **average daily** budgets whose realized spend can vary by day under the applicable account setting/policy. Therefore:
+
+`spend on one day > base average daily budget` does **not** by itself prove a manual budget increase, executor drift, overspend, or policy violation.
+
+If effective budget or rule state is unavailable, say what is unknown and keep the conclusion `Directional / Hold / Manual Review` as appropriate. Missing rule evidence is never zero rules.
 
 ## 诊断
 

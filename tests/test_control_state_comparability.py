@@ -146,6 +146,22 @@ class ControlStateComparabilityTests(unittest.TestCase):
         after["controls"][0]["state"] = 1.2
         self.assertEqual(compare_control_state(before, after, "budget_or_pacing")["classification"], "Confounded")
 
+        incomplete = budget_snapshot(120, 120)
+        incomplete["controls"][-1]["state"].pop("active_budget_rules")
+        self.assertEqual(compare_control_state(before, incomplete, "budget_or_pacing")["classification"], "Unknown")
+
+    def test_budget_skill_routes_causal_review_through_effective_budget_state(self):
+        text = self.read("skills/budget-optimization/SKILL.md")
+        for token in [
+            "control-state-comparability.md",
+            "sponsored_products_budget_change",
+            "base_average_daily_budget",
+            "effective_daily_budget",
+            "active_budget_rules",
+            "missing rule evidence is never zero rules",
+        ]:
+            self.assertIn(token, text)
+
     def test_shared_reference_routes_machine_contract(self):
         text = self.read("references/control-state-comparability.md")
         for token in ["schemas/control-state-snapshot.json", "missing", "unknown", "coverage", "requirement provenance", "control-requirement-registry.json"]:

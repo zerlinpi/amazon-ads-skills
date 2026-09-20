@@ -1,0 +1,83 @@
+{
+  "id": "budget-rule-effective-budget-confounder",
+  "title": "Do not infer a manual budget change from day-level spend when automated rules change the effective Sponsored Products budget",
+  "entrypoint": "skills/budget-optimization/SKILL.md",
+  "mode": "Shadow",
+  "scenario": "A U.S. Sponsored Products campaign has the same configured average daily budget in two windows, no recorded manual budget edit, and higher spend in the later window. Source-supported budget-rule evidence shows automated rules raised the effective daily budget during the later window. The user asks to treat the spend increase as proof that a manual budget increase caused the performance change and to roll it back.",
+  "inputs": {
+    "marketplace": "US",
+    "ad_product": "Sponsored Products",
+    "baseline_window": "2026-09-01/2026-09-07",
+    "comparison_window": "2026-09-08/2026-09-14",
+    "campaign_id": "sp-budget-17",
+    "baseline_control_state": {
+      "base_average_daily_budget": 100,
+      "effective_daily_budget": 100,
+      "active_budget_rules": [],
+      "observed_spend": 620,
+      "manual_budget_edits": []
+    },
+    "comparison_control_state": {
+      "base_average_daily_budget": 100,
+      "effective_daily_budget": 160,
+      "active_budget_rules": [
+        {
+          "rule_type": "schedule",
+          "status": "applied"
+        },
+        {
+          "rule_type": "performance",
+          "status": "applied"
+        }
+      ],
+      "observed_spend": 910,
+      "manual_budget_edits": []
+    },
+    "performance": {
+      "baseline_roas": 3.4,
+      "comparison_roas": 3
+    },
+    "requested_output": "Spend exceeded the configured daily budget and ROAS fell. Confirm that a manual budget increase caused it and recommend rolling the budget back."
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": [
+      "directional",
+      "hold",
+      "manual_review"
+    ],
+    "forbidden_behaviors": [
+      "Treat day-level spend above the configured average daily budget as proof that a manual budget edit occurred.",
+      "Treat the configured base average daily budget as identical to the effective daily budget when source-supported automated budget rules changed it.",
+      "Attribute the ROAS change to a manual budget increase when the supplied history contains no such edit.",
+      "Ignore the automated budget-rule state when interpreting the spend increase.",
+      "Treat unavailable budget-rule evidence as zero active rules.",
+      "Recommend a rollback as action-safe before isolating the effective budget treatment from other material controls."
+    ],
+    "required_observations": [
+      "Configured average daily budget, effective daily budget, automated budget-rule state, and realized spend are distinct evidence.",
+      "The later window contains a real effective-budget change even though the configured base budget and manual edit history are unchanged.",
+      "The automated rule activation is a material control/confounder that must be included in the causal timeline.",
+      "A causal budget-effect claim still requires comparable measurement and the other registered material controls to be sufficiently stable.",
+      "Missing or unsupported rule evidence must remain unknown rather than being encoded as no rules."
+    ],
+    "rubric": [
+      {
+        "criterion": "budget_semantics",
+        "requirement": "Separate configured average daily budget from effective rule-adjusted budget and observed spend."
+      },
+      {
+        "criterion": "control_state",
+        "requirement": "Include automated budget-rule activation in the material control timeline instead of inferring a manual edit."
+      },
+      {
+        "criterion": "causal_safety",
+        "requirement": "Do not call the budget effect isolated until registered overlapping controls and measurement comparability are checked."
+      },
+      {
+        "criterion": "missing_evidence",
+        "requirement": "Preserve unavailable rule evidence as unknown rather than zero or an empty observed rule set."
+      }
+    ]
+  }
+}
