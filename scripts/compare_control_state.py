@@ -70,6 +70,11 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
     surface = provenance.get("decision_surface")
 
     if surface in {"sponsored_products_bid_change", "sponsored_products_budget_change"}:
+        bidding_control = control_map.get("bidding_strategy")
+        bidding_state = bidding_control.get("state") if isinstance(bidding_control, dict) else None
+        if bidding_state is None:
+            return f"{side} Sponsored Products bidding strategy state is unknown"
+
         placement_control = control_map.get("placement_adjustment")
         placement_state = placement_control.get("state") if isinstance(placement_control, dict) else None
         if not isinstance(placement_state, dict):
