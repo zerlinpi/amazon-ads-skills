@@ -4,6 +4,8 @@ Load this reference when an Amazon Ads recommendation depends on a time-varying 
 
 The purpose is to prevent an older but still-live guide, a launch announcement, a different ad product, or a different control surface from silently becoming current action-safe platform behavior.
 
+For a maintainer-facing snapshot of recent Amazon Ads launches and emerging surfaces, see `../docs/research/amazon-ads-platform-watch-2026-09.md`. That watch file is **not** part of ordinary Skill context; load it only when a current platform change may materially affect the decision or integration being analyzed.
+
 ## Capability identity
 
 For every platform fact that materially affects a recommendation, preserve enough identity to answer what the source actually proves:
