@@ -24,6 +24,22 @@ When a conclusion depends on live MCP/API/connector data, load `../../references
 
 This gate is read-only and does not authorize live Amazon Ads mutation.
 
+## Campaign objective gate
+
+Before turning local bid efficiency into an increase/decrease proposal, load `../../references/campaign-objective.md` and preserve `campaign_objective`, `primary_metric`, and `guardrail_metrics` whenever campaign mission changes the interpretation or acceptable trade-off.
+
+- Prefer explicit user/account strategy, structured campaign metadata, or a documented operating plan as objective evidence.
+- **Do not infer** campaign objective from ACOS, TACOS, match type, campaign name, spend level, placement mix, organic/rank movement, or a short performance window.
+- `Growth` still requires marginal headroom plus retail/economic readiness; strong historical ACOS alone is not scale authority.
+- `Profit` is constrained by contribution economics and marginal efficiency rather than a generic ACOS target.
+- `Discovery` may spend for learning only under explicit exploration budget/stop conditions; learning spend is not proof of scalable demand.
+- `Defense` must expose strategic rationale, cannibalization risk, and opportunity cost rather than assuming every branded click is incremental.
+- `Experiment` preserves treatment integrity and the declared primary/guardrail metrics before bid tuning.
+- `Control` favors stable, interpretable ownership of proven traffic and should not be casually amplified from one efficient window.
+- `Unknown` stays unresolved. If the direction, tolerance, or sizing depends on mission, cap the result at `Hold`, `Directional`, `Shadow`, `Experiment`, or `Manual Review`; do not emit an action-safe exact bid solely from ambiguous objective evidence.
+
+This gate is additive to connector capability, sample sufficiency, retail state, coupled-control, action-sizing and platform-capability checks. It does not authorize live writes.
+
 ## 默认模式
 
 `Suggest`。任何 bid 变化均为 proposal，不直接写入账户。

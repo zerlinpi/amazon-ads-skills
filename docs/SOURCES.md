@@ -545,3 +545,12 @@ Community evidence also reinforced existing rules for retail readiness, search-t
 No universal default was adopted for fixed bid-change percentages, placement multipliers, budget allocation percentages, click/order/spend thresholds, exact waiting periods, one-keyword-per-campaign architecture, dayparting schedules, ranking promises, or claims that paid spend necessarily causes organic-rank lift. Such ideas remain account-specific hypotheses or caller policy unless stronger evidence makes them action-safe.
 
 Detailed review: `docs/research/operator-community-objectives-2026-09.md`.
+
+
+### Incremental runtime/evaluation review — 2026-09-21
+
+- `evalstate/fast-agent` — 3,921 stars observed on 2026-09-21; Apache-2.0; non-fork/non-archived; pushed 2026-09-20; substantial unit/integration/e2e test trees and GitHub Actions workflows. Reviewed for Skills/MCP/ACP runtime composition, transport diagnostics, evaluation workflows and explicit runtime connection boundaries. The project is strong engineering evidence for keeping runtime orchestration, connector attachment and execution diagnostics outside a portable domain decision library. No dependency, agent workflow, configuration, prompt, MCP implementation, test fixture or schema was copied because those concerns overlap this repository's existing external-runtime boundary and do not improve the specific campaign-objective gap closed in bid/placement decisions.
+
+Adoption decision: no runtime framework added. The current change remains a repository-authored, decision-layer campaign-objective gate; external Connector/Executor ownership and progressive-loading boundaries stay unchanged.
+
+Repository: https://github.com/evalstate/fast-agent
