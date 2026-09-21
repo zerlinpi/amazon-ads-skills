@@ -12,6 +12,20 @@ When control evidence is exchanged between a Skill, connector, replay fixture, o
 
 The snapshot must declare the decision-material control types expected and a coverage status. `Complete` is allowed only when every required control is represented by source-supported evidence. `Partial` or `Unknown` coverage is not evidence that omitted controls were absent.
 
+### Collection-valued control evidence
+
+When a registry-required control is represented as a top-level list, the list contents alone do not prove that the control state is complete. This applies to both empty and non-empty lists: one returned row/page is still partial evidence when additional rows may exist.
+
+A list-valued required control is decision-complete only when its machine-readable `collection_evidence` establishes all three conditions:
+
+- `enumeration_status=Complete` — the source/connector completed the decision-relevant enumeration;
+- `pagination_status=Complete` — no unresolved continuation, row cap, or truncation remains;
+- `capability_status=Supported` — the active acquisition path supports that control collection at the required scope.
+
+`Partial`, `Truncated`, `Unsupported`, `Unknown`, or missing collection evidence fails closed to `Unknown`, even when the returned list is non-empty. A verified empty list is therefore distinct from an unknown empty list, and a non-empty partial list is distinct from a complete collection.
+
+This generic gate applies to top-level list-valued controls. Lists embedded inside structured controls, such as schedule/event rule surfaces or budget-rule state, retain their surface-specific completeness requirements; do not infer that a parent object is complete merely because an embedded list exists.
+
 ### Versioned requirement provenance
 
 `references/control-requirement-registry.json` is the repository-owned, versioned authority for `decision_surface -> required_control_types`. A snapshot with `derivation_status=Verified` must name its `requirement_registry_id`, and that identity plus the decision surface must resolve to the exact required set in the registry. An unknown/stale registry identity, an unregistered decision surface, or a snapshot-required set that differs from the registry fails closed to `Unknown`.
