@@ -45,6 +45,7 @@ Collect or explicitly mark missing:
 
 - marketplace, profile/account scope, currency, timezone, date window, attribution maturity;
 - attribution model/window/variant when conversion reporting can expose multiple methodologies such as standard/default vs `all views`;
+- cross-ad-product activity when diagnosing attributed conversion movement: eligible Sponsored Products, Sponsored Brands, Sponsored Display and DSP activity can compete for conversion credit, so a product/campaign attribution drop can occur without an equivalent shopper-demand drop;
 - primary KPI and business objective;
 - daily or weekly account/campaign performance;
 - source/metric metadata when windows use different reports, refresh paths, attribution variants, semantic versions, or unknown measurement definitions;
@@ -64,11 +65,12 @@ Collect or explicitly mark missing:
 3. **Size the loss** — compare matched windows; normalize unequal windows only after the data are comparable.
 4. **Decompose the bridge** — impressions -> clicks -> CPC/spend -> orders/CVR -> sales/AOV -> ACOS/ROAS.
 5. **Rank contributors** — prioritize ASINs, campaigns, targets, search terms and placements by lost business contribution, not noisy percentages.
-6. **Check retail/market confounders** — inventory, Buy Box, price, promotion, listing, reviews, delivery, demand, competitor and parent/variation-family changes.
-7. **Audit controllable and platform-managed changes** — bids, budgets, placements, states, negatives, product-ad mapping, launches, pauses, automation or bulk edits, plus auto-enrolled delivery surfaces/ad experiences and dynamic product/creative realization that can change traffic or conversion mix without a manual campaign edit.
-8. **Run Mixed-ASIN safety** — distinguish clean routes from halo-heavy or mixed-ASIN routes before target-level actions.
-9. **Assign causality** — `Confirmed`, `Likely`, `Directional`, `Rejected`, or `Missing Data`.
-10. **Propose recovery** — only actions that pass the actionability gate, with validation and rollback criteria.
+6. **Check attribution competition** — when attributed purchases/sales fall while traffic is comparatively stable, check whether activity changed in other eligible Amazon ad products before treating the measured conversion drop as a shopper-conversion failure. Keep the observed credit shift separate from the hypothesis about why it shifted.
+7. **Check retail/market confounders** — inventory, Buy Box, price, promotion, listing, reviews, delivery, demand, competitor and parent/variation-family changes.
+8. **Audit controllable and platform-managed changes** — bids, budgets, placements, states, negatives, product-ad mapping, launches, pauses, automation or bulk edits, plus auto-enrolled delivery surfaces/ad experiences and dynamic product/creative realization that can change traffic or conversion mix without a manual campaign edit.
+9. **Run Mixed-ASIN safety** — distinguish clean routes from halo-heavy or mixed-ASIN routes before target-level actions.
+10. **Assign causality** — `Confirmed`, `Likely`, `Directional`, `Rejected`, or `Missing Data`.
+11. **Propose recovery** — only actions that pass the actionability gate, with validation and rollback criteria.
 
 ## Output contract
 
@@ -78,7 +80,7 @@ Return:
 2. executive verdict and exact windows;
 3. KPI bridge and primary driver;
 4. ranked ASIN/campaign/target contribution;
-5. retail and control-change findings, including family-level and platform-managed realization effects when relevant;
+5. attribution-competition, retail and control-change findings, including family-level and platform-managed realization effects when relevant;
 6. Mixed-ASIN safety labels;
 7. facts vs hypotheses vs missing data;
 8. prioritized recovery proposals with confidence;
@@ -90,6 +92,8 @@ Return:
 - Same source/table/metric name does not prove comparability when attribution model/variant, completeness, filters, grain or metric semantic version changed.
 - Standard/default conversion metrics and `all views` conversion metrics are not interchangeable merely because they share labels such as Purchases, Sales or ROAS.
 - An attribution-methodology cutover near a performance break is a competing measurement cause until reconciled; do not generalize a documented view-attribution change to unaffected campaign/inventory scopes.
+- A decline in attributed purchases/sales for one eligible ad product does not by itself prove shopper conversion propensity fell: cross-ad-product attribution competition can reassign credit after activity changes elsewhere in the account.
+- Do not recommend aggressive bid cuts, pauses or traffic suppression solely from a product-level attributed-conversion drop until material cross-product attribution competition has been checked or explicitly marked unavailable.
 - No manual control change does not prove that delivery conditions stayed constant when Amazon can auto-enroll existing campaigns into a platform-managed delivery surface or dynamically realize different products/creative experiences.
 - Configured eligible products are not the same thing as the realized product mix when a format supports platform-managed selection.
 - Missing realized product/creative/surface fields from the active connector are not evidence that realization was unchanged or zero.
@@ -99,5 +103,5 @@ Return:
 - A change made after the decline began is a possible fix, not a root cause.
 - A stale retail snapshot cannot prove Buy Box, inventory, price or listing health during a later decline window.
 - A child-ASIN conversion decline is not isolated ad inefficiency when parent/variation-family or sibling retail changes plausibly explain substitution.
-- When missing/stale retail state, family-level retail shock, source-lineage drift, attribution-variant drift, metric-version drift, or a platform-managed realization change can materially explain the break, downgrade aggressive traffic suppression until reconciled.
+- When missing/stale retail state, family-level retail shock, source-lineage drift, attribution-variant drift, metric-version drift, cross-ad-product attribution competition, or a platform-managed realization change can materially explain the break, downgrade aggressive traffic suppression until reconciled.
 - Every recommendation must state evidence, confidence, expected effect, validation window and rollback trigger before it can ever reach an external executor.
