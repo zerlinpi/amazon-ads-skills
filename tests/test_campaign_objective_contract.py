@@ -35,6 +35,15 @@ class CampaignObjectiveContractTests(unittest.TestCase):
         action = json.loads(self.read("schemas/optimization-action.json"))
         self.assertIn("campaign_objective", action["properties"])
 
+    def test_growth_qualification_uses_shared_objective_contract(self):
+        growth = self.read("skills/growth-opportunity-finder/SKILL.md")
+        self.assertIn("../../references/campaign-objective.md", growth)
+        self.assertIn("## Campaign objective gate", growth)
+        self.assertIn("Unknown", growth)
+        self.assertIn("do not infer", growth.lower())
+        self.assertIn("primary_metric", growth)
+        self.assertIn("guardrail_metrics", growth)
+
 
 if __name__ == "__main__":
     unittest.main()
