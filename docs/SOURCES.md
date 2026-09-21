@@ -414,3 +414,32 @@ New GitHub candidates reviewed and de-duplicated:
 
 Stars/activity are recorded only to reduce repeated discovery work; none of them override license, engineering fit, duplication, or action-safety criteria.
 
+## Non-empty control collection completeness and incremental source scan — 2026-09-21
+
+This round closed a control-state evidence gap exposed by deterministic regression: a non-empty returned collection is not proof that the collection is complete. For registry-required list-valued controls, decision use now requires machine-readable enumeration, pagination, and connector-capability completeness rather than inferring completeness from the presence of one or more rows.
+
+### Amazon official evidence
+
+- **Adjust Sponsored Products bids**, updated 2026-09-14: Amazon documents audience bid adjustments as a collection of independently configured audience boosts and currently allows selecting up to 10 audiences. This supports treating audience-adjustment state as an enumerable control surface rather than a single boolean/value. Source: https://advertising.amazon.com/help/GYYZVM7LGSRYGWV5
+- **Bidding strategies for Sponsored Products**, updated 2026-09-14: Amazon separately documents dynamic/fixed/rule-based bidding and audience bid adjustments. Source: https://advertising.amazon.com/help/GCU2BUWJH2W3A8Z7
+- **Sponsored Products audience bid boosting**, public launch documentation: audience controls can be activated through Amazon Ads API / Ads Console and have audience-level performance reporting. Source: https://advertising.amazon.com/resources/whats-new/audience-bid-boosting-in-sponsored-products
+- **Unified reporting**, generally available 2026-06-08: Amazon documents campaign/placement/audience dimensional reporting across accounts and ad products. This is reporting-surface evidence only; it does not prove connector extraction completeness or remove pagination/truncation requirements. Source: https://advertising.amazon.com/resources/whats-new/streamline-campaign-analysis-with-unified-reporting
+
+Amazon documentation is public vendor documentation, not open-source implementation material. Only factual product behavior and generic evidence-safety implications are independently paraphrased; no Amazon prose, API schema, payload, examples, or proprietary workflow is copied.
+
+### GitHub projects reviewed this round
+
+Stars and activity below are point-in-time discovery context only, not adoption criteria.
+
+- `denisneuf/python-amazon-ad-api` — ~202 stars observed; MIT; active through 2026-09-17; non-fork; public Amazon Advertising API wrapper with tests plus CodeQL/CI/release workflows. Useful as connector/API-surface engineering evidence, including explicit profile/marketplace routing, but it does not define this repository's causal or collection-completeness semantics. No wrapper code, endpoint model, credential pattern, exception implementation, or schema was copied.
+- `google/agents-cli` — ~5.97k stars observed; Apache-2.0; active through 2026-09-16; non-fork; ships cross-coding-agent Skills and explicit eval run/generate/grade/compare/analyze lifecycle commands for Claude Code, Codex, and other coding agents. The generic lesson—keep evaluation lifecycle/versioned artifacts explicit—is already materially represented by this repository's deterministic tests and Skill-effectiveness contracts, so no CLI/Skill/eval implementation was imported.
+- `GoogleCloudPlatform/agent-starter-pack` — ~6.56k stars observed; Apache-2.0; real tests/CI, but its own README marks it maintenance-mode and directs new development to `google/agents-cli`. It is retained as historical corroboration rather than a new implementation source; no templates, Terraform, CI/CD, evaluation configs, or deployment code were copied.
+- `comet-ml/opik` — ~22.2k stars observed; Apache-2.0; very active on 2026-09-21 with extensive unit/integration/e2e/guardrail/evaluation CI. Strong general evidence for separating tracing, datasets, experiments, evaluation, and production monitoring, but adopting the platform would expand this repository's runtime/dependency surface without improving the specific Amazon control-collection proof boundary. No SDK, evaluator, trace schema, optimizer, prompt, or workflow was copied.
+- `opendatadiscovery/odd-platform` — ~1.43k stars observed; Apache-2.0 metadata; active through 2026-09-20 with backend/frontend tests and CI. Its lineage/observability architecture is relevant generic corroboration, but source/acquisition/reporting/freshness/backfill lineage is already a first-class contract here. Rejected as a dependency and implementation source for this change.
+
+Previously reviewed Amazon Ads MCP repositories (including KuudoAI, PPC Prophet, Xnurta, Hologrow/DataDoe-adjacent connector surfaces) were de-duplicated rather than counted again when no materially new decision-safety evidence appeared. Forks, curated link lists, hosted-service shells, and projects without a clear reusable license boundary were not treated as independent implementation evidence.
+
+### Adoption decision
+
+Adopt only the repository-owned invariant proven by RED→GREEN regression: **returned rows do not establish complete control state**. Every top-level list-valued registry-required control must carry complete enumeration + complete pagination + supported capability evidence before it can participate in a causal isolation result. Missing/partial/truncated/unsupported evidence remains `Unknown`; no live Amazon Ads write authority is added.
+
