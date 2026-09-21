@@ -17,6 +17,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG_PATH = ROOT / "references" / "connector-capability-catalog.json"
+CONTROL_REQUIREMENTS_PATH = ROOT / "references" / "control-requirement-registry.json"
 PROFILE_DATA_REQUIREMENT_FIELDS = {
     "required_reporting_generation",
     "requires_historical_data",
@@ -166,6 +167,62 @@ def _merge_task_requirements(
     return merged, task_normalized
 
 
+
+def _resolve_control_requirement(
+    decision_surface: Any,
+    required_capabilities: list[str],
+) -> tuple[dict[str, Any] | None, dict[str, str] | None]:
+    if decision_surface is None:
+        return None, None
+    if not isinstance(decision_surface, str) or not decision_surface.strip():
+        raise ValueError("decision_surface must be a non-empty string or null")
+    decision_surface = decision_surface.strip()
+    if "entity-state-readback" not in required_capabilities:
+        raise ValueError(
+            "decision_surface requires entity-state-readback to be required by the selected profile"
+        )
+
+    try:
+        registry = json.loads(CONTROL_REQUIREMENTS_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError("control requirement registry is unavailable or invalid") from exc
+    if not isinstance(registry, dict):
+        raise ValueError("control requirement registry must be an object")
+    registry_id = registry.get("registry_id")
+    surfaces = registry.get("decision_surfaces")
+    if not isinstance(registry_id, str) or not registry_id.strip():
+        raise ValueError("control requirement registry has invalid registry_id")
+    if not isinstance(surfaces, dict) or decision_surface not in surfaces:
+        raise ValueError(f"unknown decision_surface: {decision_surface}")
+
+    surface = surfaces[decision_surface]
+    controls = surface.get("required_control_types") if isinstance(surface, dict) else None
+    if not isinstance(controls, list) or not controls:
+        raise ValueError(
+            f"decision_surface {decision_surface!r} has no required_control_types"
+        )
+    normalized = []
+    for index, control_type in enumerate(controls):
+        if not isinstance(control_type, str) or not control_type.strip():
+            raise ValueError(
+                f"decision_surface {decision_surface!r} required_control_types[{index}] must be a non-empty string"
+            )
+        value = control_type.strip()
+        if value in normalized:
+            raise ValueError(
+                f"decision_surface {decision_surface!r} contains duplicate control type {value!r}"
+            )
+        normalized.append(value)
+
+    return (
+        {"required_control_types": normalized},
+        {
+            "decision_surface": decision_surface,
+            "requirement_registry_id": registry_id.strip(),
+        },
+    )
+
+
 def _load_catalog() -> dict[str, Any]:
     try:
         data = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
@@ -244,6 +301,15 @@ def resolve_skill_capabilities(payload: Any) -> dict[str, Any]:
         payload.get("task_data_requirements"),
     )
 
+    control_requirement, control_requirement_provenance = _resolve_control_requirement(
+        payload.get("decision_surface"),
+        required,
+    )
+    if control_requirement is not None:
+        normalized_data_requirements.setdefault("entity-state-readback", {}).update(
+            control_requirement
+        )
+
     return {
         "catalog_version": catalog.get("catalog_version"),
         "skill": skill,
@@ -255,6 +321,7 @@ def resolve_skill_capabilities(payload: Any) -> dict[str, Any]:
             "profile": profile_data_requirements,
             "task": task_data_requirements,
         },
+        "control_requirement_provenance": control_requirement_provenance,
         "capabilities": {
             capability_id: known[capability_id]
             for capability_id in required + optional
@@ -263,6 +330,7 @@ def resolve_skill_capabilities(payload: Any) -> dict[str, Any]:
             "use_with": "scripts/evaluate_connector_capability_gate.py",
             "pass_data_requirements_to_gate": True,
             "task_data_requirements_may_only_strengthen": True,
+            "decision_surface_controls_from_registry": True,
             "missing_evidence_policy": "never_zero",
             "write_authority": "none",
         },
