@@ -2,6 +2,19 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.2.0 — 2026-09-21
+
+### Added
+
+- User-facing documentation hierarchy with `docs/README.md`, `docs/CAPABILITIES.md`, `docs/ARCHITECTURE.md`, research/archive boundaries and a much smaller product-entry README.
+- Campaign-objective context contract with bounded `Discovery`, `Control`, `Growth`, `Profit`, `Defense`, `Experiment`, and safe `Unknown` roles.
+- Operator/community research boundary: practitioner evidence can expose failure modes, but anecdotes and fixed percentages do not become repository defaults.
+
+### Changed
+
+- Superseded 2026-09-07 bootstrap plan/design moved out of active documentation so obsolete 11-Skill/direct-to-main guidance no longer competes with current repository governance.
+- Optimization action proposals can preserve campaign-objective context when it materially changes a recommendation.
+
 ## v1.1.0 — 2026-09-21
 
 ### Added
