@@ -1,29 +1,45 @@
 {
   "id": "modeled-conversion-unallocated-row",
-  "skill": "performance-drop-diagnosis",
-  "scenario": "Sponsored Display conversion reporting contains modeled conversions and an Unallocated dimension row while a targeting-level slice appears to lose purchases.",
-  "input": {
+  "title": "Modeled conversions on Unallocated rows can bias lower-grain diagnosis",
+  "entrypoint": "skills/performance-drop-diagnosis/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "Sponsored Display conversion reporting contains modeled conversions and an Unallocated dimension row while a targeting-level slice appears to lose purchases. The operator asks to cut target bids based on the allocated rows.",
+  "inputs": {
     "campaign_type": "Sponsored Display",
     "report_grain": "targeting",
     "traffic": "stable",
     "targeting_rows_purchases_change_pct": -28,
     "unallocated_row_present": true,
-    "modeled_conversion_semantics_known": true
+    "modeled_conversion_semantics_known": true,
+    "allocation_coverage": "material and not reconciled"
   },
+  "allowed_external_evidence": [
+    "Amazon Ads modeled conversion documentation"
+  ],
   "expected": {
-    "must": [
-      "Treat Unallocated modeled conversions as attributed campaign/order conversion evidence that cannot be safely assigned to the requested targeting grain",
-      "Do not interpret the targeting-row purchase deficit as zero conversions, lost shopper demand, or target-level waste until allocation coverage is reconciled",
-      "Separate campaign-level conversion movement from allocation-to-dimension movement",
-      "Downgrade target-level causal claims and traffic-suppression actions to Directional, Hold, or Missing Data when allocation coverage is material",
-      "Preserve modeled-versus-direct measurement semantics when comparing periods or sources"
+    "acceptable_decisions": ["directional", "hold"],
+    "forbidden_behaviors": [
+      "Drop Unallocated rows before computing campaign-level conversion totals.",
+      "Redistribute Unallocated conversions across targets without supported allocation evidence.",
+      "Recommend target bid cuts solely from allocated targeting rows when modeled allocation changed."
     ],
-    "must_not": [
-      "Drop Unallocated rows before computing campaign-level conversion totals",
-      "Redistribute Unallocated conversions across targets without supported allocation evidence",
-      "Recommend target bid cuts solely from allocated targeting rows when modeled allocation changed"
+    "required_observations": [
+      "Unallocated modeled conversions can preserve campaign-level conversion evidence without supporting assignment to the requested targeting grain.",
+      "A targeting-row purchase deficit is not equivalent to zero conversions, lost shopper demand, or target-level waste while allocation coverage remains unreconciled."
+    ],
+    "rubric": [
+      {
+        "criterion": "Allocation boundary",
+        "requirement": "Separate campaign-level conversion movement from allocation-to-dimension movement and preserve the Unallocated row in parent-level totals."
+      },
+      {
+        "criterion": "Action safety",
+        "requirement": "Downgrade target-level causal claims and traffic-suppression actions to Directional or Hold when allocation coverage is material and unreconciled."
+      },
+      {
+        "criterion": "Measurement comparability",
+        "requirement": "Preserve modeled-versus-direct measurement semantics when comparing periods or sources and do not invent lower-grain allocation."
+      }
     ]
-  },
-  "risk": "Without an allocation gate, modeled conversions reported on Unallocated rows can make lower-grain rows look artificially weak and trigger false bid cuts or pauses.",
-  "mode": "Read-only"
+  }
 }
