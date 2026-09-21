@@ -26,6 +26,14 @@ A list-valued required control is decision-complete only when its machine-readab
 
 This generic gate applies to top-level list-valued controls. Lists embedded inside structured controls, such as schedule/event rule surfaces or budget-rule state, retain their surface-specific completeness requirements; do not infer that a parent object is complete merely because an embedded list exists.
 
+For structured controls that contain decision-material nested lists, completeness is recorded separately in `nested_collection_evidence`, keyed by the nested state field. Sponsored Products causal comparisons currently require this for:
+
+- `schedule_or_event_rule.state.schedule_rules`;
+- `schedule_or_event_rule.state.event_rules`;
+- `budget_or_pacing.state.active_budget_rules` when evaluating Sponsored Products budget changes.
+
+Each required nested list must independently prove `enumeration_status=Complete`, `pagination_status=Complete`, and `capability_status=Supported`. One nested surface cannot launder another: complete event-rule evidence does not prove schedule-rule completeness, and a non-empty budget-rule list does not prove that all active rules were observed. Missing, partial, truncated, unsupported, or unknown nested evidence fails closed to `Unknown`.
+
 ### Versioned requirement provenance
 
 `references/control-requirement-registry.json` is the repository-owned, versioned authority for `decision_surface -> required_control_types`. A snapshot with `derivation_status=Verified` must name its `requirement_registry_id`, and that identity plus the decision surface must resolve to the exact required set in the registry. An unknown/stale registry identity, an unregistered decision surface, or a snapshot-required set that differs from the registry fails closed to `Unknown`.

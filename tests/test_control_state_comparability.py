@@ -91,6 +91,15 @@ class ControlStateComparabilityTests(unittest.TestCase):
                 item = {"control_type": control_type, "state": state, "effective_at": "2026-09-20T00:00:00Z", "evidence_status": "observed"}
                 if control_type == "audience_bid_adjustment":
                     item["collection_evidence"] = {"enumeration_status": "Complete", "pagination_status": "Complete", "capability_status": "Supported"}
+                if control_type == "schedule_or_event_rule":
+                    item["nested_collection_evidence"] = {
+                        "schedule_rules": {"enumeration_status": "Complete", "pagination_status": "Complete", "capability_status": "Supported"},
+                        "event_rules": {"enumeration_status": "Complete", "pagination_status": "Complete", "capability_status": "Supported"},
+                    }
+                if control_type == "budget_or_pacing":
+                    item["nested_collection_evidence"] = {
+                        "active_budget_rules": {"enumeration_status": "Complete", "pagination_status": "Complete", "capability_status": "Supported"}
+                    }
                 controls.append(item)
             return {
                 "scope": {"marketplace_id": "ATVPDKIKX0DER", "profile_id": "p1", "campaign_id": "sp-campaign-1"},
