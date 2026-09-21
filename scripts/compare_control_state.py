@@ -40,15 +40,15 @@ def _registry_requirement(provenance: dict[str, Any]) -> tuple[set[str] | None, 
 
 def _collection_problem(control: dict[str, Any], control_type: str, side: str) -> str | None:
     state = control.get("state")
-    if not isinstance(state, list) or state:
+    if not isinstance(state, list):
         return None
     evidence = control.get("collection_evidence")
     if not isinstance(evidence, dict):
-        return f"{side} empty {control_type} collection lacks completeness evidence"
+        return f"{side} {control_type} collection lacks completeness evidence"
     expected = {"enumeration_status": "Complete", "pagination_status": "Complete", "capability_status": "Supported"}
     incomplete = [key for key, value in expected.items() if evidence.get(key) != value]
     if incomplete:
-        return f"{side} empty {control_type} collection completeness is unproven: " + ", ".join(incomplete)
+        return f"{side} {control_type} collection completeness is unproven: " + ", ".join(incomplete)
     return None
 
 
