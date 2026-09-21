@@ -24,6 +24,18 @@ When a conclusion depends on live MCP/API/connector data, load `../../references
 
 This gate is read-only and does not authorize live Amazon Ads mutation.
 
+## Campaign objective gate
+
+Before reallocating budget based on apparent efficiency, load `../../references/campaign-objective.md` when campaign roles differ. Cross-campaign allocation is an objective-allocation problem, not only an ACOS ranking problem.
+
+- Do not drain `Discovery` merely because current ACOS is worse than a mature `Profit` campaign without checking the learning mandate and guardrails.
+- Do not fund `Growth` merely because budget exhausts; require marginal headroom and explicit growth economics.
+- Do not cut `Defense` solely from one efficiency ratio without strategic-coverage and cannibalization context.
+- Do not starve an `Experiment` in a way that breaks the declared design.
+- If campaign objective is `Unknown`, avoid reallocation that assumes campaigns have interchangeable jobs.
+
+No universal campaign-type budget percentage is defined by this repository.
+
 ## Budget control-state causal gate
 
 When the question is whether a Sponsored Products budget change **worked**, whether a budget increase caused a result, or whether a surprising spend change came from a manual budget edit, load `../../references/control-state-comparability.md` and use `decision_surface=sponsored_products_budget_change` when the required evidence is available.
