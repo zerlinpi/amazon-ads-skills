@@ -138,7 +138,20 @@
         "material_dimensions": {"type": "array", "items": {"type": "string"}}, "warnings": {"type": "array", "items": {"type": "string"}}
       }, "additionalProperties": true
     },
-    "latest_action": {"type": ["object", "null"]},
+    "latest_action": {
+      "type": ["object", "null"],
+      "description": "Bounded summary of the latest relevant optimization action. Preserve the campaign objective captured on that action event when known; do not replace it with a later campaign objective.",
+      "properties": {
+        "event_id": {"type": ["string", "null"]},
+        "timestamp": {"type": ["string", "null"], "format": "date-time"},
+        "action_type": {"type": ["string", "null"]},
+        "campaign_objective": {
+          "anyOf": [{"$ref": "campaign-objective.json"}, {"type": "null"}],
+          "description": "Campaign objective recorded at action time. Unknown or missing action-time objective must not be backfilled from later performance or the current campaign objective."
+        }
+      },
+      "additionalProperties": true
+    },
     "application_status": {"type": ["string", "null"], "enum": ["Confirmed", "Partial", "Not Applied", "Drifted", "Unknown", null]},
     "outcome_status": {"type": ["string", "null"], "enum": ["Worked", "Likely Worked", "Monitoring", "Inconclusive", "Likely Failed", "Failed", "Application Failure", "Drifted", null]},
     "validation": {"type": ["object", "null"], "properties": {"status": {"type": ["string", "null"], "enum": ["Not Started", "Pending", "Mature", "Blocked", "Unknown", null]}, "window": {"type": ["object", "null"]}, "next_evaluation": {"type": ["string", "object", "null"]}}, "additionalProperties": true},
