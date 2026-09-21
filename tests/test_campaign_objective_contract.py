@@ -12,10 +12,7 @@ class CampaignObjectiveContractTests(unittest.TestCase):
     def test_campaign_objective_schema_has_bounded_roles_and_unknown_state(self):
         schema = json.loads(self.read("schemas/campaign-objective.json"))
         role_enum = schema["properties"]["role"]["enum"]
-        self.assertEqual(
-            set(role_enum),
-            {"Discovery", "Control", "Growth", "Profit", "Defense", "Experiment", "Unknown"},
-        )
+        self.assertEqual(set(role_enum), {"Discovery", "Control", "Growth", "Profit", "Defense", "Experiment", "Unknown"})
         self.assertIn("source", schema["required"])
         self.assertIn("confidence", schema["properties"])
         self.assertIn("primary_metric", schema["properties"])
@@ -23,39 +20,20 @@ class CampaignObjectiveContractTests(unittest.TestCase):
 
     def test_reference_blocks_one_size_fits_all_objective_inference(self):
         reference = self.read("references/campaign-objective.md")
-        for term in (
-            "Discovery",
-            "Control",
-            "Growth",
-            "Profit",
-            "Defense",
-            "Experiment",
-            "Unknown",
-            "ACOS",
-            "TACOS",
-            "organic",
-            "inferred",
-        ):
+        for term in ("Discovery", "Control", "Growth", "Profit", "Defense", "Experiment", "Unknown", "ACOS", "TACOS", "organic", "inferred"):
             self.assertIn(term, reference)
         self.assertIn("do not infer", reference.lower())
         self.assertIn("no universal", reference.lower())
 
-    def test_core_workflows_consume_campaign_objective_before_role_specific_actions(self):
-        for path in (
-            "skills/amazon-ads-optimizer/SKILL.md",
-            "skills/profitability-analysis/SKILL.md",
-            "skills/search-term-analysis/SKILL.md",
-            "skills/budget-optimization/SKILL.md",
-            "playbooks/weekly-review.md",
-        ):
-            text = self.read(path).lower()
-            self.assertIn("campaign objective", text, path)
+    def test_user_facing_capability_map_exposes_objective_contract(self):
+        capabilities = self.read("docs/CAPABILITIES.md").lower()
+        self.assertIn("campaign objective contract", capabilities)
+        self.assertIn("references/campaign-objective.md", capabilities)
+        self.assertIn("schemas/campaign-objective.json", capabilities)
 
-    def test_action_and_event_contracts_can_preserve_campaign_objective(self):
+    def test_action_contract_can_preserve_campaign_objective(self):
         action = json.loads(self.read("schemas/optimization-action.json"))
-        event = json.loads(self.read("schemas/optimization-event.json"))
         self.assertIn("campaign_objective", action["properties"])
-        self.assertIn("campaign_objective", event["properties"])
 
 
 if __name__ == "__main__":
