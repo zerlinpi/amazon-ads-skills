@@ -4,7 +4,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-
 class CampaignObjectiveContractTests(unittest.TestCase):
     def read(self, relative_path: str) -> str:
         return (ROOT / relative_path).read_text(encoding="utf-8")
@@ -35,15 +34,23 @@ class CampaignObjectiveContractTests(unittest.TestCase):
         action = json.loads(self.read("schemas/optimization-action.json"))
         self.assertIn("campaign_objective", action["properties"])
 
-    def test_growth_qualification_uses_shared_objective_contract(self):
-        growth = self.read("skills/growth-opportunity-finder/SKILL.md")
-        self.assertIn("../../references/campaign-objective.md", growth)
-        self.assertIn("## Campaign objective gate", growth)
-        self.assertIn("Unknown", growth)
-        self.assertIn("do not infer", growth.lower())
-        self.assertIn("primary_metric", growth)
-        self.assertIn("guardrail_metrics", growth)
+    def assert_skill_uses_objective_contract(self, path: str):
+        skill = self.read(path)
+        self.assertIn("../../references/campaign-objective.md", skill)
+        self.assertIn("Campaign objective gate", skill)
+        self.assertIn("Unknown", skill)
+        self.assertIn("do not infer", skill.lower())
+        self.assertIn("primary_metric", skill)
+        self.assertIn("guardrail_metrics", skill)
 
+    def test_growth_qualification_uses_shared_objective_contract(self):
+        self.assert_skill_uses_objective_contract("skills/growth-opportunity-finder/SKILL.md")
+
+    def test_bid_optimization_uses_shared_objective_contract(self):
+        self.assert_skill_uses_objective_contract("skills/bid-optimization/SKILL.md")
+
+    def test_placement_optimization_uses_shared_objective_contract(self):
+        self.assert_skill_uses_objective_contract("skills/placement-optimization/SKILL.md")
 
 if __name__ == "__main__":
     unittest.main()
