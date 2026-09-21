@@ -5,8 +5,8 @@ from pathlib import Path
 from scripts.compare_control_state import compare_control_state
 
 ROOT = Path(__file__).resolve().parents[1]
-REGISTRY_ID = "control-requirements@2026-09-20"
-REQUIRED = ["base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing"]
+REGISTRY_ID = "control-requirements@2026-09-21"
+REQUIRED = ["base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing", "targeting_or_routing"]
 COMPLETE_COLLECTION = {"enumeration_status": "Complete", "pagination_status": "Complete", "capability_status": "Supported"}
 
 
@@ -18,6 +18,7 @@ def budget_snapshot(base_budget=100, effective_budget=100, policy="monthly_avera
         "audience_bid_adjustment": [],
         "schedule_or_event_rule": {"schedule_rules": [], "event_rules": []},
         "budget_or_pacing": {"base_average_daily_budget": base_budget, "effective_daily_budget": effective_budget, "active_budget_rules": [], "average_daily_budget_policy": policy},
+        "targeting_or_routing": {"site_restriction": "ALL_ELIGIBLE"},
     }
     controls = []
     for control_type, state in states.items():
