@@ -1,7 +1,10 @@
+import json
 import unittest
+from pathlib import Path
 
 from scripts.compare_control_state import compare_control_state
 
+ROOT = Path(__file__).resolve().parents[1]
 REGISTRY_ID = "control-requirements@2026-09-20"
 REQUIRED = ["base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing"]
 COMPLETE = {"enumeration_status": "Complete", "pagination_status": "Complete", "capability_status": "Supported"}
@@ -67,6 +70,13 @@ def snapshot(surface: str, base_bid: float = 1.0, base_budget: float = 100.0, ru
 
 
 class NestedCollectionCompletenessTests(unittest.TestCase):
+    def test_schema_exposes_nested_collection_evidence_map(self):
+        schema = json.loads((ROOT / "schemas/control-state-snapshot.json").read_text(encoding="utf-8"))
+        control = schema["properties"]["controls"]["items"]
+        nested = control["properties"]["nested_collection_evidence"]
+        self.assertEqual(nested["type"], "object")
+        self.assertEqual(nested["additionalProperties"]["$ref"], "#/$defs/collectionEvidence")
+
     def test_truncated_schedule_rule_collection_cannot_isolate_bid_change(self):
         nested = {"schedule_rules": TRUNCATED.copy(), "event_rules": COMPLETE.copy()}
         before = snapshot("sponsored_products_bid_change", base_bid=1.0, rule_evidence=nested)
