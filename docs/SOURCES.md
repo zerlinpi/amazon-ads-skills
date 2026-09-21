@@ -443,3 +443,32 @@ Previously reviewed Amazon Ads MCP repositories (including KuudoAI, PPC Prophet,
 
 Adopt only the repository-owned invariant proven by RED→GREEN regression: **returned rows do not establish complete control state**. Every top-level list-valued registry-required control must carry complete enumeration + complete pagination + supported capability evidence before it can participate in a causal isolation result. Missing/partial/truncated/unsupported evidence remains `Unknown`; no live Amazon Ads write authority is added.
 
+## Nested rule-collection completeness and incremental source scan — 2026-09-21
+
+This round extends the existing collection-completeness invariant to decision-material lists nested inside structured Sponsored Products control state. A returned nested rule list is evidence of observed rows, not proof that every applicable rule was enumerated.
+
+### Amazon official evidence
+
+- **Understand budget rules in Sponsored ads**, updated 2026-09-02: Amazon documents schedule-based and performance-based budget rules that automatically increase Sponsored ads campaign budgets. Source: https://advertising.amazon.com/help/GNSMLANWNF344YBE
+- **A complete guide to budget rules**: Amazon documents multiple budget/bidding rule types and automated rule behavior. Source: https://advertising.amazon.com/library/guides/budget-rules
+- **Schedule based bid rules now available for Sponsored Products**, 2023-11-06: Amazon documents campaign bid rules for times of day, days of week, and date ranges, available through the Ads console and Amazon Ads API. Source: https://advertising.amazon.com/resources/whats-new/schedule-based-bid-rules-available-for-sponsored-products
+- **Events for schedule bid rules**, 2025-01-02: Amazon documents event-based bid-rule configuration for Sponsored Products. Source: https://advertising.amazon.com/resources/whats-new/event-based-bid-rules-for-sponsored-products-advertisers
+- **Hours of day for schedule-based budget rules**, 2023-11-30: Amazon documents hourly schedule-based budget rules through the console or Amazon Ads API. Source: https://advertising.amazon.com/resources/whats-new/hours-of-day-available-for-schedule-based-budget-rules
+
+These Amazon sources are vendor documentation, not reusable implementation artifacts. This repository independently paraphrases only factual platform behavior and the resulting evidence-safety requirement; no Amazon prose, API payload, schema, prompt, or workflow is copied.
+
+### GitHub projects reviewed this round
+
+Stars/activity are discovery context only and are not adoption criteria.
+
+- `NVIDIA/SkillEvaluator` — ~494 stars observed; Apache-2.0; active on 2026-09-20; non-fork; real `tests/`, CI, security workflow, deterministic validation, deduplication, and paired live skill evaluation. Its tiered evaluation model is strong corroboration for separating deterministic contracts from live effectiveness measurement. Rejected as a dependency for this change because it does not address Amazon control-state enumeration or connector pagination; no evaluator, prompt, rubric, schema, or workflow was copied.
+- `awslabs/agent-evaluation` — ~375 stars observed; Apache-2.0; non-fork; public `tests/` and CI/CD workflows; supports concurrent multi-turn agent evaluation and CI integration. Useful general evaluation evidence, but the repository's current deterministic causal-state regression is more direct and provider-neutral. No source, hooks, evaluator orchestration, or config was copied.
+- `cisco-ai-defense/mcp-scanner` — ~1.07k stars observed; Apache-2.0; active through 2026-09-19; non-fork; substantial tests plus CI/CodeQL and explicit MCP readiness/security scanning. Relevant to future Connector/MCP execution-safety review, but it does not improve this round's read-only Amazon rule-enumeration contract. No scanner, YARA rule, analyzer, prompt, or security workflow was copied.
+- `semgrep/mcp` — ~688 stars observed; MIT; public tests/workflows but archived, with last code push observed in 2025-10. Retained only as historical MCP security context and rejected as an active implementation source because the project is archived.
+
+Previously reviewed Amazon Ads MCP/skills repositories and high-star agent/eval projects were de-duplicated rather than counted again when they provided no materially new evidence for nested rule completeness.
+
+### Adoption decision
+
+Adopt only the repository-owned fail-closed invariant proven by RED→GREEN tests: for decision-material nested rule lists, a structured parent object and a list value are insufficient proof. Each required nested collection must independently establish complete enumeration, complete pagination, and supported connector capability before it can participate in a causal isolation result. Missing/partial/truncated/unsupported/unknown nested evidence remains `Unknown`. No Amazon Ads write capability is added.
+
