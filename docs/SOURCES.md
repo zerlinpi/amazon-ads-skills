@@ -521,3 +521,27 @@ A fresh multi-query GitHub pass rechecked directly relevant Agent Skills/MCP/run
 - `StacklokLabs/skills-mcp` — ~2 stars, recently active, no clear repository license surfaced in GitHub metadata; lower-weight corroboration only, with no code/schema/workflow reuse.
 
 Stars are recorded only as discovery context. License clarity, current maintenance, engineering evidence, scope fit, duplication and decision/action-safety value controlled the adoption decision.
+
+
+## Operator/community evidence expansion — 2026-09-21
+
+Evidence discovery now extends beyond GitHub to Amazon Seller Forums, Reddit and mature Amazon-operator knowledge bases. Community evidence is used to discover recurring workflows, trade-offs and failure modes; it is **not** treated as platform authority or as sufficient evidence for universal numeric rules.
+
+### Sources reviewed
+
+- Amazon Seller Forums — practitioner discussions around search-term harvesting, campaign structure/mission, TACOS vs ACOS, retail readiness and change tracking.
+- Reddit communities including r/FulfillmentByAmazon and AmazonFBA-related communities — recurring operator discussion around discovery vs controlled traffic, ranking/growth vs profit trade-offs, placement mix, inventory/listing readiness, negative-keyword caution and over-optimization.
+- Amazon-focused practitioner/vendor knowledge bases — corroboration for search-term harvesting and mission separation.
+- Quora was included in discovery, but direct page access was blocked by robots during this review. No Quora-derived factual claim, threshold, workflow or text was adopted without direct verification.
+
+### Adoption decision
+
+The non-duplicative repository gap supported by this evidence was **campaign objective / mission as first-class decision context**. The repository now uses bounded analytical roles `Discovery`, `Control`, `Growth`, `Profit`, `Defense`, `Experiment`, and safe `Unknown`; these are repository-owned analytical metadata, not a claim that Amazon exposes all roles as native campaign settings.
+
+Community evidence also reinforced existing rules for retail readiness, search-term traffic ownership, change/readback history, placement separation and contribution economics. Those were not duplicated into new Skills.
+
+### Explicitly rejected shortcuts
+
+No universal default was adopted for fixed bid-change percentages, placement multipliers, budget allocation percentages, click/order/spend thresholds, exact waiting periods, one-keyword-per-campaign architecture, dayparting schedules, ranking promises, or claims that paid spend necessarily causes organic-rank lift. Such ideas remain account-specific hypotheses or caller policy unless stronger evidence makes them action-safe.
+
+Detailed review: `docs/research/operator-community-objectives-2026-09.md`.

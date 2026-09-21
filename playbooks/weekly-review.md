@@ -48,6 +48,12 @@ Prefer same-length completed periods. If the current period is attribution-immat
 
 Do not compare a partial current day/week directly against a completed historical period without normalization and a clear warning.
 
+## Campaign objective checkpoint
+
+Before ranking campaign performance, resolve the decision-relevant campaign objective using `references/campaign-objective.md`: `Discovery`, `Control`, `Growth`, `Profit`, `Defense`, `Experiment`, or `Unknown`.
+
+Record objective source/confidence when it materially affects the review. Do not compare campaigns with different jobs as if they were interchangeable and do not apply one ACOS/TACOS threshold across every role. If the campaign objective is `Unknown`, preserve that uncertainty and cap role-specific conclusions.
+
 ## 2. Business-first scorecard
 
 Review business outcomes before campaign tuning.

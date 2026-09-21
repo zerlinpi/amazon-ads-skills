@@ -30,6 +30,7 @@
     },
     "entity": {"type": "object", "required": ["type", "id"], "properties": {"type": {"type": "string"}, "id": {"type": "string", "minLength": 1}}, "additionalProperties": true},
     "action_type": {"type": "string"},
+    "campaign_objective": {"anyOf": [{"$ref": "campaign-objective.json"}, {"type": "null"}], "description": "Campaign objective/mission context applicable at event time. Preserve Unknown when objective evidence is insufficient; do not infer it from performance metrics."},
     "before_value": {}, "intended_value": {}, "current_value": {},
     "objective": {"type": ["string", "null"]}, "expected_mechanism": {"type": ["string", "null"]},
     "application_status": {"type": ["string", "null"], "enum": ["Confirmed", "Partial", "Not Applied", "Drifted", "Unknown", null]},
