@@ -5,6 +5,7 @@ A portable **Amazon Ads decision library for AI agents**.
 It packages 15 focused Agent Skills for account audit, monitoring, diagnosis, growth, experiments, post-change review, search terms, targeting, bids, budgets, placements, profitability and orchestration.
 
 > 当前版本：`v1.1.0`  
+> **Release notes:** [CHANGELOG.md](CHANGELOG.md)  
 > **Default mode:** `Suggest`  
 > **Live Amazon Ads writes:** not performed by this repository  
 > **Runtime model:** Agent Skills + progressive loading + read-only deterministic helpers  

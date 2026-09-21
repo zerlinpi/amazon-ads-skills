@@ -17,6 +17,16 @@ For behavioral changes:
 - [ ] A deterministic RED test/eval demonstrated the previous failure.
 - [ ] The minimal GREEN implementation passes the relevant checks.
 
+## Version impact
+
+Select the highest applicable impact:
+
+- [ ] No release bump — documentation/research/non-material maintenance only
+- [ ] PATCH — backward-compatible fix
+- [ ] MINOR — backward-compatible new capability or material improvement
+- [ ] MAJOR — breaking public contract / downstream migration required
+- [ ] If a bump is required, `VERSION`, README, runtime manifests, and `CHANGELOG.md` were updated together
+
 ## Source / license review
 
 <!-- List external sources used. Explain license/copyright handling and what was independently rewritten. -->
