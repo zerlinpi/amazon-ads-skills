@@ -32,7 +32,7 @@ Read this file first. Load only what is needed:
 
 - Detailed causal workflow and Mixed-ASIN safety: `references/causal-drop-diagnosis.md`
 - Platform-managed surface/product/creative realization: `../../references/realized-ad-identity.md`
-- Cross-source, freshness, attribution-variant, or metric-version reconciliation: `../../references/data-lineage.md`
+- Cross-source, freshness, attribution-variant, modeled/direct conversion, allocation-coverage, or metric-version reconciliation: `../../references/data-lineage.md`
 - Metric definitions: `../../references/amazon-ads-metrics.md`
 - Shared decision boundaries: `../../references/decision-boundaries.md`
 - General optimization logic: `../../references/optimization-framework.md`
@@ -45,10 +45,11 @@ Collect or explicitly mark missing:
 
 - marketplace, profile/account scope, currency, timezone, date window, attribution maturity;
 - attribution model/window/variant when conversion reporting can expose multiple methodologies such as standard/default vs `all views`;
+- modeled-versus-direct conversion semantics and allocation coverage when the ad product/report can combine modeled and directly measured conversions; at a lower reporting grain, preserve any `Unallocated`/sentinel dimension rows rather than treating them as zero or dropping them;
 - cross-ad-product activity when diagnosing attributed conversion movement: eligible Sponsored Products, Sponsored Brands, Sponsored Display and DSP activity can compete for conversion credit, so a product/campaign attribution drop can occur without an equivalent shopper-demand drop;
 - primary KPI and business objective;
 - daily or weekly account/campaign performance;
-- source/metric metadata when windows use different reports, refresh paths, attribution variants, semantic versions, or unknown measurement definitions;
+- source/metric metadata when windows use different reports, refresh paths, attribution variants, semantic versions, modeled/direct measurement composition, allocation coverage, or unknown measurement definitions;
 - advertised ASIN, purchased ASIN, parent/variation-family mapping where relevant;
 - campaign/ad group/keyword/target/search-term/placement data;
 - budget, bid, state, negative-targeting and structure-change history;
@@ -60,11 +61,11 @@ Collect or explicitly mark missing:
 
 ## Workflow
 
-1. **Reliability gate** — reconcile date windows, attribution model/variant, attribution lag, completeness and measurement comparability; a source, attribution-methodology or metric-definition cutover near the break is a competing cause.
+1. **Reliability gate** — reconcile date windows, attribution model/variant, attribution lag, completeness, modeled/direct conversion semantics, allocation coverage and measurement comparability; a source, attribution-methodology, allocation-methodology or metric-definition cutover near the break is a competing cause.
 2. **Find the break point** — identify the first sustained KPI change and classify it as abrupt, gradual, intermittent, or isolated.
-3. **Size the loss** — compare matched windows; normalize unequal windows only after the data are comparable.
-4. **Decompose the bridge** — impressions -> clicks -> CPC/spend -> orders/CVR -> sales/AOV -> ACOS/ROAS.
-5. **Rank contributors** — prioritize ASINs, campaigns, targets, search terms and placements by lost business contribution, not noisy percentages.
+3. **Size the loss** — compare matched windows; normalize unequal windows only after the data are comparable. Preserve `Unallocated` conversion rows in campaign/order-level totals when the source defines them as attributable but not assignable to the requested dimension.
+4. **Decompose the bridge** — impressions -> clicks -> CPC/spend -> orders/CVR -> sales/AOV -> ACOS/ROAS. Keep campaign-level conversion movement separate from lower-grain allocation movement.
+5. **Rank contributors** — prioritize ASINs, campaigns, targets, search terms and placements by lost business contribution, not noisy percentages. Do not rank an allocated lower-grain slice as complete when material conversions remain Unallocated.
 6. **Check attribution competition** — when attributed purchases/sales fall while traffic is comparatively stable, check whether activity changed in other eligible Amazon ad products before treating the measured conversion drop as a shopper-conversion failure. Keep the observed credit shift separate from the hypothesis about why it shifted.
 7. **Check retail/market confounders** — inventory, Buy Box, price, promotion, listing, reviews, delivery, demand, competitor and parent/variation-family changes.
 8. **Audit controllable and platform-managed changes** — bids, budgets, placements, states, negatives, product-ad mapping, launches, pauses, automation or bulk edits, plus auto-enrolled delivery surfaces/ad experiences and dynamic product/creative realization that can change traffic or conversion mix without a manual campaign edit.
@@ -76,10 +77,10 @@ Collect or explicitly mark missing:
 
 Return:
 
-1. data reliability, attribution/measurement comparability and actionability;
+1. data reliability, attribution/measurement comparability, modeled/direct and allocation coverage when relevant, and actionability;
 2. executive verdict and exact windows;
 3. KPI bridge and primary driver;
-4. ranked ASIN/campaign/target contribution;
+4. ranked ASIN/campaign/target contribution, explicitly labeling incomplete lower-grain allocation;
 5. attribution-competition, retail and control-change findings, including family-level and platform-managed realization effects when relevant;
 6. Mixed-ASIN safety labels;
 7. facts vs hypotheses vs missing data;
@@ -89,8 +90,11 @@ Return:
 ## Safety boundaries
 
 - Do not infer causality from correlation alone.
-- Same source/table/metric name does not prove comparability when attribution model/variant, completeness, filters, grain or metric semantic version changed.
+- Same source/table/metric name does not prove comparability when attribution model/variant, modeled/direct composition, allocation coverage, completeness, filters, grain or metric semantic version changed.
 - Standard/default conversion metrics and `all views` conversion metrics are not interchangeable merely because they share labels such as Purchases, Sales or ROAS.
+- Modeled conversions combined into ordinary conversion columns are not equivalent to directly measured-only conversions unless the source semantics establish comparability.
+- An `Unallocated` or sentinel dimension row is not zero and is not disposable noise when the reporting contract says it carries conversions attributable to the parent campaign/order but not allocable to the requested lower grain. Preserve it in valid parent-level totals; never redistribute it across targets/search terms/placements without supported allocation evidence.
+- If material conversion volume is Unallocated, lower-grain conversion rate, ROAS, waste, winner/loser and contribution conclusions are incomplete. Downgrade target-level causal claims and traffic-suppression actions to `Directional`, `Hold`, or `Missing Data` until allocation coverage is reconciled.
 - An attribution-methodology cutover near a performance break is a competing measurement cause until reconciled; do not generalize a documented view-attribution change to unaffected campaign/inventory scopes.
 - A decline in attributed purchases/sales for one eligible ad product does not by itself prove shopper conversion propensity fell: cross-ad-product attribution competition can reassign credit after activity changes elsewhere in the account.
 - Do not recommend aggressive bid cuts, pauses or traffic suppression solely from a product-level attributed-conversion drop until material cross-product attribution competition has been checked or explicitly marked unavailable.
@@ -103,5 +107,5 @@ Return:
 - A change made after the decline began is a possible fix, not a root cause.
 - A stale retail snapshot cannot prove Buy Box, inventory, price or listing health during a later decline window.
 - A child-ASIN conversion decline is not isolated ad inefficiency when parent/variation-family or sibling retail changes plausibly explain substitution.
-- When missing/stale retail state, family-level retail shock, source-lineage drift, attribution-variant drift, metric-version drift, cross-ad-product attribution competition, or a platform-managed realization change can materially explain the break, downgrade aggressive traffic suppression until reconciled.
+- When missing/stale retail state, family-level retail shock, source-lineage drift, attribution-variant drift, modeled/allocation drift, metric-version drift, cross-ad-product attribution competition, or a platform-managed realization change can materially explain the break, downgrade aggressive traffic suppression until reconciled.
 - Every recommendation must state evidence, confidence, expected effect, validation window and rollback trigger before it can ever reach an external executor.
