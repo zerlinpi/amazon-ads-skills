@@ -20,10 +20,26 @@ When a conclusion depends on live MCP/API/connector data, load `../../references
 
 This gate is read-only and does not authorize live Amazon Ads mutation.
 
+## Campaign objective gate
+
+Load `../../references/campaign-objective.md` before qualifying campaign-level growth or interpreting efficiency as success/failure. Use the shared bounded roles `Discovery`, `Control`, `Growth`, `Profit`, `Defense`, `Experiment`, and `Unknown` rather than inventing a local objective taxonomy.
+
+- Preserve the declared `primary_metric` and `guardrail_metrics`; do not silently replace them with ACOS/ROAS because those metrics are available.
+- `Growth` may make marginal headroom and incremental volume central, but it still requires economics and retail-readiness guardrails.
+- `Profit` requires positive marginal economics before scale; historical average profitability is not enough.
+- `Discovery` may tolerate bounded learning cost, but exploratory spend is not proof of scalable demand.
+- `Defense` must distinguish strategic coverage from incremental acquisition and expose opportunity cost/cannibalization.
+- `Experiment` must preserve treatment integrity and the declared experiment metric before recommending expansion.
+- `Control` should not be scaled merely because it looks efficient; first determine what stable role it is intended to hold.
+- `Unknown` is a real state. Do not infer campaign objective from name, ACOS/TACOS, match type, spend pattern, organic rank movement, or a short performance window. Keep objective-dependent recommendations `Directional` or `Hold` until intent is verified.
+
+Campaign objective changes how evidence is interpreted; it never bypasses connector, retail, economic, incrementality, attribution, or binding-control gates.
+
 ## Progressive loading
 
 Start here. Read `references/opportunity-evaluation.md` only when ranking or sizing concrete opportunities. Load shared repository references only when they affect the decision:
 
+- `../../references/campaign-objective.md` for campaign mission and success/guardrail semantics;
 - `../../references/benchmark-policy.md` for external comparisons;
 - `../../references/decision-boundaries.md` for action permissions;
 - `../../references/amazon-ads-metrics.md` for metric definitions;
@@ -35,7 +51,7 @@ Start here. Read `references/opportunity-evaluation.md` only when ranking or siz
 Gather what is available and explicitly mark missing inputs:
 
 - marketplace, currency, timezone and date window;
-- business objective: profit, revenue, rank/launch, defense, market share, clearance, or balanced growth;
+- campaign objective/role from the shared objective contract, including source, confidence, `primary_metric` and `guardrail_metrics` when available;
 - ASIN/product scope and ad types;
 - spend, sales, orders, impressions, clicks, CPC, CTR, CVR, ACoS/ROAS;
 - total sales/TACoS when available;
@@ -45,11 +61,11 @@ Gather what is available and explicitly mark missing inputs:
 - Search Term Impression Share / Impression Rank and its window/scope when share headroom matters;
 - advertised-ASIN and purchased-ASIN scope where mixed-ASIN or halo effects matter.
 
-Do not invent missing economics, inventory, rank or total-sales data.
+Do not invent missing economics, inventory, rank, total-sales data, or campaign objective.
 
 ## Workflow
 
-1. **Define growth objective.** Distinguish profitable scale, launch/rank investment, defense, market-share growth and clearance. The same ACoS can mean different things under different objectives.
+1. **Resolve campaign objective.** Load the shared objective contract, preserve explicit intent and success/guardrail metrics, and retain `Unknown` when intent is not verified.
 2. **Map available evidence.** Record report grain, date windows, attribution maturity and missing fields before ranking opportunities.
 3. **Find proven demand.** Identify entities with repeatable conversion evidence, business relevance and enough data to distinguish signal from noise.
 4. **Find headroom.** Look for constrained winners, under-covered high-quality queries/targets, efficient placements, profitable ASINs with insufficient support, or traffic routes that can be expanded without merely moving spend internally. SIS may strengthen a query-level visibility-headroom hypothesis, but low SIS alone is not growth proof.
@@ -79,6 +95,7 @@ Do not invent missing economics, inventory, rank or total-sales data.
 
 Do not present a scale action as `Action-safe` when any material blocker remains unresolved:
 
+- campaign objective is `Unknown` and the recommendation depends on the intended campaign trade-off;
 - insufficient or attribution-immature evidence;
 - structural loss against known economics without an explicit strategic exception;
 - inventory or Featured Offer/Buy Box risk;
@@ -96,11 +113,11 @@ Classify recommendations as `Action-safe`, `Directional`, or `Blocked`.
 
 Return:
 
-1. **Growth objective and evidence coverage** — exact scope, windows and missing inputs.
+1. **Campaign objective and evidence coverage** — exact role/intent, objective source/confidence, primary/guardrail metrics, scope, windows and missing inputs.
 2. **Opportunity map** — where growth appears possible and where it is blocked.
 3. **Ranked opportunities** — entity, opportunity type, evidence, headroom, economics/readiness, risk, confidence and actionability.
 4. **Controlled action plan** — proposed action, expected mechanism, validation metric/window and rollback condition.
-5. **Do-not-scale list** — attractive-looking entities that fail economics, incrementality, readiness or evidence gates.
+5. **Do-not-scale list** — attractive-looking entities that fail objective, economics, incrementality, readiness or evidence gates.
 6. **Next evidence to collect** — what would upgrade `Directional` opportunities into `Action-safe` decisions.
 
-Do not use fixed universal click/order/ACoS thresholds. Prefer account-specific economics, comparable historical baselines and explicit uncertainty.
+Do not use fixed universal click/order/ACoS thresholds. Prefer account-specific economics, comparable historical baselines, declared campaign objective and explicit uncertainty.
