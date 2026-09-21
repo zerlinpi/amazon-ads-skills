@@ -107,7 +107,8 @@ class ControlStateComparabilityTests(unittest.TestCase):
         after["controls"][0]["state"] = 1.2
         self.assertEqual(compare_control_state(before, after, "budget_or_pacing")["classification"], "Confounded")
         incomplete = budget_snapshot(120, 120)
-        incomplete["controls"][-1]["state"].pop("active_budget_rules")
+        budget_control = next(item for item in incomplete["controls"] if item["control_type"] == "budget_or_pacing")
+        budget_control["state"].pop("active_budget_rules")
         self.assertEqual(compare_control_state(before, incomplete, "budget_or_pacing")["classification"], "Unknown")
 
     def test_budget_skill_routes_causal_review_through_effective_budget_state(self):
