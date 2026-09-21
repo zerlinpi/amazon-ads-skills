@@ -208,3 +208,18 @@ The following should remain in an external authorized Connector / Executor rathe
 - vendor-specific private MCP interfaces.
 
 This keeps the Skills portable and preserves the repository's Read-only / Suggest / Shadow default.
+
+
+## Exact material-control observability binding — 2026-09-21
+
+A subsequent RED→GREEN review found a structural gap between the versioned control-state requirement registry and connector capability preflight. The repository could require `targeting_or_routing`, schedule/event rules, audience adjustments, budget/pacing and other material controls for a causal decision surface, while the connector gate only knew that a generic `entity-state-readback` capability was `Supported`. That generic claim could not prove the connector exposed every decision-material control type.
+
+The adopted design keeps capability taxonomy small instead of creating one capability ID per control. `resolve_skill_capabilities.py` accepts a registered `decision_surface`, resolves the exact `required_control_types` from `references/control-requirement-registry.json`, and attaches them as a data requirement on the existing `entity-state-readback` capability. `schemas/connector-capability-snapshot.json` now records `data_contract.control_types_exposed`, and `evaluate_connector_capability_gate.py` blocks high-confidence dependent decisions when any required type is missing or unproven. Per-window control evidence remains a separate responsibility of `schemas/control-state-snapshot.json` and `scripts/compare_control_state.py`.
+
+External evidence reviewed for this change:
+
+- Amazon Ads official **Reach business shoppers with Amazon Business exclusive campaigns**, 2025-05-05: Sponsored Products Sites restriction can change eligible delivery to Amazon Business only and is exposed in the Ads API. This reinforces that routing/site state is a material, independently observable control rather than a derived performance metric.
+- Amazon Ads official schedule-bid-rule and budget-rule documentation: automated bid and budget rules are separate advertiser controls that can alter effective delivery/bidding state over time.
+- Model Context Protocol official 2026-03-16 tool-annotations guidance: `readOnlyHint`, `destructiveHint`, `idempotentHint`, and `openWorldHint` are hints and must not be treated as trustworthy proof of implementation behavior without a trusted source. This aligns with the repository rule that generic tool metadata cannot prove exact Amazon control-state coverage.
+
+No Amazon API payload, MCP implementation, third-party prompt, connector schema, or workflow was copied. The repository independently implemented only the provider-neutral invariant: exact decision-material observability must be proven before a connector capability can support a high-confidence causal conclusion.
