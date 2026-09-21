@@ -10,11 +10,12 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG = ROOT / "references" / "connector-capability-catalog.json"
+CONTROL_STATE_SCHEMA = ROOT / "schemas" / "control-state-snapshot.json"
 KNOWN_STATUSES = {"Supported", "Partial", "Unsupported", "Unknown"}
 VERIFY = {"Verified", "Unverified", "Unknown"}
 SURFACES = {"tool", "report", "dataset", "stream", "export", "endpoint", "warehouse_table", "manual_export"}
 SCOPE_FIELDS = {"region": "regions", "marketplace": "marketplaces", "ad_product": "ad_products", "account_type": "account_types"}
-DATA_REQUIREMENT_FIELDS = {"required_reporting_generation", "requires_historical_data", "history_window"}
+DATA_REQUIREMENT_FIELDS = {"required_reporting_generation", "requires_historical_data", "history_window", "required_control_types"}
 REPORTING_GENERATION_STATUSES = {"active", "read_only", "sunset_scheduled", "retired", "unknown"}
 HISTORICAL_AVAILABILITY_STATUSES = {"available", "partial", "unavailable", "retired", "unknown"}
 PASS = ["High Confidence", "Suggest", "Shadow"]
@@ -39,6 +40,43 @@ def _catalog() -> tuple[set[str], str | None]:
     version=obj.get("catalog_version")
     if version is not None and not _s(version): raise ValueError("connector capability catalog version must be a non-empty string or null")
     return ids,version
+
+
+
+def _registered_control_types() -> set[str]:
+    try:
+        schema = json.loads(CONTROL_STATE_SCHEMA.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError("control-state schema is unavailable or invalid") from exc
+    try:
+        values = schema["$defs"]["controlType"]["enum"]
+    except (KeyError, TypeError) as exc:
+        raise ValueError("control-state schema does not expose canonical control types") from exc
+    if not isinstance(values, list) or not values:
+        raise ValueError("control-state schema canonical control types must be a non-empty array")
+    out = set()
+    for value in values:
+        if not _s(value):
+            raise ValueError("control-state schema contains an invalid control type")
+        out.add(value.strip())
+    return out
+
+
+def _control_type_list(value, field):
+    if not isinstance(value, list) or not value:
+        raise ValueError(f"{field} must be a non-empty array")
+    registered = _registered_control_types()
+    out = []
+    for index, item in enumerate(value):
+        if not _s(item):
+            raise ValueError(f"{field}[{index}] must be a non-empty string")
+        control_type = item.strip()
+        if control_type not in registered:
+            raise ValueError(f"{field}[{index}] contains unknown control type {control_type!r}")
+        if control_type in out:
+            raise ValueError(f"{field} contains duplicate control type {control_type!r}")
+        out.append(control_type)
+    return out
 
 
 def _requirements(v, registered):
@@ -129,6 +167,16 @@ def _data_requirements(v, required_capabilities):
             )
         generation = requirement.get("required_reporting_generation")
         history = requirement.get("requires_historical_data")
+        required_control_types = None
+        if "required_control_types" in requirement:
+            if cid != "entity-state-readback":
+                raise ValueError(
+                    f"data_requirements[{cid!r}].required_control_types is only valid for entity-state-readback"
+                )
+            required_control_types = _control_type_list(
+                requirement.get("required_control_types"),
+                f"data_requirements[{cid!r}].required_control_types",
+            )
         history_window = _history_window(
             requirement.get("history_window"),
             f"data_requirements[{cid!r}].history_window",
@@ -145,9 +193,9 @@ def _data_requirements(v, required_capabilities):
             raise ValueError(
                 f"data_requirements[{cid!r}].history_window conflicts with requires_historical_data=false"
             )
-        if generation is None and history is None and history_window is None:
+        if generation is None and history is None and history_window is None and required_control_types is None:
             raise ValueError(
-                f"data_requirements[{cid!r}] must declare required_reporting_generation, requires_historical_data, and/or history_window"
+                f"data_requirements[{cid!r}] must declare required_reporting_generation, requires_historical_data, history_window, and/or required_control_types"
             )
         out[cid] = {
             "required_reporting_generation": generation.strip() if _s(generation) else None,
@@ -158,6 +206,8 @@ def _data_requirements(v, required_capabilities):
                 "grain": history_window["grain"],
             },
         }
+        if required_control_types is not None:
+            out[cid]["required_control_types"] = required_control_types
     return out
 
 
@@ -175,8 +225,13 @@ def _combine_data_effect(current, candidate):
 def _data_contract_effect(cap, requirement):
     if requirement is None:
         return "not_evaluated", []
+    required_control_types = requirement.get("required_control_types")
     contract = cap.get("data_contract")
     if not isinstance(contract, dict):
+        if required_control_types:
+            return "blocked", [
+                "required control-state coverage has no observed capability data_contract"
+            ]
         return "unknown", [
             "required reporting/history decision has no observed capability data_contract"
         ]
@@ -297,6 +352,31 @@ def _data_contract_effect(cap, requirement):
                                 "requested history window is outside the verified available range for "
                                 f"{requested_window['grain']!r}: {available_from} through {available_through}"
                             )
+
+
+    if required_control_types:
+        observed_control_types = contract.get("control_types_exposed")
+        if observed_control_types is None:
+            effect = _combine_data_effect(effect, "blocked")
+            warnings.append(
+                "required control-state coverage is not identified by control_types_exposed"
+            )
+        else:
+            observed_control_types = _control_type_list(
+                observed_control_types,
+                "capability.data_contract.control_types_exposed",
+            )
+            missing_control_types = [
+                control_type
+                for control_type in required_control_types
+                if control_type not in observed_control_types
+            ]
+            if missing_control_types:
+                effect = _combine_data_effect(effect, "blocked")
+                warnings.append(
+                    "connector does not expose required control types: "
+                    + ", ".join(missing_control_types)
+                )
 
     return effect, warnings
 
