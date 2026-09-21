@@ -493,3 +493,31 @@ Stars and activity are discovery context only, not adoption criteria. Previously
 - `adkit/ads-skills` — 27 stars observed on 2026-09-21; non-fork; recent push 2026-08-03. Its custom AdKit Skills License restricts redistribution and use in competing products, and the catalog is centered on non-Amazon advertising strategy. The root scan showed no repository-level tests or GitHub Actions workflows. Rejected for direct adoption on both relevance and license grounds. Only the abstract observation that portable ad skills benefit from runtime packaging separation was considered; no protected text, schema, prompt, workflow or implementation was reused.
 
 Adoption decision: keep the current 15-Skill catalog unchanged. The only repository change justified by this review is the fail-closed `targeting_or_routing` requirement on the existing Sponsored Products bid/budget causal surfaces, backed by Amazon official evidence and deterministic regression coverage.
+
+
+## MCP Skills content-integrity review — 2026-09-21
+
+### modelcontextprotocol/ext-skills
+
+The official MCP Skills extension repository was re-reviewed after SEP-2640 reached Final status in September 2026. Point-in-time GitHub metadata showed about 658 stars, active maintenance through 2026-09-18, a non-fork/non-archived repository, Apache-2.0 code licensing, and CC-BY-4.0 documentation licensing.
+
+The stable extension defines Skill discovery/retrieval over MCP and binds published Skill files to a complete resource manifest carrying content digests and byte sizes. This exposed a concrete gap in this repository's existing custom-host progressive-loading helper: selected resource paths had no stable content identity for verification/cache invalidation.
+
+Adoption boundary: the repository independently added SHA-256 + byte-size identities to its own `scripts/resolve_skill_context.py` output. It did not copy the MCP schema, TypeScript interfaces, examples, URI structure, server implementation, approval model, or documentation prose, and it does not claim that the repository-local `resource_manifest` is an MCP `skills/get` response.
+
+Repository: https://github.com/modelcontextprotocol/ext-skills
+
+Detailed source/candidate review: `docs/research/mcp-skills-content-integrity-2026-09.md`.
+
+### 2026-09-21 de-duplicated high-star / Amazon API scan
+
+A fresh multi-query GitHub pass rechecked directly relevant Agent Skills/MCP/runtime and Amazon Advertising API projects. Previously documented projects were de-duplicated rather than re-counted.
+
+- `mattpocock/skills` — ~266.5k stars, MIT, active, non-fork; real Skills/scripts/docs/release workflow. Rejected for this change because a broad engineering Skill catalog does not strengthen Amazon Ads decision semantics or the normative MCP integrity boundary. No content or implementation copied.
+- `obra/superpowers` — ~289.3k stars, MIT, active, non-fork; multi-runtime projections plus tests/scripts. Test-first/runtime-portability ideas overlap existing repository policy, so no dependency/content was adopted.
+- `addyosmani/agent-skills` — ~97.8k stars, MIT, active, non-fork; Skills/references/evals/scripts plus plugin-install CI. Useful corroboration only; normative Agent Skills/MCP specifications remain stronger implementation evidence. No prompt, Skill, hook, eval or workflow copied.
+- `denisneuf/python-amazon-ad-api` — ~202 stars, MIT, active, non-fork; code, tests and multiple CI workflows. Relevant as Amazon Advertising API transport engineering, but authentication/execution/retry belong to the external Connector/Executor. No SDK implementation copied.
+- `amzn/amazon-advertising-api-php-sdk` — ~92 stars, Apache-2.0, archived, last observed push in 2020; rejected as stale evidence for current platform capability semantics.
+- `StacklokLabs/skills-mcp` — ~2 stars, recently active, no clear repository license surfaced in GitHub metadata; lower-weight corroboration only, with no code/schema/workflow reuse.
+
+Stars are recorded only as discovery context. License clarity, current maintenance, engineering evidence, scope fit, duplication and decision/action-safety value controlled the adoption decision.
