@@ -1,3 +1,4 @@
+import hashlib
 import unittest
 from pathlib import Path
 
@@ -34,6 +35,56 @@ class SkillContextResolverTests(unittest.TestCase):
             path.startswith("skills/") and path != "skills/bid-optimization/SKILL.md"
             for path in result["preload_files"]
         ))
+
+    def test_resolve_emits_deterministic_resource_identity_without_bodies(self):
+        result = resolve_skill_context(ROOT, "budget-optimization", "action-safe-proposal")
+        manifest = result["resource_manifest"]
+        manifest_by_path = {item["path"]: item for item in manifest}
+
+        self.assertEqual(
+            [item["path"] for item in manifest],
+            sorted(item["path"] for item in manifest),
+        )
+        self.assertEqual(len(manifest), len(manifest_by_path))
+        self.assertEqual(result["manifest_policy"]["digest_algorithm"], "sha256")
+        self.assertTrue(result["manifest_policy"]["selected_skill_directory_complete"])
+        self.assertTrue(result["manifest_policy"]["shared_candidates_hashed"])
+
+        skill_dir = ROOT / "skills" / "budget-optimization"
+        package_files = sorted(
+            path.relative_to(ROOT).as_posix()
+            for path in skill_dir.rglob("*")
+            if path.is_file()
+        )
+        self.assertIn(
+            "skills/budget-optimization/references/portfolio-budget-conflicts.md",
+            package_files,
+        )
+
+        for relative in package_files:
+            self.assertIn(relative, manifest_by_path)
+            raw = (ROOT / relative).read_bytes()
+            item = manifest_by_path[relative]
+            self.assertEqual(item["size_bytes"], len(raw))
+            self.assertEqual(
+                item["digest"],
+                "sha256:" + hashlib.sha256(raw).hexdigest(),
+            )
+            self.assertIn(item["kind"], {"skill-entrypoint", "skill-support"})
+            self.assertNotIn("content", item)
+            self.assertNotIn("body", item)
+
+        for relative in result["resource_candidates"]:
+            self.assertIn(relative, manifest_by_path)
+            item = manifest_by_path[relative]
+            raw = (ROOT / relative).read_bytes()
+            self.assertEqual(item["size_bytes"], len(raw))
+            self.assertEqual(
+                item["digest"],
+                "sha256:" + hashlib.sha256(raw).hexdigest(),
+            )
+            self.assertNotIn("content", item)
+            self.assertNotIn("body", item)
 
     def test_resolve_reuses_canonical_connector_capability_profile(self):
         result = resolve_skill_context(ROOT, "bid-optimization", "action-safe-proposal")

@@ -6,6 +6,7 @@ calls Amazon Ads and never grants write authority.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import sys
@@ -69,6 +70,51 @@ def _resource_candidates(root: Path, skill_file: Path) -> list[str]:
     return sorted(candidates)
 
 
+def _resource_identity(root: Path, path: Path, kind: str) -> dict[str, Any]:
+    """Return stable content identity for one repository-local file, not its body."""
+    repo_root = root.resolve()
+    resolved = path.resolve()
+    try:
+        relative = resolved.relative_to(repo_root)
+    except ValueError as exc:
+        raise ValueError(f"resource escapes repository root: {path}") from exc
+    if not resolved.is_file():
+        raise ValueError(f"resource is unavailable: {relative.as_posix()}")
+
+    raw = resolved.read_bytes()
+    return {
+        "path": relative.as_posix(),
+        "kind": kind,
+        "digest": "sha256:" + hashlib.sha256(raw).hexdigest(),
+        "size_bytes": len(raw),
+    }
+
+
+def _resource_manifest(
+    root: Path,
+    skill_file: Path,
+    resource_candidates: list[str],
+) -> list[dict[str, Any]]:
+    """Hash the complete selected Skill directory plus direct shared candidates."""
+    root = root.resolve()
+    identities: dict[str, dict[str, Any]] = {}
+
+    for path in skill_file.parent.rglob("*"):
+        if not path.is_file():
+            continue
+        kind = "skill-entrypoint" if path.resolve() == skill_file.resolve() else "skill-support"
+        identity = _resource_identity(root, path, kind)
+        identities[identity["path"]] = identity
+
+    for relative in resource_candidates:
+        if relative in identities:
+            continue
+        identity = _resource_identity(root, root / relative, "shared-candidate")
+        identities[identity["path"]] = identity
+
+    return [identities[path] for path in sorted(identities)]
+
+
 def resolve_skill_context(
     root: Path,
     skill: str,
@@ -83,13 +129,22 @@ def resolve_skill_context(
     record = catalog[skill]
     skill_file = root / record["entrypoint"]
     capability = resolve_skill_capabilities({"skill": skill, "profile": profile})
+    resource_candidates = _resource_candidates(root, skill_file)
 
     return {
         "skill": skill,
         "description": record["description"],
         "entrypoint": record["entrypoint"],
         "preload_files": [record["entrypoint"]],
-        "resource_candidates": _resource_candidates(root, skill_file),
+        "resource_candidates": resource_candidates,
+        "resource_manifest": _resource_manifest(root, skill_file, resource_candidates),
+        "manifest_policy": {
+            "digest_algorithm": "sha256",
+            "selected_skill_directory_complete": True,
+            "shared_candidates_hashed": True,
+            "shared_candidate_scope": "direct-skill-references-only",
+            "content_included": False,
+        },
         "connector_profile": {
             "catalog_version": capability["catalog_version"],
             "profile": capability["profile"],
