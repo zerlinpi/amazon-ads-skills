@@ -26,9 +26,18 @@ Load only what the case needs:
 - platform-managed surface/product/creative realization: `../../references/realized-ad-identity.md`;
 - source, semantic-version or backfill comparability: `../../references/data-lineage.md`;
 - overlapping advertiser-control history and causal isolation: `../../references/control-state-comparability.md`;
-- prior optimization state/history conflicts: `../../references/optimization-memory.md`.
+- prior optimization state/history conflicts: `../../references/optimization-memory.md`;
+- action-time/current campaign objective semantics: `../../references/campaign-objective.md`.
 
 Do not load data-lineage for a clean single-source comparison whose snapshots use the same maturity policy. Load `control-state-comparability.md` when the baseline and post-change windows can differ in bidding strategy, placement/audience adjustments, bid rules, budget/pacing, targeting/routing, or another material advertiser control. Load `realized-ad-identity.md` when the ad format can change the shopper-visible surface, product mix, creative/message, prompt, or other realization independently of the advertiser control under review.
+
+## Campaign objective lineage gate
+
+When the original action carried a campaign objective, preserve that **action-time campaign objective** and its declared primary/guardrail metrics before judging the outcome. Also resolve the **current campaign objective** when available.
+
+If they differ, label **objective drift**. Evaluate whether the historical action achieved the mechanism and guardrails it was designed for, then separately decide whether the current objective changes what should happen next. **Do not retroactively** judge a Growth, Discovery, Defense, Control, Profit, or Experiment action by a later objective's KPI, and do not carry an old objective forward as current truth.
+
+If the action-time objective is missing or `Unknown`, do not infer it from later ACOS/TACOS, campaign name, spend, rank movement, or the current objective. Keep the historical decision context uncertain and lower confidence when that uncertainty is material.
 
 ## Required inputs
 
@@ -39,6 +48,8 @@ Gather what is available and label missing fields:
 - before value/state and intended after value/state;
 - action timestamp plus marketplace/profile/timezone;
 - validation metric(s), expected mechanism, validation window and rollback condition;
+- action-time campaign objective, objective source/confidence, primary metric and guardrail metrics when recorded;
+- current campaign objective when available, kept separate from the action-time objective;
 - current trusted state or post-change export;
 - comparable pre-change performance window;
 - source/snapshot metadata when baseline and post windows differ in extraction, semantic version, completeness or backfill maturity;
@@ -50,21 +61,24 @@ Gather what is available and label missing fields:
 
 1. **Readback first** — verify whether the intended advertiser control is actually present.
 2. Classify application as `Confirmed`, `Partial`, `Not Applied`, `Drifted`, or `Unknown`.
-3. **Measurement gate** — require completed, attribution-mature, definitionally comparable windows; when history can restate, verify baseline/post backfill parity before outcome attribution.
-4. **Control-state comparability gate when causal attribution matters** — reconstruct material advertiser-control state across baseline and post-change windows. If overlapping changes can explain the effect, cap the single-control conclusion at `Directional` / `Confounded` / `Unknown` rather than calling the intended action causal.
-5. **Realization gate when relevant** — verify whether platform-managed surface/product/creative realization stayed sufficiently comparable. A confirmed control readback does not prove stable realized ad identity.
-6. Compare the post-change metrics to the best available baseline and to the expected mechanism.
-7. Separate delivery effects from downstream conversion/profit effects.
-8. Check retail, market, concurrent-control, platform-managed-realization and measurement confounders.
-9. Classify the outcome using the detailed reference.
-10. Recommend `Keep`, `Keep Monitoring`, `Rollback Candidate`, `Follow-up Experiment`, `Fix Application`, or `Manual Review`.
-11. Never execute rollback; any mutation remains external and explicitly authorized.
+3. **Objective-lineage gate** — preserve the action-time campaign objective and compare it with the current campaign objective. If they differ, record objective drift; do not retroactively replace the historical success metric or guardrails with the current objective.
+4. **Measurement gate** — require completed, attribution-mature, definitionally comparable windows; when history can restate, verify baseline/post backfill parity before outcome attribution.
+5. **Control-state comparability gate when causal attribution matters** — reconstruct material advertiser-control state across baseline and post-change windows. If overlapping changes can explain the effect, cap the single-control conclusion at `Directional` / `Confounded` / `Unknown` rather than calling the intended action causal.
+6. **Realization gate when relevant** — verify whether platform-managed surface/product/creative realization stayed sufficiently comparable. A confirmed control readback does not prove stable realized ad identity.
+7. Compare the post-change metrics to the best available baseline and to the expected mechanism.
+8. Separate delivery effects from downstream conversion/profit effects.
+9. Check retail, market, concurrent-control, platform-managed-realization and measurement confounders.
+10. Classify the outcome using the detailed reference.
+11. Recommend `Keep`, `Keep Monitoring`, `Rollback Candidate`, `Follow-up Experiment`, `Fix Application`, or `Manual Review`.
+12. Never execute rollback; any mutation remains external and explicitly authorized.
 
 ## Key rules
 
 - `proposed != applied != readback confirmed != worked`.
 - `measurement comparable != control-state comparable`; a clean metric series does not isolate the intended action when another material control changed.
 - `readback confirmed != stable realized ad identity` when Amazon can dynamically select surfaces, products, creative/message, or another shopper-visible realization.
+- `current campaign objective != action-time campaign objective` after objective drift; historical outcome review and future optimization intent are separate questions.
+- Do not retroactively re-score a prior action under a later campaign objective or infer a missing action-time objective from current performance.
 - Never call an action failed merely because early attributed orders have not matured.
 - Never call an action worked when baseline and post windows use materially different semantic definitions or asymmetric backfill maturity.
 - Never call an action worked/failed causally when overlapping material control changes remain `Confounded` or `Unknown`.
@@ -79,16 +93,17 @@ Gather what is available and label missing fields:
 Return:
 
 1. readback/application status;
-2. evaluation windows, attribution maturity and measurement comparability;
-3. control-state comparability when causal attribution matters;
-4. realized-ad-identity comparability when relevant;
-5. expected mechanism;
-6. observed delivery, conversion, sales/profit and retail evidence;
-7. confounders/concurrent changes;
-8. outcome classification with confidence;
-9. decision;
-10. next check and evidence needed;
-11. structured memory event when requested (`../../schemas/optimization-event.json`), preserving the decision-driving outcome metric semantics and per-metric evidence semantics when known rather than inferring them from display names.
+2. action-time campaign objective, current campaign objective, and objective-drift status when available;
+3. evaluation windows, attribution maturity and measurement comparability;
+4. control-state comparability when causal attribution matters;
+5. realized-ad-identity comparability when relevant;
+6. expected mechanism;
+7. observed delivery, conversion, sales/profit and retail evidence;
+8. confounders/concurrent changes;
+9. outcome classification with confidence;
+10. decision;
+11. next check and evidence needed;
+12. structured memory event when requested (`../../schemas/optimization-event.json`), preserving the decision-driving outcome metric semantics and per-metric evidence semantics when known rather than inferring them from display names.
 
 ## Safety
 

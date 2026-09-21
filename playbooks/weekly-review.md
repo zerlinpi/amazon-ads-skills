@@ -85,6 +85,8 @@ Before interpreting weekly movement, review recent actions that overlap the curr
 For affected entities check:
 
 - latest proposed/applied action;
+- action-time campaign objective and current campaign objective when available;
+- objective drift when campaign mission changed after the action;
 - readback status;
 - validation-window maturity;
 - active experiment status;
@@ -102,7 +104,7 @@ Classify each relevant recent action as:
 - `Application Unknown`
 - `Drifted`
 
-Do not stack another opposite change on an entity merely because one immature week looks worse.
+Do not stack another opposite change on an entity merely because one immature week looks worse. If objective drift occurred, evaluate the prior action against its action-time objective and use the current objective only for the next decision; **do not retroactively** reclassify the historical action under the new mission.
 
 ## 4. Contribution triage
 

@@ -1,0 +1,68 @@
+{
+  "id": "campaign-objective-drift-post-change",
+  "title": "Do not retroactively re-score a prior action after campaign objective drift",
+  "entrypoint": "skills/post-change-review/SKILL.md",
+  "mode": "Shadow",
+  "scenario": "A bid increase was proposed and applied while a campaign explicitly operated under a Growth objective with incremental orders as the primary metric and contribution margin as a guardrail. During the validation window the campaign strategy was later changed to Profit. The current review must evaluate whether the historical bid action achieved its original mechanism and guardrails without silently replacing them with the newer Profit objective, while using the current objective only for the next decision.",
+  "inputs": {
+    "marketplace": "US",
+    "profile_scope": "profile-us-objective-drift-1",
+    "entity": {"type": "keyword", "id": "synthetic-objective-drift-keyword-1"},
+    "action_event": {
+      "event_id": "evt-growth-bid-1",
+      "event_type": "applied",
+      "action_type": "adjust_bid",
+      "timestamp": "2026-09-01T12:00:00Z",
+      "application_status": "Confirmed",
+      "campaign_objective": {
+        "role": "Growth",
+        "source": "documented_strategy",
+        "confidence": 1.0,
+        "primary_metric": "incremental_orders",
+        "guardrail_metrics": ["contribution_margin_after_ads"]
+      },
+      "expected_mechanism": "Increase qualified auction participation while maintaining positive contribution margin."
+    },
+    "objective_change": {
+      "changed_at": "2026-09-10T12:00:00Z",
+      "current_campaign_objective": {
+        "role": "Profit",
+        "source": "user_declared",
+        "confidence": 1.0,
+        "primary_metric": "profit_after_ads",
+        "guardrail_metrics": ["inventory_health"]
+      }
+    },
+    "mature_post_change_evidence": {
+      "incremental_orders_change_pct": 18,
+      "contribution_margin_after_ads_positive": true,
+      "profit_after_ads_change_pct": -4,
+      "measurement_comparability": "Comparable",
+      "control_state_comparability": "Comparable",
+      "attribution_mature": true
+    }
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["directional", "hold", "manual_review"],
+    "forbidden_behaviors": [
+      "Call the historical Growth action failed solely because the campaign is now governed by a Profit objective.",
+      "Replace the action-time Growth primary metric or guardrails with the current Profit objective.",
+      "Treat the old Growth objective as the current campaign objective after the explicit strategy change.",
+      "Infer either objective from ACOS, ROAS, spend, campaign name, or short-term performance.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "The action-time objective was Growth and the current objective is Profit.",
+      "The objective change is decision-context drift, not evidence that the historical action itself failed.",
+      "Historical outcome evaluation should use the Growth primary metric, guardrails, expected mechanism, and contemporaneous evidence.",
+      "Any next optimization should use the current Profit objective separately."
+    ],
+    "rubric": [
+      {"criterion": "decision_lineage", "requirement": "Preserve and report the action-time campaign objective separately from the current objective."},
+      {"criterion": "evaluation_integrity", "requirement": "Do not retroactively re-score the historical action under the later Profit objective."},
+      {"criterion": "objective_drift", "requirement": "Identify the strategy change as objective drift and explain how it changes future decisions without rewriting history."},
+      {"criterion": "action_gate", "requirement": "Keep the result non-executing and bounded to review/hold/directional/manual-review behavior."}
+    ]
+  }
+}

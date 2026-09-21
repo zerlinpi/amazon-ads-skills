@@ -554,3 +554,31 @@ Detailed review: `docs/research/operator-community-objectives-2026-09.md`.
 Adoption decision: no runtime framework added. The current change remains a repository-authored, decision-layer campaign-objective gate; external Connector/Executor ownership and progressive-loading boundaries stay unchanged.
 
 Repository: https://github.com/evalstate/fast-agent
+
+
+## Campaign-objective lineage review — 2026-09-21
+
+### Amazon Ads official evidence
+
+Amazon Ads' **Sponsored Brands goal-based campaigns** launch documentation states that advertisers express a campaign goal and Amazon optimizes against goal-specific success metrics such as clicks or top-of-search impression share. Amazon's **How to measure and improve your campaigns** guide likewise says campaign success should be judged using KPIs selected for the intended goal, while its current Sponsored Products targeting guidance recommends establishing benchmarks from goals and historical performance.
+
+Adoption boundary: these official pages support the decision-safety principle that a historical optimization must retain the objective and success/guardrail metrics that justified it. They do not define this repository's analytical role taxonomy, event schema, history projection, or objective-drift policy. No Amazon prose, UI, payload, schema, prompt, or workflow was copied.
+
+Sources:
+- https://advertising.amazon.com/resources/whats-new/sponsored-brands-goal-based-campaigns
+- https://advertising.amazon.com/library/guides/measure-improve-campaigns
+- https://advertising.amazon.com/library/guides/targeting-with-sponsored-products
+
+### Incremental high-star agent/evaluation scan
+
+Stars/activity are point-in-time discovery context only.
+
+- `mozilla-ai/any-agent` — ~1.24k stars observed; Apache-2.0; non-fork/non-archived; public tests and CI; cross-framework agent execution/evaluation abstraction. Useful corroboration for keeping evaluation context explicit across heterogeneous runtimes. Rejected as a dependency because this repository needs a narrow Amazon decision-lineage contract, not another runtime adapter. No code, evaluator, trace schema, prompt, fixture, or workflow copied.
+- `google/adk-go` — ~8.8k stars observed; Apache-2.0; non-fork/non-archived; active on 2026-09-21 with substantial CI and agent/memory packages. Strong runtime/memory engineering evidence, but its session/runtime memory machinery is broader than the append-first Amazon optimization ledger here. Rejected as a dependency or implementation source; no memory API, runner, schema, tool, prompt, or workflow copied.
+- `mlflow/mlflow` — ~28.1k stars observed; Apache-2.0; non-fork/non-archived; active on 2026-09-21 with extensive testing/workflows and experiment/evaluation tracking. Reviewed for the generic principle that evaluation context and run lineage should remain attached to the historical decision rather than being silently overwritten by later context. No MLflow tracking model, schema, SDK, evaluator, trace format, or workflow was copied.
+
+Previously reviewed Agent Skills, MCP, Amazon Ads API, evaluation and memory projects were de-duplicated rather than counted again.
+
+### Adoption decision
+
+The only new repository behavior justified by this round is narrower: preserve the **action-time campaign objective** with the latest-action history summary, detect objective drift during post-change/weekly review, evaluate a historical action against the objective/primary metric/guardrails that existed when it was taken, and use the current objective only for the next decision. This remains read-only/Suggest/Shadow logic and does not add executor/write/retry/reconciliation behavior.
