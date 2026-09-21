@@ -24,6 +24,19 @@ When a conclusion depends on live MCP/API/connector data, load `../../references
 
 This gate is read-only and does not authorize live Amazon Ads mutation.
 
+## Campaign objective gate
+
+Load `../../references/campaign-objective.md` before treating ACOS/TACOS as a success/failure label for a campaign. Profitability calculations remain valid economic evidence, but their decision meaning depends on the campaign objective.
+
+- `Profit`: break-even and target economics may be primary decision criteria.
+- `Discovery`: economics are guardrails around learning cost, not proof of failure from one short exploration window.
+- `Growth`: quantify the cost of growth and marginal economics; organic/rank movement alone is not proof of incrementality.
+- `Defense`: expose strategic-coverage, cannibalization and opportunity-cost questions rather than assuming all defended spend is incremental.
+- `Experiment`: preserve the declared experimental metric and treatment integrity.
+- `Unknown`: report economics without inventing the intended trade-off.
+
+There is no universal ACOS/TACOS target shared by all campaign objectives.
+
 ## 什么时候使用
 
 - 用户问“ACOS 多少才不亏”；
