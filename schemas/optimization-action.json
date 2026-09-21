@@ -8,6 +8,7 @@
     "action_type": {"type": "string", "minLength": 1},
     "entity_type": {"type": "string", "minLength": 1},
     "entity_id": {"type": ["string", "null"]},
+    "campaign_objective": {"$ref": "campaign-objective.json"},
     "current_value": {},
     "proposed_value": {},
     "reason": {"type": "string", "minLength": 1},
