@@ -2,7 +2,7 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> Current version: `v1.2.0`  
+> 当前版本：`v1.2.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
@@ -98,6 +98,8 @@ Operating modes are `Read-only`, `Suggest`, `Shadow`, and externally authorized 
 - [docs/SOURCES.md](docs/SOURCES.md) — reviewed sources, licenses and adoption boundaries.
 - [docs/research/](docs/research/) — dated research notes, including operator/community evidence.
 - [evals/README.md](evals/README.md) — deterministic replay and effectiveness evaluation.
+- `scripts/project_measurement_history.py` — bounded measurement-history projection.
+- `scripts/summarize_skill_effectiveness.py` and `schemas/skill-effectiveness-benchmark.json` — paired Skill-effectiveness measurement.
 - [CHANGELOG.md](CHANGELOG.md) — release history.
 
 ## Contributing
