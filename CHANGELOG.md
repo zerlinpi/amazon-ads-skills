@@ -2,6 +2,23 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.4.0 — 2026-09-21
+
+### Added
+
+- Campaign-objective decision lineage across optimization memory and post-change review, including explicit action-time objective preservation and objective-drift handling.
+- Regression/eval coverage for a Growth action reviewed after the campaign later switches to a Profit objective.
+
+### Changed
+
+- Derived `entity-history.latest_action` can preserve the source action's `campaign_objective` without treating it as current truth.
+- Post-change review now separates historical outcome evaluation from the current campaign objective and forbids retroactive KPI/guardrail substitution.
+- Weekly review now checks action-time objective vs current objective before classifying prior actions.
+
+### Research
+
+- Re-reviewed Amazon official goal/KPI guidance and high-adoption agent/evaluation projects including `mozilla-ai/any-agent`, `google/adk-go`, and `mlflow/mlflow`; no external runtime or implementation was imported.
+
 ## v1.3.0 — 2026-09-21
 
 ### Changed
