@@ -24,6 +24,13 @@ def budget_snapshot(base_budget=100, effective_budget=100, policy="monthly_avera
         item = {"control_type": control_type, "state": state, "effective_at": "2026-09-20T00:00:00Z", "evidence_status": "observed"}
         if control_type == "audience_bid_adjustment":
             item["collection_evidence"] = COMPLETE_COLLECTION.copy()
+        if control_type == "schedule_or_event_rule" and isinstance(state, dict):
+            item["nested_collection_evidence"] = {
+                "schedule_rules": COMPLETE_COLLECTION.copy(),
+                "event_rules": COMPLETE_COLLECTION.copy(),
+            }
+        if control_type == "budget_or_pacing" and isinstance(state, dict):
+            item["nested_collection_evidence"] = {"active_budget_rules": COMPLETE_COLLECTION.copy()}
         controls.append(item)
     return {
         "scope": {"marketplace_id": "ATVPDKIKX0DER", "profile_id": "p1", "campaign_id": "sp-campaign-1"},
