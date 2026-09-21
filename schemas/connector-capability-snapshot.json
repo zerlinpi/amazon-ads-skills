@@ -94,7 +94,14 @@
               "available_through_exposed": {"type": ["boolean", "null"]},
               "metric_semantics_exposed": {"type": ["boolean", "null"]},
               "date_attribution_semantics_exposed": {"type": ["boolean", "null"]},
-              "maximum_history_window": {"type": ["string", "null"]}
+              "maximum_history_window": {"type": ["string", "null"]},
+              "control_types_exposed": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {"type": "string", "minLength": 1},
+                "description": "Canonical repository control types that this capability can explicitly observe for the bounded scope. Presence proves connector observability only; per-window causal evidence must still be supplied through control-state snapshots."
+              }
             },
             "additionalProperties": true
           },
