@@ -2,11 +2,11 @@ import unittest
 
 from scripts.compare_control_state import compare_control_state
 
-REGISTRY_ID = "control-requirements@2026-09-20"
+REGISTRY_ID = "control-requirements@2026-09-21"
 
 
 def sp_snapshot(base_bid: float, audience_complete=False):
-    required = ["base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing"]
+    required = ["base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing", "targeting_or_routing"]
     audience = {"control_type": "audience_bid_adjustment", "state": [], "effective_at": "2026-09-20T00:00:00Z", "evidence_status": "observed"}
     if audience_complete:
         audience["collection_evidence"] = {
@@ -21,6 +21,7 @@ def sp_snapshot(base_bid: float, audience_complete=False):
         audience,
         {"control_type": "schedule_or_event_rule", "state": {"schedule_rules": [], "event_rules": []}, "effective_at": "2026-09-20T00:00:00Z", "evidence_status": "observed", "nested_collection_evidence": {"schedule_rules": {"enumeration_status": "Complete", "pagination_status": "Complete", "capability_status": "Supported"}, "event_rules": {"enumeration_status": "Complete", "pagination_status": "Complete", "capability_status": "Supported"}}},
         {"control_type": "budget_or_pacing", "state": {"base_average_daily_budget": 100, "effective_daily_budget": 100, "active_budget_rules": [], "average_daily_budget_policy": "monthly_average_with_daily_flexibility"}, "effective_at": "2026-09-20T00:00:00Z", "evidence_status": "observed"},
+        {"control_type": "targeting_or_routing", "state": {"site_restriction": "ALL_ELIGIBLE"}, "effective_at": "2026-09-20T00:00:00Z", "evidence_status": "observed"},
     ]
     return {
         "scope": {"marketplace_id": "ATVPDKIKX0DER", "profile_id": "p1", "campaign_id": "sp-1"},

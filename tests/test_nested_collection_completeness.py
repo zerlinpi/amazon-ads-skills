@@ -5,8 +5,8 @@ from pathlib import Path
 from scripts.compare_control_state import compare_control_state
 
 ROOT = Path(__file__).resolve().parents[1]
-REGISTRY_ID = "control-requirements@2026-09-20"
-REQUIRED = ["base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing"]
+REGISTRY_ID = "control-requirements@2026-09-21"
+REQUIRED = ["base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing", "targeting_or_routing"]
 COMPLETE = {"enumeration_status": "Complete", "pagination_status": "Complete", "capability_status": "Supported"}
 TRUNCATED = {"enumeration_status": "Partial", "pagination_status": "Truncated", "capability_status": "Supported"}
 
@@ -49,6 +49,12 @@ def snapshot(surface: str, base_bid: float = 1.0, base_budget: float = 100.0, ru
             "nested_collection_evidence": budget_rule_evidence or {
                 "active_budget_rules": COMPLETE.copy(),
             },
+        },
+        {
+            "control_type": "targeting_or_routing",
+            "state": {"site_restriction": "ALL_ELIGIBLE"},
+            "effective_at": "2026-09-21T00:00:00Z",
+            "evidence_status": "observed",
         },
     ]
     return {
