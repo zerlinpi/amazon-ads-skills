@@ -20,6 +20,9 @@ def snapshot(base_bid: float, audience_evidence: dict) -> dict:
         item = {"control_type": control_type, "state": state, "effective_at": "2026-09-21T00:00:00Z", "evidence_status": "observed"}
         if control_type == "audience_bid_adjustment":
             item["collection_evidence"] = audience_evidence.copy()
+        if control_type == "schedule_or_event_rule":
+            complete = {"enumeration_status": "Complete", "pagination_status": "Complete", "capability_status": "Supported"}
+            item["nested_collection_evidence"] = {"schedule_rules": complete.copy(), "event_rules": complete.copy()}
         controls.append(item)
     return {
         "scope": {"marketplace_id": "ATVPDKIKX0DER", "profile_id": "p1", "campaign_id": "sp-campaign-1"},
