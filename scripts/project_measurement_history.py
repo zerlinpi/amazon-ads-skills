@@ -51,6 +51,13 @@ METRIC_SEMANTIC_FIELDS = (
     "semantic_version",
     "aggregation_semantics",
 )
+MEASUREMENT_COMPOSITION_FIELDS = (
+    "modeled_conversion_inclusion",
+    "direct_modeled_split_available",
+    "allocation_coverage_status",
+    "unallocated_rows_present",
+    "allocation_grain",
+)
 
 
 def _parse_timestamp(value: Any, *, field: str) -> datetime:
@@ -237,11 +244,39 @@ def _normalize_outcome_metric_semantics(value: Any) -> dict[str, Any] | None:
     return _normalize_metric_semantic_item(value, field="outcome_metric_semantics")
 
 
-def _warnings(snapshot: dict[str, Any], history_status: str, comparability: str) -> list[str]:
+def _normalize_measurement_composition(value: Any) -> dict[str, Any] | None:
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        raise ValueError("evidence_snapshot.measurement_composition must be an object or null")
+    result: dict[str, Any] = {}
+    for field in MEASUREMENT_COMPOSITION_FIELDS:
+        item = value.get(field)
+        if item is None:
+            continue
+        if field in {"direct_modeled_split_available", "unallocated_rows_present"}:
+            if not isinstance(item, bool):
+                raise ValueError(f"evidence_snapshot.measurement_composition.{field} must be boolean or null")
+        elif not isinstance(item, str) or not item:
+            raise ValueError(f"evidence_snapshot.measurement_composition.{field} must be a non-empty string or null")
+        result[field] = item
+    return result or None
+
+
+def _warnings(
+    snapshot: dict[str, Any],
+    history_status: str,
+    comparability: str,
+    measurement_composition: dict[str, Any] | None,
+) -> list[str]:
     warnings = list(snapshot.get("warnings") or [])
     for field in ("reporting_generation", "date_attribution_semantics"):
         if not snapshot.get(field):
             warnings.append(f"missing {field}; measurement identity is incomplete")
+    if measurement_composition is None:
+        warnings.append(
+            "measurement composition is unresolved; modeled/direct composition and lower-grain allocation coverage must remain unknown"
+        )
     if history_status in {"unavailable", "retired_or_deleted", "unknown"}:
         warnings.append(
             f"historical_availability_status={history_status}; missing history is an availability state, not a metric observation"
@@ -264,6 +299,9 @@ def _project(
     comparability = snapshot.get("comparability_status")
     if comparability not in COMPARABILITY_STATUSES:
         comparability = "Unknown"
+    measurement_composition = _normalize_measurement_composition(
+        snapshot.get("measurement_composition")
+    )
     return {
         "evidence_snapshot_id": snapshot.get("snapshot_id"),
         "observed_at": observed_at,
@@ -275,9 +313,15 @@ def _project(
         "metric_semantics": _normalize_metric_semantics(snapshot.get("metric_semantics")),
         "outcome_metric_semantics": _normalize_outcome_metric_semantics(outcome_metric_semantics),
         "date_attribution_semantics": snapshot.get("date_attribution_semantics"),
+        "measurement_composition": measurement_composition,
         "historical_availability_status": history_status,
         "comparability_status": comparability,
-        "warnings": _warnings(snapshot, history_status, comparability),
+        "warnings": _warnings(
+            snapshot,
+            history_status,
+            comparability,
+            measurement_composition,
+        ),
     }
 
 
