@@ -21,7 +21,7 @@
         "amazon-ads-official:schedule-based-bid-rules:2023-11-06",
         "amazon-ads-official:event-based-bid-rules:2025-01-02",
         "amazon-ads-official:sponsored-products-budget-basics",
-        "amazon-ads-official:amazon-business-exclusive-campaign-sponsored-products:2025-10-31"
+        "amazon-ads-official:amazon-business-exclusive-campaign-sponsored-products:2025-05-05"
       ],
       "notes": "Production causal-review surface for an intended Sponsored Products base-bid change. A post-change effect cannot be isolated to base bid unless bidding strategy, placement and audience adjustments, scheduled/event bid rules, budget/pacing, and campaign targeting/routing state are also evidenced for the comparison window. targeting_or_routing includes source-supported site restrictions when applicable; Amazon Business exclusive campaigns can restrict Sponsored Products delivery to Amazon Business, while existing campaigns may otherwise serve broader eligible sites. Connector support may make coverage Partial or Unknown; it must not remove these requirements. This registry records material advertiser/platform controls, not an Amazon API response schema or write payload."
     },
@@ -35,7 +35,7 @@
         "amazon-ads-official:audience-bid-boosting-sponsored-products:2024-11-04",
         "amazon-ads-official:schedule-based-bid-rules:2023-11-06",
         "amazon-ads-official:event-based-bid-rules:2025-01-02",
-        "amazon-ads-official:amazon-business-exclusive-campaign-sponsored-products:2025-10-31"
+        "amazon-ads-official:amazon-business-exclusive-campaign-sponsored-products:2025-05-05"
       ],
       "notes": "Production causal-review surface for an intended Sponsored Products budget change. The budget_or_pacing treatment state must preserve source-supported base average daily budget, effective daily budget, active budget-rule state, and average_daily_budget_policy for the comparison window. average_daily_budget_policy means the applicable account/platform daily-budget carryover or additional-spend setting/policy when observable; it is not inferred from spend. An empty rule list is valid only when the source positively observed no active rules; unavailable rule or average_daily_budget_policy state keeps coverage incomplete/unknown. Bid strategy, placement and audience adjustments, scheduled/event bid rules, and targeting/routing state must also be evidenced so a budget effect is not isolated across overlapping auction or delivery controls. targeting_or_routing includes source-supported site restrictions when applicable. Connector support may reduce observability but must never shrink this requirement set."
     }
