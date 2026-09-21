@@ -31,6 +31,20 @@ This gate is read-only and does not authorize live Amazon Ads mutation.
 - 如果主要目标是 configured keyword/target 的结构、match type、state、lifecycle 或 traffic ownership，路由到 `../keyword-optimization/SKILL.md`。
 - 若同一任务同时需要解释 Search Term row 和选择否定动作，先完成本 Skill 的 origin/coverage/actionability gate，再把结论交给 `negative-targeting`；不要把两个 Skill 当成对同一问题的平行意见。
 
+## Campaign objective gate
+
+When winner, waste, harvest, or scale interpretation depends on the campaign's job, load `../../references/campaign-objective.md`.
+
+- `Discovery` traffic may remain useful while it produces decision-relevant query/target learning inside explicit guardrails.
+- `Control` traffic emphasizes clear ownership, isolation and stable measurement.
+- `Growth` traffic may use different short-term trade-offs only when the growth objective and guardrails are explicit.
+- `Profit` traffic should respect contribution economics and target efficiency.
+- `Defense` traffic requires strategic-coverage and cannibalization context.
+- `Experiment` traffic must preserve treatment integrity.
+- `Unknown` campaign objective prevents role-specific harvest/scale claims from becoming action-safe.
+
+Do not infer campaign objective from Auto/Broad/Phrase/Exact or the displayed search-term string alone.
+
 ## 核心原则
 
 Search Term report row 不一定等同于字面意义上的真实用户查询。Amazon 当前 Sponsored Products 文档说明，search term 可以是顾客用于搜索商品的词，也可以是在 non-search context（例如部分站外社交展示）中由系统推断出的 best match。因此先判断 `term_origin`，再决定能否把该 row 当成 literal shopper query 做意图、Exact 收割或 Negative 推理。
