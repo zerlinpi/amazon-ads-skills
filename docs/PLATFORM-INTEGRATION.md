@@ -37,7 +37,11 @@ echo '{"operation":"resolve","skill":"bid-optimization","profile":"action-safe-p
   | python scripts/resolve_skill_context.py
 ```
 
-The resolver returns exactly one preload entrypoint, deferred resource candidates, and the canonical connector capability profile. It does not return Skill body text, load research/evals, call Amazon Ads, or grant write authority.
+The resolver returns exactly one preload entrypoint, deferred resource candidates, the canonical connector capability profile, and a deterministic `resource_manifest`. The manifest identifies the complete selected Skill directory plus directly referenced shared repository resources with SHA-256 digests and raw byte sizes, while keeping resource bodies deferred. A host can use those identities for cache invalidation or verification before materialization. It does not load research/evals, call Amazon Ads, or grant write authority.
+
+The manifest is a **repository-local custom-host contract**, not an implementation of the MCP `skills/get` wire response. The final MCP Skills extension (`io.modelcontextprotocol/skills`) provides the normative transport contract for servers that actually publish Skills over MCP. If a platform implements that extension, preserve the originating server identity together with the Skill URI and verify the server-provided resource manifest according to that extension rather than translating this local JSON shape into a claimed MCP response.
+
+Because some canonical Skills in this repository reference shared files outside their own `skills/<name>/` directory, do not claim that a bare Skill directory is a self-contained MCP-served package unless the external serving layer has explicitly materialized or mapped those dependencies and revalidated content identity.
 
 ## Amazon Ads MCP Server
 
