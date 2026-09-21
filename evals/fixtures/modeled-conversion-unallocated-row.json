@@ -1,0 +1,29 @@
+{
+  "id": "modeled-conversion-unallocated-row",
+  "skill": "performance-drop-diagnosis",
+  "scenario": "Sponsored Display conversion reporting contains modeled conversions and an Unallocated dimension row while a targeting-level slice appears to lose purchases.",
+  "input": {
+    "campaign_type": "Sponsored Display",
+    "report_grain": "targeting",
+    "traffic": "stable",
+    "targeting_rows_purchases_change_pct": -28,
+    "unallocated_row_present": true,
+    "modeled_conversion_semantics_known": true
+  },
+  "expected": {
+    "must": [
+      "Treat Unallocated modeled conversions as attributed campaign/order conversion evidence that cannot be safely assigned to the requested targeting grain",
+      "Do not interpret the targeting-row purchase deficit as zero conversions, lost shopper demand, or target-level waste until allocation coverage is reconciled",
+      "Separate campaign-level conversion movement from allocation-to-dimension movement",
+      "Downgrade target-level causal claims and traffic-suppression actions to Directional, Hold, or Missing Data when allocation coverage is material",
+      "Preserve modeled-versus-direct measurement semantics when comparing periods or sources"
+    ],
+    "must_not": [
+      "Drop Unallocated rows before computing campaign-level conversion totals",
+      "Redistribute Unallocated conversions across targets without supported allocation evidence",
+      "Recommend target bid cuts solely from allocated targeting rows when modeled allocation changed"
+    ]
+  },
+  "risk": "Without an allocation gate, modeled conversions reported on Unallocated rows can make lower-grain rows look artificially weak and trigger false bid cuts or pauses.",
+  "mode": "Read-only"
+}
