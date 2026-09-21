@@ -19,6 +19,17 @@ class ControlRequirementRegistryContractTests(unittest.TestCase):
                 f"{surface_name} contains control types outside schemas/control-state-snapshot.json: {sorted(invalid)}",
             )
 
+    def test_sponsored_products_causal_surfaces_require_targeting_or_routing(self):
+        registry = json.loads((ROOT / "references/control-requirement-registry.json").read_text(encoding="utf-8"))
+
+        for surface_name in ("sponsored_products_bid_change", "sponsored_products_budget_change"):
+            required = set(registry["decision_surfaces"][surface_name]["required_control_types"])
+            self.assertIn(
+                "targeting_or_routing",
+                required,
+                f"{surface_name} must observe campaign routing/site state before isolating a causal effect",
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
