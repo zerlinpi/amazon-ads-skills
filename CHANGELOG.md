@@ -2,6 +2,18 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.3.0 — 2026-09-21
+
+### Changed
+
+- Bid and placement optimization now load the shared campaign-objective contract before turning local efficiency into objective-dependent action or sizing.
+- `Unknown` campaign objective explicitly caps mission-dependent bid/placement decisions to conservative hold/directional/shadow/experiment/manual-review outcomes rather than inventing action authority.
+- Existing connector-capability, sample-sufficiency, realized-exposure, control-interaction, confounder, action-sizing and platform-capability safeguards remain additive and unchanged.
+
+### Research
+
+- Recorded `evalstate/fast-agent` as a high-adoption Apache-2.0 runtime/evaluation reference and rejected importing its runtime machinery because connector attachment, execution and orchestration remain external to this decision library.
+
 ## v1.2.0 — 2026-09-21
 
 ### Added
