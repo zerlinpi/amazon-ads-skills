@@ -4,101 +4,611 @@
   "title": "Amazon Ads Optimization Event",
   "type": "object",
   "additionalProperties": true,
-  "required": ["event_id", "event_type", "timestamp", "entity", "action_type"],
+  "required": [
+    "event_id",
+    "event_type",
+    "timestamp",
+    "entity",
+    "action_type"
+  ],
   "properties": {
-    "event_id": {"type": "string", "minLength": 1},
-    "parent_action_id": {"type": ["string", "null"]},
-    "supersedes_event_id": {"type": ["string", "null"]},
-    "event_type": {"type": "string", "enum": ["proposed", "approved", "applied", "readback", "evaluated", "corrected", "rollback_proposed", "rolled_back", "failed", "unknown"]},
-    "timestamp": {"type": "string", "format": "date-time"},
-    "marketplace": {"type": ["string", "null"]},
-    "profile_scope": {"type": ["string", "null"]},
+    "event_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parent_action_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "supersedes_event_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "proposed",
+        "approved",
+        "applied",
+        "readback",
+        "evaluated",
+        "corrected",
+        "rollback_proposed",
+        "rolled_back",
+        "failed",
+        "unknown"
+      ]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "marketplace": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "profile_scope": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "account_identity": {
-      "type": ["object", "null"],
+      "type": [
+        "object",
+        "null"
+      ],
       "description": "Event-time advertiser/account identity envelope. Preserve explicit global, regional, legacy, profile, country, and mapping provenance when exposed; missing fields remain unknown.",
       "properties": {
-        "manager_account_id": {"type": ["string", "null"]},
-        "global_advertiser_account_id": {"type": ["string", "null"]},
-        "regional_advertiser_account_id": {"type": ["string", "null"]},
-        "legacy_advertiser_account_id": {"type": ["string", "null"]},
-        "advertiser_account_id": {"type": ["string", "null"]},
-        "regional_profile_id": {"type": ["string", "null"]},
-        "country_code": {"type": ["string", "null"]},
-        "identity_mapping_provenance": {"type": ["object", "string", "null"]}
+        "manager_account_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "global_advertiser_account_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "regional_advertiser_account_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "legacy_advertiser_account_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "advertiser_account_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "regional_profile_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "country_code": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "identity_mapping_provenance": {
+          "type": [
+            "object",
+            "string",
+            "null"
+          ]
+        }
       },
       "additionalProperties": true
     },
-    "entity": {"type": "object", "required": ["type", "id"], "properties": {"type": {"type": "string"}, "id": {"type": "string", "minLength": 1}}, "additionalProperties": true},
-    "action_type": {"type": "string"},
-    "before_value": {}, "intended_value": {}, "current_value": {},
-    "objective": {"type": ["string", "null"]}, "expected_mechanism": {"type": ["string", "null"]},
-    "application_status": {"type": ["string", "null"], "enum": ["Confirmed", "Partial", "Not Applied", "Drifted", "Unknown", null]},
-    "outcome_status": {"type": ["string", "null"], "enum": ["Worked", "Likely Worked", "Monitoring", "Inconclusive", "Likely Failed", "Failed", "Application Failure", "Drifted", null]},
+    "entity": {
+      "type": "object",
+      "required": [
+        "type",
+        "id"
+      ],
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": true
+    },
+    "action_type": {
+      "type": "string"
+    },
+    "before_value": {},
+    "intended_value": {},
+    "current_value": {},
+    "objective": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "expected_mechanism": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "application_status": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "Confirmed",
+        "Partial",
+        "Not Applied",
+        "Drifted",
+        "Unknown",
+        null
+      ]
+    },
+    "outcome_status": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "Worked",
+        "Likely Worked",
+        "Monitoring",
+        "Inconclusive",
+        "Likely Failed",
+        "Failed",
+        "Application Failure",
+        "Drifted",
+        null
+      ]
+    },
     "outcome_metric_semantics": {
-      "type": ["object", "null"],
+      "type": [
+        "object",
+        "null"
+      ],
       "description": "Semantic identity of the decision-driving outcome metric. Preserve explicit family, attribution family, and semantic version when known; missing values remain unknown.",
       "properties": {
-        "metric_name": {"type": ["string", "null"]},
-        "metric_family": {"type": ["string", "null"]},
-        "attribution_family": {"type": ["string", "null"]},
-        "semantic_version": {"type": ["string", "null"]},
-        "aggregation_semantics": {"type": ["string", "null"], "enum": ["additive", "non_additive_deduplicated", "ratio_or_derived", "unknown", null]}
+        "metric_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "metric_family": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "attribution_family": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "semantic_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "aggregation_semantics": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "additive",
+            "non_additive_deduplicated",
+            "ratio_or_derived",
+            "unknown",
+            null
+          ]
+        }
       },
       "additionalProperties": true
     },
-    "confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
-    "baseline_window": {"type": ["object", "null"]}, "post_change_window": {"type": ["object", "null"]},
-    "evidence": {"type": "array", "items": {}},
+    "confidence": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "baseline_window": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "post_change_window": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "evidence": {
+      "type": "array",
+      "items": {}
+    },
     "evidence_snapshot": {
-      "type": ["object", "null"],
+      "type": [
+        "object",
+        "null"
+      ],
       "description": "Decision-time evidence identity for reproducibility across mutable history and reporting-definition changes.",
       "properties": {
-        "snapshot_id": {"type": ["string", "null"]},
-        "source_system": {"type": ["string", "null"]},
-        "source_dataset": {"type": ["string", "null"]},
-        "acquisition_channel": {"type": ["string", "null"]},
-        "reporting_generation": {"type": ["string", "null"]},
-        "semantic_version": {"type": ["string", "null"]},
+        "snapshot_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_system": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_dataset": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "acquisition_channel": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reporting_generation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "semantic_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "metric_semantics": {
           "type": "array",
           "description": "Per-metric semantic identities used by this evidence snapshot. Do not infer omitted or unknown fields from display names.",
           "items": {
             "type": "object",
             "properties": {
-              "metric_name": {"type": ["string", "null"]},
-              "metric_family": {"type": ["string", "null"]},
-              "attribution_family": {"type": ["string", "null"]},
-              "semantic_version": {"type": ["string", "null"]},
-              "aggregation_semantics": {"type": ["string", "null"], "enum": ["additive", "non_additive_deduplicated", "ratio_or_derived", "unknown", null]}
+              "metric_name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "metric_family": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "attribution_family": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "semantic_version": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "aggregation_semantics": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "enum": [
+                  "additive",
+                  "non_additive_deduplicated",
+                  "ratio_or_derived",
+                  "unknown",
+                  null
+                ]
+              }
             },
             "additionalProperties": true
           }
         },
-        "date_attribution_semantics": {"type": ["string", "null"], "enum": ["traffic_date", "conversion_date", "event_date", "unknown", null]},
-        "historical_availability_status": {"type": ["string", "null"], "enum": ["available", "partially_available", "unavailable", "retired_or_deleted", "unknown", null]},
-        "comparability_status": {"type": ["string", "null"], "enum": ["Comparable", "Reconcilable", "Directional", "Not Comparable", "Unknown", null]},
-        "captured_at": {"type": ["string", "null"], "format": "date-time"},
-        "available_through": {"type": ["string", "null"]}, "maturity": {"type": ["string", "null"]}, "evidence_hash": {"type": ["string", "null"]}
+        "date_attribution_semantics": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "traffic_date",
+            "conversion_date",
+            "event_date",
+            "unknown",
+            null
+          ]
+        },
+        "historical_availability_status": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "available",
+            "partially_available",
+            "unavailable",
+            "retired_or_deleted",
+            "unknown",
+            null
+          ]
+        },
+        "comparability_status": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "Comparable",
+            "Reconcilable",
+            "Directional",
+            "Not Comparable",
+            "Unknown",
+            null
+          ]
+        },
+        "captured_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "available_through": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "maturity": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "evidence_hash": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       },
       "additionalProperties": true
     },
     "realization_snapshot": {
-      "type": ["object", "null"],
+      "type": [
+        "object",
+        "null"
+      ],
       "description": "Canonical shopper-facing ad realization context when platform-managed surface, product, creative, or message selection can affect causal interpretation.",
       "properties": {
-        "snapshot_id": {"type": ["string", "null"]}, "captured_at": {"type": ["string", "null"], "format": "date-time"},
-        "realization_mode": {"type": ["string", "null"], "enum": ["manual", "platform_managed", "hybrid", "unknown", null]},
-        "realized_surfaces": {"type": "array", "items": {"type": "string"}}, "realized_product_ids": {"type": "array", "items": {"type": "string"}}, "realized_creative_or_message_ids": {"type": "array", "items": {"type": "string"}},
-        "source_dataset": {"type": ["string", "null"]}, "acquisition_channel": {"type": ["string", "null"]},
-        "coverage_status": {"type": ["string", "null"], "enum": ["Complete", "Partial", "Unavailable", "Unknown", null]},
-        "comparability_status": {"type": ["string", "null"], "enum": ["Comparable", "Reconcilable", "Directional", "Not Comparable", "Unknown", null]},
-        "identity_hash": {"type": ["string", "null"]}, "warnings": {"type": "array", "items": {"type": "string"}}
-      }, "additionalProperties": true
+        "snapshot_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "captured_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "realization_mode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "manual",
+            "platform_managed",
+            "hybrid",
+            "unknown",
+            null
+          ]
+        },
+        "realized_surfaces": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "realized_product_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "realized_creative_or_message_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source_dataset": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "acquisition_channel": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "coverage_status": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "Complete",
+            "Partial",
+            "Unavailable",
+            "Unknown",
+            null
+          ]
+        },
+        "comparability_status": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "Comparable",
+            "Reconcilable",
+            "Directional",
+            "Not Comparable",
+            "Unknown",
+            null
+          ]
+        },
+        "identity_hash": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
     },
-    "restatement": {"type": ["object", "null"], "properties": {"detected_at": {"type": ["string", "null"], "format": "date-time"}, "reason": {"type": ["string", "null"]}, "prior_snapshot_id": {"type": ["string", "null"]}, "replacement_snapshot_id": {"type": ["string", "null"]}, "material_to_outcome": {"type": ["boolean", "null"]}}, "additionalProperties": true},
-    "confounders": {"type": "array", "items": {}},
-    "decision": {"type": ["string", "null"], "enum": ["Keep", "Keep Monitoring", "Rollback Candidate", "Follow-up Experiment", "Fix Application", "Manual Review", null]},
-    "next_evaluation": {"type": ["string", "object", "null"]}, "rollback_condition": {}, "source_lineage": {"type": "array", "items": {}},
-    "mode": {"type": "string", "enum": ["Read-only", "Suggest", "Shadow", "Execute"]}
+    "restatement": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "detected_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "prior_snapshot_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "replacement_snapshot_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "material_to_outcome": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "confounders": {
+      "type": "array",
+      "items": {}
+    },
+    "decision": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "Keep",
+        "Keep Monitoring",
+        "Rollback Candidate",
+        "Follow-up Experiment",
+        "Fix Application",
+        "Manual Review",
+        null
+      ]
+    },
+    "next_evaluation": {
+      "type": [
+        "string",
+        "object",
+        "null"
+      ]
+    },
+    "rollback_condition": {},
+    "source_lineage": {
+      "type": "array",
+      "items": {}
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "Read-only",
+        "Suggest",
+        "Shadow",
+        "Execute"
+      ]
+    },
+    "campaign_objective": {
+      "anyOf": [
+        {
+          "$ref": "campaign-objective.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Campaign objective/mission context applicable at event time. Preserve Unknown when objective evidence is insufficient; do not infer it from performance metrics."
+    }
   }
 }
