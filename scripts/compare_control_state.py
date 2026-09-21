@@ -52,6 +52,23 @@ def _collection_problem(control: dict[str, Any], control_type: str, side: str) -
     return None
 
 
+def _nested_collection_problem(control: dict[str, Any], control_type: str, field: str, side: str) -> str | None:
+    state = control.get("state")
+    if not isinstance(state, dict) or not isinstance(state.get(field), list):
+        return None
+    evidence_map = control.get("nested_collection_evidence")
+    if not isinstance(evidence_map, dict):
+        return f"{side} {control_type}.{field} collection lacks completeness evidence"
+    evidence = evidence_map.get(field)
+    if not isinstance(evidence, dict):
+        return f"{side} {control_type}.{field} collection lacks completeness evidence"
+    expected = {"enumeration_status": "Complete", "pagination_status": "Complete", "capability_status": "Supported"}
+    incomplete = [key for key, value in expected.items() if evidence.get(key) != value]
+    if incomplete:
+        return f"{side} {control_type}.{field} collection completeness is unproven: " + ", ".join(incomplete)
+    return None
+
+
 def _coverage_problem(snapshot: dict[str, Any], control_map: dict[str, dict[str, Any]], side: str) -> str | None:
     coverage = snapshot.get("coverage")
     if not isinstance(coverage, dict):
@@ -119,6 +136,9 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
         for field in sorted(required_rule_surfaces):
             if not isinstance(rule_state.get(field), list):
                 return f"{side} Sponsored Products {field} must be source-supported list evidence"
+            nested_problem = _nested_collection_problem(rule_control, "schedule_or_event_rule", field, side)
+            if nested_problem:
+                return nested_problem
 
     if surface != "sponsored_products_budget_change":
         return None
@@ -137,6 +157,9 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
             return f"{side} Sponsored Products budget state has unknown {field}"
     if not isinstance(state.get("active_budget_rules"), list):
         return f"{side} Sponsored Products active_budget_rules must be source-supported list evidence"
+    nested_problem = _nested_collection_problem(budget_control, "budget_or_pacing", "active_budget_rules", side)
+    if nested_problem:
+        return nested_problem
     return None
 
 
