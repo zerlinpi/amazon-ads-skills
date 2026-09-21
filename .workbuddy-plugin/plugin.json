@@ -1,47 +1,10 @@
 {
   "name": "amazon-ads-skills",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Amazon Ads AI Agent skills, playbooks, measurement-lineage projection and effectiveness eval tooling for monitoring, diagnosis, growth analysis, experiments, post-change evaluation, optimization memory and guarded advertising decisions.",
-  "author": {
-    "name": "zerlinpi"
-  },
-  "skills": [
-    "./skills/amazon-ads-audit",
-    "./skills/campaign-health-monitor",
-    "./skills/performance-drop-diagnosis",
-    "./skills/growth-opportunity-finder",
-    "./skills/experiment-planner",
-    "./skills/post-change-review",
-    "./skills/search-term-analysis",
-    "./skills/keyword-optimization",
-    "./skills/bid-optimization",
-    "./skills/budget-optimization",
-    "./skills/placement-optimization",
-    "./skills/negative-targeting",
-    "./skills/profitability-analysis",
-    "./skills/anomaly-detection",
-    "./skills/amazon-ads-optimizer"
-  ],
-  "displayName": {
-    "en": "Amazon Ads Skills",
-    "zh": "亚马逊广告技能库"
-  },
-  "displayDescription": {
-    "en": "Reusable Amazon Ads skills plus progressive playbooks, measurement-lineage projection and effectiveness evaluation for causal diagnosis, growth, experiments, post-change evaluation, optimization memory and guarded optimization.",
-    "zh": "面向亚马逊广告因果诊断、增长机会、实验设计、变更后评估、优化记忆、measurement lineage 投影、安全优化与效果评测的可复用 Skills 与渐进式 Playbook。"
-  },
-  "tags": [
-    {
-      "en": "Amazon Ads",
-      "zh": "亚马逊广告"
-    },
-    {
-      "en": "Advertising Optimization",
-      "zh": "广告优化"
-    },
-    {
-      "en": "AI Agent",
-      "zh": "AI Agent"
-    }
-  ]
+  "author": {"name": "zerlinpi"},
+  "skills": ["./skills/amazon-ads-audit", "./skills/campaign-health-monitor", "./skills/performance-drop-diagnosis", "./skills/growth-opportunity-finder", "./skills/experiment-planner", "./skills/post-change-review", "./skills/search-term-analysis", "./skills/keyword-optimization", "./skills/bid-optimization", "./skills/budget-optimization", "./skills/placement-optimization", "./skills/negative-targeting", "./skills/profitability-analysis", "./skills/anomaly-detection", "./skills/amazon-ads-optimizer"],
+  "displayName": {"en": "Amazon Ads Skills", "zh": "亚马逊广告技能库"},
+  "displayDescription": {"en": "Reusable Amazon Ads skills plus progressive playbooks, measurement-lineage projection and effectiveness evaluation for causal diagnosis, growth, experiments, post-change evaluation, optimization memory and guarded optimization.", "zh": "面向亚马逊广告因果诊断、增长机会、实验设计、变更后评估、优化记忆、measurement lineage 投影、安全优化与效果评测的可复用 Skills 与渐进式 Playbook。"},
+  "tags": [{"en": "Amazon Ads", "zh": "亚马逊广告"}, {"en": "Advertising Optimization", "zh": "广告优化"}, {"en": "AI Agent", "zh": "AI Agent"}]
 }

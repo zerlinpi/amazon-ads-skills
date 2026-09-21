@@ -20,6 +20,15 @@ When a conclusion depends on live MCP/API/connector data, load `../../references
 
 This gate is read-only and does not authorize live Amazon Ads mutation.
 
+## Campaign objective gate
+
+Before role-specific optimization, load `../../references/campaign-objective.md` when campaign mission changes how evidence should be interpreted. Resolve the campaign objective as `Discovery`, `Control`, `Growth`, `Profit`, `Defense`, `Experiment`, or `Unknown`.
+
+- Do not infer the role from campaign type, match type, campaign name, ACOS/TACOS, or budget usage alone.
+- If the campaign objective is `Unknown`, keep role-dependent conclusions conservative and request stronger objective evidence.
+- Preserve objective source/confidence when it materially changes a recommendation.
+- No universal ACOS/TACOS threshold applies across all campaign objectives.
+
 ## Route by intent
 
 | Intent | Route |
