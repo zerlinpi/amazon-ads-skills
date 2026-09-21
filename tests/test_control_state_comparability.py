@@ -5,7 +5,7 @@ from pathlib import Path
 from scripts.compare_control_state import compare_control_state
 
 ROOT = Path(__file__).resolve().parents[1]
-REGISTRY_ID = "control-requirements@2026-09-20"
+REGISTRY_ID = "control-requirements@2026-09-21"
 
 
 def snapshot(state=1, status="observed", control="base_bid", marketplace="ATVPDKIKX0DER", profile="p1", effective="2026-09-18T00:00:00Z"):
@@ -63,19 +63,19 @@ class ControlStateComparabilityTests(unittest.TestCase):
     def test_registry_has_evidence_backed_sp_bid_change_surface(self):
         registry = json.loads((ROOT / "references/control-requirement-registry.json").read_text(encoding="utf-8"))
         surface = registry["decision_surfaces"]["sponsored_products_bid_change"]
-        self.assertEqual(set(surface["required_control_types"]), {"base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing"})
+        self.assertEqual(set(surface["required_control_types"]), {"base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing", "targeting_or_routing"})
         self.assertGreaterEqual(len(surface["evidence_basis"]), 4)
         self.assertTrue(all(item.startswith("amazon-ads-official:") for item in surface["evidence_basis"]))
 
     def test_registry_has_evidence_backed_sp_budget_change_surface(self):
         registry = json.loads((ROOT / "references/control-requirement-registry.json").read_text(encoding="utf-8"))
         surface = registry["decision_surfaces"]["sponsored_products_budget_change"]
-        self.assertEqual(set(surface["required_control_types"]), {"base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing"})
+        self.assertEqual(set(surface["required_control_types"]), {"base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing", "targeting_or_routing"})
         self.assertGreaterEqual(len(surface["evidence_basis"]), 5)
         self.assertTrue(all(item.startswith("amazon-ads-official:") for item in surface["evidence_basis"]))
 
     def test_comparator_isolates_sp_budget_change_with_full_material_control_set(self):
-        required = ["base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing"]
+        required = ["base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing", "targeting_or_routing"]
 
         def budget_snapshot(base_budget, effective_budget):
             states = {
@@ -85,6 +85,7 @@ class ControlStateComparabilityTests(unittest.TestCase):
                 "audience_bid_adjustment": [],
                 "schedule_or_event_rule": {"schedule_rules": [], "event_rules": []},
                 "budget_or_pacing": {"base_average_daily_budget": base_budget, "effective_daily_budget": effective_budget, "active_budget_rules": [], "average_daily_budget_policy": "monthly_average_with_daily_flexibility"},
+                "targeting_or_routing": {"site_restriction": "ALL_ELIGIBLE"},
             }
             controls = []
             for control_type, state in states.items():
