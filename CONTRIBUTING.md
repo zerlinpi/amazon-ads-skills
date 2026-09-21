@@ -62,6 +62,16 @@ Before adding a new Skill, check whether the change belongs in:
 
 Keep Skill entrypoints compact and use progressive loading.
 
+## Versioning
+
+`VERSION` is the single release-version source. Release-worthy changes use semantic versioning and must keep the README, Codex/Claude/WorkBuddy manifests, and `CHANGELOG.md` synchronized.
+
+- **PATCH** — backward-compatible fixes or non-material maintenance.
+- **MINOR** — backward-compatible new capabilities or material decision/safety/data/runtime improvements.
+- **MAJOR** — breaking public contract changes that require downstream migration.
+
+Every pull request should classify its version impact. A substantial MINOR/MAJOR change should bump the version in that pull request rather than leaving the project indefinitely on an old release number. Small documentation/research-only changes may select no release bump.
+
 ## Pull request expectations
 
 A pull request should explain:

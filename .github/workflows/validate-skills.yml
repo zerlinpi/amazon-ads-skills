@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
     paths:
+      - "VERSION"
+      - "CHANGELOG.md"
+      - "CONTRIBUTING.md"
+      - ".github/pull_request_template.md"
       - "README.md"
       - "AGENTS.md"
       - "CLAUDE.md"
@@ -22,6 +26,10 @@ on:
       - ".github/workflows/validate-skills.yml"
   pull_request:
     paths:
+      - "VERSION"
+      - "CHANGELOG.md"
+      - "CONTRIBUTING.md"
+      - ".github/pull_request_template.md"
       - "README.md"
       - "AGENTS.md"
       - "CLAUDE.md"

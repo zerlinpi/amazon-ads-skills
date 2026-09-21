@@ -123,6 +123,18 @@ Do **not** add custom top-level fields such as `display_name`, `display_name_en`
 
 Keep `name` within the Agent Skills naming constraints and `description` within the specification limit. Metadata compatibility is part of multi-agent portability; a Skill that works in one permissive runtime but fails strict validation is not considered portable.
 
+## Versioning and releases
+
+`VERSION` is the canonical repository release version. Keep the README version label and all runtime manifests (`.codex-plugin/plugin.json`, `.claude-plugin/plugin.json`, and `.workbuddy-plugin/plugin.json`) synchronized with it, and add the release entry to `CHANGELOG.md`.
+
+Use semantic versioning for release-worthy changes:
+
+- **PATCH** — backward-compatible bug fixes, documentation corrections, research/source maintenance, or internal changes that do not materially expand a public decision/runtime contract.
+- **MINOR** — backward-compatible new capability, materially stronger decision/safety/data/runtime behavior, new optional schema surface, or another substantial improvement users should be able to identify as a new release.
+- **MAJOR** — breaking changes to public schemas, CLI/output contracts, canonical Skill/capability identity, runtime integration contracts, or changes that require downstream migration.
+
+A material MINOR/MAJOR change must not merge while the repository continues to advertise the previous release indefinitely. Classify version impact in the pull request; when a bump is required, update `VERSION`, README, all runtime manifests, and `CHANGELOG.md` in the same PR. Do not add repository release versions to individual `SKILL.md` top-level frontmatter.
+
 ## Deterministic repository validation
 
 After changing a Skill, its supporting references, shared references, schemas, playbooks, eval fixtures, validators, projector/summarizer utilities, or runtime manifests, run:
