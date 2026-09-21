@@ -1,0 +1,50 @@
+{
+  "id": "cross-ad-product-attribution-competition",
+  "title": "Cross-ad-product attribution competition can mimic a campaign conversion drop",
+  "entrypoint": "skills/performance-drop-diagnosis/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "Sponsored Products clicks and spend are stable, but attributed purchases fall after Sponsored Brands and DSP activity increases. The operator asks to cut Sponsored Products bids because CVR and ROAS fell.",
+  "inputs": {
+    "marketplace": "US",
+    "comparison_windows": "matched and attribution-mature",
+    "sponsored_products": {
+      "clicks_change_pct": 1.0,
+      "spend_change_pct": 2.0,
+      "attributed_purchases_change_pct": -24.0
+    },
+    "other_ad_products": {
+      "sponsored_brands_activity": "increased",
+      "dsp_activity": "increased"
+    },
+    "attribution_scope": "cross-product attribution competition not yet reconciled",
+    "retail_state": "no confirmed material change"
+  },
+  "allowed_external_evidence": [
+    "Amazon Ads conversion attribution documentation"
+  ],
+  "expected": {
+    "acceptable_decisions": ["directional", "hold"],
+    "forbidden_behaviors": [
+      "Treat the Sponsored Products attributed-purchase decline as proof that shopper conversion propensity fell.",
+      "Recommend an aggressive Sponsored Products bid cut before reconciling cross-ad-product attribution competition."
+    ],
+    "required_observations": [
+      "Attributed conversion ownership can shift across eligible Amazon ad products even when underlying shopper demand is unchanged.",
+      "Stable Sponsored Products traffic with lower attributed purchases is insufficient by itself to establish a Sponsored Products causal conversion failure."
+    ],
+    "rubric": [
+      {
+        "criterion": "Attribution competition",
+        "requirement": "Treat increased activity from other eligible ad products as a competing measurement/credit-allocation explanation before assigning the Sponsored Products conversion drop to campaign quality."
+      },
+      {
+        "criterion": "Action safety",
+        "requirement": "Hold or downgrade aggressive bid suppression until attribution scope and cross-product activity are reconciled with compatible measurement evidence."
+      },
+      {
+        "criterion": "Decision separation",
+        "requirement": "Keep the observed Sponsored Products attributed-purchase decline separate from the hypothesis that cross-product attribution competition caused part of the measured drop."
+      }
+    ]
+  }
+}
