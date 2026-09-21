@@ -36,6 +36,20 @@ Keep these distinctions explicit: proposed ≠ applied; applied ≠ readback-con
 
 While a material action is still attribution/sample-maturity pending, avoid contradictory or large overlapping edits unless a safety guardrail requires intervention. Flag oscillation, unknown application, overlapping experiments, and parent-level confounding. Do not use a universal waiting period.
 
+## Campaign-objective lineage
+
+For a material optimization action, preserve the **action-time campaign objective** carried by the source `optimization-event` when known. The objective belongs to the decision context that justified the action; a later strategy change must not silently rewrite it in derived history.
+
+Treat a change between the action-time objective and the current campaign objective as **objective drift**:
+
+- evaluate the historical action against its action-time objective, declared `primary_metric`, `guardrail_metrics`, expected mechanism, and contemporaneous constraints;
+- evaluate future recommendations against the current objective separately;
+- **do not retroactively** call an earlier Growth/Discovery/Defense/Experiment action successful or failed solely because the campaign is now governed by a different Profit/Control/Growth objective;
+- do not copy the old objective forward as current truth after an explicit strategy change;
+- if the action-time objective is `Unknown` or absent, keep that uncertainty rather than inferring it from later ACOS/TACOS, campaign name, rank movement, or current strategy.
+
+When `schemas/entity-history.json` exposes `latest_action`, preserve the source action event's `campaign_objective` inside that bounded summary when known. The append-first event remains authoritative; the summary is only a retrieval aid. An evaluation/review event may carry the objective applicable at evaluation time, but it must remain linked to the original action so action-time intent is not lost.
+
 ## Decision-time evidence identity
 
 Mutable reporting history creates two separate questions: what evidence was available when the decision was made, and what the latest/restated history says now. Preserve both.
