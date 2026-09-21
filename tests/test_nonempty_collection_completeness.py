@@ -2,8 +2,8 @@ import unittest
 
 from scripts.compare_control_state import compare_control_state
 
-REGISTRY_ID = "control-requirements@2026-09-20"
-REQUIRED = ["base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing"]
+REGISTRY_ID = "control-requirements@2026-09-21"
+REQUIRED = ["base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing", "targeting_or_routing"]
 
 
 def snapshot(base_bid: float, audience_evidence: dict) -> dict:
@@ -14,6 +14,7 @@ def snapshot(base_bid: float, audience_evidence: dict) -> dict:
         "audience_bid_adjustment": [{"audience_id": "aud-1", "bid_boost": 20}],
         "schedule_or_event_rule": {"schedule_rules": [], "event_rules": []},
         "budget_or_pacing": {"base_average_daily_budget": 100, "effective_daily_budget": 100, "active_budget_rules": [], "average_daily_budget_policy": "monthly_average_with_daily_flexibility"},
+        "targeting_or_routing": {"site_restriction": "ALL_ELIGIBLE"},
     }
     controls = []
     for control_type, state in states.items():
