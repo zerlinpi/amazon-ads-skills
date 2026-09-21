@@ -472,3 +472,24 @@ Previously reviewed Amazon Ads MCP/skills repositories and high-star agent/eval 
 
 Adopt only the repository-owned fail-closed invariant proven by RED→GREEN tests: for decision-material nested rule lists, a structured parent object and a list value are insufficient proof. Each required nested collection must independently establish complete enumeration, complete pagination, and supported connector capability before it can participate in a causal isolation result. Missing/partial/truncated/unsupported/unknown nested evidence remains `Unknown`. No Amazon Ads write capability is added.
 
+
+
+## Sponsored Products routing/site-state review — 2026-09-21
+
+### Amazon Ads official — Amazon Business exclusive campaigns for Sponsored Products
+
+Amazon's official launch page **Reach business shoppers with Amazon Business exclusive campaigns**, dated 2025-05-05, documents a Sponsored Products campaign-level Sites restriction for Amazon Business exclusive campaigns. Amazon states that API-created exclusive campaigns use `site Restrictions = AMAZON_BUSINESS`, that these campaigns serve only on the Amazon Business store, and that existing Sponsored Products reports for those campaigns reflect Amazon Business performance.
+
+Adoption boundary: this source is used only to establish that campaign routing/site state can materially change the eligible traffic pool and therefore belongs in causal comparability for Sponsored Products bid/budget reviews. This repository does not copy an Amazon write payload, does not implement the write endpoint, and does not infer a default site state when a connector cannot expose it. Missing routing/site evidence remains Unknown.
+
+Source: https://advertising.amazon.com/en-gb/resources/whats-new/amazon-business-exclusive-campaign-for-sponsored-product
+
+### Incremental GitHub review
+
+Stars and activity are discovery context only, not adoption criteria. Previously reviewed projects, including `nexscope-ai/Amazon-Skills`, were de-duplicated instead of counted again.
+
+- `linkfox-ai/linkfox-skills` — 104 stars observed on 2026-09-21; MIT; non-fork; recent push 2026-09-14. The public repository exposes a large API-driven skill catalog including Amazon Ads auth, management, reporting and SP insights, but its runtime depends on the LinkFox service/API and the root scan showed no repository-level tests or GitHub Actions workflows. Useful only as connector-capability coverage context. Rejected as an implementation source for this change because Amazon official documentation is stronger evidence for routing semantics and private/service-specific interfaces do not improve repository-owned decision safety. No prompt, schema, API wrapper or workflow was copied.
+- `zach22-1999/amazon-skills` — 195 stars observed on 2026-09-21; MIT; non-fork; recent push 2026-08-20. The repository contains public Amazon seller analysis skills, including Brand Analytics and search-term workflows, plus release-gate documentation, but the root scan showed no repository-level tests or GitHub Actions workflows. It is relevant to Amazon analysis methodology but does not provide stronger evidence for campaign site routing or causal control identity. Rejected for this routing change as duplicative/domain-adjacent; no thresholds, prompts, report templates or implementation were copied.
+- `adkit/ads-skills` — 27 stars observed on 2026-09-21; non-fork; recent push 2026-08-03. Its custom AdKit Skills License restricts redistribution and use in competing products, and the catalog is centered on non-Amazon advertising strategy. The root scan showed no repository-level tests or GitHub Actions workflows. Rejected for direct adoption on both relevance and license grounds. Only the abstract observation that portable ad skills benefit from runtime packaging separation was considered; no protected text, schema, prompt, workflow or implementation was reused.
+
+Adoption decision: keep the current 15-Skill catalog unchanged. The only repository change justified by this review is the fail-closed `targeting_or_routing` requirement on the existing Sponsored Products bid/budget causal surfaces, backed by Amazon official evidence and deterministic regression coverage.
