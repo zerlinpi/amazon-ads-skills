@@ -21,6 +21,11 @@ def snapshot(base_bid, placement_state, bidding_strategy="dynamic_down_only"):
         item = {"control_type": key, "state": value, "effective_at": "2026-09-20T00:00:00Z", "evidence_status": "observed"}
         if key == "audience_bid_adjustment":
             item["collection_evidence"] = COMPLETE_COLLECTION.copy()
+        if key == "schedule_or_event_rule" and isinstance(value, dict):
+            item["nested_collection_evidence"] = {
+                "schedule_rules": COMPLETE_COLLECTION.copy(),
+                "event_rules": COMPLETE_COLLECTION.copy(),
+            }
         controls.append(item)
     return {
         "scope": {"marketplace_id": "ATVPDKIKX0DER", "profile_id": "p1", "campaign_id": "sp-campaign-1"},
