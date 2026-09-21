@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zerlinpi/amazon-ads-skills/schemas/campaign-objective.json",
+  "title": "Campaign Objective Context",
+  "type": "object",
+  "required": ["role", "source"],
+  "properties": {
+    "role": {"type": "string", "enum": ["Discovery", "Control", "Growth", "Profit", "Defense", "Experiment", "Unknown"]},
+    "source": {"type": "string", "enum": ["user_declared", "account_metadata", "campaign_metadata", "documented_strategy", "inferred", "unknown"]},
+    "confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+    "primary_metric": {"type": ["string", "null"]},
+    "guardrail_metrics": {"type": "array", "items": {"type": "string"}},
+    "strategic_exception": {"type": ["string", "null"]},
+    "evidence": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}
