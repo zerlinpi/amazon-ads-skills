@@ -443,3 +443,12 @@ Previously reviewed Amazon Ads MCP repositories (including KuudoAI, PPC Prophet,
 
 Adopt only the repository-owned invariant proven by RED→GREEN regression: **returned rows do not establish complete control state**. Every top-level list-valued registry-required control must carry complete enumeration + complete pagination + supported capability evidence before it can participate in a causal isolation result. Missing/partial/truncated/unsupported evidence remains `Unknown`; no live Amazon Ads write authority is added.
 
+
+
+### Amazon Ads official — Amazon Business exclusive campaigns for Sponsored Products
+
+Official Amazon Ads launch documentation reviewed on 2026-09-21. The page is dated 2025-05-05 and documents a Sponsored Products campaign-level `Sites` restriction for Amazon Business exclusive campaigns. For API-created exclusive campaigns, Amazon documents `site Restrictions = AMAZON_BUSINESS`; those campaigns serve only on the Amazon Business store, and existing Sponsored Products reports for such campaigns reflect Amazon Business performance.
+
+Adoption boundary: this source is used only to establish that campaign site/routing state can be a material causal control for Sponsored Products bid/budget comparisons. No Amazon API write payload, private interface, undocumented field behavior, or live mutation path is implemented in this repository. Missing connector support for the routing/site state remains Unknown rather than being inferred as the default.
+
+Source: https://advertising.amazon.com/en-gb/resources/whats-new/amazon-business-exclusive-campaign-for-sponsored-product
