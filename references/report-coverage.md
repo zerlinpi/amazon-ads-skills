@@ -72,6 +72,20 @@ When coverage matters, capture when available:
 
 If request compatibility is unknown and the conclusion depends on a missing field, downgrade confidence rather than infer zero. If generation succeeded but pagination/truncation is unknown, do not promote that success to extraction completeness. If the inclusion rule is unknown and a conclusion depends on population completeness, downgrade confidence rather than infer completeness.
 
+### Unified Reporting historical availability is time-grain scoped
+
+Historical availability is **time-grain scoped** as well as source/reporting-generation scoped. Amazon Unified Reporting evidence reviewed on 2026-09-23 documents different maximum histories by grain: **hourly** reporting extends back **two weeks**, daily or weekly reporting up to **15 months**, and monthly, yearly, or summary-grain reporting up to **six years**.
+
+Do not collapse those boundaries into one generic Unified Reporting retention value. In particular:
+
+- a connector successfully returning six months of daily data does not prove that six months of hourly rows exist;
+- missing older hourly rows are not zero performance, zero spend, zero clicks, or evidence that the campaign was inactive;
+- do not silently coarsen an hourly question to daily/weekly/monthly merely to obtain a longer history; changing grain changes the observable question and can hide intraday effects;
+- if a requested interval exceeds the verified history for the required grain, bound the conclusion to the supported interval or use a lineage-compatible retained source; otherwise return `Alternate Source`, `Missing Data`, `Hold`, or `Manual Review`;
+- bind the evidence to acquisition channel, reporting generation, requested grain, metric/dimension semantics, account/profile/marketplace scope and current platform-capability evidence.
+
+These are dated platform capabilities, not eternal constants. Revalidate them when the decision materially depends on the exact retention window.
+
 ## 4. Search-term report selection effect
 
 A clicked-only search-term report is useful for query conversion, spend, harvest and negative analysis among **observed clicked queries**. It is not, by itself, a complete census of every query impression opportunity.

@@ -50,6 +50,18 @@ class ReportCompletenessContractTests(unittest.TestCase):
         self.assertIn("every requested `groupBy`", coverage)
         self.assertIn("filter", coverage.lower())
 
+    def test_unified_reporting_history_is_time_grain_scoped(self):
+        coverage = COVERAGE.read_text(encoding="utf-8")
+        for concept in (
+            "hourly",
+            "two weeks",
+            "15 months",
+            "six years",
+            "time-grain scoped",
+            "missing older hourly rows are not zero",
+        ):
+            self.assertIn(concept, coverage.lower())
+
     def test_data_lineage_routes_population_completeness_through_report_coverage(self):
         lineage = LINEAGE.read_text(encoding="utf-8")
         self.assertIn("report-coverage.md", lineage)
