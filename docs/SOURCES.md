@@ -582,3 +582,20 @@ Previously reviewed Agent Skills, MCP, Amazon Ads API, evaluation and memory pro
 ### Adoption decision
 
 The only new repository behavior justified by this round is narrower: preserve the **action-time campaign objective** with the latest-action history summary, detect objective drift during post-change/weekly review, evaluate a historical action against the objective/primary metric/guardrails that existed when it was taken, and use the current objective only for the next decision. This remains read-only/Suggest/Shadow logic and does not add executor/write/retry/reconciliation behavior.
+
+
+## Test-harness integrity review — 2026-09-22
+
+A schema-regression test on PR #78 initially used top-level pytest-style functions while repository CI runs `python -m unittest discover`. GitHub Actions therefore returned a false green because those functions were not collected. This round added a repository-owned unittest-discovery contract that fails when any `tests/test_*.py` file introduces top-level `test_*` functions under the current runner. After converting the regression to `unittest.TestCase`, CI exposed the intended missing-schema RED.
+
+### Incremental high-value project review
+
+Stars/activity are point-in-time discovery context only.
+
+- `microsoft/skills` — ~3.0k stars observed on 2026-09-22; MIT; non-fork/non-archived; active through 2026-09-21; dedicated test-harness and skill-evaluation workflows plus a substantial `tests/` tree. Adopted only the abstract engineering principle that the CI runner and test authoring contract must agree and that Skill evaluation needs an explicit harness. No Microsoft test harness, prompt, workflow, SDK code, schema, or acceptance criteria were copied.
+- `alibaba/skill-up` — ~1.0k stars observed on 2026-09-22; Apache-2.0; non-fork/non-archived; active through 2026-09-21; multiple CI/evaluation/security workflows. Useful evidence for treating Skill evaluation infrastructure as a first-class engineering surface. Rejected as a dependency because this repository already has deterministic unit/eval contracts and the immediate gap was local unittest discovery, not Skill-generation/evolution runtime. No code, evaluator, workflow, prompt, or schema copied.
+- `SalesforceAIResearch/MCPEval` — ~156 stars observed on 2026-09-22; Apache-2.0; non-fork/non-archived; MCP-focused agent evaluation system. Relevant to MCP evaluation architecture but does not improve the concrete Amazon Ads schema-parity or unittest-discovery gap enough to justify another framework. No code, evaluator, prompt, schema, or workflow copied.
+
+Amazon official reporting semantics remain the authority for measurement-composition behavior: Sponsored Display can combine modeled and directly attributed conversions in the same conversion columns and can expose `Unallocated` rows at lower reporting grains; Amazon DSP similarly combines modeled and directly measured conversions in campaign reporting. The repository adopts only the safety abstraction and does not copy Amazon schemas or implementation details.
+
+Adoption decision: keep the current dependency-free unittest runner, make its collection contract explicit, and add the missing optional measurement-composition schema surface. Do not introduce pytest, a third-party evaluation framework, or live Amazon Ads execution capability solely to solve this gap.
