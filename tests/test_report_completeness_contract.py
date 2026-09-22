@@ -24,6 +24,32 @@ class ReportCompletenessContractTests(unittest.TestCase):
         self.assertIn("not evidence of zero", coverage)
         self.assertIn("not evidence of full population coverage", coverage)
 
+    def test_report_request_compatibility_is_separate_from_metric_zero(self):
+        coverage = COVERAGE.read_text(encoding="utf-8")
+        for concept in (
+            "request_compatibility_status",
+            "reportTypeId",
+            "groupBy",
+            "columns",
+            "timeUnit",
+            "unsupported request configuration",
+            "not evidence of metric zero",
+        ):
+            self.assertIn(concept, coverage)
+
+    def test_daily_and_summary_time_units_preserve_date_column_contract(self):
+        coverage = COVERAGE.read_text(encoding="utf-8")
+        self.assertIn("timeUnit=DAILY", coverage)
+        self.assertIn("date` column", coverage)
+        self.assertIn("timeUnit=SUMMARY", coverage)
+        self.assertIn("startDate", coverage)
+        self.assertIn("endDate", coverage)
+
+    def test_filters_must_be_supported_by_every_requested_groupby(self):
+        coverage = COVERAGE.read_text(encoding="utf-8")
+        self.assertIn("every requested `groupBy`", coverage)
+        self.assertIn("filter", coverage.lower())
+
     def test_data_lineage_routes_population_completeness_through_report_coverage(self):
         lineage = LINEAGE.read_text(encoding="utf-8")
         self.assertIn("report-coverage.md", lineage)
