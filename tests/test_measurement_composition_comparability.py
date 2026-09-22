@@ -75,5 +75,17 @@ class MeasurementCompositionComparabilityTests(unittest.TestCase):
         self.assertIn("direct_modeled_split_available", result["changed_fields"])
 
 
+    def test_post_change_skill_routes_two_composition_states_through_comparator(self):
+        from pathlib import Path
+
+        root = Path(__file__).resolve().parents[1]
+        skill = (root / "skills/post-change-review/SKILL.md").read_text(encoding="utf-8").lower()
+        self.assertIn("compare_measurement_composition.py", skill)
+        self.assertIn("not comparable", skill)
+        self.assertIn("directional", skill)
+        self.assertIn("unknown", skill)
+        self.assertIn("inconclusive", skill)
+
+
 if __name__ == "__main__":
     unittest.main()
