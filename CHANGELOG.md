@@ -2,6 +2,22 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.5.0 — 2026-09-22
+
+### Added
+
+- Optional `measurement_composition` schema parity at both optimization-event evidence and derived entity-history measurement boundaries, matching the existing read-only projector.
+- A deterministic unittest-discovery guard that prevents top-level pytest-style tests from being silently skipped by the repository's `unittest discover` CI runner.
+
+### Changed
+
+- Measurement-composition persistence now explicitly keeps modeled/direct inclusion, split availability, allocation coverage, unallocated-row presence and allocation grain nullable/unknown when evidence is absent.
+- The schema-parity regression is now a real `unittest.TestCase`, so CI exercises the contract instead of returning a false green.
+
+### Research
+
+- Re-verified Amazon official modeled-conversion reporting semantics and reviewed `microsoft/skills`, `alibaba/skill-up`, and `SalesforceAIResearch/MCPEval` for evaluation/test-harness practices. No external runtime, harness, schema, prompt or workflow was imported.
+
 ## v1.4.0 — 2026-09-21
 
 ### Added
