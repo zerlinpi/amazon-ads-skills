@@ -95,6 +95,19 @@
       },
       "additionalProperties": true
     },
+    "measurement_comparison": {
+      "type": ["object", "null"],
+      "description": "Persisted output of the bounded measurement-composition comparator for evaluated/corrected auditability. This records why causal confidence was gated; it does not replace the source evidence snapshots or authorize writes.",
+      "properties": {
+        "comparator_id": {"type": ["string", "null"]},
+        "classification": {"type": ["string", "null"], "enum": ["Comparable", "Directional", "Not Comparable", "Unknown", null]},
+        "changed_fields": {"type": "array", "items": {"type": "string", "enum": ["modeled_conversion_inclusion", "direct_modeled_split_available", "allocation_coverage_status", "unallocated_rows_present", "allocation_grain"]}},
+        "reasons": {"type": "array", "items": {"type": "string"}},
+        "baseline_snapshot_id": {"type": ["string", "null"]},
+        "post_snapshot_id": {"type": ["string", "null"]}
+      },
+      "additionalProperties": true
+    },
     "realization_snapshot": {
       "type": ["object", "null"],
       "description": "Canonical shopper-facing ad realization context when platform-managed surface, product, creative, or message selection can affect causal interpretation.",
