@@ -74,6 +74,20 @@ When reporting generation, date attribution, acquisition channel, semantic versi
 
 If history later restates enough to change an outcome, append a correction/re-evaluation linked to the original event and preserve both evidence identities. Reconcile before using the changed conclusion for another aggressive optimization.
 
+## Measurement-comparison audit lineage
+
+When post-change evaluation uses `scripts/compare_measurement_composition.py`, an `evaluated` or `corrected` optimization event should preserve the bounded comparator output in `measurement_comparison` when available:
+
+- `comparator_id` — stable repository-owned comparator contract identity;
+- `classification` — `Comparable`, `Directional`, `Not Comparable`, or `Unknown`;
+- `changed_fields` — the bounded composition fields that differed;
+- `reasons` — deterministic evidence-quality/explanation strings returned by the comparator;
+- `baseline_snapshot_id` and `post_snapshot_id` — source evidence identities when known.
+
+This is audit lineage, not a replacement for raw evidence. Preserve the source snapshots/events and never reconstruct missing snapshot IDs from timestamps, entity IDs, metric values, or a newer connector response. A null snapshot ID remains unknown.
+
+Do not collapse an `Inconclusive` outcome into a bare label when the machine comparator materially gated causality. Later reviewers should be able to distinguish, for example, lower-grain allocation drift from a modeled-inclusion or allocation-grain incompatibility without rerunning against unavailable historical inputs. If a later correction changes the comparison, append a linked `corrected` event with the new `measurement_comparison`; do not overwrite the original audit record.
+
 ## Derived measurement-state projection
 
 `schemas/entity-history.json` may expose `latest_measurement_state` as a bounded retrieval projection of the newest decision-relevant evidence identity. Populate it from a traceable event/evidence snapshot; do not synthesize missing lineage from entity IDs, metric values, or a newer connector response.

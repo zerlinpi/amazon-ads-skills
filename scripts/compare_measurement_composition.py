@@ -34,6 +34,25 @@ UNKNOWN_STRINGS = {
     "not available",
     "not_available",
 }
+COMPARATOR_ID = "measurement-composition@1"
+
+
+def _result(
+    baseline: dict[str, Any],
+    post: dict[str, Any],
+    *,
+    classification: str,
+    reasons: list[str],
+    changed_fields: list[str],
+) -> dict[str, Any]:
+    return {
+        "comparator_id": COMPARATOR_ID,
+        "classification": classification,
+        "reasons": reasons,
+        "changed_fields": changed_fields,
+        "baseline_snapshot_id": baseline.get("evidence_snapshot_id"),
+        "post_snapshot_id": post.get("evidence_snapshot_id"),
+    }
 
 
 def _normalize(
@@ -93,44 +112,52 @@ def compare_measurement_composition(
     after, after_problems = _normalize(post, side="post")
     problems = before_problems + after_problems
     if problems:
-        return {
-            "classification": "Unknown",
-            "reasons": problems,
-            "changed_fields": [],
-        }
+        return _result(
+            baseline,
+            post,
+            classification="Unknown",
+            reasons=problems,
+            changed_fields=[],
+        )
 
     assert before is not None and after is not None
     changed_fields = [field for field in FIELDS if before[field] != after[field]]
     if not changed_fields:
-        return {
-            "classification": "Comparable",
-            "reasons": [
+        return _result(
+            baseline,
+            post,
+            classification="Comparable",
+            reasons=[
                 "all decision-relevant measurement-composition fields match with explicit known evidence"
             ],
-            "changed_fields": [],
-        }
+            changed_fields=[],
+        )
 
     hard_changes = [
         field for field in changed_fields if field in HARD_INCOMPATIBILITY_FIELDS
     ]
     if hard_changes:
-        return {
-            "classification": "Not Comparable",
-            "reasons": [
+        return _result(
+            baseline,
+            post,
+            classification="Not Comparable",
+            reasons=[
                 "measurement definition or allocation grain changed: "
                 + ", ".join(hard_changes)
             ],
-            "changed_fields": changed_fields,
-        }
+            changed_fields=changed_fields,
+        )
 
-    return {
-        "classification": "Directional",
-        "reasons": [
+    return _result(
+        baseline,
+        post,
+        classification="Directional",
+        reasons=[
             "modeled/direct split observability or lower-grain allocation coverage changed; "
             "affected conversion movement must not be promoted directly to a causal outcome"
         ],
-        "changed_fields": changed_fields,
-    }
+        changed_fields=changed_fields,
+    )
 
 
 def main() -> int:

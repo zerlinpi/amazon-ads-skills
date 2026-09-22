@@ -20,7 +20,7 @@ Keep `Observation → Hypothesis → Cause → Action → Outcome` distinct. Cam
 
 ## Memory
 
-Optimization history is append-first through `schemas/optimization-event.json`. Proposed, approved, applied, readback and evaluated states remain distinct. Derived history must not manufacture current state or missing semantics.
+Optimization history is append-first through `schemas/optimization-event.json`. Proposed, approved, applied, readback and evaluated states remain distinct. When a deterministic measurement-composition comparator materially gates an evaluated/corrected outcome, persist its bounded `measurement_comparison` audit result on that event so later reviewers can recover the classification, changed fields, reasons and source snapshot identities without manufacturing provenance. Derived history must not manufacture current state or missing semantics.
 
 ## Experiments
 
