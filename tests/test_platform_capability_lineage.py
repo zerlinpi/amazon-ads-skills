@@ -32,6 +32,17 @@ class PlatformCapabilityLineageTests(unittest.TestCase):
         self.assertIn("platform-capability-lineage.md", bid)
         self.assertIn("platform-capability-lineage.md", placement)
 
+    def test_search_term_report_coverage_bounds_official_history_without_zero_filling(self):
+        skill = (ROOT / "skills/search-term-analysis/SKILL.md").read_text(encoding="utf-8")
+        coverage = (ROOT / "references/report-coverage.md").read_text(encoding="utf-8")
+        self.assertIn("report-coverage.md", skill)
+        self.assertIn("65", coverage)
+        self.assertIn("historical-availability", coverage)
+        self.assertIn("alternate source", coverage.lower())
+        self.assertIn("missing older", coverage.lower())
+        self.assertIn("zero", coverage.lower())
+        self.assertIn("platform-capability-lineage.md", coverage)
+
     def test_repository_safety_rules_cover_platform_capability_conflicts(self):
         agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
         self.assertIn("platform-capability-lineage.md", agents)

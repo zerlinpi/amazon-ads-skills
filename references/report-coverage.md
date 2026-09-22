@@ -59,6 +59,20 @@ Consequences:
 
 This does **not** make the report unusable for negatives or harvesting. It changes what population-level claims are justified.
 
+### Sponsored Products historical-availability boundary
+
+Amazon's Sponsored Products Search Term report Help page, updated May 18, 2026, documents a **65-day lookback window** and `summary` / `daily` time units. Treat that number as a dated platform capability, not an eternal repository constant: if an exact current limit matters, reconcile it through `platform-capability-lineage.md` against current official/API/account evidence.
+
+When the requested Sponsored Products search-term window extends beyond the currently verified report lookback:
+
+- mark the unsupported portion as `historical-availability = unavailable` or `unknown` according to the evidence; do not fabricate coverage;
+- missing older search-term rows are **not zero clicks, zero spend, zero orders, or proof that the term did not exist**;
+- bound rankings, harvest/negative conclusions, trend claims, and denominators to the verified available interval;
+- if the older interval is decision-critical, request a verified alternate source such as a retained historical export/warehouse snapshot with compatible lineage, or return `Alternate Source`, `Missing Data`, `Hold`, or `Manual Review` rather than silently shortening the requested history;
+- do not splice an alternate source into the current report without checking source system, acquisition channel, metric/date-attribution semantics, row eligibility, grain, marketplace/profile identity, freshness and backfill maturity through `data-lineage.md`.
+
+A connector successfully returning the newest 65 days does not prove it can answer a 90-day or year-over-year search-term question. Connector capability and upstream report historical availability are separate evidence dimensions.
+
 ## 4. Targeting and other delivered-only views
 
 An impression-qualified target report can support performance analysis for targets that actually delivered. It cannot, alone, distinguish among all possible reasons why another configured target is absent, such as:
