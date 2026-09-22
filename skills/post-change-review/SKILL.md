@@ -55,6 +55,8 @@ If these dimensions differ materially, label **composition drift**. A disappeara
 
 When composition drift is material and unreconciled, do not classify the action as causally `Worked`, `Likely Worked`, `Likely Failed`, or `Failed` from the affected conversion/ROAS movement alone. Keep the outcome `Inconclusive` or otherwise directional/manual-review until comparable composition is restored, a parent-level metric avoids the allocation ambiguity, or a stronger counterfactual supports the conclusion.
 
+When an `evaluated` or `corrected` structured optimization event is emitted after running the machine comparator, persist the returned `measurement_comparison` audit evidence: `comparator_id`, `classification`, `changed_fields`, `reasons`, `baseline_snapshot_id`, and `post_snapshot_id`. Preserve null snapshot IDs when the source evidence lacks them; do not invent identities. The raw baseline/post evidence snapshots remain authoritative.
+
 Missing composition evidence is not evidence of direct-only measurement, zero modeled conversions, complete allocation, or unchanged composition.
 
 ## Required inputs
@@ -124,7 +126,7 @@ Return:
 9. outcome classification with confidence;
 10. decision;
 11. next check and evidence needed;
-12. structured memory event when requested (`../../schemas/optimization-event.json`), preserving the decision-driving outcome metric semantics and per-metric evidence semantics when known rather than inferring them from display names.
+12. structured memory event when requested (`../../schemas/optimization-event.json`), preserving the decision-driving outcome metric semantics and per-metric evidence semantics when known rather than inferring them from display names; for `evaluated` / `corrected` events after composition comparison, also persist `measurement_comparison` with comparator identity, classification, changed fields, reasons, and baseline/post snapshot identities.
 
 ## Safety
 
