@@ -32,6 +32,15 @@ class PlatformCapabilityLineageTests(unittest.TestCase):
         self.assertIn("platform-capability-lineage.md", bid)
         self.assertIn("platform-capability-lineage.md", placement)
 
+    def test_search_term_skill_bounds_official_report_history_without_zero_filling(self):
+        skill = (ROOT / "skills/search-term-analysis/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("platform-capability-lineage.md", skill)
+        self.assertIn("65", skill)
+        self.assertIn("historical-availability", skill)
+        self.assertIn("alternate source", skill.lower())
+        self.assertIn("missing older", skill.lower())
+        self.assertIn("zero", skill.lower())
+
     def test_repository_safety_rules_cover_platform_capability_conflicts(self):
         agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
         self.assertIn("platform-capability-lineage.md", agents)
