@@ -26,6 +26,26 @@ class EvidenceSnapshotLineagePolicyTests(unittest.TestCase):
         self.assertIn("acquisition_channel", text)
 
 
+class MarketingStreamDatasetCompletenessPolicyTests(unittest.TestCase):
+    def read(self, relative_path: str) -> str:
+        return (ROOT / relative_path).read_text(encoding="utf-8")
+
+    def test_stream_dataset_presence_does_not_imply_sibling_dataset_completeness(self):
+        text = self.read("references/data-lineage.md").lower()
+        self.assertIn("dataset subscription", text)
+        self.assertIn("traffic", text)
+        self.assertIn("conversion", text)
+        self.assertIn("sibling dataset", text)
+        self.assertIn("not evidence", text)
+        self.assertIn("zero", text)
+
+    def test_stream_lineage_tracks_dataset_level_delivery_state(self):
+        text = self.read("references/data-lineage.md")
+        self.assertIn("stream_dataset", text)
+        self.assertIn("subscription_status", text)
+        self.assertIn("delivery_status", text)
+
+
 class ActionSizingPolicyTests(unittest.TestCase):
     def read(self, relative_path: str) -> str:
         return (ROOT / relative_path).read_text(encoding="utf-8")
