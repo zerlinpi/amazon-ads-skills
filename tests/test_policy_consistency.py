@@ -31,7 +31,7 @@ class MarketingStreamDatasetCompletenessPolicyTests(unittest.TestCase):
         return (ROOT / relative_path).read_text(encoding="utf-8")
 
     def test_stream_dataset_presence_does_not_imply_sibling_dataset_completeness(self):
-        text = self.read("references/data-lineage.md").lower()
+        text = self.read("references/marketing-stream-dataset-coverage.md").lower()
         self.assertIn("dataset subscription", text)
         self.assertIn("traffic", text)
         self.assertIn("conversion", text)
@@ -40,10 +40,14 @@ class MarketingStreamDatasetCompletenessPolicyTests(unittest.TestCase):
         self.assertIn("zero", text)
 
     def test_stream_lineage_tracks_dataset_level_delivery_state(self):
-        text = self.read("references/data-lineage.md")
+        text = self.read("references/marketing-stream-dataset-coverage.md")
         self.assertIn("stream_dataset", text)
         self.assertIn("subscription_status", text)
         self.assertIn("delivery_status", text)
+
+    def test_campaign_health_progressively_loads_stream_coverage_policy(self):
+        text = self.read("skills/campaign-health-monitor/SKILL.md")
+        self.assertIn("marketing-stream-dataset-coverage.md", text)
 
 
 class ActionSizingPolicyTests(unittest.TestCase):
