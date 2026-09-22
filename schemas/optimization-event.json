@@ -75,6 +75,18 @@
             "additionalProperties": true
           }
         },
+        "measurement_composition": {
+          "type": ["object", "null"],
+          "description": "Decision-time conversion measurement composition and lower-grain allocation coverage. Preserve only explicitly observed composition; missing fields remain unknown and must not be inferred as direct-only, zero modeled conversions, or complete allocation.",
+          "properties": {
+            "modeled_conversion_inclusion": {"type": ["string", "null"]},
+            "direct_modeled_split_available": {"type": ["boolean", "null"]},
+            "allocation_coverage_status": {"type": ["string", "null"]},
+            "unallocated_rows_present": {"type": ["boolean", "null"]},
+            "allocation_grain": {"type": ["string", "null"]}
+          },
+          "additionalProperties": true
+        },
         "date_attribution_semantics": {"type": ["string", "null"], "enum": ["traffic_date", "conversion_date", "event_date", "unknown", null]},
         "historical_availability_status": {"type": ["string", "null"], "enum": ["available", "partially_available", "unavailable", "retired_or_deleted", "unknown", null]},
         "comparability_status": {"type": ["string", "null"], "enum": ["Comparable", "Reconcilable", "Directional", "Not Comparable", "Unknown", null]},
