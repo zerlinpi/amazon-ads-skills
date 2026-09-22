@@ -12,7 +12,7 @@ Load metadata → one selected Skill → only decision-relevant references/schem
 
 Connectors may be MCP servers, API wrappers, exports or warehouses. Before dependent interpretation, resolve required capability IDs and evaluate the active connector snapshot. Missing/partial/unsupported evidence remains unknown; it never becomes numeric zero or proof that a platform feature is absent.
 
-High-confidence decisions may require source system, acquisition channel, reporting generation, metric semantics, date attribution, row eligibility, pagination/truncation, historical availability, freshness/backfill maturity, grain, marketplace/profile identity and control-state comparability.
+High-confidence decisions may require source system, acquisition channel, reporting generation, metric semantics, date attribution, row eligibility, pagination/truncation, historical availability, freshness/backfill maturity, grain, marketplace/profile identity and control-state comparability. Repository-owned read-only helpers such as `scripts/compare_control_state.py` and `scripts/compare_measurement_composition.py` turn bounded evidence envelopes into fail-closed comparability classifications; they do not authorize writes or replace decision-specific reconciliation.
 
 ## Decision model
 

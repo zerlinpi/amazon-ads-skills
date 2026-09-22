@@ -41,13 +41,15 @@ If the action-time objective is missing or `Unknown`, do not infer it from later
 
 ## Measurement composition gate
 
-When conversion evidence can mix directly measured and modeled conversions, compare baseline and post-change **measurement composition** before causal outcome classification. Use the persisted `measurement_composition` evidence when available and inspect:
+When conversion evidence can mix directly measured and modeled conversions, compare baseline and post-change **measurement composition** before causal outcome classification. Use the persisted `measurement_composition` evidence when available. When two machine-readable measurement states exist, run `../../scripts/compare_measurement_composition.py <baseline.json> <post.json>` as the deterministic first-pass gate, then inspect:
 
 - modeled-conversion inclusion state;
 - whether a direct/modeled split is available;
 - lower-grain **allocation coverage**;
 - presence of `Unallocated` rows;
 - allocation grain.
+
+Interpret the comparator fail-closed: `Comparable` means only that the composition gate passes; all other measurement, control, realization and retail gates still apply. `Directional` means lower-grain split/allocation evidence drifted and affected causal conclusions must remain directional or `Inconclusive`. `Not Comparable` means modeled-inclusion semantics or allocation grain changed and the affected metric comparison must not support `Worked` / `Failed`. `Unknown` means required composition evidence is missing, invalid or explicitly unknown; it is not unchanged state.
 
 If these dimensions differ materially, label **composition drift**. A disappearance, appearance, or material change in `Unallocated` coverage can move conversion credit between dimension rows without proving shopper-demand or action-effect change. Do not redistribute `Unallocated` conversions to targets, placements, queries, or other dimensions without supported allocation evidence.
 
@@ -79,7 +81,7 @@ Gather what is available and label missing fields:
 1. **Readback first** — verify whether the intended advertiser control is actually present.
 2. Classify application as `Confirmed`, `Partial`, `Not Applied`, `Drifted`, or `Unknown`.
 3. **Objective-lineage gate** — preserve the action-time campaign objective and compare it with the current campaign objective. If they differ, record objective drift; do not retroactively replace the historical success metric or guardrails with the current objective.
-4. **Measurement gate** — require completed, attribution-mature, definitionally comparable windows; when history can restate, verify baseline/post backfill parity before outcome attribution. When modeled conversion or lower-grain allocation can matter, compare baseline/post measurement composition and treat material composition drift as unresolved measurement comparability rather than action effect.
+4. **Measurement gate** — require completed, attribution-mature, definitionally comparable windows; when history can restate, verify baseline/post backfill parity before outcome attribution. When modeled conversion or lower-grain allocation can matter, compare baseline/post measurement composition with `compare_measurement_composition.py` when machine-readable states exist. Treat `Directional`, `Not Comparable`, or `Unknown` as unresolved measurement comparability rather than action effect.
 5. **Control-state comparability gate when causal attribution matters** — reconstruct material advertiser-control state across baseline and post-change windows. If overlapping changes can explain the effect, cap the single-control conclusion at `Directional` / `Confounded` / `Unknown` rather than calling the intended action causal.
 6. **Realization gate when relevant** — verify whether platform-managed surface/product/creative realization stayed sufficiently comparable. A confirmed control readback does not prove stable realized ad identity.
 7. Compare the post-change metrics to the best available baseline and to the expected mechanism.

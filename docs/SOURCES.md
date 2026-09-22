@@ -626,3 +626,30 @@ Previously reviewed Amazon Ads API/MCP, Agent Skills, runtime and evaluation pro
 ### Adoption decision
 
 The only behavior adopted this round is repository-authored and narrower: if baseline and post-change modeled/direct inclusion, allocation coverage, `Unallocated` state or allocation grain differ materially, treat that **composition drift** as a measurement confounder. Do not promote affected conversion/ROAS movement directly to causal `Worked` / `Failed`; keep the result `Inconclusive`, directional, Hold or Manual Review until reconciled or replaced with a stronger comparable counterfactual. This remains read-only/Suggest/Shadow and adds no executor/write/retry/reconciliation capability.
+
+
+## Measurement-composition comparator review — 2026-09-22
+
+### Amazon Ads official evidence
+
+Amazon Ads continues to document that Sponsored Display modeled conversions are reported in the same conversion columns as directly attributed conversions and that lower-grain reports can emit `Unallocated` / API `-20` rows when attribution cannot be meaningfully allocated at that reporting breakdown. Amazon DSP similarly combines directly measured and modeled off-Amazon conversions in campaign reporting.
+
+The repository therefore treats lower-grain composition/allocation identity as explicit evidence. The new comparator is repository-authored and only classifies whether two already-captured composition envelopes are comparable enough for causal review. No Amazon report schema, payload, API client, prose, or workflow was copied.
+
+Sources:
+- https://advertising.amazon.com/resources/whats-new/modeled-conversions-for-sponsored-display-campaigns
+- https://advertising.amazon.com/resources/whats-new/modeled-attribution-for-off-amazon-conversions-for-us-advertiser
+- https://advertising.amazon.com/help/G3BB9TWP5KC375TJ
+
+### Incremental data-quality project review
+
+Stars/activity are point-in-time discovery context only.
+
+- `fivetran/great_expectations` — ~11.8k stars observed on 2026-09-22; Apache-2.0; non-fork/non-archived; active through 2026-09-18 with a substantial CI/test workflow. Useful corroboration for explicit, deterministic data expectations and validation results. Rejected as a dependency because this repository needs a five-field in-memory comparator, not a general data-quality framework. No expectation implementation, validator, schema, workflow, or documentation text was copied.
+- `sodadata/soda-core` — ~2.4k stars observed on 2026-09-22; non-fork/non-archived; active through 2026-09-21; licensed under Elastic License 2.0 rather than a permissive OSS license. Useful only as ecosystem evidence that data contracts should be machine-checkable. Rejected for implementation reuse and dependency introduction on both scope and licensing grounds. No code, contract syntax, workflow, prompt, or protected implementation was copied.
+
+Previously reviewed OpenLineage, OpenMetadata, DataHub, Agent Skills/eval projects and Amazon Ads API/MCP projects were de-duplicated rather than counted again.
+
+### Adoption decision
+
+Add one dependency-free, read-only comparator for `measurement_composition`. It fails closed to `Unknown` when any required composition field is missing, null, invalid or explicitly unknown/unavailable; returns `Not Comparable` when modeled-conversion inclusion semantics or allocation grain change; returns `Directional` when split observability, allocation coverage or `Unallocated` state changes; and returns `Comparable` only when every bounded field is explicit and equal. Missing evidence is never synthesized as zero, false, direct-only, complete allocation or unchanged state. The helper adds no Amazon Ads write/executor/retry/reconciliation capability.

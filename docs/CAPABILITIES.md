@@ -11,7 +11,7 @@ The repository keeps 15 canonical Skills. Choose by decision, not by how many fi
 | Sustained decline | `performance-drop-diagnosis` | separate observation, hypothesis and supported cause |
 | Growth headroom | `growth-opportunity-finder` | economics + retail readiness + marginal headroom + binding control |
 | Controlled test | `experiment-planner` | test uncertain causal claims rather than overstate them |
-| Previous change review | `post-change-review` | application/readback before outcome attribution |
+| Previous change review | `post-change-review` | application/readback + measurement/control comparability before outcome attribution |
 | Search-term evidence | `search-term-analysis` | row eligibility/origin before literal-query actions |
 | Keyword/target lifecycle | `keyword-optimization` | configured structure and traffic ownership |
 | Negative decisions | `negative-targeting` | collateral-damage and scope protection |
