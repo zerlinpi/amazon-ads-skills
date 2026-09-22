@@ -29,7 +29,7 @@ Load only what the case needs:
 - prior optimization state/history conflicts: `../../references/optimization-memory.md`;
 - action-time/current campaign objective semantics: `../../references/campaign-objective.md`.
 
-Do not load data-lineage for a clean single-source comparison whose snapshots use the same maturity policy. Load `control-state-comparability.md` when the baseline and post-change windows can differ in bidding strategy, placement/audience adjustments, bid rules, budget/pacing, targeting/routing, or another material advertiser control. Load `realized-ad-identity.md` when the ad format can change the shopper-visible surface, product mix, creative/message, prompt, or other realization independently of the advertiser control under review.
+Do not load data-lineage for a clean single-source comparison whose snapshots use the same maturity policy. Load `control-state-comparability.md` when the baseline and post-change windows can differ in bidding strategy, placement/audience adjustments, bid rules, budget/pacing, targeting/routing, or another material advertiser control. Load `realized-ad-identity.md` when the ad format can change the shopper-visible surface, product mix, creative/message, prompt, or other realization independently of the advertiser control under review. When conversion metrics can include modeled attribution or lower-grain `Unallocated` rows, compare baseline/post `measurement_composition` from the decision-time evidence snapshot instead of assuming the same report name implies the same allocation coverage.
 
 ## Campaign objective lineage gate
 
@@ -38,6 +38,22 @@ When the original action carried a campaign objective, preserve that **action-ti
 If they differ, label **objective drift**. Evaluate whether the historical action achieved the mechanism and guardrails it was designed for, then separately decide whether the current objective changes what should happen next. **Do not retroactively** judge a Growth, Discovery, Defense, Control, Profit, or Experiment action by a later objective's KPI, and do not carry an old objective forward as current truth.
 
 If the action-time objective is missing or `Unknown`, do not infer it from later ACOS/TACOS, campaign name, spend, rank movement, or the current objective. Keep the historical decision context uncertain and lower confidence when that uncertainty is material.
+
+## Measurement composition gate
+
+When conversion evidence can mix directly measured and modeled conversions, compare baseline and post-change **measurement composition** before causal outcome classification. Use the persisted `measurement_composition` evidence when available and inspect:
+
+- modeled-conversion inclusion state;
+- whether a direct/modeled split is available;
+- lower-grain **allocation coverage**;
+- presence of `Unallocated` rows;
+- allocation grain.
+
+If these dimensions differ materially, label **composition drift**. A disappearance, appearance, or material change in `Unallocated` coverage can move conversion credit between dimension rows without proving shopper-demand or action-effect change. Do not redistribute `Unallocated` conversions to targets, placements, queries, or other dimensions without supported allocation evidence.
+
+When composition drift is material and unreconciled, do not classify the action as causally `Worked`, `Likely Worked`, `Likely Failed`, or `Failed` from the affected conversion/ROAS movement alone. Keep the outcome `Inconclusive` or otherwise directional/manual-review until comparable composition is restored, a parent-level metric avoids the allocation ambiguity, or a stronger counterfactual supports the conclusion.
+
+Missing composition evidence is not evidence of direct-only measurement, zero modeled conversions, complete allocation, or unchanged composition.
 
 ## Required inputs
 
@@ -53,6 +69,7 @@ Gather what is available and label missing fields:
 - current trusted state or post-change export;
 - comparable pre-change performance window;
 - source/snapshot metadata when baseline and post windows differ in extraction, semantic version, completeness or backfill maturity;
+- baseline/post measurement composition when conversion metrics may include modeled attribution, including modeled/direct split availability, allocation coverage, Unallocated-row presence and allocation grain;
 - material control state/timestamps for baseline and post-change windows when causal attribution matters;
 - realized surface/product/creative identity when the ad product can vary it during the evaluation window;
 - promotions, price, inventory, Featured Offer/Buy Box, listing and competitor context that could confound the result.
@@ -62,7 +79,7 @@ Gather what is available and label missing fields:
 1. **Readback first** — verify whether the intended advertiser control is actually present.
 2. Classify application as `Confirmed`, `Partial`, `Not Applied`, `Drifted`, or `Unknown`.
 3. **Objective-lineage gate** — preserve the action-time campaign objective and compare it with the current campaign objective. If they differ, record objective drift; do not retroactively replace the historical success metric or guardrails with the current objective.
-4. **Measurement gate** — require completed, attribution-mature, definitionally comparable windows; when history can restate, verify baseline/post backfill parity before outcome attribution.
+4. **Measurement gate** — require completed, attribution-mature, definitionally comparable windows; when history can restate, verify baseline/post backfill parity before outcome attribution. When modeled conversion or lower-grain allocation can matter, compare baseline/post measurement composition and treat material composition drift as unresolved measurement comparability rather than action effect.
 5. **Control-state comparability gate when causal attribution matters** — reconstruct material advertiser-control state across baseline and post-change windows. If overlapping changes can explain the effect, cap the single-control conclusion at `Directional` / `Confounded` / `Unknown` rather than calling the intended action causal.
 6. **Realization gate when relevant** — verify whether platform-managed surface/product/creative realization stayed sufficiently comparable. A confirmed control readback does not prove stable realized ad identity.
 7. Compare the post-change metrics to the best available baseline and to the expected mechanism.
@@ -80,7 +97,9 @@ Gather what is available and label missing fields:
 - `current campaign objective != action-time campaign objective` after objective drift; historical outcome review and future optimization intent are separate questions.
 - Do not retroactively re-score a prior action under a later campaign objective or infer a missing action-time objective from current performance.
 - Never call an action failed merely because early attributed orders have not matured.
-- Never call an action worked when baseline and post windows use materially different semantic definitions or asymmetric backfill maturity.
+- Never call an action worked when baseline and post windows use materially different semantic definitions, asymmetric backfill maturity, or material unresolved measurement composition / allocation coverage.
+- Never treat disappearance of `Unallocated` rows as proof that a target/query/placement improved; lower-grain allocation movement is not shopper-demand evidence.
+- If composition drift is material, cap affected causal outcome classification at `Inconclusive` / directional review until reconciled.
 - Never call an action worked/failed causally when overlapping material control changes remain `Confounded` or `Unknown`.
 - Do not optimize on ACOS/ROAS alone; evaluate the mechanism the action was supposed to change.
 - Treat promotion, price, stock, Buy Box/Featured Offer, listing, demand and competitor shocks as alternative explanations.
@@ -94,7 +113,7 @@ Return:
 
 1. readback/application status;
 2. action-time campaign objective, current campaign objective, and objective-drift status when available;
-3. evaluation windows, attribution maturity and measurement comparability;
+3. evaluation windows, attribution maturity, measurement comparability, and measurement-composition / allocation-coverage comparability when relevant;
 4. control-state comparability when causal attribution matters;
 5. realized-ad-identity comparability when relevant;
 6. expected mechanism;

@@ -599,3 +599,30 @@ Stars/activity are point-in-time discovery context only.
 Amazon official reporting semantics remain the authority for measurement-composition behavior: Sponsored Display can combine modeled and directly attributed conversions in the same conversion columns and can expose `Unallocated` rows at lower reporting grains; Amazon DSP similarly combines modeled and directly measured conversions in campaign reporting. The repository adopts only the safety abstraction and does not copy Amazon schemas or implementation details.
 
 Adoption decision: keep the current dependency-free unittest runner, make its collection contract explicit, and add the missing optional measurement-composition schema surface. Do not introduce pytest, a third-party evaluation framework, or live Amazon Ads execution capability solely to solve this gap.
+
+
+## Post-change measurement-composition review — 2026-09-22
+
+### Amazon Ads official evidence
+
+Amazon Ads' Sponsored Display modeled-conversion documentation states that modeled conversions are reported in the same conversion columns as directly attributed conversions and that lower-grain reports can contain `Unallocated` (API example `-20`) rows when meaningful allocation cannot be produced. Amazon DSP likewise reports directly measured and modeled off-Amazon conversions together as a combined campaign result.
+
+Adoption boundary: these official pages support a narrow safety rule for post-change review — compare measurement composition and lower-grain allocation coverage before attributing conversion/ROAS movement to an optimization action. No Amazon report schema, API payload, prose, prompt, or workflow was copied.
+
+Sources:
+- https://advertising.amazon.com/resources/whats-new/modeled-conversions-for-sponsored-display-campaigns
+- https://advertising.amazon.com/resources/whats-new/modeled-attribution-for-off-amazon-conversions-for-us-advertiser
+
+### Incremental lineage-project review
+
+Stars/activity are point-in-time discovery context only.
+
+- `OpenLineage/OpenLineage` — ~2.7k stars observed on 2026-09-22; Apache-2.0; non-fork/non-archived; active through 2026-09-21 with extensive CI. Useful canonical evidence that lineage metadata should remain explicit rather than inferred after the fact. Rejected as a dependency because this repository only needs a bounded Amazon Ads measurement-composition decision contract. No OpenLineage schema, client, event model, code, workflow, or documentation text was copied.
+- `open-metadata/OpenMetadata` — ~15.3k stars observed on 2026-09-22; Apache-2.0; non-fork/non-archived; active on 2026-09-22 with dozens of CI/integration workflows. Strong evidence for explicit context/quality metadata, but far broader than the repository's append-first optimization memory. Rejected as a dependency and implementation source; no metadata model, test harness, connector, schema, or workflow copied.
+- `datahub-project/datahub` — ~12.7k stars observed on 2026-09-22; Apache-2.0; non-fork/non-archived; active on 2026-09-22 with substantial build/test and connector workflows. Relevant to dataset/semantic lineage but duplicative of existing repository-owned source/measurement identity contracts for this decision gap. No DataHub schema, ingestion model, SDK code, workflow, prompt, or implementation was copied.
+
+Previously reviewed Amazon Ads API/MCP, Agent Skills, runtime and evaluation projects were de-duplicated rather than counted again.
+
+### Adoption decision
+
+The only behavior adopted this round is repository-authored and narrower: if baseline and post-change modeled/direct inclusion, allocation coverage, `Unallocated` state or allocation grain differ materially, treat that **composition drift** as a measurement confounder. Do not promote affected conversion/ROAS movement directly to causal `Worked` / `Failed`; keep the result `Inconclusive`, directional, Hold or Manual Review until reconciled or replaced with a stronger comparable counterfactual. This remains read-only/Suggest/Shadow and adds no executor/write/retry/reconciliation capability.

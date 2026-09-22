@@ -1,6 +1,6 @@
 {
   "name": "amazon-ads-skills",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Amazon Ads AI Agent skills, playbooks, measurement-lineage projection and effectiveness eval tooling for monitoring, diagnosis, growth analysis, experiments, post-change evaluation, optimization memory and guarded advertising decisions.",
   "author": {"name": "zerlinpi"},
   "skills": ["./skills/amazon-ads-audit", "./skills/campaign-health-monitor", "./skills/performance-drop-diagnosis", "./skills/growth-opportunity-finder", "./skills/experiment-planner", "./skills/post-change-review", "./skills/search-term-analysis", "./skills/keyword-optimization", "./skills/bid-optimization", "./skills/budget-optimization", "./skills/placement-optimization", "./skills/negative-targeting", "./skills/profitability-analysis", "./skills/anomaly-detection", "./skills/amazon-ads-optimizer"],

@@ -42,7 +42,8 @@ Record:
 - marketplace, currency and timezone;
 - attribution maturity by ad type/source;
 - major promotion or retail events;
-- data freshness and reconciliation warnings.
+- data freshness and reconciliation warnings;
+- measurement composition / allocation coverage when modeled conversions or lower-grain Unallocated rows can affect the comparison.
 
 Prefer same-length completed periods. If the current period is attribution-immature, separate operational delivery signals from mature conversion conclusions.
 
@@ -92,7 +93,8 @@ For affected entities check:
 - active experiment status;
 - rollback candidate or safety trigger;
 - concurrent parent/child or cross-control changes;
-- memory completeness/freshness warnings.
+- memory completeness/freshness warnings;
+- measurement composition drift when baseline/post conversion evidence differs in modeled/direct inclusion, allocation coverage, Unallocated-row presence or allocation grain.
 
 Classify each relevant recent action as:
 
@@ -104,7 +106,7 @@ Classify each relevant recent action as:
 - `Application Unknown`
 - `Drifted`
 
-Do not stack another opposite change on an entity merely because one immature week looks worse. If objective drift occurred, evaluate the prior action against its action-time objective and use the current objective only for the next decision; **do not retroactively** reclassify the historical action under the new mission.
+Do not stack another opposite change on an entity merely because one immature week looks worse. If objective drift occurred, evaluate the prior action against its action-time objective and use the current objective only for the next decision; **do not retroactively** reclassify the historical action under the new mission. If material **composition drift** or allocation coverage changed, route the affected action to `Inconclusive` / Hold / Manual Review instead of treating conversion-credit movement as the action effect.
 
 ## 4. Contribution triage
 
@@ -249,7 +251,8 @@ Common reasons:
 - event-dependent performance;
 - retail-readiness blocker;
 - strategically protected brand/defense traffic;
-- conflicting evidence.
+- conflicting evidence;
+- unresolved measurement composition or lower-grain allocation coverage drift.
 
 A useful weekly review contains holds, not just actions.
 

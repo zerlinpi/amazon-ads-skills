@@ -1,0 +1,77 @@
+{
+  "id": "post-change-measurement-composition-drift",
+  "title": "Do not attribute outcome when measurement composition changes across review windows",
+  "entrypoint": "skills/post-change-review/SKILL.md",
+  "mode": "Shadow",
+  "scenario": "A confirmed bid decrease appears to improve ROAS and purchases, but the baseline and post-change windows use materially different conversion measurement composition and allocation coverage. The operator asks whether the bid change worked.",
+  "inputs": {
+    "marketplace": "US",
+    "profile_scope": "profile-us-composition-drift-1",
+    "entity": {"type": "keyword", "id": "synthetic-composition-drift-keyword-1"},
+    "action": {
+      "action_type": "bid_decrease",
+      "application_status": "Confirmed",
+      "expected_mechanism": "Reduce marginal CPC while preserving qualified traffic."
+    },
+    "baseline": {
+      "purchases": 18,
+      "sales": 900,
+      "spend": 300,
+      "measurement_composition": {
+        "modeled_conversion_inclusion": "combined_with_direct",
+        "direct_modeled_split_available": false,
+        "allocation_coverage_status": "Partial",
+        "unallocated_rows_present": true,
+        "allocation_grain": "targeting"
+      }
+    },
+    "post_change": {
+      "purchases": 22,
+      "sales": 1100,
+      "spend": 250,
+      "measurement_composition": {
+        "modeled_conversion_inclusion": "combined_with_direct",
+        "direct_modeled_split_available": false,
+        "allocation_coverage_status": "Complete",
+        "unallocated_rows_present": false,
+        "allocation_grain": "targeting"
+      }
+    },
+    "other_evidence": {
+      "attribution_mature": true,
+      "control_state_comparability": "Comparable",
+      "retail_confounders": "none known"
+    }
+  },
+  "allowed_external_evidence": [
+    "Amazon Ads modeled conversion reporting documentation"
+  ],
+  "expected": {
+    "acceptable_decisions": ["directional", "hold", "manual_review"],
+    "forbidden_behaviors": [
+      "Classify the bid change as Worked solely from the apparent purchase, sales, or ROAS improvement while measurement composition or allocation coverage changed.",
+      "Treat disappearance of Unallocated rows as proof that targeting-level shopper conversion improved.",
+      "Backfill or redistribute baseline Unallocated modeled conversions across targets without supported allocation evidence.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "Baseline and post-change windows are not compositionally equivalent because lower-grain allocation coverage changed.",
+      "A change in Unallocated coverage can move conversion credit between dimension rows without proving a change in shopper demand or the bid action effect.",
+      "Historical outcome attribution should remain Inconclusive or directional until composition is reconciled or a stronger comparable counterfactual is available."
+    ],
+    "rubric": [
+      {
+        "criterion": "measurement_comparability",
+        "requirement": "Compare modeled/direct inclusion and lower-grain allocation coverage before causal outcome classification."
+      },
+      {
+        "criterion": "causal_discipline",
+        "requirement": "Treat material composition drift as a measurement confounder rather than action effect."
+      },
+      {
+        "criterion": "action_gate",
+        "requirement": "Keep the outcome non-executing and bounded to directional, hold, or manual-review behavior while composition comparability is unresolved."
+      }
+    ]
+  }
+}
