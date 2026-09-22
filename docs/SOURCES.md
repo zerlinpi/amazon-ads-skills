@@ -653,3 +653,29 @@ Previously reviewed OpenLineage, OpenMetadata, DataHub, Agent Skills/eval projec
 ### Adoption decision
 
 Add one dependency-free, read-only comparator for `measurement_composition`. It fails closed to `Unknown` when any required composition field is missing, null, invalid or explicitly unknown/unavailable; returns `Not Comparable` when modeled-conversion inclusion semantics or allocation grain change; returns `Directional` when split observability, allocation coverage or `Unallocated` state changes; and returns `Comparable` only when every bounded field is explicit and equal. Missing evidence is never synthesized as zero, false, direct-only, complete allocation or unchanged state. The helper adds no Amazon Ads write/executor/retry/reconciliation capability.
+
+
+## Measurement-comparison audit-lineage review — 2026-09-22
+
+### Amazon Ads official evidence
+
+Amazon Ads' current conversion-attribution guidance, updated August 5, 2026, reinforces that attribution semantics are first-class measurement context rather than a generic sales label. Amazon Ads also continues to document Sponsored Display modeled conversions in the same conversion columns as directly attributed conversions, with lower-grain `Unallocated` / API `-20` rows when meaningful allocation is unavailable. Unified Reporting now standardizes attribution methodology and is replacing legacy report centers, which further increases the need to retain exact decision-time measurement identities when historical outcomes are audited.
+
+Adoption boundary: these official sources justify preserving the evidence identity and comparison reason that gated a historical outcome. No Amazon schema, payload, report model, API client, prose, or workflow was copied.
+
+Sources:
+- https://advertising.amazon.com/help/G3BB9TWP5KC375TJ
+- https://advertising.amazon.com/resources/whats-new/modeled-conversions-for-sponsored-display-campaigns
+- https://advertising.amazon.com/resources/whats-new/streamline-campaign-analysis-with-unified-reporting
+
+### Incremental agent-observability / provenance project review
+
+Stars/activity are point-in-time discovery context only.
+
+- `openlit/openlit` — ~2.8k stars observed on 2026-09-22; Apache-2.0; non-fork/non-archived; active through 2026-09-21 with broad multi-language CI. Useful corroboration that agent/tool evaluations become more reproducible when trace/evaluation metadata is retained with the run. Rejected as a dependency because this repository needs a tiny append-first decision-audit contract, not an observability backend or OpenTelemetry stack. No OpenLIT trace schema, instrumentation, evaluator, workflow, prompt, or implementation was copied.
+- `Arize-ai/phoenix` — ~11.6k stars observed on 2026-09-22; non-fork/non-archived; active on 2026-09-22 with substantial unit/integration/CI evidence; current repository license is Elastic License 2.0. Relevant ecosystem evidence for attaching evaluation context to traces, but rejected for implementation reuse and dependency introduction on both licensing and scope grounds. No Phoenix schema, trace model, evaluator, code, workflow, or protected implementation was copied.
+- `langfuse/langfuse` — ~34.9k stars observed on 2026-09-22; active with extensive CI. This project had already been reviewed in prior repository research, so it was de-duplicated rather than counted as new evidence. Its repository uses MIT Expat for most non-enterprise content with separate enterprise-directory licensing; no code, schema, workflow, evaluator or trace format was reused.
+
+### Adoption decision
+
+Keep the authoritative optimization event ledger self-contained and dependency-free. When `compare_measurement_composition.py` materially affects an `evaluated` or `corrected` outcome, preserve the repository-owned comparator identity, classification, changed fields, deterministic reasons, and baseline/post evidence snapshot IDs in `measurement_comparison`. This lets a later reviewer distinguish allocation drift from modeled-inclusion/grain incompatibility without re-inventing history. Null source identities remain unknown. No observability service, external trace backend, Amazon Ads write path, retry, idempotency, or reconciliation capability is added.
