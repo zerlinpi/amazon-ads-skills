@@ -4,36 +4,64 @@ Reviewed: 2026-09-22
 
 ## Highest-value gap
 
-The repository already handled the Sponsored Products Search Term report's clicked-row selection effect, but did not explicitly bind a requested historical search-term window to the report's upstream lookback availability. That left a narrow but material failure mode: an agent could receive a valid recent report, silently treat older unavailable rows as absent/zero, and overstate a 90-day or year-over-year search-term conclusion.
+The repository already handled the Sponsored Products Search Term report's clicked-row selection effect and, in PR #83, added an explicit historical-availability boundary. A fresh official-source reconciliation exposed a more important follow-up: **historical availability differs by acquisition channel/reporting generation**. Treating one surface's numeric limit as a universal Search Term limit can unnecessarily discard valid history or, in the opposite direction, claim history that the active path cannot retrieve.
 
 ## Amazon official evidence
+
+### Console/help surface
 
 Amazon Ads Help, **Search term report for Sponsored Products**, updated May 18, 2026, states that:
 
 - the report contains only search terms that resulted in at least one ad click;
 - the report supports `summary` and `daily` time units;
-- the lookback window is 65 days;
+- the lookback window is **65 days**;
 - search-term rows can also represent inferred best matches in non-search contexts, so row text is not automatically a literal shopper query.
 
 Source: https://advertising.amazon.com/help/G3HEFZYWZF84NPS9
 
-Adoption: factual platform/report semantics only. No Amazon prose, UI assets, API schema, examples, or proprietary implementation were copied. The repository-authored contract treats the 65-day value as dated platform-capability evidence, requires re-verification when an exact current limit matters, and never converts unavailable older history to zero.
+### Sponsored Ads Reporting API v3
+
+The current Amazon Ads API Sponsored Ads report-type reference, retrieved September 22, 2026, lists the Sponsored Products `spSearchTerm` report with:
+
+- **95-day data retention**;
+- **31-day maximum report period per request**;
+- `SUMMARY` or `DAILY` time units;
+- `searchTerm` groupBy;
+- the same clicked-impression selection warning for Search Term rows.
+
+Source: https://d3a0d0y2hgofx6.cloudfront.net/ja-jp/guides/reporting/v3/report-types.html
+
+The Reporting API v3 getting-started reference separately confirms that `timeUnit=DAILY` requires the `date` column, `SUMMARY` may use `startDate`/`endDate`, and report-type-specific `groupBy` support constrains valid requests.
+
+Source: https://d3a0d0y2hgofx6.cloudfront.net/ja-jp/guides/reporting/v3/get-started.html
+
+## Reconciliation
+
+The 65-day console/help lookback and 95-day Reporting API v3 retention are both Amazon official evidence but are not safe to collapse into one repository-global constant. They describe different acquisition surfaces/reporting contracts. In addition, the API's 31-day maximum request period is a request-span constraint, not a historical-retention constraint: retrieving a longer eligible history may require multiple non-overlapping requests rather than declaring the older interval unavailable.
+
+Decision contract:
+
+```text
+historical availability
+= f(source system, acquisition channel, reporting generation, report type, time grain, current capability evidence)
+```
+
+When the active acquisition channel is unknown, or current official/account evidence conflicts, preserve `Unknown` / `Conflicted` and **do not silently choose** 65 or 95. Missing history remains missing evidence, never zero.
+
+Adoption: factual platform/report semantics only. No Amazon prose, UI assets, API schema, examples, or proprietary implementation were copied. The repository-owned `report-coverage.md` contract independently expresses the acquisition-channel lineage rule.
 
 ## Incremental GitHub discovery / de-duplication
 
-This round used multiple Amazon Ads/PPC/API/MCP and Agent Skills/evaluation/multi-agent queries rather than a fixed shortlist.
+This round again used multiple Amazon Ads / Advertising API / reporting / MCP and Agent Skills / evaluation searches rather than a fixed shortlist.
 
-- `benchflow-ai/skillsbench` — ~1.8k stars observed; Apache-2.0; non-fork/non-archived; pushed through 2026-07-23. Re-discovered and de-duplicated because it is already reviewed in this repository for paired Skill-effectiveness evaluation. No implementation imported.
-- `alibaba/skill-up` — ~1.0k stars observed; Apache-2.0; non-fork/non-archived; active on 2026-09-22. Re-discovered and de-duplicated because the repository already reviewed it for Skill evaluation/evolution infrastructure. No runtime, harness, prompt, schema, workflow, or code imported.
-- `google/agents-cli` — high-adoption Apache-2.0 agent tooling, re-discovered in the >1k-star active Agent Skills/evaluation scan and already reviewed here. Its explicit evaluation lifecycle overlaps existing deterministic tests and paired-effectiveness contracts, so no CLI/runtime dependency was added.
-- `openai/openai-agents-python` and `microsoft/agent-framework` — high-adoption MIT agent frameworks re-discovered in the active multi-agent scan and already reviewed. Their execution/runtime machinery remains outside this portable decision library and does not solve the specific Amazon report-history gap.
-- `KuudoAI/amazon_ads_mcp` — MIT Amazon Ads MCP implementation re-discovered in the domain scan and already reviewed. Connector engineering does not override Amazon's upstream report-history availability, so no connector code/schema was imported.
-- `MarketplaceAdPros/amazon-ads-mcp-server`, `ppcprophet/amazon-ads-mcp`, `zach22-1999/lingxing-mcp` and other lower-adoption Amazon/MCP results were reviewed as discovery context only. None supplied stronger authoritative semantics than Amazon's current Help contract; hosted/proprietary or connector-specific behavior was not adopted.
+- `KuudoAI/amazon_ads_mcp` — MIT; active Amazon Ads MCP implementation, re-discovered and already reviewed. Its async reporting/tooling remains useful connector-engineering context, but connector behavior cannot override Amazon's source-specific historical-availability contract. No code/schema imported.
+- `ScaleLeap/amazon-advertising-api-sdk` — Amazon Advertising API SDK result re-discovered, but the repository is archived. Rejected as current semantic authority; current Amazon API documentation is stronger evidence.
+- `amzn/amazon-advertising-api-php-sdk` — Amazon-owned historical SDK result, archived. Useful only as historical ecosystem context; rejected for current reporting semantics.
+- `denisneuf/python-amazon-ad-api` and other lower-adoption API wrappers were discovery context only. Wrapper behavior is not stronger evidence than current Amazon Reporting API documentation and does not justify importing code.
+- Previously reviewed high-adoption Agent Skills/runtime projects were de-duplicated because this gap is an Amazon reporting-source lineage problem, not a runtime/evaluation-framework deficiency.
 
-Stars/activity are discovery context only, not authority. Forks/mirrors and previously reviewed projects were not counted as independent new evidence.
+Stars/activity are discovery context only, not authority. Forks, mirrors, archived SDKs and previously reviewed projects were not counted as independent implementation evidence.
 
 ## Decision
 
-Adopt the Amazon official historical-availability boundary in the shared `report-coverage.md` contract instead of adding a 16th Skill or hard-coding a new executor/connector behavior. The Search Term Skill already progressively loads this reference when missing rows/population coverage affect the conclusion.
-
-When requested history exceeds the currently verified upstream report availability, bound the conclusion to the available interval or require a lineage-compatible retained export/warehouse snapshot. Missing older rows are not zero.
+Strengthen the existing shared `report-coverage.md` contract instead of adding a Skill, connector implementation or executor behavior. Search Term decisions must bind historical availability to the actual acquisition channel/reporting generation. For Reporting API v3, do not confuse the 31-day maximum request period with the 95-day retention window. For console/help workflows, do not assume API retention automatically applies. When exact current capability is decision-critical, re-verify the active path through `platform-capability-lineage.md` and connector/account evidence.

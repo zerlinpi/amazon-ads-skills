@@ -61,17 +61,22 @@ This does **not** make the report unusable for negatives or harvesting. It chang
 
 ### Sponsored Products historical-availability boundary
 
-Amazon's Sponsored Products Search Term report Help page, updated May 18, 2026, documents a **65-day lookback window** and `summary` / `daily` time units. Treat that number as a dated platform capability, not an eternal repository constant: if an exact current limit matters, reconcile it through `platform-capability-lineage.md` against current official/API/account evidence.
+Historical availability is **acquisition-channel and reporting-generation scoped**, not a single Sponsored Products Search Term constant. Current Amazon official evidence reviewed on 2026-09-22 exposes two different boundaries:
 
-When the requested Sponsored Products search-term window extends beyond the currently verified report lookback:
+- the Sponsored Products Search Term **console/help** surface, updated May 18, 2026, documents a **65-day lookback window** and `summary` / `daily` time units;
+- the current Sponsored Ads **Reporting API v3** report-type reference lists `spSearchTerm` with **95-day data retention**, a **31-day maximum request period**, and `SUMMARY` / `DAILY` time units.
+
+These values are not interchangeable. A 31-day maximum request period is not the same concept as 95-day historical retention, and console/help availability must not be silently imposed on Reporting API v3 (or vice versa). Treat both as dated platform-capability evidence, not eternal repository constants. When an exact current limit matters, bind the evidence to `source_system + acquisition_channel + reporting_generation + report_type`, then reconcile it through `platform-capability-lineage.md` against current official/API/account evidence. **Do not silently choose** 65 or 95 merely because one number is more convenient for the requested window.
+
+When the requested Sponsored Products search-term window extends beyond the historical availability verified for the **actual acquisition channel**:
 
 - mark the unsupported portion as `historical-availability = unavailable` or `unknown` according to the evidence; do not fabricate coverage;
 - missing older search-term rows are **not zero clicks, zero spend, zero orders, or proof that the term did not exist**;
 - bound rankings, harvest/negative conclusions, trend claims, and denominators to the verified available interval;
 - if the older interval is decision-critical, request a verified alternate source such as a retained historical export/warehouse snapshot with compatible lineage, or return `Alternate Source`, `Missing Data`, `Hold`, or `Manual Review` rather than silently shortening the requested history;
-- do not splice an alternate source into the current report without checking source system, acquisition channel, metric/date-attribution semantics, row eligibility, grain, marketplace/profile identity, freshness and backfill maturity through `data-lineage.md`.
+- do not splice an alternate source into the current report without checking source system, acquisition channel, reporting generation, metric/date-attribution semantics, row eligibility, grain, marketplace/profile identity, freshness and backfill maturity through `data-lineage.md`.
 
-A connector successfully returning the newest 65 days does not prove it can answer a 90-day or year-over-year search-term question. Connector capability and upstream report historical availability are separate evidence dimensions.
+A connector successfully returning the newest interval does not prove it can answer a longer search-term question. Connector capability, acquisition channel, reporting generation and upstream historical availability are separate evidence dimensions.
 
 ## 4. Targeting and other delivered-only views
 
