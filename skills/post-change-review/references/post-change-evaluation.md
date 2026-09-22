@@ -60,9 +60,27 @@ Before calling an outcome `Worked`, `Likely Worked`, `Likely Failed`, or `Failed
 - event-window end date;
 - backfill age/maturity;
 - whether historical rows are mutable;
-- whether both windows were re-read at comparable maturity.
+- whether both windows were re-read at comparable maturity;
+- modeled/direct measurement composition when relevant;
+- allocation coverage, Unallocated-row presence and allocation grain when lower-grain conversion attribution can shift.
 
 A baseline frozen at D+1 and a post window evaluated at D+7 can create a false lift even when both use the same table and semantic version. Load `../../../references/data-lineage.md` for detailed reconciliation rules.
+
+### Measurement composition parity
+
+For conversion-sensitive outcome review, report-name or metric-name equality is not enough. Compare **measurement composition** when the platform/source can combine directly measured and modeled conversions or emit lower-grain `Unallocated` rows.
+
+Check, when available:
+
+- modeled-conversion inclusion;
+- whether a direct/modeled split is available;
+- **allocation coverage** at the evaluated grain;
+- `Unallocated` row presence;
+- allocation grain.
+
+A baseline with partial targeting allocation and an `Unallocated` row is not automatically comparable to a post-change window where allocation is complete, even if source dataset, metric label, attribution family and semantic version are unchanged. This **composition drift** can move conversion credit among lower-grain rows without proving a shopper-behavior change.
+
+Do not redistribute `Unallocated` modeled conversions to lower-grain entities without supported allocation evidence. If a material composition/allocation change affects the decision-driving metric and cannot be reconciled, classify the historical outcome as `Inconclusive` or directional rather than `Worked` / `Failed`. A parent-level comparison may still be usable if it is explicitly outside the affected allocation ambiguity and otherwise comparable.
 
 ## 4. Counterfactual hierarchy
 
@@ -97,7 +115,7 @@ If multiple changes plausibly affect the same KPI, classify the result as multi-
 
 Use these labels:
 
-- `Worked` — intended state confirmed, mechanism-consistent improvement observed, measurement windows are comparable, and material alternative explanations are weak.
+- `Worked` — intended state confirmed, mechanism-consistent improvement observed, measurement windows are comparable (including material measurement composition/allocation coverage when relevant), and material alternative explanations are weak.
 - `Likely Worked` — evidence supports success but counterfactual or attribution remains imperfect.
 - `Monitoring` — action is applied but the performance window is not mature enough.
 - `Inconclusive` — enough time passed but signal is weak/noisy, confounded, or measurement comparability remains unresolved.
@@ -132,6 +150,7 @@ Prepare a rollback candidate only when:
 - the observed failure is material relative to the stated objective;
 - attribution and backfill maturity are sufficient for the decision;
 - baseline/post measurement definitions are comparable;
+- material measurement composition, modeled/direct inclusion and lower-grain allocation coverage are comparable or reconciled when relevant;
 - product/retail changes do not better explain the result;
 - rollback does not create a new known safety risk;
 - entity IDs and before/after values are exact when a future executor would need them.
@@ -157,6 +176,7 @@ When writing a structured optimization event, capture enough context for a later
 - confidence;
 - baseline/post windows;
 - measurement/source/backfill comparability when material;
+- measurement composition / allocation coverage when conversion attribution composition is material;
 - confounders;
 - decision;
 - next evaluation time/window;
