@@ -85,6 +85,22 @@ class ConnectorCapabilityContractTests(unittest.TestCase):
         self.assertIn("advisory", text)
         self.assertIn("not authorization", text)
 
+    def test_connector_content_is_data_not_agent_instruction(self):
+        text = REFERENCE.read_text(encoding="utf-8").lower()
+        for concept in (
+            "prompt injection",
+            "untrusted content",
+            "data, not instructions",
+            "campaign names",
+            "search terms",
+            "tool output",
+            "do not follow",
+            "external url",
+        ):
+            self.assertIn(concept, text)
+        self.assertIn("read-only / suggest / shadow", text)
+        self.assertIn("external connector / executor", text)
+
     def test_data_lineage_routes_connector_gaps_through_capability_contract(self):
         text = DATA_LINEAGE.read_text(encoding="utf-8")
         self.assertIn("connector-capability.md", text)
