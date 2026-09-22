@@ -128,6 +128,17 @@ Classify a comparison as:
 
 A recommendation must not be more confident than the comparability state. These states apply even when both windows ultimately come from Amazon Ads.
 
+### Machine comparison of measurement composition
+
+When both windows expose the bounded `measurement_composition` envelope from the optimization evidence contract, use `../scripts/compare_measurement_composition.py` for a deterministic first-pass comparison. The helper is intentionally narrower than full metric comparability and returns:
+
+- `Comparable` — every decision-relevant composition field is explicitly known and equal;
+- `Directional` — direct/modeled split observability or lower-grain allocation coverage / `Unallocated` state changed;
+- `Not Comparable` — modeled-conversion inclusion semantics or allocation grain changed;
+- `Unknown` — either envelope is absent, a required field is missing/null/invalid, or a required string state is explicitly unknown/unavailable.
+
+Missing evidence never becomes `false`, zero, complete allocation, direct-only measurement, or unchanged composition. The comparator does not decide whether a parent-level aggregate outside the affected allocation ambiguity can still be used; that remains a decision-specific reconciliation question. It also does not replace source/version/backfill, control-state, realization, retail or counterfactual checks.
+
 ## 4. Detect source-lineage drift
 
 Flag lineage drift when the baseline and comparison window do not share a stable measurement path.
