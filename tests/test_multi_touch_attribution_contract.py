@@ -3,7 +3,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REFERENCE = ROOT / "references/multi-touch-attribution.md"
-DROP_SKILL = ROOT / "skills/performance-drop-diagnosis/SKILL.md"
 
 
 class MultiTouchAttributionPolicyTests(unittest.TestCase):
@@ -24,9 +23,12 @@ class MultiTouchAttributionPolicyTests(unittest.TestCase):
         self.assertIn("missing", text)
         self.assertIn("zero", text)
 
-    def test_performance_drop_progressively_loads_mta_policy(self):
-        text = DROP_SKILL.read_text(encoding="utf-8")
-        self.assertIn("multi-touch-attribution.md", text)
+    def test_unreconciled_variant_shift_is_not_business_cause(self):
+        text = REFERENCE.read_text(encoding="utf-8").lower()
+        self.assertIn("observation", text)
+        self.assertIn("hypothesis", text)
+        self.assertIn("not comparable", text)
+        self.assertIn("do not use the unreconciled delta alone", text)
 
 
 if __name__ == "__main__":
