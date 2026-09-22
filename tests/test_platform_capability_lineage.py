@@ -43,6 +43,19 @@ class PlatformCapabilityLineageTests(unittest.TestCase):
         self.assertIn("zero", coverage.lower())
         self.assertIn("platform-capability-lineage.md", coverage)
 
+    def test_search_term_history_limit_is_scoped_to_acquisition_channel(self):
+        coverage = (ROOT / "references/report-coverage.md").read_text(encoding="utf-8").lower()
+        research = (
+            ROOT / "docs/research/sponsored-products-search-term-history-2026-09.md"
+        ).read_text(encoding="utf-8").lower()
+        for text in (coverage, research):
+            self.assertIn("acquisition channel", text)
+            self.assertIn("65", text)
+            self.assertIn("95", text)
+            self.assertIn("reporting api v3", text)
+        self.assertIn("do not silently choose", coverage)
+        self.assertIn("console/help", coverage)
+
     def test_repository_safety_rules_cover_platform_capability_conflicts(self):
         agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
         self.assertIn("platform-capability-lineage.md", agents)
