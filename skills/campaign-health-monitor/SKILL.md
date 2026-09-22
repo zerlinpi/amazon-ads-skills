@@ -45,6 +45,7 @@ This gate is read-only and does not authorize live Amazon Ads mutation.
 
 - `../../references/benchmark-policy.md`：当 Amazon Benchmark reporting、同行/类目中位数或外部 benchmark 影响健康判断时；
 - `../../references/data-lineage.md`：当当前窗口与基线来自不同 report/source/semantic definition 或成熟度时；
+- `../../references/marketing-stream-dataset-coverage.md`：当 Amazon Marketing Stream 的小时 traffic/conversion/budget 等独立 dataset 被用于健康判断或组合指标时；
 - `../../references/decision-boundaries.md`：当输出具体 bid/budget/placement 动作候选时。
 
 ## 输入
