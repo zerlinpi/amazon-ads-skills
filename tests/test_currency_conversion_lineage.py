@@ -10,9 +10,9 @@ class CurrencyConversionLineagePolicyTests(unittest.TestCase):
     def test_cross_country_currency_conversion_preserves_measurement_identity(self):
         text = CROSS_ACCOUNT.read_text(encoding="utf-8").lower()
         for concept in (
-            "native currency",
-            "reporting currency",
-            "currency conversion status",
+            "native_currency",
+            "reporting_currency",
+            "currency_conversion_status",
             "currency conversion timing",
         ):
             self.assertIn(concept, text)
