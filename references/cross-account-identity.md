@@ -63,6 +63,30 @@ Manager-account membership is context, not entity identity. A manager can contai
 
 Before aggregating performance across countries, also reconcile currency, timezone/date boundary, marketplace, attribution semantics, reporting generation, metric definition, and row coverage under `data-lineage.md`. Country is not a cosmetic dimension when it changes those semantics.
 
+### Currency-conversion lineage
+
+A cross-country report may expose monetary metrics in a selected reporting currency rather than each advertiser's native currency. Preserve this as measurement provenance, not formatting.
+
+When converted monetary values participate in a comparison or aggregate, record when available:
+
+- `native_currency` — advertiser/account currency before report-level conversion;
+- `reporting_currency` — currency actually represented by the returned monetary metric;
+- `currency_conversion_status` — `native`, `converted`, or `unknown`;
+- currency conversion timing and any source-provided exchange-rate / conversion-method provenance.
+
+Do not infer an exchange-rate method, rate, or conversion timestamp that the reporting surface does not expose. Unknown conversion provenance remains `unknown`.
+
+Therefore:
+
+```text
+same monetary metric label + same reporting currency
+≠ proof of the same native-currency or exchange-rate treatment
+```
+
+If one window is native and another converted, or if conversion treatment changed and cannot be reconciled, monetary deltas and derived metrics that depend on them are `Not Comparable` or at most `Directional` for the affected decision. A converted value is not interchangeable with native money merely because the displayed currency code matches after conversion. Prefer a common verified reporting-currency treatment for both windows, or compare non-monetary components separately when useful.
+
+This is a read-side comparability rule. It does not implement foreign-exchange conversion or authorize a connector to invent missing conversion metadata.
+
 ## Deliberate migrations and upgrades
 
 If an entity or advertiser identity is intentionally migrated, recreated, upgraded, or mapped across profiles/accounts, require an explicit mapping with provenance. Similar names, identical campaign text, coincident dates, or the continued validity of an older identifier do not prove continuity.
