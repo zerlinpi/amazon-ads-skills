@@ -110,6 +110,18 @@
           },
           "additionalProperties": true
         },
+        "currency_lineage": {
+          "type": ["object", "null"],
+          "description": "Decision-time monetary measurement lineage preserved from the selected evidence snapshot. Missing fields remain unknown; historical replay must not infer native currency or FX treatment from displayed values.",
+          "properties": {
+            "native_currency": {"type": ["string", "null"]},
+            "reporting_currency": {"type": ["string", "null"]},
+            "currency_conversion_status": {"type": ["string", "null"], "enum": ["native", "converted", "unknown", null]},
+            "conversion_timing": {"type": ["string", "null"]},
+            "exchange_rate_provenance": {"type": ["object", "string", "null"]}
+          },
+          "additionalProperties": true
+        },
         "date_attribution_semantics": {"type": ["string", "null"]},
         "historical_availability_status": {"type": ["string", "null"], "enum": ["available", "partially_available", "unavailable", "retired_or_deleted", "unknown", null]},
         "comparability_status": {"type": ["string", "null"], "enum": ["Comparable", "Reconcilable", "Directional", "Not Comparable", "Unknown", null]},
@@ -148,7 +160,8 @@
         "status": {"type": ["string", "null"], "enum": ["Complete", "Partial", "Unavailable", "Unknown", null]},
         "source_dataset": {"type": ["string", "null"]}, "acquisition_channel": {"type": ["string", "null"]},
         "material_dimensions": {"type": "array", "items": {"type": "string"}}, "warnings": {"type": "array", "items": {"type": "string"}}
-      }, "additionalProperties": true
+      },
+      "additionalProperties": true
     },
     "latest_action": {
       "type": ["object", "null"],
