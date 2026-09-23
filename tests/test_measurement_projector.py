@@ -162,6 +162,36 @@ class MeasurementProjectorTests(unittest.TestCase):
         history_enum = history_schema["properties"]["latest_measurement_state"]["properties"]["historical_availability_status"]["enum"]
         self.assertEqual(event_enum, history_enum)
 
+    def test_fx_lineage_is_preserved_for_historical_replay(self):
+        projected = self.run_projector(
+            [{
+                "event_id": "fx-1",
+                "timestamp": "2026-09-23T10:00:00Z",
+                "evidence_snapshot": {
+                    "snapshot_id": "fx-snapshot",
+                    "captured_at": "2026-09-23T09:59:00Z",
+                    "reporting_generation": "unified",
+                    "date_attribution_semantics": "traffic_date",
+                    "historical_availability_status": "available",
+                    "comparability_status": "Comparable",
+                    "currency_lineage": {
+                        "native_currency": "JPY",
+                        "reporting_currency": "USD",
+                        "currency_conversion_status": "converted",
+                        "conversion_timing": "report_generation",
+                        "exchange_rate_provenance": "source_provided"
+                    }
+                }
+            }]
+        )
+        self.assertEqual(projected["latest_measurement_state"]["currency_lineage"], {
+            "native_currency": "JPY",
+            "reporting_currency": "USD",
+            "currency_conversion_status": "converted",
+            "conversion_timing": "report_generation",
+            "exchange_rate_provenance": "source_provided"
+        })
+
 
 if __name__ == "__main__":
     unittest.main()
