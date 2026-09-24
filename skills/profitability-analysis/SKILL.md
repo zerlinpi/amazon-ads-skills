@@ -78,6 +78,19 @@ Economic eligibility is not the same as growth qualification. 一个实体历史
 
 缺少成本时必须明确：只能做广告效率分析，不能声称“盈利/亏损”。
 
+## Currency comparability gate
+
+Before any monetary arithmetic across Ads reports, retail/fee exports, cost systems, marketplaces, profiles, or historical windows, inspect the available currency lineage for every monetary input. At minimum reconcile `native_currency`, `reporting_currency`, and `currency_conversion_status`; preserve `conversion_timing` and `exchange_rate_provenance` when available.
+
+- A shared displayed/reporting currency is **not** proof that inputs share the same native currency or FX treatment.
+- `currency_conversion_status = unknown`, missing lineage, conflicting native/reporting currencies, or unreconciled conversion timing/provenance must never be treated as native, equal, or zero FX difference.
+- Do not invent, backfill, or independently calculate an exchange rate inside this Skill. Use only source-provided or otherwise explicitly verified conversion evidence.
+- If all monetary inputs are verified to share a comparable currency treatment, continue with the normal calculations below.
+- If currency treatment cannot be reconciled, classify monetary profitability as `Not Comparable` (or `Missing Data` when the required lineage itself is unavailable). Do not compute or claim `contribution_before_ads`, `break-even ACOS`, `profit_after_ads`, profit margin after ads, or cross-market monetary deltas from those unreconciled inputs.
+- A `Directional` observation may describe non-monetary or already comparable evidence, but it must not present unreconciled profit-after-ads or break-even ACOS as a numeric economic result.
+
+This is a measurement-comparability gate, not an FX engine and not authorization to mutate Amazon Ads.
+
 ## 计算
 
 精确定义参考 `../../references/amazon-ads-metrics.md`。
