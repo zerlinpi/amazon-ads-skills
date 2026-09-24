@@ -1,4 +1,5 @@
 import json
+import unittest
 from pathlib import Path
 
 
@@ -19,22 +20,28 @@ def _properties(path: str, *keys: str):
     return node["properties"]
 
 
-def test_currency_lineage_contract_is_declared_at_event_and_history_boundaries():
-    event_props = _properties("schemas/optimization-event.json", "evidence_snapshot")
-    history_props = _properties("schemas/entity-history.json", "latest_measurement_state")
+class CurrencyLineageSchemaContractTests(unittest.TestCase):
+    def test_currency_lineage_contract_is_declared_at_event_and_history_boundaries(self):
+        event_props = _properties("schemas/optimization-event.json", "evidence_snapshot")
+        history_props = _properties("schemas/entity-history.json", "latest_measurement_state")
 
-    assert "currency_lineage" in event_props
-    assert "currency_lineage" in history_props
+        self.assertIn("currency_lineage", event_props)
+        self.assertIn("currency_lineage", history_props)
 
-    event_lineage = event_props["currency_lineage"]["properties"]
-    history_lineage = history_props["currency_lineage"]["properties"]
-    assert EXPECTED_FIELDS <= event_lineage.keys()
-    assert EXPECTED_FIELDS <= history_lineage.keys()
+        event_lineage = event_props["currency_lineage"]["properties"]
+        history_lineage = history_props["currency_lineage"]["properties"]
+        self.assertTrue(EXPECTED_FIELDS <= event_lineage.keys())
+        self.assertTrue(EXPECTED_FIELDS <= history_lineage.keys())
 
-    assert event_lineage["currency_conversion_status"] == history_lineage["currency_conversion_status"]
-    assert event_lineage["currency_conversion_status"]["enum"] == [
-        "native",
-        "converted",
-        "unknown",
-        None,
-    ]
+        self.assertEqual(
+            event_lineage["currency_conversion_status"],
+            history_lineage["currency_conversion_status"],
+        )
+        self.assertEqual(
+            event_lineage["currency_conversion_status"]["enum"],
+            ["native", "converted", "unknown", None],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()
