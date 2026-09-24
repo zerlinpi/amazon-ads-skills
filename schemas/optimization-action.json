@@ -18,6 +18,15 @@
     "guardrails": {"type": "array", "items": {"type": "string"}},
     "validation_window": {"type": "string", "minLength": 1},
     "rollback_condition": {"type": "string", "minLength": 1},
+    "economic_eligibility": {
+      "type": "object",
+      "required": ["status", "reason"],
+      "properties": {
+        "status": {"type": "string", "enum": ["Eligible", "Directional", "Not Comparable", "Missing Data"]},
+        "reason": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": true
+    },
     "priority": {"type": ["string", "null"], "enum": ["critical", "high", "medium", "low", null]},
     "requires_human_review": {"type": "boolean", "default": true}
   },
