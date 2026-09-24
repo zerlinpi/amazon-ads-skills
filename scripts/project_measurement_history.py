@@ -280,7 +280,17 @@ def _normalize_currency_lineage(value: Any) -> dict[str, Any] | None:
         item = value.get(field)
         if item is None:
             continue
-        if not isinstance(item, str) or not item:
+        if field == "exchange_rate_provenance":
+            if isinstance(item, str):
+                if not item:
+                    raise ValueError(
+                        "evidence_snapshot.currency_lineage.exchange_rate_provenance must be a non-empty string, object, or null"
+                    )
+            elif not isinstance(item, dict):
+                raise ValueError(
+                    "evidence_snapshot.currency_lineage.exchange_rate_provenance must be a non-empty string, object, or null"
+                )
+        elif not isinstance(item, str) or not item:
             raise ValueError(f"evidence_snapshot.currency_lineage.{field} must be a non-empty string or null")
         result[field] = item
     status = result.get("currency_conversion_status")
