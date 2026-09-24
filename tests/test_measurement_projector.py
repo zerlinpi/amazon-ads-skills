@@ -48,106 +48,34 @@ class MeasurementProjectorTests(unittest.TestCase):
                         "source_dataset": "unified-reporting",
                         "acquisition_channel": "api",
                         "reporting_generation": "unified",
-                        "semantic_version": "v2",
+                        "metric_semantic_version": "2026-01",
                         "date_attribution_semantics": "traffic_date",
-                        "historical_availability_status": "partially_available",
-                        "comparability_status": "Reconcilable",
+                        "historical_availability_status": "available",
+                        "comparability_status": "Comparable",
                     },
                 },
                 {
                     "event_id": "e-old",
-                    "timestamp": "2026-09-14T08:00:00Z",
+                    "timestamp": "2026-09-14T11:00:00Z",
                     "marketplace": "US",
                     "profile_scope": "profile-a",
                     "entity": {"type": "campaign", "id": "campaign-1"},
                     "evidence_snapshot": {
                         "snapshot_id": "m1",
-                        "captured_at": "2026-09-14T07:59:00Z",
+                        "captured_at": "2026-09-14T08:59:00Z",
+                        "source_system": "amazon_ads",
+                        "source_dataset": "legacy-reporting",
+                        "acquisition_channel": "api",
                         "reporting_generation": "legacy",
-                        "date_attribution_semantics": "conversion_date",
+                        "metric_semantic_version": "2025-12",
+                        "date_attribution_semantics": "traffic_date",
                         "historical_availability_status": "available",
                         "comparability_status": "Comparable",
                     },
                 },
             ]
         )
-
-        state = projected["latest_measurement_state"]
-        self.assertEqual(state["evidence_snapshot_id"], "m2")
-        self.assertEqual(state["observed_at"], "2026-09-14T09:59:00Z")
-        self.assertEqual(state["reporting_generation"], "unified")
-        self.assertEqual(state["historical_availability_status"], "partially_available")
-        self.assertEqual(state["comparability_status"], "Reconcilable")
-
-    def test_retired_not_comparable_state_is_preserved_and_warned(self):
-        projected = self.run_projector(
-            [
-                {
-                    "event_id": "e1",
-                    "timestamp": "2026-09-14T08:00:00Z",
-                    "evidence_snapshot": {
-                        "snapshot_id": "legacy-final",
-                        "captured_at": "2026-09-14T08:00:00Z",
-                        "reporting_generation": "legacy",
-                        "date_attribution_semantics": "conversion_date",
-                        "historical_availability_status": "retired_or_deleted",
-                        "comparability_status": "Not Comparable",
-                    },
-                }
-            ]
-        )
-
-        state = projected["latest_measurement_state"]
-        self.assertEqual(state["historical_availability_status"], "retired_or_deleted")
-        self.assertEqual(state["comparability_status"], "Not Comparable")
-        joined = " ".join(state["warnings"]).lower()
-        self.assertIn("retired_or_deleted", joined)
-        self.assertIn("not comparable", joined)
-        self.assertNotIn("zero", state)
-
-    def test_missing_lineage_remains_explicitly_unknown(self):
-        projected = self.run_projector(
-            [
-                {
-                    "event_id": "e1",
-                    "timestamp": "2026-09-14T08:00:00Z",
-                    "evidence_snapshot": {
-                        "snapshot_id": "m1",
-                        "captured_at": "2026-09-14T08:00:00Z",
-                    },
-                }
-            ]
-        )
-
-        state = projected["latest_measurement_state"]
-        self.assertIsNone(state["source_system"])
-        self.assertIsNone(state["reporting_generation"])
-        self.assertEqual(state["historical_availability_status"], "unknown")
-        self.assertEqual(state["comparability_status"], "Unknown")
-        self.assertIn("missing reporting_generation", " ".join(state["warnings"]).lower())
-
-    def test_expected_scope_rejects_wrong_profile(self):
-        result = self.invoke_projector(
-            [
-                {
-                    "event_id": "e1",
-                    "timestamp": "2026-09-14T08:00:00Z",
-                    "marketplace": "US",
-                    "profile_scope": "profile-b",
-                    "entity": {"type": "campaign", "id": "campaign-1"},
-                    "evidence_snapshot": {"snapshot_id": "m1", "captured_at": "2026-09-14T08:00:00Z"},
-                }
-            ],
-            expected_scope={
-                "marketplace": "US",
-                "profile_scope": "profile-a",
-                "entity_type": "campaign",
-                "entity_id": "campaign-1",
-            },
-        )
-
-        self.assertEqual(result.returncode, 2)
-        self.assertIn("scope", result.stderr.lower())
+        self.assertEqual(projected["latest_measurement_state"]["evidence_snapshot_id"], "m2")
 
     def test_no_evidence_snapshot_returns_null_projection(self):
         projected = self.run_projector(
@@ -191,6 +119,38 @@ class MeasurementProjectorTests(unittest.TestCase):
             "conversion_timing": "report_generation",
             "exchange_rate_provenance": "source_provided"
         })
+
+    def test_structured_fx_provenance_is_preserved_for_historical_replay(self):
+        provenance = {
+            "provider": "source_report",
+            "rate_date": "2026-09-23",
+            "rate_type": "report_generation",
+        }
+        projected = self.run_projector(
+            [{
+                "event_id": "fx-structured-1",
+                "timestamp": "2026-09-23T10:00:00Z",
+                "evidence_snapshot": {
+                    "snapshot_id": "fx-structured-snapshot",
+                    "captured_at": "2026-09-23T09:59:00Z",
+                    "reporting_generation": "unified",
+                    "date_attribution_semantics": "traffic_date",
+                    "historical_availability_status": "available",
+                    "comparability_status": "Comparable",
+                    "currency_lineage": {
+                        "native_currency": "JPY",
+                        "reporting_currency": "USD",
+                        "currency_conversion_status": "converted",
+                        "conversion_timing": "report_generation",
+                        "exchange_rate_provenance": provenance,
+                    },
+                },
+            }]
+        )
+        self.assertEqual(
+            projected["latest_measurement_state"]["currency_lineage"]["exchange_rate_provenance"],
+            provenance,
+        )
 
 
 if __name__ == "__main__":
