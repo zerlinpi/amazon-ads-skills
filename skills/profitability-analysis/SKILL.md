@@ -86,7 +86,7 @@ Before any monetary arithmetic across Ads reports, retail/fee exports, cost syst
 - `currency_conversion_status = unknown`, missing lineage, conflicting native/reporting currencies, or unreconciled conversion timing/provenance must never be treated as native, equal, or zero FX difference.
 - Do not invent, backfill, or independently calculate an exchange rate inside this Skill. Use only source-provided or otherwise explicitly verified conversion evidence.
 - If all monetary inputs are verified to share a comparable currency treatment, continue with the normal calculations below.
-- If currency treatment cannot be reconciled, classify monetary profitability as `Not Comparable` (or `Missing Data` when the required lineage itself is unavailable). Do **not** compute or claim `contribution_before_ads`, `break-even ACOS`, `profit_after_ads`, profit margin after ads, or cross-market monetary deltas from those unreconciled inputs.
+- If currency treatment cannot be reconciled, classify monetary profitability as `Not Comparable` (or `Missing Data` when the required lineage itself is unavailable). Do not compute or claim `contribution_before_ads`, `break-even ACOS`, `profit_after_ads`, profit margin after ads, or cross-market monetary deltas from those unreconciled inputs.
 - A `Directional` observation may describe non-monetary or already comparable evidence, but it must not present unreconciled profit-after-ads or break-even ACOS as a numeric economic result.
 
 This is a measurement-comparability gate, not an FX engine and not authorization to mutate Amazon Ads.
