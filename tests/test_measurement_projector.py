@@ -162,6 +162,67 @@ class MeasurementProjectorTests(unittest.TestCase):
         history_enum = history_schema["properties"]["latest_measurement_state"]["properties"]["historical_availability_status"]["enum"]
         self.assertEqual(event_enum, history_enum)
 
+    def test_fx_lineage_is_preserved_for_historical_replay(self):
+        lineage = {
+            "native_currency": "JPY",
+            "reporting_currency": "USD",
+            "currency_conversion_status": "converted",
+            "conversion_timing": "report_generation",
+            "exchange_rate_provenance": "source_provided",
+        }
+        projected = self.run_projector(
+            [
+                {
+                    "event_id": "fx-1",
+                    "timestamp": "2026-09-23T10:00:00Z",
+                    "evidence_snapshot": {
+                        "snapshot_id": "fx-snapshot",
+                        "captured_at": "2026-09-23T09:59:00Z",
+                        "reporting_generation": "unified",
+                        "date_attribution_semantics": "traffic_date",
+                        "historical_availability_status": "available",
+                        "comparability_status": "Comparable",
+                        "currency_lineage": lineage,
+                    },
+                }
+            ]
+        )
+        self.assertEqual(projected["latest_measurement_state"]["currency_lineage"], lineage)
+
+    def test_structured_fx_provenance_is_preserved_for_historical_replay(self):
+        provenance = {
+            "provider": "source_report",
+            "rate_date": "2026-09-23",
+            "rate_type": "report_generation",
+        }
+        projected = self.run_projector(
+            [
+                {
+                    "event_id": "fx-structured-1",
+                    "timestamp": "2026-09-23T10:00:00Z",
+                    "evidence_snapshot": {
+                        "snapshot_id": "fx-structured-snapshot",
+                        "captured_at": "2026-09-23T09:59:00Z",
+                        "reporting_generation": "unified",
+                        "date_attribution_semantics": "traffic_date",
+                        "historical_availability_status": "available",
+                        "comparability_status": "Comparable",
+                        "currency_lineage": {
+                            "native_currency": "JPY",
+                            "reporting_currency": "USD",
+                            "currency_conversion_status": "converted",
+                            "conversion_timing": "report_generation",
+                            "exchange_rate_provenance": provenance,
+                        },
+                    },
+                }
+            ]
+        )
+        self.assertEqual(
+            projected["latest_measurement_state"]["currency_lineage"]["exchange_rate_provenance"],
+            provenance,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

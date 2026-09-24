@@ -58,6 +58,13 @@ MEASUREMENT_COMPOSITION_FIELDS = (
     "unallocated_rows_present",
     "allocation_grain",
 )
+CURRENCY_LINEAGE_FIELDS = (
+    "native_currency",
+    "reporting_currency",
+    "currency_conversion_status",
+    "conversion_timing",
+    "exchange_rate_provenance",
+)
 
 
 def _parse_timestamp(value: Any, *, field: str) -> datetime:
@@ -263,11 +270,43 @@ def _normalize_measurement_composition(value: Any) -> dict[str, Any] | None:
     return result or None
 
 
+def _normalize_currency_lineage(value: Any) -> dict[str, Any] | None:
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        raise ValueError("evidence_snapshot.currency_lineage must be an object or null")
+    result: dict[str, Any] = {}
+    for field in CURRENCY_LINEAGE_FIELDS:
+        item = value.get(field)
+        if item is None:
+            continue
+        if field == "exchange_rate_provenance":
+            if isinstance(item, str):
+                if not item:
+                    raise ValueError(
+                        "evidence_snapshot.currency_lineage.exchange_rate_provenance must be a non-empty string, object, or null"
+                    )
+            elif not isinstance(item, dict):
+                raise ValueError(
+                    "evidence_snapshot.currency_lineage.exchange_rate_provenance must be a non-empty string, object, or null"
+                )
+        elif not isinstance(item, str) or not item:
+            raise ValueError(f"evidence_snapshot.currency_lineage.{field} must be a non-empty string or null")
+        result[field] = item
+    status = result.get("currency_conversion_status")
+    if status is not None and status not in {"native", "converted", "unknown"}:
+        raise ValueError(
+            "evidence_snapshot.currency_lineage.currency_conversion_status must be native, converted, unknown, or null"
+        )
+    return result or None
+
+
 def _warnings(
     snapshot: dict[str, Any],
     history_status: str,
     comparability: str,
     measurement_composition: dict[str, Any] | None,
+    currency_lineage: dict[str, Any] | None,
 ) -> list[str]:
     warnings = list(snapshot.get("warnings") or [])
     for field in ("reporting_generation", "date_attribution_semantics"):
@@ -276,6 +315,10 @@ def _warnings(
     if measurement_composition is None:
         warnings.append(
             "measurement composition is unresolved; modeled/direct composition and lower-grain allocation coverage must remain unknown"
+        )
+    if currency_lineage is None:
+        warnings.append(
+            "currency lineage is unresolved; native/reporting currency and conversion treatment must remain unknown"
         )
     if history_status in {"unavailable", "retired_or_deleted", "unknown"}:
         warnings.append(
@@ -302,6 +345,7 @@ def _project(
     measurement_composition = _normalize_measurement_composition(
         snapshot.get("measurement_composition")
     )
+    currency_lineage = _normalize_currency_lineage(snapshot.get("currency_lineage"))
     return {
         "evidence_snapshot_id": snapshot.get("snapshot_id"),
         "observed_at": observed_at,
@@ -314,6 +358,7 @@ def _project(
         "outcome_metric_semantics": _normalize_outcome_metric_semantics(outcome_metric_semantics),
         "date_attribution_semantics": snapshot.get("date_attribution_semantics"),
         "measurement_composition": measurement_composition,
+        "currency_lineage": currency_lineage,
         "historical_availability_status": history_status,
         "comparability_status": comparability,
         "warnings": _warnings(
@@ -321,6 +366,7 @@ def _project(
             history_status,
             comparability,
             measurement_composition,
+            currency_lineage,
         ),
     }
 

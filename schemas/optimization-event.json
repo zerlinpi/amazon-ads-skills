@@ -87,6 +87,18 @@
           },
           "additionalProperties": true
         },
+        "currency_lineage": {
+          "type": ["object", "null"],
+          "description": "Decision-time monetary measurement lineage. Preserve source-provided native/reporting currency and conversion treatment; missing fields remain unknown and must not be inferred from displayed monetary values.",
+          "properties": {
+            "native_currency": {"type": ["string", "null"]},
+            "reporting_currency": {"type": ["string", "null"]},
+            "currency_conversion_status": {"type": ["string", "null"], "enum": ["native", "converted", "unknown", null]},
+            "conversion_timing": {"type": ["string", "null"]},
+            "exchange_rate_provenance": {"type": ["object", "string", "null"]}
+          },
+          "additionalProperties": true
+        },
         "date_attribution_semantics": {"type": ["string", "null"], "enum": ["traffic_date", "conversion_date", "event_date", "unknown", null]},
         "historical_availability_status": {"type": ["string", "null"], "enum": ["available", "partially_available", "unavailable", "retired_or_deleted", "unknown", null]},
         "comparability_status": {"type": ["string", "null"], "enum": ["Comparable", "Reconcilable", "Directional", "Not Comparable", "Unknown", null]},
