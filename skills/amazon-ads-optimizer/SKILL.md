@@ -135,3 +135,14 @@ For weekly reviews, also return current/comparable windows, recent-action status
 When history materially changes a recommendation, also return identity-scope status, marketplace/profile scope used for retrieval, history status, latest relevant action/readback, validation maturity, unresolved warnings and the event IDs supporting the decision when available.
 
 Every actionable proposal should include entity, reason, evidence, confidence, mode, guardrails, validation window and rollback condition. Every experiment should additionally define a falsifiable hypothesis, comparison design, one primary metric, contamination risks and predeclared decision rules.
+
+## Monitoring and discovery classification boundary
+
+Keep routine portfolio monitoring, single-signal anomaly detection, and sustained decline diagnosis as separate classifications.
+
+- `campaign-health-monitor` handles routine portfolio health and triage.
+- `anomaly-detection` handles an unexplained deviation or single signal without claiming a cause.
+- A sustained business-impact decline that needs causal diagnosis routes to `performance-drop-diagnosis`.
+- Classification determines the next Skill; an anomaly is not automatically a root-cause conclusion.
+
+These monitoring routes never claim a live change succeeded. Any mutation remains outside this repository in an authorized external Connector/Executor.
