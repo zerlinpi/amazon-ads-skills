@@ -1,1 +1,0 @@
-Temporary CI trigger for history-only branch consolidation; removed immediately after merge.
