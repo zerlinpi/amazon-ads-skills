@@ -312,3 +312,13 @@ What must be re-read or measured before the next decision.
 - Do not treat attributed sales movement as proof of incrementality.
 - Do not mix promotion weeks with normal weeks without labeling the comparison.
 - Do not claim a live account action was applied unless an external executor and readback support it.
+
+## Consolidated review hygiene
+
+Surface these review blockers explicitly when present:
+
+- data freshness and reconciliation warnings.
+- memory completeness/freshness warnings.
+- conflicting evidence.
+
+Do not stack another opposite change on an entity merely because one immature week looks worse.
