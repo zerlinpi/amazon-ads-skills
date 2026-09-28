@@ -182,3 +182,12 @@ This gate is additive to connector capability, sample sufficiency, retail state,
 - 不把第三方示例百分比、其他账户动作幅度或平台 UI 示例直接当作本账户默认调整幅度；
 - 不把未完成 capability lineage reconciliation 的旧/冲突 Amazon 文档数值写成当前确定的平台上限或自动调整公式；
 - 不声称算法可以保证排名、销售或 ACOS。
+
+## Binding control gate
+
+A bid increase requires evidence that bid/auction exposure is the **binding control**, not merely that the campaign has room to spend. Check auction exposure and marginal headroom before recommending a higher bid.
+
+- A campaign being **budget constrained** does not prove bid is the binding control. Route a budget bottleneck to `budget-optimization` rather than treating it as bid-increase evidence.
+- Generic traffic or budget expansion space is insufficient by itself.
+- For a general scale question, route growth qualification through `growth-opportunity-finder`; historical average efficiency does not prove marginal profitability.
+- If the binding control is unresolved, hold the bid or propose a bounded experiment instead of presenting a bid increase as the causal answer.
