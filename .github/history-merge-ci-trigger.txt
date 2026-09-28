@@ -1,1 +1,0 @@
-Trigger required validation for history-only branch consolidation.
