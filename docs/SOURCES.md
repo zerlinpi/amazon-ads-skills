@@ -679,3 +679,28 @@ Stars/activity are point-in-time discovery context only.
 ### Adoption decision
 
 Keep the authoritative optimization event ledger self-contained and dependency-free. When `compare_measurement_composition.py` materially affects an `evaluated` or `corrected` outcome, preserve the repository-owned comparator identity, classification, changed fields, deterministic reasons, and baseline/post evidence snapshot IDs in `measurement_comparison`. This lets a later reviewer distinguish allocation drift from modeled-inclusion/grain incompatibility without re-inventing history. Null source identities remain unknown. No observability service, external trace backend, Amazon Ads write path, retry, idempotency, or reconciliation capability is added.
+
+
+## Action-example schema-parity review — 2026-09-28
+
+### Normative / primary evidence
+
+- JSON Schema 2020-12 documentation — schema validation constrains instance structure and data types; repository examples that are presented as copyable canonical payloads should therefore stay valid against the repository's declared schema. Source: https://json-schema.org/learn/getting-started-step-by-step
+- Amazon Ads Advanced Tools Center reporting documentation — retained as primary Amazon reporting/API context; no Amazon payload, schema, prose, or implementation is copied by this maintenance change. Source: https://advertising.amazon.com/API/docs/en-us/mcp/reporting
+
+Adoption boundary: this round fixes a repository-owned example/contract mismatch only. It does not change Amazon Ads metric semantics, add a connector, or grant write authority.
+
+### Incremental high-star / active project review
+
+Stars are discovery context only and can change.
+
+- `NVIDIA/SkillEvaluator` — 518 stars observed from GitHub on 2026-09-28; Apache-2.0; active through 2026-09-26; substantial tests/CI and explicit deterministic validation plus live skill evaluation. Adopted only the abstract principle that deterministic artifact contracts should gate examples and generated artifacts before live evaluation. Rejected as a dependency because the immediate gap is a tiny repository-local schema/example mismatch already covered by dependency-free unittest. No NVIDIA code, prompts, schemas, workflows, rubrics, or datasets copied.
+- `benchflow-ai/skillsbench` — ~1.8k stars observed from GitHub on 2026-09-28; Apache-2.0; active benchmark with verifier/oracle task structure and reproducible task validation. Useful corroboration for executable artifact checks. Rejected as a dependency because introducing a benchmark runner would not improve this scalar schema-parity regression. No task, verifier, Skill, dataset, schema, or workflow copied.
+- `google/agents-cli` — ~6.0k stars observed from GitHub on 2026-09-28; Apache-2.0; active through 2026-09-22; supports multiple coding-agent runtimes and carries schemas/skills/runtime packaging. Useful portability evidence, but its Google Cloud deployment/runtime surface is outside this repository's Amazon Ads decision-library boundary. No code, Skill, schema, runtime manifest, prompt, or workflow copied.
+- `evalstate/fast-agent` — high-star project discovered by the >500-star query; Apache-2.0 verified from the repository; active through 2026-09-27 with CI-backed MCP/agent/runtime work. Relevant to MCP/runtime interoperability, but not a better solution to the current example/schema mismatch. No code, shell contract, MCP implementation, prompt, schema, or workflow copied.
+
+Previously reviewed SkillSpector, Skill-Up, Microsoft Skills, OpenLineage/OpenMetadata/DataHub, Amazon Ads wrappers/MCP projects and evaluation frameworks were de-duplicated rather than counted again.
+
+### Adoption decision
+
+Keep the existing `schemas/optimization-action.json` numeric `confidence` contract and make the copyable action example conform to it. Add a deterministic repository test that parses action JSON blocks in `examples/README.md` and rejects scalar contract drift. This is narrower and safer than weakening the canonical schema or adding a third-party validation/evaluation dependency.
