@@ -89,6 +89,8 @@ Before any monetary arithmetic across Ads reports, retail/fee exports, cost syst
 - If currency treatment cannot be reconciled, classify monetary profitability as `Not Comparable` (or `Missing Data` when the required lineage itself is unavailable). Do not compute or claim `contribution_before_ads`, `break-even ACOS`, `profit_after_ads`, profit margin after ads, or cross-market monetary deltas from those unreconciled inputs.
 - A `Directional` observation may describe non-monetary or already comparable evidence, but it must not present unreconciled profit-after-ads or break-even ACOS as a numeric economic result.
 
+For structured optimization output, preserve this decision in `economic_eligibility` with a non-empty `reason`. Use `Eligible` only when the monetary inputs are verified comparable; use `Directional` only for evidence that remains legitimately directional without claiming unreconciled monetary profitability. If economic eligibility is `Not Comparable` or `Missing Data`, do not emit an action proposal from this Skill; return the blocked economic assessment and the evidence needed to resolve it instead.
+
 This is a measurement-comparability gate, not an FX engine and not authorization to mutate Amazon Ads.
 
 ## 计算
