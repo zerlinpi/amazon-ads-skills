@@ -198,3 +198,12 @@ This is especially important for account audits, query coverage claims, CTR/impr
 ## 10. Safety boundary
 
 This reference governs evidence coverage only. It does not authorize Amazon Ads writes. Any eventual mutation remains subject to the repository's `Read-only / Suggest / Shadow / Execute` boundary and an external authorized Connector/Executor.
+
+## Conversion Path Reporting top-path coverage
+
+When a Conversion Path report exposes only the **top 5** paths or another selected subset, treat that as bounded **population coverage**, not the full path population.
+
+- A path omitted from the selected subset is **not zero**.
+- Do not infer that unlisted paths do not exist.
+- Preserve the observed subset limit and report-generation context.
+- Do not claim whole-population ranking, shares, or exhaustive path composition unless full path population coverage is verified.
