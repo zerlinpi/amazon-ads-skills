@@ -113,7 +113,7 @@ This gate is additive to connector capability, sample sufficiency, retail state,
 满足多数条件：
 - 稳定优于目标；
 - 有足够样本；
-- 流量/预算存在扩量空间；
+- 有经证据验证的 auction exposure / bid-side marginal headroom，且 bid 是当前 binding control；
 - 库存允许；
 - 最近没有刚做大幅调整。
 
