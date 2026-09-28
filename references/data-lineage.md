@@ -341,3 +341,7 @@ When a material performance break or post-change lift aligns with unresolved sou
 ## 13. Safety boundary
 
 This reference governs evidence quality only. It does not authorize live Amazon Ads writes and does not require any private connector implementation.
+
+## Deduplicated reach and frequency
+
+For deduplicated reach/frequency semantics, load `deduplicated-reach-frequency.md`. These metrics are **non-additive** across overlapping time grains or scopes; missing coverage is unknown, not zero.
