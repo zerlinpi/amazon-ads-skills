@@ -88,7 +88,7 @@ amazon-ads-optimizer
     "target ACOS=30%",
     "orders=8"
   ],
-  "confidence": "directional",
+  "confidence": 0.60,
   "mode": "Suggest",
   "sizing_basis": "missing",
   "guardrails": ["do not invent a repository-global bid-change percentage"],
