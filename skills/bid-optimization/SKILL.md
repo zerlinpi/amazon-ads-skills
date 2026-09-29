@@ -50,7 +50,7 @@ This gate is additive to connector capability, sample sufficiency, retail state,
 
 - `../../references/action-sizing.md`
 
-当 recommendation 依赖 Amazon 当前 bidding-strategy 行为、平台自动 up/down 范围、placement/audience adjustment capability、rule eligibility，或 console/API 是否支持某个控制时，再加载：
+当 recommendation 依赖 Amazon 当前 bidding-strategy 行为、平台自动 up/down 范围、placement/audience/video adjustment capability、rule eligibility，或 console/API 是否支持某个控制时，再加载：
 
 - `../../references/platform-capability-lineage.md`
 
@@ -67,6 +67,7 @@ This gate is additive to connector capability, sample sufficiency, retail state,
 - CPC；
 - campaign bidding strategy；
 - placement modifiers；
+- current Sponsored Products video bid adjustment state when applicable；
 - 最近一次 bid 变更时间；
 - 日期范围和业务阶段。
 
@@ -93,7 +94,7 @@ This gate is additive to connector capability, sample sufficiency, retail state,
 
 这只是方向性/经济性基准，不能直接执行。必须：
 - 将 `raw_bid` 与最终 `proposed_value` 分开记录；
-- 检查 placement modifier 和 dynamic bidding；
+- 检查 placement modifier、video bid adjustment 和 dynamic bidding；
 - 检查业务阶段、历史变更和可逆性；
 - 只有账户策略、校准历史响应、实验设计或其他可信约束支持时才做数值 damping/截断；
 - 数值幅度按 `../../references/action-sizing.md`，不使用仓库级固定百分比。
@@ -136,7 +137,7 @@ This gate is additive to connector capability, sample sufficiency, retail state,
 
 ## 与 Placement 的关系
 
-如果 Top of Search modifier 很高，base bid 的实际竞价效果可能被放大。调整 bid 前读取 placement 数据；避免同时大幅改变 base bid 和 placement modifier，否则无法判断因果。
+如果 Top of Search modifier 或 Sponsored Products video bid adjustment 很高，base bid 的实际竞价效果可能被放大。调整 bid 前读取这些 material controls；避免同时大幅改变 base bid、placement modifier 或 video bid adjustment，否则无法判断因果。
 
 如果该判断依赖 Amazon 对 dynamic bidding、placement adjustment 或其他 bidding control 的当前精确规则，必须先按 `../../references/platform-capability-lineage.md` 确认 capability scope 与 conflict status。`Conflicted` / `Unknown` 的 exact platform rule 不得用于生成假精度 bid。
 
