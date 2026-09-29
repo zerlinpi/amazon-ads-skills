@@ -83,6 +83,7 @@ class ControlStateComparabilityTests(unittest.TestCase):
                 "bidding_strategy": "dynamic_down_only",
                 "placement_adjustment": {"top_of_search": 0, "product_pages": 0, "rest_of_search": 0},
                 "audience_bid_adjustment": [],
+                "video_bid_adjustment": 0,
                 "schedule_or_event_rule": {"schedule_rules": [], "event_rules": []},
                 "budget_or_pacing": {"base_average_daily_budget": base_budget, "effective_daily_budget": effective_budget, "active_budget_rules": [], "average_daily_budget_policy": "monthly_average_with_daily_flexibility"},
                 "targeting_or_routing": {"site_restriction": "ALL_ELIGIBLE"},
