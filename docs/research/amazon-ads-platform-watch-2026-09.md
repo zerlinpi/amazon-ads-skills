@@ -49,7 +49,7 @@ Decision implication:
 - when a video bid adjustment is active, it is a candidate material control rather than ordinary creative metadata;
 - video engagement metrics should not be mixed with click/conversion metrics without metric-semantic identity.
 
-This may justify a future extension to the material-control registry if current connector/account evidence proves that the video adjustment is exposed as an independently mutable control for the target decision surface. Do **not** add a permanent control type solely from a guide example.
+Promoted on 2026-09-29: Amazon's current Sponsored Products bidding help independently documents video as its own bid-adjustment control and states that it combines with other applicable modifiers. The canonical control-state schema/registry therefore treats `video_bid_adjustment` as material for Sponsored Products bid/budget causal review. Exact marketplace/category eligibility remains platform-capability evidence; missing connector support is not a zero boost.
 
 Sources:
 - https://advertising.amazon.com/library/guides/sponsored-products-video
