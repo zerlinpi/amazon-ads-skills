@@ -704,3 +704,17 @@ Previously reviewed SkillSpector, Skill-Up, Microsoft Skills, OpenLineage/OpenMe
 ### Adoption decision
 
 Keep the existing `schemas/optimization-action.json` numeric `confidence` contract and make the copyable action example conform to it. Add a deterministic repository test that parses action JSON blocks in `examples/README.md` and rejects scalar contract drift. This is narrower and safer than weakening the canonical schema or adding a third-party validation/evaluation dependency.
+
+## Sponsored Products video bid-control promotion — 2026-09-29
+
+### Amazon official evidence
+
+- Amazon Ads Help, **Adjust Sponsored Products bids**, updated 2026-09-23: documents a distinct Sponsored Products video bid adjustment and states that applicable video, audience, and placement adjustments combine when determining the final bid. Source: https://advertising.amazon.com/help/GYYZVM7LGSRYGWV5
+- Amazon Ads, **A complete guide to setting up Sponsored Products video**: documents a video-specific bid boost in Campaign Manager and states that the boost applies on top of other placement adjustments. Source: https://advertising.amazon.com/library/guides/sponsored-products-video
+
+Adoption boundary: only the independently rewritten decision-safety implication is adopted: `video_bid_adjustment` is a material configured control for Sponsored Products causal review when applicable. Amazon prose, examples, screenshots, API payloads, formulas, and implementation remain Amazon copyrighted material and were not copied. Marketplace/category eligibility remains capability evidence; unsupported or missing connector evidence is not treated as zero.
+
+### Incremental GitHub scan
+
+This round re-ran multiple Amazon Advertising API/PPC/MCP and Agent Skills/evaluation/security searches. High-adoption projects such as `denisneuf/python-amazon-ad-api`, `KuudoAI/amazon_ads_mcp`, `NVIDIA/SkillEvaluator`, `benchflow-ai/skillsbench`, `google/agents-cli`, and `evalstate/fast-agent` were re-discovered but are already reviewed in this repository. They were de-duplicated rather than counted as new evidence. No third-party code, prompt, schema, workflow, request template, runtime, or connector dependency was imported because Amazon's current official control semantics are the direct authority for this gap.
+
