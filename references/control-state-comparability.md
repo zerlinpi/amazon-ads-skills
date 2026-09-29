@@ -6,7 +6,7 @@ Measurement comparability is necessary but not sufficient for causal comparabili
 
 ## Control-state comparability gate
 
-For each decision-relevant window, capture when supported and relevant: base/default/target bid state; campaign bidding strategy; placement bid adjustments; audience bid adjustment state; schedule/event bid rules; campaign/portfolio/account budget and pacing controls; targeting/negative/routing state; experiment/treatment assignment; and effective timestamps for material control changes.
+For each decision-relevant window, capture when supported and relevant: base/default/target bid state; campaign bidding strategy; placement bid adjustments; audience bid adjustment state; Sponsored Products video bid adjustment state when applicable; schedule/event bid rules; campaign/portfolio/account budget and pacing controls; targeting/negative/routing state; experiment/treatment assignment; and effective timestamps for material control changes.
 
 When control evidence is exchanged between a Skill, connector, replay fixture, or reviewer, use `schemas/control-state-snapshot.json` as the machine-readable evidence envelope. A missing, unsupported, or stale control remains `unknown`; it must not be synthesized as zero, false, absent, or unchanged.
 
@@ -48,7 +48,16 @@ Optimization identity is type-bound as well as ID-bound. When `scope.entity_id` 
 
 When two schema-valid snapshots are available, `scripts/compare_control_state.py` provides a deterministic, read-only first-pass classification. It fails closed to `Unknown` for marketplace/profile mismatch, incomplete/unknown material-control coverage, unverified requirement provenance, missing/unknown/stale registry identity, unregistered decision surface, registry mismatch, required controls absent from either snapshot, changed expected-control sets or decision surfaces, stale/unsupported/unknown evidence, or changed controls without effective timestamps. With an explicitly named intended treatment, it returns `Treatment Isolated` only when that treatment changed inside a complete, registry-verified material-control set and no other evidenced material control changed; overlapping evidenced changes are `Confounded`. Without an intended treatment, stable evidenced controls are `Comparable` and changed controls are only `Directional`.
 
-Do not invent an auction-level composition formula from configured controls. Treat them as a control graph whose realized effect is observed through delivery, CPC, traffic mix, placement/audience mix, conversion, and economic outcomes.
+Do not invent an auction-level composition formula from configured controls. Treat them as a control graph whose realized effect is observed through delivery, CPC, traffic mix, placement/audience/video mix, conversion, and economic outcomes.
+
+## Sponsored Products video bid adjustment
+
+Amazon currently exposes a distinct Sponsored Products video bid adjustment that can combine with other bid modifiers. For registered Sponsored Products bid/budget causal surfaces, preserve `video_bid_adjustment` as a separate material control rather than folding it into placement or creative metadata.
+
+- A source-supported zero/no-boost state is different from missing or unsupported evidence.
+- Connector non-support, ineligible scope, or unknown availability must remain `Unknown`/partial coverage rather than being coerced to zero.
+- If video bid adjustment changes in the same comparison window as base bid, placement, audience, budget, or another intended treatment, treat the causal review as confounded unless an explicit design separates the effects.
+- Verify current marketplace/category/control availability through platform-capability lineage; the control registry records materiality, not universal eligibility.
 
 ## Sponsored Products budget-change state
 
@@ -74,7 +83,7 @@ The deterministic comparator applies this stronger structured-state check only t
 
 ## Causal rule
 
-A post-change or experiment conclusion must not be more causal than the weaker of measurement comparability and control-state comparability. If baseline and post-change windows differ in placement adjustment, audience bid adjustment, bidding strategy, schedule/event rule, budget/pacing state, or traffic-routing controls beyond the intended treatment, downgrade a single-control causal claim unless a valid design or reconciliation separates the effects.
+A post-change or experiment conclusion must not be more causal than the weaker of measurement comparability and control-state comparability. If baseline and post-change windows differ in placement adjustment, audience bid adjustment, video bid adjustment, bidding strategy, schedule/event rule, budget/pacing state, or traffic-routing controls beyond the intended treatment, downgrade a single-control causal claim unless a valid design or reconciliation separates the effects.
 
 ## Unified reporting boundary
 
