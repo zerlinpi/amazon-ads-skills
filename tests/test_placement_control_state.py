@@ -2,8 +2,8 @@ import unittest
 
 from scripts.compare_control_state import compare_control_state
 
-REGISTRY_ID = "control-requirements@2026-09-21"
-REQUIRED = ["base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing", "targeting_or_routing"]
+REGISTRY_ID = "control-requirements@2026-09-29"
+REQUIRED = ["base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "video_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing", "targeting_or_routing"]
 COMPLETE_COLLECTION = {"enumeration_status": "Complete", "pagination_status": "Complete", "capability_status": "Supported"}
 
 
@@ -13,6 +13,7 @@ def snapshot(base_bid, placement_state, bidding_strategy="dynamic_down_only"):
         "bidding_strategy": bidding_strategy,
         "placement_adjustment": placement_state,
         "audience_bid_adjustment": [],
+        "video_bid_adjustment": 0,
         "schedule_or_event_rule": {"schedule_rules": [], "event_rules": []},
         "budget_or_pacing": {"base_average_daily_budget": 100, "effective_daily_budget": 100, "active_budget_rules": [], "average_daily_budget_policy": "monthly_average_with_daily_flexibility"},
         "targeting_or_routing": {"site_restriction": "ALL_ELIGIBLE"},

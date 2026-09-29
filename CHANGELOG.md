@@ -2,6 +2,23 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.10.0 — 2026-09-29
+
+### Added
+
+- Canonical `video_bid_adjustment` material-control type for Sponsored Products causal review.
+- Deterministic regression proving that a concurrent Sponsored Products video boost change confounds a base-bid treatment rather than remaining `Treatment Isolated`.
+
+### Changed
+
+- Sponsored Products bid and budget control requirement sets now include source-supported video bid-adjustment state when applicable.
+- The versioned material-control registry advances to `control-requirements@2026-09-29`; older registry identities remain stale rather than silently inheriting the enlarged requirement set.
+- Bid, placement, and budget Skills now treat missing/changed Sponsored Products video bid state as part of the coupled-control causal gate.
+
+### Research
+
+- Re-verified Amazon Ads help updated 2026-09-23 and the Sponsored Products video guide. Both independently document video-specific bid adjustment and combination with other bid modifiers. Re-ran Amazon Ads/MCP/Agent Skills searches; already-reviewed projects were de-duplicated and no third-party implementation was imported.
+
 ## v1.9.0 — 2026-09-22
 
 ### Added

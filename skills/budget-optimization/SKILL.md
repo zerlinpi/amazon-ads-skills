@@ -42,6 +42,8 @@ When the question is whether a Sponsored Products budget change **worked**, whet
 
 For this causal surface, `budget_or_pacing` must distinguish the source-supported `base_average_daily_budget`, the `effective_daily_budget` that was actually in force for the comparison window, and `active_budget_rules`. If the connector cannot observe budget-rule state, keep material-control coverage `Partial/Unknown`; do not encode missing rule evidence as an empty list or unchanged state.
 
+For this registered surface, overlapping bid controls include placement, audience and Sponsored Products video bid adjustments when applicable; missing video-control evidence is not a zero boost or proof of ineligibility.
+
 Use `../../scripts/compare_control_state.py` only as a read-only evidence classifier. `Treatment Isolated` means the evidenced registered controls isolate the intended budget treatment; it does not prove incrementality or authorize another budget mutation.
 
 ## 核心原则
