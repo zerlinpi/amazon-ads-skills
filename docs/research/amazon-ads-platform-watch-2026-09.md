@@ -1,6 +1,6 @@
 # Amazon Ads platform watch — September 2026
 
-Reviewed: 2026-09-20
+Reviewed: 2026-09-30
 
 Purpose: keep fast-moving Amazon Ads surfaces visible to maintainers without copying volatile launch details into the 15 canonical Skills. A feature listed here is **not** automatically an optimization recommendation, eligibility guarantee, or permission to execute.
 
@@ -122,6 +122,21 @@ Current repository decision:
 
 Source:
 - https://advertising.amazon.com/library/news/amazon-ads-chat-gpt-advertising-integration
+
+## 9. Late-September platform updates
+
+Amazon announced three material platform developments on 2026-09-28 and 2026-09-29:
+
+- Natural-language analytics in Ads Agent is built on Unified Reporting and can answer performance and benchmark questions. Treat the conversational layer as an acquisition/interface path, not a new measurement authority; preserve report source, metric semantics, attribution identity, grain, date coverage and benchmark cohort.
+- Ads Agent expanded conversational planning, analysis and campaign optimization, including bid and budget recommendations. This does not change repository write boundaries; exact account/campaign/control availability remains capability evidence.
+- Sponsored Services launched for U.S. service providers with CPO bidding, outcome-oriented reporting and Unified API access planned for Q4 2026. Do not map Outcome to existing order/purchase/conversion semantics without an explicit metric contract, and do not treat missing webhook/CRM outcomes as zero without delivery/reconciliation evidence.
+
+Current repository decision: record these as integration/measurement evidence only. Do not add a sixteenth Skill or new canonical control IDs until stable API/report contracts expose a repeatable decision gap.
+
+Sources:
+- https://advertising.amazon.com/resources/whats-new/analytics
+- https://advertising.amazon.com/resources/whats-new/conversational-experience-amazon-ads-agent
+- https://advertising.amazon.com/resources/whats-new/sponsored-services-capture-demand-now
 
 ## Promotion rule
 
