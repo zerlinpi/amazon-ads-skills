@@ -138,6 +138,27 @@ Sources:
 - https://advertising.amazon.com/resources/whats-new/conversational-experience-amazon-ads-agent
 - https://advertising.amazon.com/resources/whats-new/sponsored-services-capture-demand-now
 
+## 10. Full-Funnel Campaigns and DVA+
+
+Amazon announced Full-Funnel Campaigns and DVA+ on 2026-09-29 as part of Amazon Ads Agent. Full-Funnel Campaigns uses one budget and one optimization engine across sponsored ads, display, video and streaming TV; Amazon states that its AI selects formats and reallocates budget across funnel stages in real time. Reporting adds Long-Term Sales (LTS), which includes immediate conversions plus estimated future value from new-to-brand customer actions over a 12-month horizon. DVA+ similarly combines previously separate display/video/audio buying surfaces and can place ads across Amazon properties and the open internet through platform-managed optimization.
+
+Decision implication:
+
+- shared optimization means a channel/format allocation can change without an advertiser making a channel-level budget edit; do not attribute a local before/after effect to one advertiser control when the platform optimizer can reallocate delivery;
+- LTS/Long-Term ROAS is not interchangeable with ordinary attributed sales/ROAS: preserve metric definition, modeled/estimated component, horizon, attribution identity, reporting generation and grain before comparison;
+- UI/Ads Agent availability does not prove API/MCP/Connector parity. Missing allocation, format, supply, targeting or control-state observability remains Partial/Unsupported/Unknown rather than zero or unchanged;
+- do not create a Full-Funnel/DVA+-specific canonical Skill or control type until stable API/report contracts expose a repeatable decision surface that the existing realization/control/measurement contracts cannot represent.
+
+Existing repository coverage:
+- measurement comparability and modeled-vs-observed lineage;
+- control-state comparability and platform-managed realization confounders;
+- connector/platform capability lineage and fail-closed missing-evidence semantics.
+
+Sources:
+- https://advertising.amazon.com/resources/whats-new/full-funnel-campaigns-from-discovery-to-sales
+- https://advertising.amazon.com/en-us/library/news/amazon-ads-agent/
+
+
 ## Promotion rule
 
 A platform update moves from this watch file into a canonical Skill/reference/registry only when at least one of these is true:
