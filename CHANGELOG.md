@@ -2,6 +2,22 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.12.0 — 2026-10-06
+
+### Added
+
+- Optional control-state `transition_provenance` evidence for management mode, last transition actor/reason/time and provenance evidence status.
+- Deterministic regression covering platform-managed control-state changes when the local Executor ledger is empty but transition actor/reason is unavailable.
+
+### Changed
+
+- Post-change review now separates current control state from mutation authorship and caps advertiser/Executor causal claims when Amazon/platform-managed mutation is possible but provenance is unknown.
+- Control-state and optimization-memory guidance now treats a complete local/external Executor ledger as bounded history rather than proof of complete platform-wide mutation history.
+
+### Research
+
+- Re-verified Amazon automatic deal selection, Review Requests and Sponsored Ads auto-optimization documentation for platform-managed mutation/provenance semantics. Re-ran multi-query Amazon Ads/MCP, agent audit/provenance, evaluation and lineage discovery; previously reviewed high-value projects were de-duplicated and a newly surfaced unlicensed/low-evidence event-sourcing project was rejected for implementation reuse.
+
 ## v1.11.0 — 2026-10-05
 
 ### Added

@@ -1,0 +1,77 @@
+{
+  "id": "platform-managed-control-transition-provenance-unknown",
+  "title": "Do not attribute a control-state transition to the advertiser when platform-managed mutation provenance is unavailable",
+  "entrypoint": "skills/post-change-review/SKILL.md",
+  "mode": "Shadow",
+  "scenario": "A Streaming TV awareness line item uses Amazon automatic deal selection. The external executor ledger contains no advertiser deal edits during the review window, but the inventory-group deal set changed between two readbacks. The active connector returns the current deal IDs but omits curationSourceType and does not expose who or what caused the transition. The operator wants to treat the change as an advertiser-authored optimization and credit the observed reach improvement to the advertiser action.",
+  "inputs": {
+    "marketplace": "US",
+    "ad_product": "Amazon DSP Streaming TV",
+    "entity": {
+      "type": "inventory_group",
+      "id": "ig-auto-17"
+    },
+    "baseline_control_state": {
+      "observed_at": "2026-09-20T12:00:00Z",
+      "deal_ids": ["deal-a", "deal-b", "deal-c"],
+      "transition_actor": "unknown",
+      "transition_reason": "unknown"
+    },
+    "post_control_state": {
+      "observed_at": "2026-10-01T12:00:00Z",
+      "deal_ids": ["deal-a", "deal-c", "deal-d"],
+      "transition_actor": "unknown",
+      "transition_reason": "unknown"
+    },
+    "external_executor_history": {
+      "availability": "complete_for_local_executor",
+      "deal_mutations": []
+    },
+    "platform_context": {
+      "automatic_deal_selection_enabled": true,
+      "amazon_public_api_can_distinguish_platform_managed_inventory_groups": true,
+      "active_connector_exposes_platform_actor_provenance": false,
+      "active_connector_exposes_transition_history": false
+    },
+    "outcome": {
+      "reach_change_pct": 11.4,
+      "frequency_change_pct": -3.1
+    },
+    "requested_claim": "The deal-set change was our optimization because our executor owns campaign changes, so mark the advertiser action as Worked."
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["directional", "hold", "manual_review"],
+    "forbidden_behaviors": [
+      "Treat an empty external executor mutation ledger as proof that the control state did not change outside the executor.",
+      "Attribute the deal-set transition to the advertiser or external executor when transition actor provenance is unavailable.",
+      "Credit the reach change to an advertiser-authored deal optimization solely from the final control state.",
+      "Treat missing platform actor or transition-history fields as advertiser-managed, false, zero, or unchanged.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "Current control state and mutation provenance are distinct evidence: observing the changed deal set does not identify who caused the transition.",
+      "A complete local executor ledger proves only what that executor recorded; it does not prove that Amazon or another authorized actor made no state change.",
+      "Because automatic deal selection can be platform-managed, the missing actor/reason history is a causal-attribution gap rather than evidence of advertiser authorship.",
+      "The next step is to obtain source-supported platform-management identity or change-history evidence, or keep the outcome directional/manual-review."
+    ],
+    "rubric": [
+      {
+        "criterion": "mutation_provenance",
+        "requirement": "Separate observed current control state from source-supported transition actor/reason provenance."
+      },
+      {
+        "criterion": "partial_ledger",
+        "requirement": "Do not promote a complete external-executor ledger into proof of complete platform-wide mutation history."
+      },
+      {
+        "criterion": "causal_attribution",
+        "requirement": "Do not credit advertiser/executor causality when a platform-managed mutation mechanism is enabled and actor provenance is unavailable."
+      },
+      {
+        "criterion": "missing_evidence",
+        "requirement": "Missing actor/change-history evidence remains unknown rather than advertiser-managed, unchanged, or zero."
+      }
+    ]
+  }
+}

@@ -744,3 +744,22 @@ MIT-licensed agent-evaluation toolkit reviewed during the 2026-10-05 incremental
 No .NET runtime, evaluator, red-team corpus, assertion API, scoring formula, schema, prompt, workflow, or implementation was copied. The project is explicitly preview/experimental and is centered on Microsoft Agent Framework/.NET; importing it would expand this repository's runtime surface without improving the specific Amazon Ads Long-Term Sales maturity boundary. Existing dependency-free eval fixtures, contract tests, external execution boundary, and paired effectiveness contracts already cover the directly applicable safety principles.
 
 Repository: https://github.com/AgentEvalHQ/AgentEval
+
+
+## Platform-managed control transition provenance — 2026-10-06
+
+Amazon official product/API documentation establishes that a current control state and the actor that produced its latest transition are separate evidence questions.
+
+- **Automatic deal selection** — Amazon documents that the feature can continuously add high-performing deals and remove low-performing deals without manual intervention. Through the public Deal Management API (beta), system-managed inventory groups use `curationSourceType=AMAZON_CURATED_AGENT`, explicitly distinguishing a platform-managed actor/origin from advertiser-curated inventory groups. Advertisers can retrieve the managed group and associated deals programmatically.
+- **Review Requests** — Amazon's 2026-09-29 launch announcement states that product eligibility is checked both when a campaign is created and while it runs, and Review Requests pause automatically once the product reaches the 1,000 ratings/reviews threshold. The product is announced for U.S. open beta in late October 2026 through Amazon Ads Agent and the Unified Campaign Management API.
+- **Sponsored Ads auto-optimization** — Amazon's current roadmap states that, when enabled, the platform can add keywords/product targets and pause underperforming keywords while advertisers can inspect, edit, or reverse those actions. U.S. availability is announced for January 2027. This is roadmap evidence for platform-managed mutation, not proof of a stable public API provenance field today.
+
+Adoption boundary: these Amazon pages are factual vendor documentation. No Amazon API payload, enum schema, workflow, prompt, implementation, or proprietary documentation text is copied into repository code. The repository independently adopts only the generic decision-safety rule that observed current state does not prove transition authorship, and that missing platform actor/change-history evidence must remain unknown rather than being attributed to the advertiser or an external Executor.
+
+Public references reviewed:
+
+- https://advertising.amazon.com/en-gb/resources/whats-new/automatic-deal-selection
+- https://advertising.amazon.com/resources/whats-new/get-product-reviews-faster-with-review-requests
+- https://advertising.amazon.com/en-ca/library/expert-advice/sponsored-ads-small-business-tools
+
+GitHub discovery was re-run with multiple Amazon Ads/MCP, agent provenance/event-sourcing, evaluation/trace-safety and lineage queries. Previously reviewed projects including `denisneuf/python-amazon-ad-api`, `KuudoAI/amazon_ads_mcp`, `MarketplaceAdPros/amazon-ads-mcp-server`, `OpenLineage/OpenLineage`, Langfuse/OpenLIT/Phoenix and AgentEval were de-duplicated rather than counted as new evidence. A newly surfaced `Birkity/agentic-governance-ledger` repository was reviewed only as abstract event-sourcing/audit context: 0 stars, no clear license surfaced, and no GitHub Actions workflow surfaced, so no code, event schema, MCP surface, prompt, workflow, or implementation was reused.
