@@ -73,6 +73,26 @@ When lineage matters, capture when available:
 
 Missing lineage is not proof that two sources are equivalent.
 
+### Modeled/projected outcomes vs realized outcomes
+
+When a metric includes modeled or projected future value, preserve that evidence class separately from realized observations even when both use the same currency/unit. Capture when available:
+
+- `evidence_type` — for example `modeled_estimate`, `projected_future_value`, or `realized_observation`;
+- `estimate_horizon` and `estimate_as_of`;
+- model/semantic identity and version when the source exposes them;
+- `realized_through` and realized-outcome maturity for the validating observation;
+- revision/backfill state when either estimate or realized history can restate.
+
+For Amazon Long-Term Sales specifically, the projected future component is not sales already realized through the review date. Accumulated/realized sales can validate the estimate over time, but later realization must not retroactively rewrite the earlier estimate as an observation that was already known.
+
+Therefore:
+
+- modeled/projected estimate ≠ realized outcome;
+- immature/unavailable/unsupported realized evidence ≠ zero;
+- matching units or display labels ≠ comparable evidence type;
+- do not concatenate estimate and realized observations into one continuous series without an explicit source contract proving semantic comparability;
+- do not promote an action to `Worked` or size another scale-up from a long-horizon estimate alone when realized evidence is not sufficiently mature and comparable.
+
 ### Product availability vs active-channel availability
 
 Keep these questions separate:

@@ -73,6 +73,7 @@ Gather what is available and label missing fields:
 - current trusted state or post-change export;
 - comparable pre-change performance window;
 - source/snapshot metadata when baseline and post windows differ in extraction, semantic version, completeness or backfill maturity;
+- when an outcome metric contains modeled/projected future value (for example Long-Term Sales), its `evidence_type`, estimate horizon, `estimate_as_of`, model identity/version when exposed, and a separate realized-outcome `realized_through` / maturity state when available;
 - baseline/post measurement composition when conversion metrics may include modeled attribution, including modeled/direct split availability, allocation coverage, Unallocated-row presence and allocation grain;
 - material control state/timestamps for baseline and post-change windows when causal attribution matters;
 - realized surface/product/creative identity when the ad product can vary it during the evaluation window;
@@ -83,7 +84,7 @@ Gather what is available and label missing fields:
 1. **Readback first** — verify whether the intended advertiser control is actually present.
 2. Classify application as `Confirmed`, `Partial`, `Not Applied`, `Drifted`, or `Unknown`.
 3. **Objective-lineage gate** — preserve the action-time campaign objective and compare it with the current campaign objective. If they differ, record objective drift; do not retroactively replace the historical success metric or guardrails with the current objective.
-4. **Measurement gate** — require completed, attribution-mature, definitionally comparable windows; when history can restate, verify baseline/post backfill parity before outcome attribution. When modeled conversion or lower-grain allocation can matter, compare baseline/post measurement composition with `compare_measurement_composition.py` when machine-readable states exist. Treat `Directional`, `Not Comparable`, or `Unknown` as unresolved measurement comparability rather than action effect.
+4. **Measurement gate** — require completed, attribution-mature, definitionally comparable windows; when history can restate, verify baseline/post backfill parity before outcome attribution. Keep modeled/projected future-value evidence separate from realized outcomes: a Long-Term Sales estimate may support directional learning, but it is not sales already realized through the review date. If the realized/Accumulated Sales counterpart is immature, unavailable, unsupported, or unknown, preserve that state rather than imputing zero or promoting the action to `Worked` from the estimate alone. When modeled conversion or lower-grain allocation can matter, compare baseline/post measurement composition with `compare_measurement_composition.py` when machine-readable states exist. Treat `Directional`, `Not Comparable`, or `Unknown` as unresolved measurement comparability rather than action effect.
 5. **Control-state comparability gate when causal attribution matters** — reconstruct material advertiser-control state across baseline and post-change windows. If overlapping changes can explain the effect, cap the single-control conclusion at `Directional` / `Confounded` / `Unknown` rather than calling the intended action causal.
 6. **Realization gate when relevant** — verify whether platform-managed surface/product/creative realization stayed sufficiently comparable. A confirmed control readback does not prove stable realized ad identity.
 7. Compare the post-change metrics to the best available baseline and to the expected mechanism.
@@ -101,6 +102,8 @@ Gather what is available and label missing fields:
 - `current campaign objective != action-time campaign objective` after objective drift; historical outcome review and future optimization intent are separate questions.
 - Do not retroactively re-score a prior action under a later campaign objective or infer a missing action-time objective from current performance.
 - Never call an action failed merely because early attributed orders have not matured.
+- Never treat modeled/projected long-horizon sales as already-realized sales. Do not splice Long-Term Sales estimates and realized/Accumulated Sales into one continuous metric series unless the source contract explicitly establishes comparable semantics.
+- A high modeled long-term estimate alone does not justify `Worked` / `Likely Worked` or another scale-up. Until realized evidence is sufficiently mature and comparable, keep the conclusion directional, hold, or manual-review as appropriate.
 - Never call an action worked when baseline and post windows use materially different semantic definitions, asymmetric backfill maturity, or material unresolved measurement composition / allocation coverage.
 - Never treat disappearance of `Unallocated` rows as proof that a target/query/placement improved; lower-grain allocation movement is not shopper-demand evidence.
 - If composition drift is material, cap affected causal outcome classification at `Inconclusive` / directional review until reconciled.

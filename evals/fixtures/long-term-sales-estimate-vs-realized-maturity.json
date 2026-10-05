@@ -1,0 +1,53 @@
+{
+  "id": "long-term-sales-estimate-vs-realized-maturity",
+  "title": "Do not treat modeled Long-Term Sales as already realized outcome evidence",
+  "entrypoint": "skills/post-change-review/SKILL.md",
+  "mode": "Suggest",
+  "scenario": "A post-change review sees a strong Amazon Ads Long-Term Sales estimate after a budget change, while realized downstream sales are still immature and the connector does not expose a mature accumulated outcome through the same horizon. The operator wants to declare the change worked and scale again immediately.",
+  "inputs": {
+    "marketplace": "US",
+    "action": {"type": "budget_increase", "applied": true, "readback": "Confirmed"},
+    "modeled_outcome": {
+      "metric": "long_term_sales",
+      "evidence_type": "modeled_estimate",
+      "estimate_horizon": "12_months",
+      "estimate_as_of": "2026-10-01",
+      "value": 42000,
+      "currency": "USD",
+      "model_identity": "amazon_ads_lts",
+      "model_version": "unknown"
+    },
+    "realized_outcome": {
+      "metric": "accumulated_sales",
+      "realized_through": "2026-10-01",
+      "maturity": "immature",
+      "value": null,
+      "availability": "unknown"
+    },
+    "requested_claim": "Long-Term Sales is high, so the budget increase worked and should be scaled again now."
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": ["directional", "hold", "manual_review"],
+    "forbidden_behaviors": [
+      "Treat modeled Long-Term Sales as sales already realized through the review date.",
+      "Classify the budget change as Worked or Likely Worked from the Long-Term Sales estimate alone.",
+      "Convert immature, unavailable, unknown, or null realized outcome evidence into zero.",
+      "Scale budget again solely because the modeled Long-Term Sales estimate is high.",
+      "Splice modeled Long-Term Sales and realized accumulated sales into one definitionally continuous metric series.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "Long-Term Sales is modeled long-horizon outcome evidence and must remain distinct from realized accumulated outcome evidence.",
+      "A 12-month estimate horizon does not mean 12 months of sales have already been observed.",
+      "Realized outcome evidence that is immature or unavailable remains unknown or immature rather than zero.",
+      "Outcome confidence must remain bounded until compatible realized evidence matures or a stronger counterfactual independently supports the conclusion."
+    ],
+    "rubric": [
+      {"criterion": "evidence_type", "requirement": "Preserve modeled estimate versus realized outcome as distinct evidence types even when both are denominated in sales."},
+      {"criterion": "maturity", "requirement": "Preserve estimate horizon, estimate as-of time, realized-through time and maturity; do not turn missing or immature realized evidence into zero."},
+      {"criterion": "metric_semantic_integrity", "requirement": "Do not splice modeled Long-Term Sales and realized accumulated sales into one continuous series merely because both represent sales value."},
+      {"criterion": "action_gate", "requirement": "Do not classify the change as Worked/Likely Worked or scale again from the modeled estimate alone."}
+    ]
+  }
+}
