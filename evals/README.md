@@ -142,6 +142,7 @@ python scripts/validate_evals.py .
 - `executor-retry-idempotency.json` — blocks blind replay of an ambiguous write without trusted readback or deduplication evidence.
 - `safe-retry-with-idempotency-key.json` — distinguishes a connector-level retry of the same stable intent under an explicit idempotency contract from a new mutation; application still remains unconfirmed until reconciliation/readback.
 - `readback-intended-state-disagreement.json` — requires reconciliation when trusted current state differs from the intended mutation despite an earlier executor success acknowledgement.
+- `platform-managed-control-transition-provenance-unknown.json` — prevents a changed final control state plus an empty local Executor ledger from being misread as advertiser authorship when Amazon/platform-managed mutation is possible and transition actor/reason provenance is unavailable.
 
 ### Retail and event-confounder safety
 
