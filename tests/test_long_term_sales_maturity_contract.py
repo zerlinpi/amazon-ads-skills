@@ -13,7 +13,7 @@ class LongTermSalesMaturityContractTests(unittest.TestCase):
         skill = (ROOT / "skills/post-change-review/SKILL.md").read_text(encoding="utf-8")
         lineage = (ROOT / "references/data-lineage.md").read_text(encoding="utf-8")
 
-        forbidden = " ".join(fixture["expected_result"]["forbidden_behaviors"]).lower()
+        forbidden = " ".join(fixture["expected"]["forbidden_behaviors"]).lower()
         self.assertIn("long-term sales", forbidden)
         self.assertIn("realized", forbidden)
         self.assertIn("modeled/projected long-horizon sales", skill)
