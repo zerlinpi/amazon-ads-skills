@@ -86,18 +86,20 @@ Gather what is available and label missing fields:
 3. **Objective-lineage gate** — preserve the action-time campaign objective and compare it with the current campaign objective. If they differ, record objective drift; do not retroactively replace the historical success metric or guardrails with the current objective.
 4. **Measurement gate** — require completed, attribution-mature, definitionally comparable windows; when history can restate, verify baseline/post backfill parity before outcome attribution. Keep modeled/projected future-value evidence separate from realized outcomes: a Long-Term Sales estimate may support directional learning, but it is not sales already realized through the review date. If the realized/Accumulated Sales counterpart is immature, unavailable, unsupported, or unknown, preserve that state rather than imputing zero or promoting the action to `Worked` from the estimate alone. When modeled conversion or lower-grain allocation can matter, compare baseline/post measurement composition with `compare_measurement_composition.py` when machine-readable states exist. Treat `Directional`, `Not Comparable`, or `Unknown` as unresolved measurement comparability rather than action effect.
 5. **Control-state comparability gate when causal attribution matters** — reconstruct material advertiser-control state across baseline and post-change windows. If overlapping changes can explain the effect, cap the single-control conclusion at `Directional` / `Confounded` / `Unknown` rather than calling the intended action causal.
-6. **Realization gate when relevant** — verify whether platform-managed surface/product/creative realization stayed sufficiently comparable. A confirmed control readback does not prove stable realized ad identity.
-7. Compare the post-change metrics to the best available baseline and to the expected mechanism.
-8. Separate delivery effects from downstream conversion/profit effects.
-9. Check retail, market, concurrent-control, platform-managed-realization and measurement confounders.
-10. Classify the outcome using the detailed reference.
-11. Recommend `Keep`, `Keep Monitoring`, `Rollback Candidate`, `Follow-up Experiment`, `Fix Application`, or `Manual Review`.
-12. Never execute rollback; any mutation remains external and explicitly authorized.
+6. **Mutation-provenance gate when platform-managed state changes are possible** — keep the observed control state separate from who caused its latest transition. A complete local/external Executor ledger proves only that Executor's history. If platform-management mode, transition actor, or transition reason is unavailable/unsupported/unknown, do not attribute the state change to the advertiser or Executor; cap authorship-dependent causal claims at directional/manual review until source-supported provenance or change history resolves it.
+7. **Realization gate when relevant** — verify whether platform-managed surface/product/creative realization stayed sufficiently comparable. A confirmed control readback does not prove stable realized ad identity.
+8. Compare the post-change metrics to the best available baseline and to the expected mechanism.
+9. Separate delivery effects from downstream conversion/profit effects.
+10. Check retail, market, concurrent-control, platform-managed-realization and measurement confounders.
+11. Classify the outcome using the detailed reference.
+12. Recommend `Keep`, `Keep Monitoring`, `Rollback Candidate`, `Follow-up Experiment`, `Fix Application`, or `Manual Review`.
+13. Never execute rollback; any mutation remains external and explicitly authorized.
 
 ## Key rules
 
 - `proposed != applied != readback confirmed != worked`.
 - `measurement comparable != control-state comparable`; a clean metric series does not isolate the intended action when another material control changed.
+- `current control state != transition provenance`; observing a state change does not identify whether the advertiser, an external Executor, Amazon automation, or another authorized actor caused it.
 - `readback confirmed != stable realized ad identity` when Amazon can dynamically select surfaces, products, creative/message, or another shopper-visible realization.
 - `current campaign objective != action-time campaign objective` after objective drift; historical outcome review and future optimization intent are separate questions.
 - Do not retroactively re-score a prior action under a later campaign objective or infer a missing action-time objective from current performance.
