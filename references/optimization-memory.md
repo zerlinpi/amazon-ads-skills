@@ -112,7 +112,7 @@ If realization comparability is Directional, Not Comparable, or Unknown, do not 
 
 ## Partial-memory warnings
 
-Expose incomplete-history conditions such as local-only history, external executor history unavailable, missing readback, unknown write result, event gap, identity-scope ambiguity, account-identity mapping unavailable, migration mapping partial, historical evidence restated, retired/deleted historical source, or realization comparability unresolved. Never treat a partial ledger as complete account history.
+Expose incomplete-history conditions such as local-only history, external executor history unavailable, platform-managed mutation history unavailable, missing transition actor/reason, missing readback, unknown write result, event gap, identity-scope ambiguity, account-identity mapping unavailable, migration mapping partial, historical evidence restated, retired/deleted historical source, or realization comparability unresolved. Never treat a partial ledger as complete account history. In particular, a complete local/external Executor ledger is not proof that Amazon automation or another authorized actor made no state transition.
 
 ## Retrieval order
 
