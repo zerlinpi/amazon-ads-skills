@@ -2,6 +2,22 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.11.0 — 2026-10-05
+
+### Added
+
+- Deterministic Long-Term Sales maturity regression covering modeled/projected estimate evidence versus realized/Accumulated Sales outcome evidence.
+- Contract test locking the estimate-vs-realized evidence boundary across the post-change Skill, replay fixture and shared lineage guidance.
+
+### Changed
+
+- Post-change review now keeps Long-Term Sales projections separate from realized sales and forbids promoting an action to `Worked` / `Likely Worked` or scaling again from the long-horizon estimate alone when realized evidence is immature, unavailable, unsupported or unknown.
+- Shared data-lineage guidance now preserves evidence type, estimate horizon/as-of, model identity/version when exposed, realized-through/maturity and revision/backfill state for modeled/projected outcomes.
+
+### Research
+
+- Re-verified Amazon official Long-Term Sales, campaign reporting and 2026-09-30 AI-measurement guidance. Amazon vendor documentation informed only factual metric semantics and the independently rewritten decision-safety boundary; no Amazon code, schema, prompt, workflow or proprietary implementation was copied.
+
 ## v1.10.0 — 2026-09-29
 
 ### Added
