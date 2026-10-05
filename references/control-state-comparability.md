@@ -81,6 +81,23 @@ The deterministic comparator applies this stronger structured-state check only t
 
 `Unknown` is not unchanged state. Missing connector support is not evidence that a control was absent.
 
+## Control state is not transition provenance
+
+A source-supported current control value proves the observed state, not who caused the latest transition. This distinction is material when Amazon can manage, curate, pause, add, remove, or otherwise change a decision-relevant state without a matching advertiser or external-Executor write.
+
+When the source exposes it, preserve the optional `transition_provenance` block from `schemas/control-state-snapshot.json`:
+
+- `management_mode` — `advertiser_managed`, `platform_managed`, `hybrid`, or safe `unknown`;
+- `last_transition_actor` — source-supported advertiser, external Executor, Amazon platform, other authorized actor, or `unknown`;
+- `transition_reason` and `transition_observed_at` when explicitly exposed;
+- `actor_evidence_status` — observed/derived/unsupported/unknown.
+
+Do not infer missing provenance from the final state, an empty local change ledger, a successful prior readback, or the absence of a connector-visible write. A complete Executor ledger proves only the writes represented by that Executor; it is not proof of complete platform-wide mutation history.
+
+Amazon currently provides a concrete provenance precedent in automatic deal selection: platform-managed inventory groups can be identified with `curationSourceType=AMAZON_CURATED_AGENT`. Amazon also documents product surfaces whose eligibility can automatically alter lifecycle state, including Review Requests auto-pausing at its review threshold. These are product-specific examples of the generic rule; do not assume the same field or behavior exists for every Amazon Ads product.
+
+If a causal conclusion depends on who changed a control and actor/reason provenance is unavailable, keep authorship `Unknown` and downgrade the dependent single-action claim to Directional/Hold/Manual Review as appropriate. State comparability and transition authorship are separate questions: two snapshots can prove that state changed while still failing to prove who changed it.
+
 ## Causal rule
 
 A post-change or experiment conclusion must not be more causal than the weaker of measurement comparability and control-state comparability. If baseline and post-change windows differ in placement adjustment, audience bid adjustment, video bid adjustment, bidding strategy, schedule/event rule, budget/pacing state, or traffic-routing controls beyond the intended treatment, downgrade a single-control causal claim unless a valid design or reconciliation separates the effects.
