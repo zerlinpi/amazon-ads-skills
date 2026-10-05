@@ -102,6 +102,8 @@ Gather what is available and label missing fields:
 - `current campaign objective != action-time campaign objective` after objective drift; historical outcome review and future optimization intent are separate questions.
 - Do not retroactively re-score a prior action under a later campaign objective or infer a missing action-time objective from current performance.
 - Never call an action failed merely because early attributed orders have not matured.
+- Never treat modeled/projected long-horizon sales as already-realized sales. Do not splice Long-Term Sales estimates and realized/Accumulated Sales into one continuous metric series unless the source contract explicitly establishes comparable semantics.
+- A high modeled long-term estimate alone does not justify `Worked` / `Likely Worked` or another scale-up. Until realized evidence is sufficiently mature and comparable, keep the conclusion directional, hold, or manual-review as appropriate.
 - Never call an action worked when baseline and post windows use materially different semantic definitions, asymmetric backfill maturity, or material unresolved measurement composition / allocation coverage.
 - Never treat disappearance of `Unallocated` rows as proof that a target/query/placement improved; lower-grain allocation movement is not shopper-demand evidence.
 - If composition drift is material, cap affected causal outcome classification at `Inconclusive` / directional review until reconciled.
