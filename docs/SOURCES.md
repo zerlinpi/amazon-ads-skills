@@ -718,3 +718,20 @@ Adoption boundary: only the independently rewritten decision-safety implication 
 
 This round re-ran multiple Amazon Advertising API/PPC/MCP and Agent Skills/evaluation/security searches. High-adoption projects such as `denisneuf/python-amazon-ad-api`, `KuudoAI/amazon_ads_mcp`, `NVIDIA/SkillEvaluator`, `benchflow-ai/skillsbench`, `google/agents-cli`, and `evalstate/fast-agent` were re-discovered but are already reviewed in this repository. They were de-duplicated rather than counted as new evidence. No third-party code, prompt, schema, workflow, request template, runtime, or connector dependency was imported because Amazon's current official control semantics are the direct authority for this gap.
 
+
+
+## Long-Term Sales estimate vs realized maturity — 2026-10-05
+
+Amazon official measurement documentation was reviewed for the evidence boundary between modeled/projected long-horizon value and realized outcomes.
+
+- **Long-term sales launch documentation** defines LTS/LTS ROAS as ad-attributed measures that estimate incremental sales value expected over the next 12 months from new-to-brand engagement, based on historical 12-month return patterns.
+- **Measurement in AI-driven advertising**, published 2026-09-30, states that Long-Term Sales estimates 12-month campaign sales impact and that Accumulated Sales validates those estimates over time against actual sales.
+- Current **campaign reporting** documentation likewise describes long-term sales as immediate sales plus projected value from customer engagement over the next 12 months.
+
+Adoption boundary: Amazon pages are vendor documentation, not open-source implementation material. No Amazon prose, API payload, schema, prompt, workflow, or proprietary implementation is copied. The repository independently adopts only the decision-safety invariant that a modeled/projected estimate is a different evidence class from a realized observation; unavailable or immature realized evidence is not zero, and a long-horizon estimate alone cannot prove a post-change action worked.
+
+Public references reviewed:
+
+- https://advertising.amazon.com/resources/whats-new/long-term-sales
+- https://advertising.amazon.com/en-gb/library/expert-advice/ai-measurement-advertising
+- https://advertising.amazon.com/measurement-analytics/campaign-reporting
