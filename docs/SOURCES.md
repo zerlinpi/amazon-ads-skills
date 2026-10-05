@@ -735,3 +735,12 @@ Public references reviewed:
 - https://advertising.amazon.com/resources/whats-new/long-term-sales
 - https://advertising.amazon.com/en-gb/library/expert-advice/ai-measurement-advertising
 - https://advertising.amazon.com/measurement-analytics/campaign-reporting
+
+
+### AgentEvalHQ/AgentEval
+
+MIT-licensed agent-evaluation toolkit reviewed during the 2026-10-05 incremental scan. Approximately 154 stars were observed, the repository was actively updated on 2026-10-05, and it exposes substantial CI/security/calibration workflow evidence. Relevant generic ideas include deterministic tool-chain assertions, explicit side-effect/confirmation gates, stochastic reliability measurement, and separating execution traces from evaluation claims.
+
+No .NET runtime, evaluator, red-team corpus, assertion API, scoring formula, schema, prompt, workflow, or implementation was copied. The project is explicitly preview/experimental and is centered on Microsoft Agent Framework/.NET; importing it would expand this repository's runtime surface without improving the specific Amazon Ads Long-Term Sales maturity boundary. Existing dependency-free eval fixtures, contract tests, external execution boundary, and paired effectiveness contracts already cover the directly applicable safety principles.
+
+Repository: https://github.com/AgentEvalHQ/AgentEval
