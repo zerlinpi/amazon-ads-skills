@@ -2,6 +2,18 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.13.0 — 2026-10-09
+
+### Added
+- Task-scoped, canonical `required_transition_provenance_fields` on the existing entity-state-readback capability. The capability gate now blocks actor-dependent claims when the active connector cannot prove source-supported coverage for every required transition provenance dimension.
+- Deterministic RED→GREEN unit tests for missing, partial, and verified provenance capability evidence, plus resolver preservation and invalid-scope rejection.
+
+### Changed
+- Post-change review and shared connector/control-state references distinguish source-observability preflight from event-time actor proof. Empty local change history and a Supported current-state readback are no longer considered sufficient to assign mutation authorship.
+
+### Research
+- Reviewed Amazon official automatic deal selection and the Amazon-owned MIT-0 advanced-tools repository; distinguished maintainer change-history guidance from an unresolved user-reported missing-event issue. No third-party code, schemas, prompts or workflows reused.
+
 ## v1.12.0 — 2026-10-06
 
 ### Added
