@@ -35,7 +35,7 @@ def _stream_reconciliation_status(payload: dict[str, Any]) -> str:
         raise ValueError("stream_record_reconciliation must be an object or null")
     for field in ("record_identity_coverage", "highest_version_per_record"):
         state = evidence.get(field, "Unknown")
-        if state not in STREAM_EVIDENCE_STATES or not isinstance(state, str):
+        if not isinstance(state, str) or state not in STREAM_EVIDENCE_STATES:
             raise ValueError(
                 f"stream_record_reconciliation.{field} must be one of "
                 f"{sorted(STREAM_EVIDENCE_STATES)}"
