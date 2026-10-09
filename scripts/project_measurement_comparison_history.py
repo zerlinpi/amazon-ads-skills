@@ -1,6 +1,8 @@
 """Project the latest effective measurement-comparison audit for one entity."""
 
 from copy import deepcopy
+from datetime import datetime, timezone
+import re
 
 
 _REQUIRED_AUDIT_FIELDS = (
@@ -24,7 +26,22 @@ def _scope_key(event):
 
 
 def _timestamp(event):
-    return event.get("timestamp") or ""
+    """Order audit evidence by UTC instant, never by RFC3339 display text."""
+    value = event.get("timestamp")
+    if (
+        not isinstance(value, str)
+        or not re.fullmatch(
+            r"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})",
+            value,
+        )
+        or value.endswith("-00:00")  # RFC3339 unknown-local-offset convention
+    ):
+        raise ValueError("measurement comparison timestamp must be timezone-aware RFC3339")
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError("measurement comparison timestamp must be timezone-aware RFC3339") from exc
+    return parsed.astimezone(timezone.utc)
 
 
 def project_measurement_comparison_history(events):
