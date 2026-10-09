@@ -55,6 +55,8 @@ For a decision that **directly sums base metrics from Stream v2 records**, load 
 }
 ```
 
+Use the exact `amazon_marketing_stream_v2` channel when supported. If a connector instead declares the generic `amazon_marketing_stream` channel, it must also explicitly declare `stream_generation=v2`; missing, conflicting or source-less generation declarations are not proof of safe aggregation and return `Unknown`. A non-Stream channel carrying Stream-only dataset/reconciliation metadata also returns `Unknown`.
+
 Both properties must be verified against the **complete relevant record identity and version history**; unobserved, Partial, Unsupported or Unknown provenance stays `Unknown` and **never becomes permission to sum**. A successful version-reconciliation gate does **not** by itself prove SQS/S3 delivery completeness, metric semantics, campaign/profile identity, full logical population, retention, conversion maturity or causal comparability. Preserve those gates separately.
 
 The gate is a read-only **evidence check**. Parquet ingestion, file/notification handling, record-key design, versioned upserts, SQS retries and idempotent storage belong in an authorized external Connector/warehouse, not inside this Skills repository.

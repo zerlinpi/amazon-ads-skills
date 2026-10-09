@@ -2,6 +2,21 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.15.0 — 2026-10-09
+
+### Fixed
+
+- Fail-closed Marketing Stream source/generation lineage in the read-only metric aggregation gate; generic and readable v2 identifiers now enforce highest-version reconciliation, while conflicting/unknown source identities cannot authorize direct summation.
+- Preserve explicit Stream v1 delta and ordinary Reporting API paths without introducing a live Ads mutation surface.
+
+### Verification
+
+- Deterministic RED regression committed before the fix; full repository unit tests and Skill/eval validators are required before merge.
+
+### Research
+
+- Re-validated Amazon's Stream v2 total-value and record-version rules; reviewed pre-existing MIT/MIT-0 connector/sample references without copying external implementations.
+
 ## v1.14.0 — 2026-10-09
 
 ### Added
