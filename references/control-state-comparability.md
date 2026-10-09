@@ -96,6 +96,8 @@ Do not infer missing provenance from the final state, an empty local change ledg
 
 Amazon currently provides a concrete provenance precedent in automatic deal selection: platform-managed inventory groups can be identified with `curationSourceType=AMAZON_CURATED_AGENT`. Amazon also documents product surfaces whose eligibility can automatically alter lifecycle state, including Review Requests auto-pausing at its review threshold. These are product-specific examples of the generic rule; do not assume the same field or behavior exists for every Amazon Ads product.
 
+When a source-supported connector is involved, require `entity-state-readback` to prove the decision-needed `required_transition_provenance_fields` via the shared capability gate before claiming an actor or reason. The gate does not substitute for event-time provenance: its supported status and exposed-field list are not proof of who actually changed this instance.
+
 If a causal conclusion depends on who changed a control and actor/reason provenance is unavailable, keep authorship `Unknown` and downgrade the dependent single-action claim to Directional/Hold/Manual Review as appropriate. State comparability and transition authorship are separate questions: two snapshots can prove that state changed while still failing to prove who changed it.
 
 ## Causal rule
