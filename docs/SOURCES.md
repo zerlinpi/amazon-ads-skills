@@ -763,3 +763,21 @@ Public references reviewed:
 - https://advertising.amazon.com/en-ca/library/expert-advice/sponsored-ads-small-business-tools
 
 GitHub discovery was re-run with multiple Amazon Ads/MCP, agent provenance/event-sourcing, evaluation/trace-safety and lineage queries. Previously reviewed projects including `denisneuf/python-amazon-ad-api`, `KuudoAI/amazon_ads_mcp`, `MarketplaceAdPros/amazon-ads-mcp-server`, `OpenLineage/OpenLineage`, Langfuse/OpenLIT/Phoenix and AgentEval were de-duplicated rather than counted as new evidence. A newly surfaced `Birkity/agentic-governance-ledger` repository was reviewed only as abstract event-sourcing/audit context: 0 stars, no clear license surfaced, and no GitHub Actions workflow surfaced, so no code, event schema, MCP surface, prompt, workflow, or implementation was reused.
+
+
+## Actor-provenance capability binding — 2026-10-09
+
+Official Amazon Ads source semantics and public engineering evidence were reviewed to separate state readback from source-supported transition actor history.
+
+- Amazon automatic deal selection (April 15, 2026) explicitly documents `AMAZON_CURATED_AGENT` as an inventory-group management origin for the specific DSP Streaming TV feature. It does **not** promise universal actor history on all ad-product APIs.
+- Amazon's official Ads Advanced Tools GitHub repository, `amzn/ads-advanced-tools-docs`, is MIT-0 licensed and includes real code samples/Postman assets plus maintained discussion/issue surfaces. An Amazon-side maintainer response in discussion #364 explains that `/history` queries need appropriate parent scope and correct `pageOffset`; an empty result after a mis-scoped query is not evidence of no changes.
+- An unanswered user-submitted discussion #491 reports HTTP 200 / zero events while the console showed campaign changes. It is a diagnostic report, not proof of a universal API defect. Do not turn community anecdotes into normative Amazon behavior; require connector-level runtime verification.
+- The published `/history` description for older Sponsored Ads change history notes limited ad-product support and no change-author identity. Treat this as surface/version-scoped historical evidence only; verify current behavior for the exact connector, marketplace, ad product, and endpoint.
+
+Source URLs:
+- https://advertising.amazon.com/en-gb/resources/whats-new/automatic-deal-selection
+- https://github.com/amzn/ads-advanced-tools-docs
+- https://github.com/amzn/ads-advanced-tools-docs/discussions/364
+- https://github.com/amzn/ads-advanced-tools-docs/discussions/491
+
+Engineering adoption: a repository-owned, optional list of required provenance dimensions on the existing `entity-state-readback` capability is checked before authorship-dependent causal claims. `Supported` state readback and generic history availability alone are insufficient. No Amazon proprietary API schema, endpoint payload, Postman collection, prompt, workflow, or protected implementation was copied. Existing third-party MCP libraries and high-star evaluation/lineage projects were re-discovered but already reviewed, or provide only transport/evaluation infrastructure instead of actor-provenance semantics; they were not duplicated or imported.
