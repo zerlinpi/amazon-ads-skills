@@ -263,6 +263,12 @@ Before a high-confidence recommendation that requires a connector field or opera
 
 Use `data-lineage.md` after resolving capability status when comparing the returned measurements. Use `platform-capability-lineage.md` when the uncertainty is about Amazon's platform behavior rather than the connector.
 
+## Transition-provenance observability is a separate contract
+
+For post-change authorship or platform-managed mutation attribution, require observed provenance dimensions, not merely a supported current-state readback. On the existing required `entity-state-readback` capability, pass a task-specific `required_transition_provenance_fields` list through `resolve_skill_capabilities.py` and then unchanged into `evaluate_connector_capability_gate.py`. The canonical fields are `management_mode`, `last_transition_actor`, `transition_reason`, `transition_observed_at`, and `actor_evidence_status`. Require only those materially necessary to the claim; actor attribution normally needs management mode, actor, and actor evidence status, while an explanation of why a transition occurred also needs reason.
+
+The active connector must declare `data_contract.transition_provenance_fields_exposed` for that precise surface and scope. Missing, unsupported or partially exposed required fields block authorship-dependent high-confidence decisions; do not infer that an ordinary state read or change-history endpoint contains an actor. **Passing this capability gate proves only declared observability, not who actually made a specific change**. Event-time evidence, historical coverage, identity and result-maturity still need separate verification. Amazon's Sponsored Ads Change History surface is limited by ad product and may not return who made a change; no universal actor-readback claim is assumed.
+
 ## What belongs outside this repository
 
 This contract deliberately does not implement:
