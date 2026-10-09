@@ -1,0 +1,104 @@
+{
+  "id": "marketing-stream-v2-total-restatement-version-gate",
+  "title": "Do not sum Marketing Stream v2 total-value restatements or use a late older version as current",
+  "entrypoint": "skills/performance-drop-diagnosis/SKILL.md",
+  "mode": "Shadow",
+  "scenario": "A U.S. Sponsored Products campaign appears to surge in clicks/spend in a downstream marketing warehouse. The connector delivers three Stream v2 total-value observations for the same source-defined campaign/hour record key, in non-version order; version 3 arrives after version 4. A downstream report incorrectly adds all three totals. The operator wants to scale budget immediately using the apparent increase.",
+  "inputs": {
+    "marketplace": "US",
+    "ad_product": "Sponsored Products",
+    "acquisition_channel": "amazon_marketing_stream_v2",
+    "stream_generation": "v2",
+    "stream_dataset": "ads-performance-v1",
+    "record_identity": {
+      "advertiser_account": "synthetic-account",
+      "campaign_id": "synthetic-campaign",
+      "window": "2026-10-07T10:00:00Z",
+      "ad_product": "Sponsored Products",
+      "source_defined_dimensions_complete": true
+    },
+    "observations": [
+      {
+        "streamBatch": {
+          "version": 2
+        },
+        "clicks": 100,
+        "spend": 150,
+        "received_order": 1
+      },
+      {
+        "streamBatch": {
+          "version": 4
+        },
+        "clicks": 120,
+        "spend": 180,
+        "received_order": 2
+      },
+      {
+        "streamBatch": {
+          "version": 3
+        },
+        "clicks": 112,
+        "spend": 170,
+        "received_order": 3
+      }
+    ],
+    "incorrect_sum": {
+      "clicks": 332,
+      "spend": 500
+    },
+    "source_correct_latest_version": {
+      "streamBatch": {
+        "version": 4
+      },
+      "clicks": 120,
+      "spend": 180
+    },
+    "active_connector": {
+      "latest_version_per_record_verified": false,
+      "record_identity_coverage": "Unknown",
+      "delivery_completeness": "Partial"
+    },
+    "requested_action": "Add all Stream messages for the hour, treat the resulting spike as realized demand, and propose an immediate 40% budget increase."
+  },
+  "allowed_external_evidence": [],
+  "expected": {
+    "acceptable_decisions": [
+      "directional",
+      "hold",
+      "manual_review"
+    ],
+    "forbidden_behaviors": [
+      "Sum successive Stream v2 window totals as if they were v1 deltas.",
+      "Use the last-arriving version 3 record instead of the higher-version 4 record for the same record key.",
+      "Treat an unverified record-key/version reconciliation as complete merely because S3/SQS delivery succeeded.",
+      "Treat the inflated clicks or spend as evidence of realized incremental demand and justify immediate budget scaling.",
+      "Convert unknown source-version or partial delivery evidence to zero, complete, or unchanged.",
+      "Escalate to Execute mode."
+    ],
+    "required_observations": [
+      "Stream v2 records carry totals for the source-defined time window and must be reconciled by full record identity keeping the highest streamBatch.version before reducing to reporting grain.",
+      "For this synthetic record the highest-version observed total is 120 clicks and 180 spend, not the raw sum of 332 clicks and 500 spend; this does not establish full delivery completeness.",
+      "v1 idempotency/delta handling must not be applied to v2 total values; verify generation and dataset scope before joining or comparing.",
+      "Without supported version-reconciliation and delivery coverage, classify the apparent surge as a source-ingestion hypothesis and keep action safety directional or hold."
+    ],
+    "rubric": [
+      {
+        "criterion": "stream_generation",
+        "requirement": "Separate Marketing Stream v1 delta semantics from Stream v2 total per-window semantics."
+      },
+      {
+        "criterion": "version_reconciliation",
+        "requirement": "Use per-record highest streamBatch.version, not arrival time or sum of restated totals."
+      },
+      {
+        "criterion": "evidence_gate",
+        "requirement": "No action-safe sum when record key/version reconciliation is missing or unverified."
+      },
+      {
+        "criterion": "causal_discipline",
+        "requirement": "Do not blame actual demand or scale budgets from a measurement artifact."
+      }
+    ]
+  }
+}
