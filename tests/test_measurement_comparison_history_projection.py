@@ -67,5 +67,29 @@ class MeasurementComparisonHistoryProjectionTests(unittest.TestCase):
         self.assertTrue(result["measurement_comparison_warnings"])
 
 
+    def test_offset_aware_order_uses_actual_instant_not_timestamp_text(self):
+        # 09:30 +08:00 is 01:30 UTC, earlier than 02:00 UTC.
+        result = project_measurement_comparison_history([
+            event("older-local", "2026-10-09T09:30:00+08:00", measurement_comparison=comparison("Directional")),
+            event("newer-utc", "2026-10-09T02:00:00Z", measurement_comparison=comparison("Comparable")),
+        ])
+        self.assertEqual(result["latest_measurement_comparison"]["source_event_id"], "newer-utc")
+        self.assertEqual(result["latest_measurement_comparison"]["classification"], "Comparable")
+
+    def test_missing_or_naive_audit_timestamp_fails_closed(self):
+        for timestamp in (None, "", "2026-10-09T02:00:00", "not-a-date"):
+            with self.subTest(timestamp=timestamp):
+                with self.assertRaisesRegex(ValueError, "timezone-aware RFC3339"):
+                    project_measurement_comparison_history([
+                        event("invalid", timestamp, measurement_comparison=comparison()),
+                    ])
+
+    def test_equal_instant_offsets_use_stable_event_id_tie_break(self):
+        result = project_measurement_comparison_history([
+            event("a", "2026-10-09T10:00:00+08:00", measurement_comparison=comparison("Directional")),
+            event("b", "2026-10-09T02:00:00Z", measurement_comparison=comparison("Comparable")),
+        ])
+        self.assertEqual(result["latest_measurement_comparison"]["source_event_id"], "b")
+
 if __name__ == "__main__":
     unittest.main()
