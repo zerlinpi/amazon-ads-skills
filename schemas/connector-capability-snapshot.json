@@ -95,6 +95,16 @@
               "metric_semantics_exposed": {"type": ["boolean", "null"]},
               "date_attribution_semantics_exposed": {"type": ["boolean", "null"]},
               "maximum_history_window": {"type": ["string", "null"]},
+              "transition_provenance_fields_exposed": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": ["management_mode", "last_transition_actor", "transition_reason", "transition_observed_at", "actor_evidence_status"]
+                },
+                "description": "Observed source-supported control-transition provenance dimensions for this exact connector/scope. A readable final state or a generic Change History endpoint never proves actor/reason observability. Per-event provenance must still be verified separately."
+              },
               "control_types_exposed": {
                 "type": "array",
                 "minItems": 1,

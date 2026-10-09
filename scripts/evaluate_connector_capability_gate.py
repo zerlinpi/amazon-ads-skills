@@ -15,7 +15,8 @@ KNOWN_STATUSES = {"Supported", "Partial", "Unsupported", "Unknown"}
 VERIFY = {"Verified", "Unverified", "Unknown"}
 SURFACES = {"tool", "report", "dataset", "stream", "export", "endpoint", "warehouse_table", "manual_export"}
 SCOPE_FIELDS = {"region": "regions", "marketplace": "marketplaces", "ad_product": "ad_products", "account_type": "account_types"}
-DATA_REQUIREMENT_FIELDS = {"required_reporting_generation", "requires_historical_data", "history_window", "required_control_types"}
+DATA_REQUIREMENT_FIELDS = {"required_reporting_generation", "requires_historical_data", "history_window", "required_control_types", "required_transition_provenance_fields"}
+TRANSITION_FIELDS = {"management_mode", "last_transition_actor", "transition_reason", "transition_observed_at", "actor_evidence_status"}
 REPORTING_GENERATION_STATUSES = {"active", "read_only", "sunset_scheduled", "retired", "unknown"}
 HISTORICAL_AVAILABILITY_STATUSES = {"available", "partial", "unavailable", "retired", "unknown"}
 PASS = ["High Confidence", "Suggest", "Shadow"]
@@ -77,6 +78,16 @@ def _control_type_list(value, field):
             raise ValueError(f"{field} contains duplicate control type {control_type!r}")
         out.append(control_type)
     return out
+
+
+def _transition_field_list(value, field):
+    if not isinstance(value, list) or not value:
+        raise ValueError(f"{field} must be a non-empty array")
+    if any(not _s(item) or item not in TRANSITION_FIELDS for item in value):
+        raise ValueError(f"{field} contains unsupported or invalid provenance field")
+    if len(set(value)) != len(value):
+        raise ValueError(f"{field} contains duplicate provenance fields")
+    return list(value)
 
 
 def _requirements(v, registered):
@@ -168,6 +179,14 @@ def _data_requirements(v, required_capabilities):
         generation = requirement.get("required_reporting_generation")
         history = requirement.get("requires_historical_data")
         required_control_types = None
+        required_transition_fields = None
+        if "required_transition_provenance_fields" in requirement:
+            if cid != "entity-state-readback":
+                raise ValueError("required_transition_provenance_fields is only valid for entity-state-readback")
+            required_transition_fields = _transition_field_list(
+                requirement["required_transition_provenance_fields"],
+                f"data_requirements[{cid!r}].required_transition_provenance_fields"
+            )
         if "required_control_types" in requirement:
             if cid != "entity-state-readback":
                 raise ValueError(
@@ -193,9 +212,9 @@ def _data_requirements(v, required_capabilities):
             raise ValueError(
                 f"data_requirements[{cid!r}].history_window conflicts with requires_historical_data=false"
             )
-        if generation is None and history is None and history_window is None and required_control_types is None:
+        if generation is None and history is None and history_window is None and required_control_types is None and required_transition_fields is None:
             raise ValueError(
-                f"data_requirements[{cid!r}] must declare required_reporting_generation, requires_historical_data, history_window, and/or required_control_types"
+                f"data_requirements[{cid!r}] must declare required_reporting_generation, requires_historical_data, history_window, and/or required_control_types or required_transition_provenance_fields"
             )
         out[cid] = {
             "required_reporting_generation": generation.strip() if _s(generation) else None,
@@ -208,6 +227,8 @@ def _data_requirements(v, required_capabilities):
         }
         if required_control_types is not None:
             out[cid]["required_control_types"] = required_control_types
+        if required_transition_fields is not None:
+            out[cid]["required_transition_provenance_fields"] = required_transition_fields
     return out
 
 
@@ -226,9 +247,10 @@ def _data_contract_effect(cap, requirement):
     if requirement is None:
         return "not_evaluated", []
     required_control_types = requirement.get("required_control_types")
+    required_transition_fields = requirement.get("required_transition_provenance_fields")
     contract = cap.get("data_contract")
     if not isinstance(contract, dict):
-        if required_control_types:
+        if required_control_types or required_transition_fields:
             return "blocked", [
                 "required control-state coverage has no observed capability data_contract"
             ]
@@ -376,6 +398,25 @@ def _data_contract_effect(cap, requirement):
                 warnings.append(
                     "connector does not expose required control types: "
                     + ", ".join(missing_control_types)
+                )
+
+    if required_transition_fields:
+        observed_fields = contract.get("transition_provenance_fields_exposed")
+        if observed_fields is None:
+            effect = _combine_data_effect(effect, "blocked")
+            warnings.append("required transition provenance is not identified by connector data_contract")
+        else:
+            observed_fields = _transition_field_list(
+                observed_fields, "capability.data_contract.transition_provenance_fields_exposed"
+            )
+            missing_fields = [
+                field for field in required_transition_fields if field not in observed_fields
+            ]
+            if missing_fields:
+                effect = _combine_data_effect(effect, "blocked")
+                warnings.append(
+                    "connector does not expose required transition provenance fields: "
+                    + ", ".join(missing_fields)
                 )
 
     return effect, warnings
