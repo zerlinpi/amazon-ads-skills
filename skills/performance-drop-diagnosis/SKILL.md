@@ -33,6 +33,7 @@ Read this file first. Load only what is needed:
 - Detailed causal workflow and Mixed-ASIN safety: `references/causal-drop-diagnosis.md`
 - Platform-managed surface/product/creative realization: `../../references/realized-ad-identity.md`
 - Cross-source, freshness, attribution-variant, modeled/direct conversion, allocation-coverage, or metric-version reconciliation: `../../references/data-lineage.md`
+- Marketing Stream v1/v2 dataset-generation, total/delta and version-reconciliation semantics (when stream data drives a suspected performance change): `../../references/marketing-stream-dataset-coverage.md`
 - Metric definitions: `../../references/amazon-ads-metrics.md`
 - Shared decision boundaries: `../../references/decision-boundaries.md`
 - General optimization logic: `../../references/optimization-framework.md`
@@ -61,7 +62,7 @@ Collect or explicitly mark missing:
 
 ## Workflow
 
-1. **Reliability gate** — reconcile date windows, attribution model/variant, attribution lag, completeness, modeled/direct conversion semantics, allocation coverage and measurement comparability; a source, attribution-methodology, allocation-methodology or metric-definition cutover near the break is a competing cause.
+1. **Reliability gate** — reconcile date windows, attribution model/variant, attribution lag, completeness, modeled/direct conversion semantics, allocation coverage and measurement comparability; a source, attribution-methodology, allocation-methodology or metric-definition cutover near the break is a competing cause. For Marketing Stream, distinguish v1 deltas from v2 total-value records: verify v2 full-record identity and highest `streamBatch.version` selection before accepting an apparent summed spike/drop.
 2. **Find the break point** — identify the first sustained KPI change and classify it as abrupt, gradual, intermittent, or isolated.
 3. **Size the loss** — compare matched windows; normalize unequal windows only after the data are comparable. Preserve `Unallocated` conversion rows in campaign/order-level totals when the source defines them as attributable but not assignable to the requested dimension.
 4. **Decompose the bridge** — impressions -> clicks -> CPC/spend -> orders/CVR -> sales/AOV -> ACOS/ROAS. Keep campaign-level conversion movement separate from lower-grain allocation movement.

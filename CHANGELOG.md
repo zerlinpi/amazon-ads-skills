@@ -2,6 +2,22 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.14.0 — 2026-10-09
+
+### Added
+
+- RED→GREEN deterministic regression for Amazon Marketing Stream v2 total-valued restatement records and out-of-order highest-version selection.
+- Stream v2-specific, read-only reconciliation evidence gate in the existing metric aggregation helper; direct additive/disjoint summation is not permitted unless the full record identity and highest `streamBatch.version` selection are verified.
+
+### Changed
+
+- Shared Stream coverage reference now distinguishes v1 per-hour delta / independent subscriptions from v2 unified performance datasets and per-window totals, with v1/v2 migration and version-reconciliation boundaries.
+- Existing campaign health and performance-drop Skills load Stream generation/reconciliation guidance only when Stream is used; absence of verified v2 reconciliation becomes Unknown, not zero or unchanged.
+
+### Research
+
+- Re-reviewed current Amazon Ads Stream v2 overview and v1→v2 migration guidance, plus Amazon-owned sample repositories (MIT-0), OpenLineage (Apache-2.0) and an already-reviewed Amazon Ads MCP (MIT). No third-party code, schema, prompts, or ingestion workflows imported.
+
 ## v1.13.0 — 2026-10-09
 
 ### Added

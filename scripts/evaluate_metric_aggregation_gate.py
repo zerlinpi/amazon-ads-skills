@@ -18,6 +18,32 @@ AGGREGATION_SEMANTICS = {
     "unknown",
 }
 SOURCE_RELATIONS = {"disjoint", "overlapping", "unknown"}
+STREAM_EVIDENCE_STATES = {"Verified", "Partial", "Unknown", "Unsupported"}
+
+
+def _stream_reconciliation_status(payload: dict[str, Any]) -> str:
+    """Check evidence that Stream v2 totals were reduced to latest record versions.
+
+    This is a read-only evidence gate, not an ingestion/Parquet consumer.
+    """
+    if payload.get("acquisition_channel") != "amazon_marketing_stream_v2":
+        return "Not Applicable"
+    evidence = payload.get("stream_record_reconciliation")
+    if evidence is None:
+        return "Unknown"
+    if not isinstance(evidence, dict):
+        raise ValueError("stream_record_reconciliation must be an object or null")
+    for field in ("record_identity_coverage", "highest_version_per_record"):
+        state = evidence.get(field, "Unknown")
+        if not isinstance(state, str) or state not in STREAM_EVIDENCE_STATES:
+            raise ValueError(
+                f"stream_record_reconciliation.{field} must be one of "
+                f"{sorted(STREAM_EVIDENCE_STATES)}"
+            )
+        if state != "Verified":
+            return "Unknown"
+    return "Verified"
+
 
 
 def _semantics(payload: dict[str, Any]) -> str:
@@ -52,6 +78,7 @@ def evaluate_metric_aggregation_gate(payload: Any) -> dict[str, Any]:
         )
 
     semantic = _semantics(payload)
+    stream_reconciliation_status = _stream_reconciliation_status(payload)
     status = "Unknown"
     allowed = False
     reason = ""
@@ -81,6 +108,17 @@ def evaluate_metric_aggregation_gate(payload: Any) -> dict[str, Any]:
     elif relation == "unknown":
         status = "Unknown"
         reason = "row overlap/disjointness is unknown"
+    elif stream_reconciliation_status == "Unknown":
+        status = "Unknown"
+        reason = (
+            "Amazon Marketing Stream v2 delivers total values per time window; "
+            "direct summation requires source-supported complete record keys and "
+            "highest streamBatch.version selected per record before reducing grain"
+        )
+        recommended_path = (
+            "reconcile Stream v2 total records by full dataset record identity and "
+            "highest version; preserve unknown or partial evidence rather than summing"
+        )
     else:
         status = "Allowed"
         allowed = True
@@ -93,6 +131,7 @@ def evaluate_metric_aggregation_gate(payload: Any) -> dict[str, Any]:
         "operation": operation,
         "aggregation_semantics": semantic,
         "source_relation": relation,
+        "stream_reconciliation_status": stream_reconciliation_status,
         "missing_semantics_policy": "never_assume_additive",
         "reason": reason,
         "recommended_path": recommended_path,

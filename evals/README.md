@@ -124,6 +124,7 @@ python scripts/validate_evals.py .
 - `semantic-metric-version-drift.json` — prevents a same-table/same-column series from being treated as continuous across an unreconciled metric-definition version cutover.
 - `asymmetric-backfill-post-change-false-lift.json` — prevents a D+1 frozen baseline and D+7 mature post window from creating a false post-change lift when historical rows can backfill.
 - `historical-restatement-after-decision.json` — preserves decision-time evidence identity and appends a correction/re-evaluation when a later warehouse restatement changes the latest outcome interpretation.
+- `marketing-stream-v2-total-restatement-version-gate.json` — prevents Stream v2 per-window totals and late older versions from being summed or treated as fresh demand; requires highest `streamBatch.version` per source-defined record key before aggregating.
 - `audit-overlapping-grain-double-counting.json` — prevents profile/campaign/keyword/search-term/placement views from being summed as separate spend pools and requires ratios to be recomputed from base totals.
 - `audit-pagination-truncation-incomplete-coverage.json` — prevents a first page with a remaining continuation token from being presented as the complete campaign population or used for whole-account ranking.
 - `search-term-clicked-only-coverage-bias.json` — prevents the Sponsored Products clicked-only Search Term report from being treated as a complete query-impression population, blocks manufactured zero-click rows, and bounds rankings/CTR claims to the represented population.
