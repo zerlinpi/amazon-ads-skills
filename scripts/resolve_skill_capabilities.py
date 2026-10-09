@@ -22,7 +22,11 @@ PROFILE_DATA_REQUIREMENT_FIELDS = {
     "required_reporting_generation",
     "requires_historical_data",
 }
-TASK_DATA_REQUIREMENT_FIELDS = PROFILE_DATA_REQUIREMENT_FIELDS | {"history_window"}
+TASK_DATA_REQUIREMENT_FIELDS = PROFILE_DATA_REQUIREMENT_FIELDS | {"history_window", "required_transition_provenance_fields"}
+TRANSITION_FIELDS = {
+    "management_mode", "last_transition_actor", "transition_reason",
+    "transition_observed_at", "actor_evidence_status",
+}
 
 
 def _history_window(value: Any, field: str) -> dict[str, str]:
@@ -102,6 +106,16 @@ def _normalize_requirement(
             )
         normalized["requires_historical_data"] = True
 
+    if "required_transition_provenance_fields" in requirement:
+        if capability_id != "entity-state-readback":
+            raise ValueError("transition provenance requirements apply only to entity-state-readback")
+        values = requirement["required_transition_provenance_fields"]
+        if not isinstance(values, list) or not values or any(
+            not isinstance(v, str) or v not in TRANSITION_FIELDS for v in values
+        ) or len(set(values)) != len(values):
+            raise ValueError("required_transition_provenance_fields must be a unique, non-empty list of canonical fields")
+        normalized["required_transition_provenance_fields"] = list(values)
+
     return normalized
 
 
@@ -161,6 +175,12 @@ def _merge_task_requirements(
         if "history_window" in requirement:
             current["history_window"] = requirement["history_window"]
             current["requires_historical_data"] = True
+
+        if "required_transition_provenance_fields" in requirement:
+            previous = current.get("required_transition_provenance_fields", [])
+            current["required_transition_provenance_fields"] = list(dict.fromkeys(
+                previous + requirement["required_transition_provenance_fields"]
+            ))
 
         task_normalized[capability_id] = requirement
 
