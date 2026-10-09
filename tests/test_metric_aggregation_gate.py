@@ -87,6 +87,58 @@ class MetricAggregationGateTests(unittest.TestCase):
         self.assertEqual(out["aggregation_status"], "Unknown")
         self.assertFalse(out["direct_sum_allowed"])
 
+    def test_stream_v2_requires_record_key_version_reconciliation_before_summing(self):
+        proc = run_gate({
+            "metric_semantics": {"aggregation_semantics": "additive"},
+            "source_relation": "disjoint",
+            "acquisition_channel": "amazon_marketing_stream_v2",
+            "operation": "sum",
+        })
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        result = json.loads(proc.stdout)
+        self.assertEqual(result["aggregation_status"], "Unknown")
+        self.assertFalse(result["direct_sum_allowed"])
+
+    def test_stream_v2_verified_latest_per_key_allows_disjoint_additive_sum(self):
+        proc = run_gate({
+            "metric_semantics": {"aggregation_semantics": "additive"},
+            "source_relation": "disjoint",
+            "acquisition_channel": "amazon_marketing_stream_v2",
+            "stream_record_reconciliation": {
+                "record_identity_coverage": "Verified",
+                "highest_version_per_record": "Verified",
+            },
+        })
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        result = json.loads(proc.stdout)
+        self.assertEqual(result["aggregation_status"], "Allowed")
+        self.assertTrue(result["direct_sum_allowed"])
+        self.assertEqual(result["stream_reconciliation_status"], "Verified")
+
+    def test_stream_v2_partial_version_coverage_blocks_additive_sum(self):
+        proc = run_gate({
+            "metric_semantics": {"aggregation_semantics": "additive"},
+            "source_relation": "disjoint",
+            "acquisition_channel": "amazon_marketing_stream_v2",
+            "stream_record_reconciliation": {
+                "record_identity_coverage": "Partial",
+                "highest_version_per_record": "Verified",
+            },
+        })
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        result = json.loads(proc.stdout)
+        self.assertEqual(result["aggregation_status"], "Unknown")
+        self.assertFalse(result["direct_sum_allowed"])
+
+    def test_stream_v1_keeps_separate_delta_evidence_boundary(self):
+        proc = run_gate({
+            "metric_semantics": {"aggregation_semantics": "additive"},
+            "source_relation": "disjoint",
+            "acquisition_channel": "amazon_marketing_stream_v1",
+        })
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertTrue(json.loads(proc.stdout)["direct_sum_allowed"])
+
     def test_missing_metric_semantics_is_unknown_not_additive(self):
         proc = run_gate({
             "source_relation": "disjoint",
