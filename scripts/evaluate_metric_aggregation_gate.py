@@ -21,13 +21,55 @@ SOURCE_RELATIONS = {"disjoint", "overlapping", "unknown"}
 STREAM_EVIDENCE_STATES = {"Verified", "Partial", "Unknown", "Unsupported"}
 
 
-def _stream_reconciliation_status(payload: dict[str, Any]) -> str:
-    """Check evidence that Stream v2 totals were reduced to latest record versions.
+def _stream_generation(payload: dict[str, Any]) -> str:
+    """Classify declared Stream provenance; ambiguous versions fail closed.
 
-    This is a read-only evidence gate, not an ingestion/Parquet consumer.
+    A generation without a channel cannot establish the data source.
+    Explicit source/generation conflicts must never bypass v2 reconciliation.
     """
-    if payload.get("acquisition_channel") != "amazon_marketing_stream_v2":
+    channel = payload.get("acquisition_channel")
+    generation = payload.get("stream_generation")
+    has_stream_evidence = (
+        generation is not None
+        or payload.get("stream_record_reconciliation") is not None
+        or payload.get("stream_dataset") is not None
+    )
+    if channel is None:
+        return "unknown" if has_stream_evidence else "not_stream"
+    if not isinstance(channel, str) or not channel.strip():
+        return "unknown"
+    if generation is not None and not isinstance(generation, str):
+        return "unknown"
+
+    normalized = "_".join(
+        channel.strip().lower().replace("-", " ").replace("_", " ").split()
+    )
+    explicit = {
+        "amazon_marketing_stream_v1": "v1",
+        "amazon_marketing_stream_v2": "v2",
+    }.get(normalized)
+    if explicit is not None:
+        if explicit == "v1" and payload.get("stream_record_reconciliation") is not None:
+            return "unknown"
+        return explicit if generation is None or generation == explicit else "unknown"
+    if normalized == "amazon_marketing_stream":
+        return generation if generation in {"v1", "v2"} else "unknown"
+    if (
+        "marketing_stream" in normalized
+        or normalized.startswith("amazonmarketingstream")
+        or has_stream_evidence
+    ):
+        return "unknown"
+    return "not_stream"
+
+
+def _stream_reconciliation_status(payload: dict[str, Any]) -> str:
+    """Require highest-version record evidence for resolved Stream v2 sources."""
+    generation = _stream_generation(payload)
+    if generation in {"not_stream", "v1"}:
         return "Not Applicable"
+    if generation != "v2":
+        return "Unknown"
     evidence = payload.get("stream_record_reconciliation")
     if evidence is None:
         return "Unknown"
@@ -43,7 +85,6 @@ def _stream_reconciliation_status(payload: dict[str, Any]) -> str:
         if state != "Verified":
             return "Unknown"
     return "Verified"
-
 
 
 def _semantics(payload: dict[str, Any]) -> str:
