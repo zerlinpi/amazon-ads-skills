@@ -31,7 +31,7 @@ def _timestamp(event):
     if (
         not isinstance(value, str)
         or not re.fullmatch(
-            r"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})",
+            r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})",
             value,
         )
         or value.endswith("-00:00")  # RFC3339 unknown-local-offset convention
