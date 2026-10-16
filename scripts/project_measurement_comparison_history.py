@@ -2,6 +2,7 @@
 
 from copy import deepcopy
 from datetime import datetime, timezone
+from decimal import Decimal
 import re
 
 
@@ -28,21 +29,20 @@ def _scope_key(event):
 def _timestamp(event):
     """Order audit evidence by UTC instant, never by RFC3339 display text."""
     value = event.get("timestamp")
-    if (
-        not isinstance(value, str)
-        or not re.fullmatch(
-            r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)",
+    match = (
+        re.fullmatch(
+            r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.(?P<fraction>\d+))?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)",
             value,
-        )
-        or value.endswith("-00:00")  # RFC3339 unknown-local-offset convention
-    ):
+        ) if isinstance(value, str) else None
+    )
+    if match is None or value.endswith("-00:00"):
         raise ValueError("measurement comparison timestamp must be timezone-aware RFC3339")
     try:
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError as exc:
         raise ValueError("measurement comparison timestamp must be timezone-aware RFC3339") from exc
-    return parsed.astimezone(timezone.utc)
-
+    fraction = Decimal("0." + (match.group("fraction") or "0"))
+    return parsed.astimezone(timezone.utc).replace(microsecond=0), fraction
 
 def project_measurement_comparison_history(events):
     """Return a bounded projection without resurrecting superseded audit evidence."""
