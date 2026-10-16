@@ -63,12 +63,16 @@ def project_measurement_comparison_history(events):
         for event in events
         if event.get("event_id")
     }
-    superseded = {
-        event.get("supersedes_event_id")
-        for event in events
-        if event.get("event_type") == "corrected"
-        and event.get("supersedes_event_id") in by_id
-    }
+    superseded = set()
+    for event in events:
+        if event.get("event_type") != "corrected":
+            continue
+        target = event.get("supersedes_event_id")
+        if target not in by_id:
+            continue  # Bounded history may omit the predecessor.
+        if target in superseded:
+            raise ValueError("measurement comparison supersession has an ambiguous correction fork")
+        superseded.add(target)
     active = [
         event
         for event in events
