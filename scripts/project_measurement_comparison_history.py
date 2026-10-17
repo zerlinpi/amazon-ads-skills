@@ -58,11 +58,34 @@ def project_measurement_comparison_history(events):
     if len(scopes) != 1:
         raise ValueError("measurement comparison history requires a single entity scope")
 
-    by_id = {
-        event.get("event_id"): event
-        for event in events
-        if event.get("event_id")
-    }
+    by_id = {}
+    for event in events:
+        event_id = event.get("event_id")
+        if not isinstance(event_id, str) or not event_id:
+            raise ValueError("measurement comparison history requires nonempty event_id")
+        if event_id in by_id:
+            raise ValueError("measurement comparison history has duplicate event_id")
+        by_id[event_id] = event
+
+    # Predecessors may be absent from bounded history; cycles wholly inside
+    # the supplied slice cannot represent a valid audit correction chain.
+    visited = set()
+    for event_id in by_id:
+        if event_id in visited:
+            continue
+        path = set()
+        cursor = event_id
+        while cursor in by_id and cursor not in visited:
+            if cursor in path:
+                raise ValueError("measurement comparison supersession contains a cycle")
+            path.add(cursor)
+            current = by_id[cursor]
+            cursor = (
+                current.get("supersedes_event_id")
+                if current.get("event_type") == "corrected"
+                else None
+            )
+        visited.update(path)
     superseded = set()
     for event in events:
         if event.get("event_type") != "corrected":
