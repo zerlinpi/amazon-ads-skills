@@ -8,6 +8,7 @@ This file records user-visible repository releases. The canonical current versio
 
 - Reject competing correction events that supersede the same in-slice measurement-comparison audit event. Ambiguous audit forks must not silently resolve to a seemingly available comparison.
 - Preserve linear correction chains, distinct independent correction targets, and bounded histories with missing predecessors.
+- Reject missing or duplicate audit event IDs and in-slice supersession cycles in the measurement-comparison history projector; preserve bounded missing-predecessor semantics.
 
 ### Verification
 
