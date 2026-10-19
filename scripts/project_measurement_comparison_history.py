@@ -5,7 +5,14 @@ from datetime import datetime, timezone
 from decimal import Decimal
 import re
 
-from scripts.project_measurement_history import _event_account_identity, _merge_account_identity
+from scripts.project_measurement_history import (
+    _event_account_identity,
+    _merge_account_identity,
+    _normalize_expected_scope,
+    _normalize_expected_account_identity,
+    _validate_scope,
+    _validate_expected_account_identity,
+)
 
 
 _REQUIRED_AUDIT_FIELDS = (
@@ -46,8 +53,10 @@ def _timestamp(event):
     fraction = Decimal("0." + (match.group("fraction") or "0"))
     return parsed.astimezone(timezone.utc).replace(microsecond=0), fraction
 
-def project_measurement_comparison_history(events):
+def project_measurement_comparison_history(events, *, expected_scope=None):
     """Return a bounded projection without resurrecting superseded audit evidence."""
+    expected = _normalize_expected_scope(expected_scope)
+    expected_account_identity = _normalize_expected_account_identity(expected_scope)
     events = list(events or [])
     if not events:
         return {
@@ -65,9 +74,12 @@ def project_measurement_comparison_history(events):
     account_identity = None
     missing_account_identity_seen = False
     for event in events:
+        _validate_scope(event, expected)
+        current_identity = _event_account_identity(event)
+        _validate_expected_account_identity(current_identity, expected_account_identity)
         account_identity, missing_account_identity_seen = _merge_account_identity(
             account_identity,
-            _event_account_identity(event),
+            current_identity,
             missing_seen=missing_account_identity_seen,
         )
 

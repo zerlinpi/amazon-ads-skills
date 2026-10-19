@@ -143,5 +143,81 @@ class MeasurementComparisonAccountIdentityTests(unittest.TestCase):
         ])
         self.assertEqual(result["latest_measurement_comparison"]["source_event_id"], "b")
 
+
+class MeasurementComparisonExpectedScopeTests(unittest.TestCase):
+    """A single-account slice must still be bound to the caller's requested account."""
+
+    @staticmethod
+    def _scope(**overrides):
+        value = {
+            "marketplace": "US",
+            "profile_scope": "profile-us-1",
+            "entity_type": "keyword",
+            "entity_id": "keyword-1",
+            "account_identity": {"global_advertiser_account_id": "global-a"},
+        }
+        value.update(overrides)
+        return value
+
+    @staticmethod
+    def _event(identity):
+        item = event(
+            "eval-1",
+            "2026-10-19T10:00:00Z",
+            measurement_comparison=comparison("Comparable"),
+        )
+        item["account_identity"] = identity
+        return item
+
+    def test_single_event_from_wrong_account_fails_closed(self):
+        with self.assertRaisesRegex(ValueError, "expected_scope"):
+            project_measurement_comparison_history(
+                [self._event({"global_advertiser_account_id": "global-b"})],
+                expected_scope=self._scope(),
+            )
+
+    def test_single_event_without_account_identity_fails_closed(self):
+        with self.assertRaisesRegex(ValueError, "expected_scope"):
+            project_measurement_comparison_history(
+                [self._event(None)],
+                expected_scope=self._scope(),
+            )
+
+    def test_missing_requested_regional_identity_is_not_inferred(self):
+        with self.assertRaisesRegex(ValueError, "expected_scope"):
+            project_measurement_comparison_history(
+                [self._event({"global_advertiser_account_id": "global-a"})],
+                expected_scope=self._scope(account_identity={
+                    "global_advertiser_account_id": "global-a",
+                    "regional_advertiser_account_id": "regional-a",
+                }),
+            )
+
+    def test_wrong_requested_entity_fails_closed(self):
+        with self.assertRaisesRegex(ValueError, "expected_scope"):
+            project_measurement_comparison_history(
+                [self._event({"global_advertiser_account_id": "global-a"})],
+                expected_scope=self._scope(entity_id="keyword-2"),
+            )
+
+    def test_matching_account_and_scope_is_available(self):
+        result = project_measurement_comparison_history(
+            [self._event({"global_advertiser_account_id": "global-a"})],
+            expected_scope=self._scope(),
+        )
+        self.assertEqual(result["measurement_comparison_status"], "Available")
+        self.assertEqual(result["latest_measurement_comparison"]["source_event_id"], "eval-1")
+
+    def test_legacy_unbound_caller_remains_supported(self):
+        result = project_measurement_comparison_history([self._event(None)])
+        self.assertEqual(result["measurement_comparison_status"], "Available")
+
+    def test_invalid_requested_account_envelope_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "expected_scope"):
+            project_measurement_comparison_history(
+                [self._event({"global_advertiser_account_id": "global-a"})],
+                expected_scope=self._scope(account_identity={"country_code": "US"}),
+            )
+
 if __name__ == "__main__":
     unittest.main()

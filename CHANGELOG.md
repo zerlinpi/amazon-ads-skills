@@ -9,10 +9,12 @@ This file records user-visible repository releases. The canonical current versio
 - Reject competing correction events that supersede the same in-slice measurement-comparison audit event. Ambiguous audit forks must not silently resolve to a seemingly available comparison.
 - Preserve linear correction chains, distinct independent correction targets, and bounded histories with missing predecessors.
 - Reject missing or duplicate audit event IDs and in-slice supersession cycles in the measurement-comparison history projector; preserve bounded missing-predecessor semantics.
+- Bind measurement-comparison projections to an optional caller-requested entity and advertiser identity, rejecting mismatched or missing identities even for a single-event slice; preserve legacy unbound calls.
 
 ### Verification
 
 - Four deterministic correction-fork regressions: 2 failures before the fix, 4 passes after the minimal fix. Full repository unit tests and Skill/eval validators must pass in PR CI before merge.
+- Seven caller-bound comparison regressions, including wrong/missing account, missing requested regional ID, wrong entity, valid binding and legacy compatibility.
 
 ## v1.15.0 — 2026-10-09
 
