@@ -91,5 +91,57 @@ class MeasurementComparisonHistoryProjectionTests(unittest.TestCase):
         ])
         self.assertEqual(result["latest_measurement_comparison"]["source_event_id"], "b")
 
+
+class MeasurementComparisonAccountIdentityTests(unittest.TestCase):
+    """Same legacy entity key does not authorize cross-advertiser audit reuse."""
+
+    def _event(self, event_id, account_identity):
+        item = event(
+            event_id,
+            "2026-10-19T10:00:00Z" if event_id == "a" else "2026-10-19T11:00:00Z",
+            measurement_comparison=comparison("Comparable"),
+        )
+        item["account_identity"] = account_identity
+        return item
+
+    def test_conflicting_advertiser_identity_fails_closed(self):
+        with self.assertRaisesRegex(ValueError, "account identity"):
+            project_measurement_comparison_history([
+                self._event("a", {"global_advertiser_account_id": "global-a"}),
+                self._event("b", {"global_advertiser_account_id": "global-b"}),
+            ])
+
+    def test_known_and_missing_identity_cannot_merge(self):
+        with self.assertRaisesRegex(ValueError, "account identity"):
+            project_measurement_comparison_history([
+                self._event("a", None),
+                self._event("b", {"global_advertiser_account_id": "global-b"}),
+            ])
+
+    def test_unverified_global_regional_mapping_cannot_merge(self):
+        with self.assertRaisesRegex(ValueError, "account identity"):
+            project_measurement_comparison_history([
+                self._event("a", {"global_advertiser_account_id": "global-a"}),
+                self._event("b", {"regional_advertiser_account_id": "regional-a"}),
+            ])
+
+    def test_compatible_identity_enrichment_is_allowed(self):
+        result = project_measurement_comparison_history([
+            self._event("a", {"global_advertiser_account_id": "global-a"}),
+            self._event("b", {
+                "global_advertiser_account_id": "global-a",
+                "regional_advertiser_account_id": "regional-a",
+            }),
+        ])
+        self.assertEqual(result["measurement_comparison_status"], "Available")
+        self.assertEqual(result["latest_measurement_comparison"]["source_event_id"], "b")
+
+    def test_all_legacy_missing_identity_remains_supported(self):
+        result = project_measurement_comparison_history([
+            self._event("a", None),
+            self._event("b", None),
+        ])
+        self.assertEqual(result["latest_measurement_comparison"]["source_event_id"], "b")
+
 if __name__ == "__main__":
     unittest.main()

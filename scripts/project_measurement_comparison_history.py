@@ -5,6 +5,8 @@ from datetime import datetime, timezone
 from decimal import Decimal
 import re
 
+from scripts.project_measurement_history import _event_account_identity, _merge_account_identity
+
 
 _REQUIRED_AUDIT_FIELDS = (
     "comparator_id",
@@ -57,6 +59,17 @@ def project_measurement_comparison_history(events):
     scopes = {_scope_key(event) for event in events}
     if len(scopes) != 1:
         raise ValueError("measurement comparison history requires a single entity scope")
+
+    # Account identity is a stronger boundary than legacy marketplace/profile/entity.
+    # Reuse the existing read-only projection's fail-closed identity contract.
+    account_identity = None
+    missing_account_identity_seen = False
+    for event in events:
+        account_identity, missing_account_identity_seen = _merge_account_identity(
+            account_identity,
+            _event_account_identity(event),
+            missing_seen=missing_account_identity_seen,
+        )
 
     by_id = {}
     for event in events:
