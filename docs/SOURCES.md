@@ -797,3 +797,18 @@ Engineering adoption: a repository-owned, optional list of required provenance d
 - `KuudoAI/amazon_ads_mcp`: **72 stars**, **MIT**, last push **2026-09-06**, non-fork/non-archived; previously reviewed connector engineering. Does not supersede Amazon's Stream v2 version semantics; no code/tool schema/ingestion workflow reused.
 
 Stars and activity are point-in-time discovery context, **not** proof of technical fitness. Forks/mirrors and already-reviewed projects were not counted as novel sources. Amazon official documentation remains copyrighted vendor material: only short factual semantics were independently expressed as repository-owned MIT decision rules, tests and synthetic data. No protected prompt, schema, source code, migration procedure or provider workflow was copied.
+
+
+## Sponsored Brands v4 coverage and Fire TV display measurement — 2026-10-19
+
+### Official, version-scoped Sponsored Brands reporting evidence
+
+Amazon Ads' [Sponsored Brands v4 migration guide](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/v4-migration-guide) documents that legacy v3 campaign reads can omit additional ad groups/ads in multi-ad-group campaigns. The guide and [legacy Sponsored Brands Reporting API v2 reference](https://advertising.amazon.com/API/docs/en-us/reference/sponsored-brands/2/reports) describe the `creativeType: all` inclusion condition for the applicable legacy report requests. These facts are scoped to the documented API generations; they do not establish the same filter for Reporting API v3 or Unified Reporting. A successful partial response cannot prove population completeness or metric zero.
+
+Adopted: independent, source/version/request-aware completeness reasoning in `docs/research/sponsored-brands-v4-report-coverage-2026-10-19.md`. Rejected: universal connector schema changes, automatic API request rewrites, invented coverage, and a sixteenth Skill. Vendor documentation is copyrighted; no Amazon code, prose, API schema, examples, prompt, template, or workflow was copied.
+
+### Official, date-scoped Fire TV display measurement evidence
+
+Amazon Ads' [support-center notice](https://advertising.amazon.com/help/ref=ams_head_help), checked on 2026-10-19, announces a Fire TV display-supply measurement-methodology change effective 2026-10-08. It estimates an aggregate approximately 15% impression and 11% click impact, varying by advertiser/campaign/marketplace/placement. These figures are not individual-campaign correction factors and do not establish whether historical data was restated.
+
+Adopted: the independently expressed cross-cutover comparability warning in `docs/research/fire-tv-measurement-methodology-2026-10-19.md`. Rejected: multiplying observed data by platform averages, assuming retroactive restatement, extending the change to unrelated ad products, and unverified runtime behavior changes. No copyrighted vendor text, code, schema, prompt, workflow, or template was copied. Both entries are research-only and preserve the existing read-only/suggest/shadow and external-authorized-Executor boundaries.
