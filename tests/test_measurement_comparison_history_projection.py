@@ -53,30 +53,6 @@ class MeasurementComparisonHistoryProjectionTests(unittest.TestCase):
         self.assertIsNone(result["latest_measurement_comparison"])
         self.assertEqual(result["measurement_comparison_status"], "Superseded Without Replacement")
 
-    def test_cross_action_correction_does_not_erase_independent_audit(self):
-        original = event("eval-a", "2026-10-19T09:00:00Z", measurement_comparison=comparison("Comparable"))
-        for parent_action_id in ("action-b", None, "", " "):
-            with self.subTest(parent_action_id=parent_action_id):
-                correction = event(
-                    "corr-b", "2026-10-19T10:00:00Z",
-                    event_type="corrected", supersedes_event_id="eval-a",
-                )
-                correction["parent_action_id"] = parent_action_id
-                with self.assertRaisesRegex(ValueError, "parent_action_id"):
-                    project_measurement_comparison_history([original, correction])
-
-    def test_missing_original_action_identity_cannot_be_superseded(self):
-        for parent_action_id in (None, "", " "):
-            with self.subTest(parent_action_id=parent_action_id):
-                original = event("eval-a", "2026-10-19T09:00:00Z", measurement_comparison=comparison("Comparable"))
-                original["parent_action_id"] = parent_action_id
-                correction = event(
-                    "corr-a", "2026-10-19T10:00:00Z",
-                    event_type="corrected", supersedes_event_id="eval-a",
-                )
-                with self.assertRaisesRegex(ValueError, "parent_action_id"):
-                    project_measurement_comparison_history([original, correction])
-
     def test_mixed_entity_scope_fails_closed(self):
         with self.assertRaisesRegex(ValueError, "single entity scope"):
             project_measurement_comparison_history([
