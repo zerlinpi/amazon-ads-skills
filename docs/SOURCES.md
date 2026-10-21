@@ -812,3 +812,24 @@ Adopted: independent, source/version/request-aware completeness reasoning in `do
 Amazon Ads' [support-center notice](https://advertising.amazon.com/help/ref=ams_head_help), checked on 2026-10-19, announces a Fire TV display-supply measurement-methodology change effective 2026-10-08. It estimates an aggregate approximately 15% impression and 11% click impact, varying by advertiser/campaign/marketplace/placement. These figures are not individual-campaign correction factors and do not establish whether historical data was restated.
 
 Adopted: the independently expressed cross-cutover comparability warning in `docs/research/fire-tv-measurement-methodology-2026-10-19.md`. Rejected: multiplying observed data by platform averages, assuming retroactive restatement, extending the change to unrelated ad products, and unverified runtime behavior changes. No copyrighted vendor text, code, schema, prompt, workflow, or template was copied. Both entries are research-only and preserve the existing read-only/suggest/shadow and external-authorized-Executor boundaries.
+
+
+## 2026-10-22 official migration-tool limitations (source review)
+
+Official Amazon Ads Help: *Migrate your scheduled reports to unified reporting*,
+updated **2026-10-12**:
+https://advertising.amazon.com/help/GK3JZZE5QLTF8U8A
+
+**Incremental evidence:** only active saved/scheduled report configurations
+from the preceding 24 months are eligible for the migration tool; some report
+types are not supported; fields can be dropped where legacy and new metric
+reporting grains differ (notably lower-grain `topOfSearchImpressionShare`).
+This is a **migration-tool/report-grain** constraint, not proof of universal
+API unavailability or a zero-valued metric.
+
+**Adopted:** independently written source and measurement-lineage clarification
+in `docs/research/unified-reporting-migration.md`. **Rejected:** adding a
+sixteenth Skill, hard-coded vendor capability list, direct report migration,
+or external connector dependency; no nonduplicative runtime behavior gap was
+established. The official page retains its copyright. No provider prose,
+code, schema, prompt, report template, or workflow was copied.

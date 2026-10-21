@@ -100,3 +100,41 @@ The repository now treats profile policy and task intent as separate provenance 
 - the resolver emits a single merged gate envelope plus the profile/task provenance used to build it.
 
 This is repository-owned control-plane logic. It does not infer requirements from natural-language task text, call Amazon Ads, or authorize writes.
+
+
+## 2026-10-22 official migration-tool limitations (2026-10-12 update)
+
+Amazon Ads' official *Migrate your scheduled reports to unified reporting* help article,
+updated 2026-10-12, identifies limits that must not be conflated with a measured
+zero or with the availability of all alternative reporting routes:
+
+- The self-service migration tool covers active saved/scheduled report
+  configurations from the last 24 months. This is **not** a promise that the
+  underlying historical metric rows or requested date grains are retrievable.
+- Some legacy configurations are not yet supported by that migration tool,
+  including conversion-path, Amazon Attribution, benchmark, Sponsored Products
+  budget, prompts, video, and certain retailer/placement reports. A failed
+  configuration migration does **not** establish that the same business metric
+  is absent from every other report/API/export.
+- Fields without equivalents can be omitted. In particular,
+  `topOfSearchImpressionShare` was available at keyword, targeting and campaign
+  grains in legacy reports, but the migration documentation currently describes
+  campaign-grain support in unified reporting. Never substitute a campaign-grain
+  value for a missing keyword/targeting-grain observation.
+- The vendor currently lists 2026-12-17 as the legacy creation/edit cutoff
+  and 2026-12-31 as shutdown/deletion. These are vendor-maintained dates, not
+  constants for a runtime decision gate.
+
+**Decision boundary:** preserve report generation, metric definition, source,
+requested grain, time/date semantics, connector capability, and historical
+availability separately. A dropped field, unsupported migration configuration,
+or unavailable historical artifact remains `Unsupported`/`Unknown` evidence,
+not zero. Verify an alternative source and its comparability before using it.
+
+**Scope and rights:** documentation-only factual clarification; existing
+lineage, capability and report-coverage gates already express the general
+fail-closed rule. No new Skill, provider schema, migration automation, live
+write, vendor code, prompt, template or workflow is imported.
+
+Source (official vendor help, updated 2026-10-12):
+https://advertising.amazon.com/help/GK3JZZE5QLTF8U8A
