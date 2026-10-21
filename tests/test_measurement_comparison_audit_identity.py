@@ -11,6 +11,7 @@ def _event(event_id, *, target=None):
         "timestamp": "2026-10-17T00:00:00Z",
         "marketplace": "US",
         "profile_scope": "synthetic-profile",
+        "parent_action_id": "synthetic-action",
         "entity": {"type": "keyword", "id": "synthetic-keyword"},
         "measurement_comparison": {
             "comparator_id": "measurement-composition@1",

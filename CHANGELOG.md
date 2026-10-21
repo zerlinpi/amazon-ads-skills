@@ -10,6 +10,7 @@ This file records user-visible repository releases. The canonical current versio
 - Preserve linear correction chains, distinct independent correction targets, and bounded histories with missing predecessors.
 - Reject missing or duplicate audit event IDs and in-slice supersession cycles in the measurement-comparison history projector; preserve bounded missing-predecessor semantics.
 - Bind measurement-comparison projections to an optional caller-requested entity and advertiser identity, rejecting mismatched or missing identities even for a single-event slice; preserve legacy unbound calls.
+- Reject in-slice corrections targeting a different or unverified parent action; preserve bounded missing-predecessor compatibility.
 
 ### Verification
 

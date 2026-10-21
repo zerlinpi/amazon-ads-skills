@@ -118,6 +118,14 @@ def project_measurement_comparison_history(events, *, expected_scope=None):
         target = event.get("supersedes_event_id")
         if target not in by_id:
             continue  # Bounded history may omit the predecessor.
+        # A correction cannot supersede a different or unidentified action.
+        parent_action_id = event.get("parent_action_id")
+        if (
+            not isinstance(parent_action_id, str)
+            or not parent_action_id.strip()
+            or parent_action_id != by_id[target].get("parent_action_id")
+        ):
+            raise ValueError("measurement comparison correction crosses parent_action_id boundary")
         if target in superseded:
             raise ValueError("measurement comparison supersession has an ambiguous correction fork")
         superseded.add(target)
