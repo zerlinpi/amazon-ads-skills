@@ -833,3 +833,13 @@ sixteenth Skill, hard-coded vendor capability list, direct report migration,
 or external connector dependency; no nonduplicative runtime behavior gap was
 established. The official page retains its copyright. No provider prose,
 code, schema, prompt, report template, or workflow was copied.
+
+## 2026-10-22 Full-Funnel and Global SP official evidence review
+
+Sources: Amazon Ads Full-Funnel launch (2026-09-29), https://advertising.amazon.com/resources/whats-new/full-funnel-campaigns-from-discovery-to-sales ; Amazon Ads Agent launch (2026-09-29), https://advertising.amazon.com/en-us/library/news/amazon-ads-agent/ ; Global Sponsored Products API guide (reviewed 2026-10-22; publication date unverified), https://advertising.amazon.com/API/docs/en-us/guides/campaign-management/global-campaigns .
+
+Adopted: independently expressed shared-budget/managed-delivery and modeled Long-Term Sales boundaries, plus Global SP's marketplace-specific budget, bid, currency, state, identity, pagination, auto-expansion and partial-result evidence. Recorded as non-normative research in `docs/research/amazon-ads-platform-watch-2026-09.md`; existing decision contracts remain authoritative.
+
+Rejected: vendor uplift as a causal or universal bid/budget rule, per-account/API eligibility inferred from UI availability, global campaign state as proof of every marketplace's delivery, partial write as full success, direct cross-currency arithmetic, additional Skill/runtime or live mutation.
+
+Copyright: only factual platform behavior was independently paraphrased; no Amazon prose, code, schema, API example, report template, prompt or workflow copied. Reddit anecdotes and third-party repository implementations were not reused.
