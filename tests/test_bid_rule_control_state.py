@@ -28,6 +28,8 @@ def snapshot(base_bid, rule_state):
                 "schedule_rules": COMPLETE_COLLECTION.copy(),
                 "event_rules": COMPLETE_COLLECTION.copy(),
             }
+        if key == "budget_or_pacing":
+            item["nested_collection_evidence"] = {"active_budget_rules": COMPLETE_COLLECTION.copy()}
         controls.append(item)
     return {
         "scope": {"marketplace_id": "ATVPDKIKX0DER", "profile_id": "p1", "campaign_id": "sp-campaign-1"},
