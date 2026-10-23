@@ -40,7 +40,7 @@ A list-valued required control is decision-complete only when its machine-readab
 
 Every material control explicitly present in a snapshot participates in the comparison, including controls beyond the registry-required minimum. A present extra control with null/missing state is not evidence of an unchanged value. A present extra list-valued control needs the same independently verified enumeration, pagination and capability completeness as a required list; otherwise the comparison is `Unknown`. A complete, observed extra control remains compatible with normal comparisons. This prevents extra material evidence from being silently laundered into comparability.
 
-This generic gate applies to top-level list-valued controls. Lists embedded inside structured controls, such as schedule/event rule surfaces or budget-rule state, retain their surface-specific completeness requirements; do not infer that a parent object is complete merely because an embedded list exists.
+This generic gate applies to top-level list-valued controls. For an extra material control beyond the versioned required minimum, each direct list-valued field of a structured `state` must also have matching `nested_collection_evidence` with independently Complete enumeration, Complete pagination and Supported capability; this applies to empty and non-empty lists. Other registry-required structured controls retain their surface-specific completeness requirements; do not infer that a parent object is complete merely because an embedded list exists.
 
 For structured controls that contain decision-material nested lists, completeness is recorded separately in `nested_collection_evidence`, keyed by the nested state field. Sponsored Products causal comparisons currently require this for:
 
