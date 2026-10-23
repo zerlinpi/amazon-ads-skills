@@ -10,12 +10,30 @@ import json
 from pathlib import Path
 from typing import Any
 
-BAD_EVIDENCE = {"stale", "unsupported", "unknown"}
+VALID_EVIDENCE = {"observed", "derived"}
 REGISTRY_PATH = Path(__file__).resolve().parents[1] / "references" / "control-requirement-registry.json"
 
 
 def _control_map(snapshot: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return {item["control_type"]: item for item in snapshot.get("controls", [])}
+
+
+def _control_inventory_problem(snapshot: dict[str, Any], side: str) -> str | None:
+    """Reject ambiguous or malformed control identities before mapping can overwrite them."""
+    controls = snapshot.get("controls")
+    if not isinstance(controls, list):
+        return f"{side} controls must be a list"
+    seen: set[str] = set()
+    for index, item in enumerate(controls):
+        if not isinstance(item, dict):
+            return f"{side} control at index {index} is not an object"
+        control_type = item.get("control_type")
+        if not isinstance(control_type, str) or not control_type:
+            return f"{side} control at index {index} lacks a valid control_type"
+        if control_type in seen:
+            return f"{side} duplicate control_type: {control_type}"
+        seen.add(control_type)
+    return None
 
 
 def _registry_requirement(provenance: dict[str, Any]) -> tuple[set[str] | None, str | None]:
@@ -181,6 +199,11 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
         if before_type != after_type:
             return {"classification": "Unknown", "reasons": ["decision-scope identity changed for entity_type"]}
 
+    for snapshot, side in ((baseline, "baseline"), (post, "post")):
+        inventory_problem = _control_inventory_problem(snapshot, side)
+        if inventory_problem:
+            return {"classification": "Unknown", "reasons": [inventory_problem]}
+
     bmap, pmap = _control_map(baseline), _control_map(post)
     for snapshot, control_map, side in ((baseline, bmap, "baseline"), (post, pmap, "post")):
         problem = _coverage_problem(snapshot, control_map, side)
@@ -214,7 +237,7 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
         if before is None or after is None:
             unknown.append(control_type)
             continue
-        if before.get("evidence_status") in BAD_EVIDENCE or after.get("evidence_status") in BAD_EVIDENCE:
+        if before.get("evidence_status") not in VALID_EVIDENCE or after.get("evidence_status") not in VALID_EVIDENCE:
             unknown.append(control_type)
             continue
         if before.get("state") != after.get("state"):
@@ -223,7 +246,7 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
                 timestamp_unknown.append(control_type)
 
     if unknown:
-        reasons.append("unknown/stale/unsupported evidence: " + ", ".join(unknown))
+        reasons.append("missing/invalid/unknown/stale/unsupported evidence: " + ", ".join(unknown))
     if timestamp_unknown:
         reasons.append("changed control lacks effective_at: " + ", ".join(timestamp_unknown))
     if reasons:
