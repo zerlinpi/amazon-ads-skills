@@ -2,6 +2,22 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.23.0 — 2026-10-23
+
+### Safety
+
+- Compare material-control JSON state without Python's boolean/numeric equality collision: `false` is distinct from `0`, and `true` is distinct from `1`, including inside nested objects and verified-complete collections.
+- Prevent an unobserved boolean-to-numeric state change from being labeled `Comparable` or incorrectly isolating another treatment. Preserve identical booleans and equal numeric representations such as `0` and `0.0`. Missing/unsupported evidence still fails closed; the helper remains read-only.
+
+### Verification
+
+- RED: commit `a2044ff53f83a06119a8a913a191a01741eeb796` failed 5 of 493 unit tests in GitHub Actions `39963602838`, including a false `Treatment Isolated` classification.
+- GREEN: commit `546c36c55ccd0063d14bbe30539b75b7ba48d23f` passed all 493 unit tests, Skill Validator and Eval Validator in GitHub Actions `39963714085`. The release PR HEAD and merged main must pass required validation again.
+
+### Sources and copyright
+
+- Independently implemented from this repository's own JSON control-state schema and deterministic comparator; no third-party code, prompts, schemas, workflows, or templates copied. Public Amazon Ads guidance informs future placement/control coverage, not a universal bid rule.
+
 ## v1.22.0 — 2026-10-23
 
 ### Safety
