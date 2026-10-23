@@ -73,6 +73,18 @@ class RequiredObjectNestedCollectionProofTests(unittest.TestCase):
         evidence = {"routing_rules": COMPLETE}
         self.assertEqual(compare_object("targeting_or_routing", before, evidence, evidence, post_state=after)["classification"], "Confounded")
 
+    def test_required_budget_rule_list_without_proof_is_unknown(self):
+        before, after = snapshot(1.0, PLACEMENTS), snapshot(1.2, PLACEMENTS)
+        for record in (before, after):
+            budget = next(c for c in record["controls"] if c["control_type"] == "budget_or_pacing")
+            budget.pop("nested_collection_evidence", None)
+        self.assertEqual(compare_control_state(before, after, "base_bid")["classification"], "Unknown")
+
+    def test_required_budget_rule_list_with_proof_can_isolate_bid(self):
+        before, after = snapshot(1.0, PLACEMENTS), snapshot(1.2, PLACEMENTS)
+        self.assertEqual(compare_control_state(before, after, "base_bid")["classification"],
+                         "Treatment Isolated")
+
     def test_flat_required_routing_object_remains_isolated(self):
         state = {"site_restriction": "ALL_ELIGIBLE"}
         self.assertEqual(compare_object("targeting_or_routing", state)["classification"], "Treatment Isolated")
