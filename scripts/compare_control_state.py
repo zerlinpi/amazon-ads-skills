@@ -286,20 +286,20 @@ def _coverage_problem(snapshot: dict[str, Any], control_map: dict[str, dict[str,
         problem = _collection_problem(control, control_type, side)
         if problem:
             return problem
-        # All list-valued material controls need descendant-list proof, even
-        # when the root list is registry-required. Extra structured controls
-        # also require evidence for direct and deeper list descendants.
-        if control_type not in registry_required or isinstance(control.get("state"), list):
-            if isinstance(control.get("state"), dict):
-                for field, value in control["state"].items():
-                    if isinstance(value, list):
-                        problem = _nested_collection_problem(control, control_type, field, side)
-                        if problem:
-                            return problem
-            if isinstance(control.get("state"), (dict, list)):
-                problem = _deep_extra_collection_problem(control, control_type, side)
-                if problem:
-                    return problem
+        # Every material control, including registry-required object states,
+        # needs independent proof for its nested collections. A verified
+        # registry requirement does not prove that a connector enumerated a
+        # list inside the observed state.
+        if isinstance(control.get("state"), dict):
+            for field, value in control["state"].items():
+                if isinstance(value, list):
+                    problem = _nested_collection_problem(control, control_type, field, side)
+                    if problem:
+                        return problem
+        if isinstance(control.get("state"), (dict, list)):
+            problem = _deep_extra_collection_problem(control, control_type, side)
+            if problem:
+                return problem
     return None
 
 
