@@ -2,6 +2,22 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.22.0 — 2026-10-23
+
+### Safety
+
+- Fail closed when an extra observed material control outside the registry-required minimum has a null/missing state or unverified list enumeration/pagination/capability completeness. Such evidence cannot be treated as unchanged merely because the control was not required by the decision-surface registry.
+- Preserve compatible observed scalar extras and verified-complete list extras. The registry still defines the mandatory minimum; connector limitations never become zero, and the read-only comparator never performs Ads writes.
+
+### Verification
+
+- RED: PR #124 commit `310e7e7d24f32c7375d7ac8fe388059cdd05b504` failed 5 of 486 unit tests in GitHub Actions `39956202534`.
+- GREEN: commit `c5bf3d9ab3dffb2eb73e8cb74d4251bb1a776567` passed 486 unit tests, 15-Skill validator and 55-eval validator in GitHub Actions `39956278773`. Final release PR HEAD must pass required checks again before merge.
+
+### Sources and copyright
+
+- Based on this repository's existing control-state snapshot schema, versioned registry and comparator; no third-party code, prompts, schemas or workflows copied. Amazon Ads official documentation is platform context, not a numeric bid rule.
+
 ## v1.21.0 — 2026-10-23
 
 ### Safety
