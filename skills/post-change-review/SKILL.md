@@ -27,6 +27,7 @@ Load only what the case needs:
 - source, semantic-version or backfill comparability: `../../references/data-lineage.md`;
 - overlapping advertiser-control history and causal isolation: `../../references/control-state-comparability.md`;
 - prior optimization state/history conflicts: `../../references/optimization-memory.md`;
+- Global Sponsored Products 207 campaign-update receipts and marketplace configured-state readback: `../../references/global-sp-readback-evidence.md`.
 - action-time/current campaign objective semantics: `../../references/campaign-objective.md`.
 
 Do not load data-lineage for a clean single-source comparison whose snapshots use the same maturity policy. Load `control-state-comparability.md` when the baseline and post-change windows can differ in bidding strategy, placement/audience adjustments, bid rules, budget/pacing, targeting/routing, or another material advertiser control. Load `realized-ad-identity.md` when the ad format can change the shopper-visible surface, product mix, creative/message, prompt, or other realization independently of the advertiser control under review. When conversion metrics can include modeled attribution or lower-grain `Unallocated` rows, compare baseline/post `measurement_composition` from the decision-time evidence snapshot instead of assuming the same report name implies the same allocation coverage.
@@ -81,7 +82,7 @@ Gather what is available and label missing fields:
 
 ## Workflow
 
-1. **Readback first** — verify whether the intended advertiser control is actually present.
+1. **Readback first** — verify whether the intended advertiser control is actually present. For Global SP campaign updates, a 207 receipt alone is insufficient: when a trusted normalized single-item receipt and complete query readback are available, use `../../scripts/evaluate_global_sp_readback.py`; otherwise preserve Partial/Unknown rather than claiming application.
 2. Classify application as `Confirmed`, `Partial`, `Not Applied`, `Drifted`, or `Unknown`.
 3. **Objective-lineage gate** — preserve the action-time campaign objective and compare it with the current campaign objective. If they differ, record objective drift; do not retroactively replace the historical success metric or guardrails with the current objective.
 4. **Measurement gate** — require completed, attribution-mature, definitionally comparable windows; when history can restate, verify baseline/post backfill parity before outcome attribution. Keep modeled/projected future-value evidence separate from realized outcomes: a Long-Term Sales estimate may support directional learning, but it is not sales already realized through the review date. If the realized/Accumulated Sales counterpart is immature, unavailable, unsupported, or unknown, preserve that state rather than imputing zero or promoting the action to `Worked` from the estimate alone. When modeled conversion or lower-grain allocation can matter, compare baseline/post measurement composition with `compare_measurement_composition.py` when machine-readable states exist. Treat `Directional`, `Not Comparable`, or `Unknown` as unresolved measurement comparability rather than action effect.

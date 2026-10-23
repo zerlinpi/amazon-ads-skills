@@ -2,6 +2,24 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.29.0 — 2026-10-24
+
+### Safety / capability
+
+- Add a read-only, **single-item** Global Sponsored Products campaign-update receipt/readback evaluator. A 207 `success` is not proof of applied per-marketplace state; `partialSuccess`/`error` stay `Partial`, and missing/ambiguous source, global-account/campaign identity, pagination, connector capability, time, or marketplace coverage stays `Unknown`.
+- Confirm only complete source-supported post-write effective configured state for every requested marketplace; report `Drifted` when verified overrides disagree. Do not substitute global campaign state or deliveryStatus for per-marketplace configured state. Multi-item batches deliberately remain outside this narrow helper.
+- Keep all 15 Skills, the external-authorized-Executor boundary, and existing event status enums unchanged. No live Ads writes, retries, idempotency, or connector SDK dependency.
+
+### RED → GREEN
+
+- RED: commit `25dadf6b696a2960105a52b75838fcde8029b5ef`, Actions `40014494466`: 20 deterministic tests failed because the Global SP readback gate did not exist.
+- GREEN: subsequent implementation and release PR-head checks must pass unit tests, Skill Validator, and Eval Validator; final merged main requires a fresh success check.
+
+### Sources and copyright
+
+- Amazon Ads official Global Sponsored Products API guide (reviewed 2026-10-24): HTTP 207 per-index multi-status, marketplaceConfigurations overrides, and paginated query readback. Only factual semantics informed an independent normalized contract. No vendor code, schema, example payload, prompt, or workflow copied.
+- `coaxon/amazon-mcp` (MIT, 1 star, non-fork, last push 2026-07-01) reviewed but not imported: tests exist, independent CI not confirmed; external MCP implementation does not prove this repository's readback safety contract. Existing Promptfoo/MCP/Agent Skills candidates remained non-adopted for this gap.
+
 ## v1.28.0 — 2026-10-24
 
 ### Safety
