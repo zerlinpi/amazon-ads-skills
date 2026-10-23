@@ -130,6 +130,26 @@ def _control_map(snapshot: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return {item["control_type"]: item for item in snapshot.get("controls", [])}
 
 
+def _json_state_equal(before: Any, after: Any) -> bool:
+    """Compare JSON states without Python's bool/int equality aliasing.
+
+    JSON booleans are distinct from numbers even though False == 0 and
+    True == 1 in Python. Preserve normal numeric equality (0 == 0.0),
+    and apply the distinction inside nested objects and arrays.
+    """
+    if isinstance(before, bool) or isinstance(after, bool):
+        return type(before) is type(after) and before == after
+    if isinstance(before, dict) and isinstance(after, dict):
+        return before.keys() == after.keys() and all(
+            _json_state_equal(before[key], after[key]) for key in before
+        )
+    if isinstance(before, list) and isinstance(after, list):
+        return len(before) == len(after) and all(
+            _json_state_equal(left, right) for left, right in zip(before, after)
+        )
+    return before == after
+
+
 def _control_inventory_problem(snapshot: dict[str, Any], side: str) -> str | None:
     """Reject ambiguous or malformed control identities before mapping can overwrite them."""
     controls = snapshot.get("controls")
@@ -372,7 +392,7 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
         if before.get("evidence_status") not in VALID_EVIDENCE or after.get("evidence_status") not in VALID_EVIDENCE:
             unknown.append(control_type)
             continue
-        if before.get("state") != after.get("state"):
+        if not _json_state_equal(before.get("state"), after.get("state")):
             changed.append(control_type)
             if not before.get("effective_at") or not after.get("effective_at"):
                 timestamp_unknown.append(control_type)

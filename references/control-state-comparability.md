@@ -99,6 +99,10 @@ The deterministic comparator applies this stronger structured-state check only t
 
 `Unknown` is not unchanged state. Missing connector support is not evidence that a control was absent.
 
+### JSON state type identity
+
+The read-only comparator compares material-control `state` as JSON values, not Python's coercive boolean/number equality. In JSON, `false` is not numeric `0`, and `true` is not numeric `1`; the same distinction applies inside objects and complete collections. Such differences are material observed changes, not proof of unchanged controls or isolated treatment. Equivalent numeric representations such as `0` and `0.0` remain compatible when their numeric values match. Missing, stale, unsupported, or unverified control evidence is still `Unknown` under the existing gates; this comparison never fabricates a state or performs Ads writes.
+
 ## Control state is not transition provenance
 
 A source-supported current control value proves the observed state, not who caused the latest transition. This distinction is material when Amazon can manage, curate, pause, add, remove, or otherwise change a decision-relevant state without a matching advertiser or external-Executor write.
