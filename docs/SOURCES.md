@@ -797,3 +797,49 @@ Engineering adoption: a repository-owned, optional list of required provenance d
 - `KuudoAI/amazon_ads_mcp`: **72 stars**, **MIT**, last push **2026-09-06**, non-fork/non-archived; previously reviewed connector engineering. Does not supersede Amazon's Stream v2 version semantics; no code/tool schema/ingestion workflow reused.
 
 Stars and activity are point-in-time discovery context, **not** proof of technical fitness. Forks/mirrors and already-reviewed projects were not counted as novel sources. Amazon official documentation remains copyrighted vendor material: only short factual semantics were independently expressed as repository-owned MIT decision rules, tests and synthetic data. No protected prompt, schema, source code, migration procedure or provider workflow was copied.
+
+
+## Sponsored Brands v4 coverage and Fire TV display measurement — 2026-10-19
+
+### Official, version-scoped Sponsored Brands reporting evidence
+
+Amazon Ads' [Sponsored Brands v4 migration guide](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/v4-migration-guide) documents that legacy v3 campaign reads can omit additional ad groups/ads in multi-ad-group campaigns. The guide and [legacy Sponsored Brands Reporting API v2 reference](https://advertising.amazon.com/API/docs/en-us/reference/sponsored-brands/2/reports) describe the `creativeType: all` inclusion condition for the applicable legacy report requests. These facts are scoped to the documented API generations; they do not establish the same filter for Reporting API v3 or Unified Reporting. A successful partial response cannot prove population completeness or metric zero.
+
+Adopted: independent, source/version/request-aware completeness reasoning in `docs/research/sponsored-brands-v4-report-coverage-2026-10-19.md`. Rejected: universal connector schema changes, automatic API request rewrites, invented coverage, and a sixteenth Skill. Vendor documentation is copyrighted; no Amazon code, prose, API schema, examples, prompt, template, or workflow was copied.
+
+### Official, date-scoped Fire TV display measurement evidence
+
+Amazon Ads' [support-center notice](https://advertising.amazon.com/help/ref=ams_head_help), checked on 2026-10-19, announces a Fire TV display-supply measurement-methodology change effective 2026-10-08. It estimates an aggregate approximately 15% impression and 11% click impact, varying by advertiser/campaign/marketplace/placement. These figures are not individual-campaign correction factors and do not establish whether historical data was restated.
+
+Adopted: the independently expressed cross-cutover comparability warning in `docs/research/fire-tv-measurement-methodology-2026-10-19.md`. Rejected: multiplying observed data by platform averages, assuming retroactive restatement, extending the change to unrelated ad products, and unverified runtime behavior changes. No copyrighted vendor text, code, schema, prompt, workflow, or template was copied. Both entries are research-only and preserve the existing read-only/suggest/shadow and external-authorized-Executor boundaries.
+
+
+## 2026-10-22 official migration-tool limitations (source review)
+
+Official Amazon Ads Help: *Migrate your scheduled reports to unified reporting*,
+updated **2026-10-12**:
+https://advertising.amazon.com/help/GK3JZZE5QLTF8U8A
+
+**Incremental evidence:** only active saved/scheduled report configurations
+from the preceding 24 months are eligible for the migration tool; some report
+types are not supported; fields can be dropped where legacy and new metric
+reporting grains differ (notably lower-grain `topOfSearchImpressionShare`).
+This is a **migration-tool/report-grain** constraint, not proof of universal
+API unavailability or a zero-valued metric.
+
+**Adopted:** independently written source and measurement-lineage clarification
+in `docs/research/unified-reporting-migration.md`. **Rejected:** adding a
+sixteenth Skill, hard-coded vendor capability list, direct report migration,
+or external connector dependency; no nonduplicative runtime behavior gap was
+established. The official page retains its copyright. No provider prose,
+code, schema, prompt, report template, or workflow was copied.
+
+## 2026-10-22 Full-Funnel and Global SP official evidence review
+
+Sources: Amazon Ads Full-Funnel launch (2026-09-29), https://advertising.amazon.com/resources/whats-new/full-funnel-campaigns-from-discovery-to-sales ; Amazon Ads Agent launch (2026-09-29), https://advertising.amazon.com/en-us/library/news/amazon-ads-agent/ ; Global Sponsored Products API guide (reviewed 2026-10-22; publication date unverified), https://advertising.amazon.com/API/docs/en-us/guides/campaign-management/global-campaigns .
+
+Adopted: independently expressed shared-budget/managed-delivery and modeled Long-Term Sales boundaries, plus Global SP's marketplace-specific budget, bid, currency, state, identity, pagination, auto-expansion and partial-result evidence. Recorded as non-normative research in `docs/research/amazon-ads-platform-watch-2026-09.md`; existing decision contracts remain authoritative.
+
+Rejected: vendor uplift as a causal or universal bid/budget rule, per-account/API eligibility inferred from UI availability, global campaign state as proof of every marketplace's delivery, partial write as full success, direct cross-currency arithmetic, additional Skill/runtime or live mutation.
+
+Copyright: only factual platform behavior was independently paraphrased; no Amazon prose, code, schema, API example, report template, prompt or workflow copied. Reddit anecdotes and third-party repository implementations were not reused.

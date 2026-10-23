@@ -123,6 +123,36 @@ Current repository decision:
 Source:
 - https://advertising.amazon.com/library/news/amazon-ads-chat-gpt-advertising-integration
 
+## 9. Full-Funnel Campaigns — shared budget and modeled outcomes (2026-09-29)
+
+Amazon Ads announced a U.S. open beta combining sponsored ads, display, video and streaming TV through one budget and platform-managed allocation. UI launch does not prove account-specific API or connector capability.
+
+- Preserve shared budget ownership and realized format allocation; never double-count one cap as independent format budgets.
+- Platform-managed allocation and creative/traffic mix are causal confounders even without an advertiser edit.
+- Long-Term Sales includes estimated future new-customer value over 12 months; it is not realized contribution profit.
+- Vendor-reported beta uplift is not a controlled, portable result or numeric budget/bid rule.
+
+Sources:
+- https://advertising.amazon.com/resources/whats-new/full-funnel-campaigns-from-discovery-to-sales
+- https://advertising.amazon.com/en-us/library/news/amazon-ads-agent/
+
+## 10. Global Sponsored Products campaigns — marketplace-local control (reviewed 2026-10-22)
+
+Amazon's current Global SP API guide describes global campaign/ad-group objects spanning marketplaces, while budgets, bids, currencies, local status and campaign overrides can differ per marketplace. Global SP uses Global Account identity rather than the legacy profile-scope header. Ads/targets are marketplace-specific; queries are paginated, writes can return multi-status partial outcomes, and optional auto-expansion can add marketplaces.
+
+Decision boundaries:
+
+- Global campaign ID alone is not a safe join/memory key: preserve Global Account, marketplace, entity grain, local currency and status.
+- Global ENABLED/LIMITED does not establish each marketplace's delivery state. Local pause or partial outcome is not universal success, failure or zero.
+- Marketplace-local bids/budgets are distinct monetary controls; cross-currency totals require verified conversion provenance, and performance economics cannot be copied between markets.
+- Auto-expansion and local overrides can change coverage and realized traffic mix without a local manual edit. Treat them as control transitions and causal confounders.
+- Partial write response handling, retry, idempotency and reconciliation belong exclusively to an external authorized Executor. Missing connector coverage stays Unknown.
+
+Existing cross-account identity, currency lineage, control-state and external-Executor rules remain canonical; this is watch-only research, not a sixteenth Skill.
+
+Official API source:
+- https://advertising.amazon.com/API/docs/en-us/guides/campaign-management/global-campaigns
+
 ## Promotion rule
 
 A platform update moves from this watch file into a canonical Skill/reference/registry only when at least one of these is true:
