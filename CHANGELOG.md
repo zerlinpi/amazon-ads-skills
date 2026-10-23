@@ -2,6 +2,22 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.28.0 — 2026-10-24
+
+### Safety
+
+- Fail closed on unverified direct and deep list descendants inside **registry-required object-valued** material controls, including placement, routing, and budget-rule state during a Sponsored Products bid review. Previously the generic recursive completeness gate covered extra objects and required top-level lists but skipped required objects. No missing, Partial, Truncated, Unsupported or Unknown collection proof is interpreted as a zero or unchanged state.
+- Reuse existing per-list completeness checks without adding Skills, API write capability or external dependencies. Synthetic legacy fixtures that previously assumed an empty budget-rule list proved completeness now carry explicit source-like collection evidence instead of weakening the new gate.
+
+### Verification
+
+- RED: commit `bf78c4af0147c8b798a010f3ed8abddb579a786d` failed 6 of 552 tests in Actions `40005645373`; old code falsely isolated a bid change when required routing/placement lists lacked proof.
+- GREEN: commit `61a311a12220f80bf70787756ddb31918df66ef8` passed 554 unit tests and both validators in Actions `40005896074`. Final release PR HEAD and merged main must pass their own checks.
+
+### Sources and copyright
+
+- Amazon Ads official Global SP API and 2026 Amazon Business guidance provide platform context, not copied implementation. Third-party MCP/Agent candidates and anecdotal PPC posts did not justify a dependency or fixed bidding rule. All test data and implementation are repository-authored; no third-party code, prompts, schemas, workflows or templates were imported.
+
 ## v1.27.0 — 2026-10-24
 
 ### Safety
