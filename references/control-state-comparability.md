@@ -12,6 +12,10 @@ When control evidence is exchanged between a Skill, connector, replay fixture, o
 
 The snapshot must declare the decision-material control types expected and a coverage status. `Complete` is allowed only when every required control is represented by source-supported evidence. `Partial` or `Unknown` coverage is not evidence that omitted controls were absent.
 
+### Control-state source provenance
+
+A source envelope is required for each read-only snapshot. The comparator requires nonempty `source.source_system` and `source.acquisition_channel` on both sides and does not assume cross-source or cross-acquisition equivalence without an explicit, verified lineage-mapping contract (which this snapshot schema does not currently carry). If `source.connector_id` is supplied on either side, both sides must provide the same nonempty connector identity. Absent connector IDs on both sides remain compatible with legacy snapshots. `source.readback_id` identifies a particular readback and may differ between baseline and post; it is not a source identity. Missing or mismatched source provenance yields `Unknown`, never a fabricated zero or a claim of treatment isolation.
+
 ### Global Sponsored Products account identity
 
 Amazon's Global Sponsored Products campaign-management APIs use a Global Account ID in the `Amazon-Ads-AccountId` header rather than the legacy profile-scope header. A profile ID must therefore not be fabricated merely to populate a control-state snapshot. The optional `scope.account_identity` envelope permits a profile-less snapshot only when an explicit `global_advertiser_account_id` and the decision marketplace are present. Legacy profile-scoped snapshots remain valid.
