@@ -20,6 +20,13 @@ The normalized JSON envelope contains:
 
 `effective_state` is the source-supported configured `ENABLED`, `PAUSED`, or `ARCHIVED` state, not delivery status or performance. `Unknown`, missing, partial, unsupported, and unverified observations are not zero or paused.
 
+### Optional configured-state row lineage (v1.32.0)
+
+A trusted adapter may supply row-level `source`, `observed_at`, `global_account_id`, or `campaign_id` on `marketplace_states` rows. When supplied, the values must not contradict the trusted readback envelope or the request. Row source must match `source_system`, `acquisition_channel`, and `connector_id`; row observation time must be strictly later than the update completion and no later than the envelope observation; row account/campaign identity must match the request. Incomplete explicit source, invalid timestamps, and contradictions return `Unknown` rather than `Confirmed`. Do not silently discard conflicting row metadata during normalization.
+
+These row fields are optional **repository-owned conservative evidence**, not Amazon API-required fields. A trusted single-envelope adapter can omit them, but omission is not independent proof of per-row lineage. Valid HTTP 207 `error`/`partialSuccess` still returns `Partial` before readback checks.
+
+
 ## Optional marketplace monetary-budget readback (v1.30.0)
 
 The state-only single-item contract remains valid when no budget change is being evaluated. When the external Executor's intended change includes a **marketplace monetary budget**, the normalized `request` MUST additionally contain `expected_marketplace_budgets` keyed exactly by `request.marketplaces`. Each value must carry `currency_code` (three uppercase letters), a **plain nonnegative decimal string** `amount` (for example, `"100.00"`), `budget_type: "MONETARY"`, and `recurrence: "DAILY"`. The current optional comparison deliberately supports only daily monetary budgets; other types/periods remain `Unknown` rather than being interpreted as zero or a supported update.
