@@ -123,6 +123,21 @@ def evaluate_global_sp_readback(evidence: Any) -> dict[str, Any]:
             return unknown(f"readback duplicate marketplace: {market}")
         if row.get("evidence_status") != "observed":
             return unknown(f"readback {market} effective state is not observed")
+        # Optional state-row lineage, like budget-row lineage, must not
+        # contradict the trusted envelope or the original request.
+        for identity in ("global_account_id", "campaign_id"):
+            if identity in row and row[identity] != request[identity]:
+                return unknown(f"readback {market} state {identity} contradicts request")
+        if "source" in row:
+            row_source = row["source"]
+            if (not isinstance(row_source, dict)
+                    or any(row_source.get(key) != source[key] for key in
+                           ("source_system", "acquisition_channel", "connector_id"))):
+                return unknown(f"readback {market} state source contradicts envelope")
+        if "observed_at" in row:
+            row_observed = _rfc3339_instant(row["observed_at"])
+            if row_observed is None or row_observed <= completed or row_observed > observed:
+                return unknown(f"readback {market} state observation time is inconsistent")
         state = row.get("effective_state")
         if not isinstance(state, str) or state not in STATES:
             return unknown(f"readback {market} effective configured state is missing or unsupported")
