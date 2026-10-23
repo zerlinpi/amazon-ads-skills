@@ -81,7 +81,7 @@ def _rfc3339_instant(value: Any) -> tuple[datetime, Decimal] | None:
     if not isinstance(value, str) or value.endswith("-00:00"):
         return None
     match = re.fullmatch(
-        r"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.(?P<fraction>\\d+))?(?:Z|[+-](?:[01]\\d|2[0-3]):[0-5]\\d)",
+        r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.(?P<fraction>\d+))?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)",
         value,
     )
     if match is None:
