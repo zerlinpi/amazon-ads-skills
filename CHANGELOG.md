@@ -2,6 +2,17 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.16.0 — 2026-10-15
+
+### Fixed
+
+- Reject competing correction events that supersede the same in-slice measurement-comparison audit event. Ambiguous audit forks must not silently resolve to a seemingly available comparison.
+- Preserve linear correction chains, distinct independent correction targets, and bounded histories with missing predecessors.
+
+### Verification
+
+- Four deterministic correction-fork regressions: 2 failures before the fix, 4 passes after the minimal fix. Full repository unit tests and Skill/eval validators must pass in PR CI before merge.
+
 ## v1.15.0 — 2026-10-09
 
 ### Fixed
