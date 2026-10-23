@@ -2,6 +2,22 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.26.0 — 2026-10-24
+
+### Safety
+
+- Fail closed on descendant lists inside a top-level list-valued extra material control. Root `collection_evidence` alone cannot prove completeness of `state[0].rules`, `state[0]` when it is a list, or any deeper list. Require independent RFC 6901 `nested_collection_evidence` per descendant, with Complete enumeration, Complete pagination, and Supported connector capability.
+- Preserve flat complete root lists, object-root legacy direct-list keys, complete descendants, isolated/confounded treatment classification, and all 15 Skills. The comparator remains read-only; no Amazon Ads execution, retry, credential, or connector mutation capability is introduced.
+
+### Verification
+
+- RED: commit `cee188266af0c3f3898f8b0c5c0b3fee99d2e461` failed 6 of 530 deterministic unit tests in GitHub Actions `39989044504` (old code incorrectly returned Comparable for unverified root-list descendants).
+- GREEN: commit `58b22c6c25fdd75db314e30c2709f6d2de392228` passed 530 unit tests and both Skill/Eval validators in GitHub Actions `39989177279`. Release PR HEAD and merged main require their own latest required-check verification.
+
+### Sources and copyright
+
+- Independently derived from this repository's existing control-state completeness contract and synthetic regressions. Official Amazon Ads platform documentation remains contextual; no third-party code, prompts, schemas, workflows or templates were copied. No duplicate SOURCES entry or new dependency was added.
+
 ## v1.25.0 — 2026-10-23
 
 ### Safety

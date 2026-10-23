@@ -57,7 +57,7 @@
             }
           },
           "collection_evidence": {"$ref": "#/$defs/collectionEvidence"},
-          "nested_collection_evidence": {"type": "object", "description": "Per-list completeness proof. Direct state-list fields retain their legacy field-name keys; for deeper list descendants in extra material controls, use RFC 6901 JSON Pointer keys rooted at state, including escaped object keys and array indices. Parent-list evidence does not prove child-list completeness.", "additionalProperties": {"$ref": "#/$defs/collectionEvidence"}},
+          "nested_collection_evidence": {"type": "object", "description": "Per-list completeness proof. Direct state-list fields retain their legacy field-name keys; for deeper list descendants in extra material controls (including descendants of a top-level list-valued state), use RFC 6901 JSON Pointer keys rooted at state, including escaped object keys and array indices. A top-level list needs collection_evidence; every nested list needs its own nested_collection_evidence. Parent-list evidence does not prove child-list completeness.", "additionalProperties": {"$ref": "#/$defs/collectionEvidence"}},
           "evidence_note": {"type": ["string", "null"]}
         }
       }
