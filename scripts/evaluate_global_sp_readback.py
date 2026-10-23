@@ -8,7 +8,9 @@ retries writes, or infers effective state from delivery status.
 from __future__ import annotations
 
 import json
+import re
 import sys
+from decimal import Decimal
 from typing import Any
 
 from scripts.compare_control_state import _rfc3339_instant
@@ -25,6 +27,17 @@ def _result(status: str, reason: str, mismatched: list[str] | None = None) -> di
 
 def _nonempty(value: Any) -> bool:
     return isinstance(value, str) and bool(value.strip())
+
+
+def _monetary_amount(value: Any) -> Decimal | None:
+    """Require a finite, nonnegative plain decimal *string*, never a JSON float.
+
+    The trusted adapter must preserve source precision when normalizing API
+    numeric values. No FX conversion or inferred missing/zero budget occurs here.
+    """
+    if not isinstance(value, str) or re.fullmatch(r"[0-9]+(?:\.[0-9]+)?", value) is None:
+        return None
+    return Decimal(value)
 
 
 def evaluate_global_sp_readback(evidence: Any) -> dict[str, Any]:
@@ -117,9 +130,62 @@ def evaluate_global_sp_readback(evidence: Any) -> dict[str, Any]:
     if set(actual) != set(markets):
         return unknown("readback marketplace coverage differs from requested marketplace scope")
 
-    mismatched = sorted(m for m in markets if actual[m] != expected[m])
+    budget_mismatched: set[str] = set()
+    # Optional, independently evidenced monetary-budget comparison. A state
+    # readback capability is NOT proof of budget visibility or completeness.
+    if "expected_marketplace_budgets" in request:
+        expected_budgets = request["expected_marketplace_budgets"]
+        if not isinstance(expected_budgets, dict) or set(expected_budgets) != set(markets):
+            return unknown("expected monetary budgets must cover every requested marketplace")
+        for market, budget in expected_budgets.items():
+            if (not isinstance(budget, dict)
+                    or not isinstance(budget.get("currency_code"), str)
+                    or re.fullmatch(r"[A-Z]{3}", budget["currency_code"]) is None
+                    or budget.get("budget_type") != "MONETARY"
+                    or budget.get("recurrence") != "DAILY"
+                    or _monetary_amount(budget.get("amount")) is None):
+                return unknown(f"request {market} monetary budget identity or amount is unsupported")
+        for field, required in (("budget_coverage_status", "Complete"),
+                                ("budget_pagination_status", "Complete"),
+                                ("budget_capability_status", "Supported")):
+            if readback.get(field) != required:
+                return unknown(f"readback {field} is not {required}")
+        budget_rows = readback.get("marketplace_budgets")
+        if not isinstance(budget_rows, list):
+            return unknown("readback marketplace_budgets must be an explicit list")
+        actual_budgets: dict[str, dict[str, Any]] = {}
+        for row in budget_rows:
+            if not isinstance(row, dict) or not _nonempty(row.get("marketplace")):
+                return unknown("readback has an invalid budget marketplace identity")
+            market = row["marketplace"]
+            if market in actual_budgets:
+                return unknown(f"readback duplicate budget marketplace: {market}")
+            if row.get("evidence_status") != "observed":
+                return unknown(f"readback {market} monetary budget is not observed")
+            if (not isinstance(row.get("currency_code"), str)
+                    or re.fullmatch(r"[A-Z]{3}", row["currency_code"]) is None
+                    or not _nonempty(row.get("budget_type"))
+                    or not _nonempty(row.get("recurrence"))
+                    or _monetary_amount(row.get("amount")) is None):
+                return unknown(f"readback {market} monetary budget identity or amount is unverified")
+            actual_budgets[market] = row
+        if set(actual_budgets) != set(markets):
+            return unknown("readback monetary budget coverage differs from requested marketplace scope")
+        for market in markets:
+            desired, observed_budget = expected_budgets[market], actual_budgets[market]
+            if (desired["currency_code"] != observed_budget["currency_code"]
+                    or desired["budget_type"] != observed_budget["budget_type"]
+                    or desired["recurrence"] != observed_budget["recurrence"]
+                    or _monetary_amount(desired["amount"]) != _monetary_amount(observed_budget["amount"])):
+                budget_mismatched.add(market)
+
+    mismatched = sorted({m for m in markets if actual[m] != expected[m]} | budget_mismatched)
     if mismatched:
+        if budget_mismatched:
+            return _result("Drifted", "observed marketplace configured state or monetary budget differs from intended state", mismatched)
         return _result("Drifted", "observed marketplace configured state differs from intended state", mismatched)
+    if "expected_marketplace_budgets" in request:
+        return _result("Confirmed", "complete per-marketplace configured-state and monetary-budget readback agree")
     return _result("Confirmed", "single-item 207 success and complete post-write marketplace configured-state readback agree")
 
 

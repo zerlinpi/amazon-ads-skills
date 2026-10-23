@@ -20,6 +20,16 @@ The normalized JSON envelope contains:
 
 `effective_state` is the source-supported configured `ENABLED`, `PAUSED`, or `ARCHIVED` state, not delivery status or performance. `Unknown`, missing, partial, unsupported, and unverified observations are not zero or paused.
 
+## Optional marketplace monetary-budget readback (v1.30.0)
+
+The state-only single-item contract remains valid when no budget change is being evaluated. When the external Executor's intended change includes a **marketplace monetary budget**, the normalized `request` MUST additionally contain `expected_marketplace_budgets` keyed exactly by `request.marketplaces`. Each value must carry `currency_code` (three uppercase letters), a **plain nonnegative decimal string** `amount` (for example, `"100.00"`), `budget_type: "MONETARY"`, and `recurrence: "DAILY"`. The current optional comparison deliberately supports only daily monetary budgets; other types/periods remain `Unknown` rather than being interpreted as zero or a supported update.
+
+The normalized `readback` must separately provide `budget_coverage_status: "Complete"`, `budget_pagination_status: "Complete"`, `budget_capability_status: "Supported"`, and exactly one `marketplace_budgets` row per requested marketplace. Each row carries `marketplace`, `currency_code`, `amount`, `budget_type`, `recurrence`, and `evidence_status: "observed"`. The adapter must preserve native source precision when converting an API numeric budget to a decimal string, and prove the source marketplace/currency mapping. Generic state-readback capability does **not** prove budget observability.
+
+Budget evidence is compared by marketplace **without FX conversion**. `"100"` and `"100.00"` compare numerically equal only with the same verified currency, type and recurrence. Currency mismatch, amount mismatch or recurrence mismatch is `Drifted`; missing market, partial/truncated/unsupported budget evidence, nonfinite/negative/malformed values, unobserved row or incomplete source identity is `Unknown`. Explicitly observed `"0"` is distinguishable from missing evidence; this evaluator does not assert that any given zero budget is permitted by Amazon or authorize a write. Any receipt `error`/`partialSuccess` still yields `Partial` before readback interpretation.
+
+This is **not** a general bid readback, multi-item batch reconciler, exchange-rate engine, budget-policy calculator, or proof of actual delivery/spend. Other Global SP budget variants, ad-group bids, target bids, auto-expansion and execution/idempotency remain outside this narrow contract. A caller must not claim budget application `Confirmed` by omitting the optional budget expectation when a budget was part of the intended change.
+
 ## Conservative classifications
 
 - `Confirmed`: only an unambiguous single-item 207 success plus complete, newer, same-identity query readback with every marketplace configured as intended. **Not** proof of campaign delivery, performance, or causal lift.

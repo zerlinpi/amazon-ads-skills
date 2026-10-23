@@ -2,6 +2,23 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.30.0 — 2026-10-24
+
+### Safety / capability
+
+- Extend the read-only, **single-item** Global Sponsored Products 207 receipt/readback gate with an optional, independent **daily monetary budget** comparison per marketplace. Verify native currency identity, exact nonnegative decimal-string amounts, budget type/recurrence, observed row evidence and budget-specific coverage/pagination/connector capability; never treat missing, partial or unsupported budget evidence as zero or as state-only `Confirmed`.
+- Classify complete, observed budget/currency/recurrence disagreements as `Drifted`; incomplete, malformed or unobserved evidence as `Unknown`. Preserve legacy state-only inputs, HTTP 207 `Partial` semantics, and the 15-Skill external-Executor safety boundary. No live Ads writes, retries, FX conversion, or multi-item batch support.
+
+### RED → GREEN
+
+- RED: commit `f00f5630d2dee351a8ea831a7ec647265b16fbf9`, Actions `40021864643`: 597 unit tests, 17 failed on missing optional monetary-budget verification.
+- GREEN: independently authored read-only guard and deterministic synthetic tests; verify unit tests plus both Skill/eval validators at the latest PR HEAD and after merge.
+
+### Sources and copyright
+
+- Amazon Ads official Global Sponsored Products API guide (reviewed 2026-10-24): marketplace-local monetary budgets/currencies, Global Account scope, and 207/readback separation. Only independently expressed factual semantics used; no vendor code, schema, payload example, prompt or workflow copied.
+- KuudoAI Amazon Ads MCP (MIT), Promptfoo (MIT), Agent Skills specification (Apache-2.0) rechecked; none imported because existing deterministic checks suffice and external connectors do not prove budget-readback completeness.
+
 ## v1.29.0 — 2026-10-24
 
 ### Safety / capability
