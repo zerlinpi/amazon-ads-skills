@@ -6,7 +6,7 @@ import copy
 import unittest
 
 from scripts.compare_control_state import compare_control_state
-from tests.test_control_state_extra_nested_collections import snapshot, add_extra, COMPLETE
+from test_control_state_extra_nested_collections import snapshot, add_extra, COMPLETE
 
 
 class DeepExtraCollectionTests(unittest.TestCase):
