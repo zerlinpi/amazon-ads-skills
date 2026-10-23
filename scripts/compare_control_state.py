@@ -221,10 +221,10 @@ def _coverage_problem(snapshot: dict[str, Any], control_map: dict[str, dict[str,
     missing = sorted(set(required) - set(control_map))
     if missing:
         return f"{side} required controls are not evidenced: " + ", ".join(missing)
-    null_state = sorted(control_type for control_type in required if control_map[control_type].get("state") is None)
+    null_state = sorted(control_type for control_type in control_map if control_map[control_type].get("state") is None)
     if null_state:
         return f"{side} required controls have unknown state: " + ", ".join(null_state)
-    for control_type in sorted(required):
+    for control_type in sorted(control_map):
         problem = _collection_problem(control_map[control_type], control_type, side)
         if problem:
             return problem
