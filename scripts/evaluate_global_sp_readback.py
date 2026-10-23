@@ -91,6 +91,17 @@ def evaluate_global_sp_readback(evidence: Any) -> dict[str, Any]:
     if len(receipt["success"]) != 1:
         return unknown("Global SP receipt lacks an unambiguous success for request index 0")
 
+    # This is a CAMPAIGN configured-state / optional daily-budget gate, not
+    # an ad-group, target, placement or general-purpose write reconciler.
+    # Future normalized expected_* intent must be explicitly supported before
+    # this helper can claim that the *whole intended change* was confirmed.
+    supported_intent = {"expected_effective_states", "expected_marketplace_budgets"}
+    unsupported_intent = sorted(
+        key for key in request if key.startswith("expected_") and key not in supported_intent
+    )
+    if unsupported_intent:
+        return unknown("unverified request intent: " + ", ".join(unsupported_intent))
+
     readback = evidence.get("readback")
     if not isinstance(readback, dict):
         return unknown("successful receipt is not post-write readback")

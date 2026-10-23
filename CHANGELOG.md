@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.33.0 — 2026-10-24
+
+### Safety
+
+- Global SP single-item campaign receipt/readback evaluator now rejects unverified extra `expected_*` intent (including marketplace/ad-group/target bids and placement adjustments) with `Unknown`. Previously it could return `Confirmed` solely from campaign configured state while ignoring an explicitly requested separate bid change.
+- Preserve supported campaign-state and optional daily monetary-budget readback, partial/error 207 precedence, and the 15-Skill read-only/external Executor boundary. No ad-group/target readback capability is claimed.
+
+### RED → GREEN
+
+- Deterministic RED commit `a7839cd1b0fa9603b11079f76364d9bb17e9d20c`, Actions `40041109634`: 638 tests, 5 expected failures proving false confirmation.
+- Minimal GREEN fix commit `0e4e50165becfec5ee56d49df1c3bf391e65b6ce`; final PR-head and merged-main required validation must succeed before merge.
+
+### Sources / copyright
+
+- Official Amazon Ads Global SP guide (checked 2026-10-24) distinguishes campaign state/budget and marketplace-specific ad-group bids. Previously reviewed MIT/Apache-2.0/NOASSERTION repositories not copied or imported. See `docs/SOURCES.md`.
+
 ## v1.32.0 — 2026-10-24
 
 ### Safety
