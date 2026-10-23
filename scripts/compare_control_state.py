@@ -245,9 +245,18 @@ def _coverage_problem(snapshot: dict[str, Any], control_map: dict[str, dict[str,
     if null_state:
         return f"{side} required controls have unknown state: " + ", ".join(null_state)
     for control_type in sorted(control_map):
-        problem = _collection_problem(control_map[control_type], control_type, side)
+        control = control_map[control_type]
+        problem = _collection_problem(control, control_type, side)
         if problem:
             return problem
+        # An extra material control is still causal evidence: direct nested
+        # lists need their own enumeration/pagination/capability proof.
+        if control_type not in registry_required and isinstance(control.get("state"), dict):
+            for field, value in control["state"].items():
+                if isinstance(value, list):
+                    problem = _nested_collection_problem(control, control_type, field, side)
+                    if problem:
+                        return problem
     return None
 
 

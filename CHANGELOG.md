@@ -2,6 +2,22 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.24.0 — 2026-10-23
+
+### Safety
+
+- Fail closed when a material control beyond the versioned required set carries a direct nested list-valued state field without its own verified enumeration, pagination and connector-capability evidence. An empty or nonempty returned list does not establish complete readback.
+- Preserve complete nested lists, scalar extra controls, and isolated/confounded treatment distinctions. This only changes read-only control-state evidence classification; it does not add Amazon Ads write, retry, or executor authority.
+
+### Verification
+
+- RED: commit `12bafb677810a8347006f59220efa95cdf703ce7` failed 7 of 504 deterministic unit tests in GitHub Actions `39972265204` (old behavior incorrectly returned Comparable).
+- GREEN: commit `1414ac95e419d0b96a9c035b75b20a89c3ec1c4f` passed all 504 unit tests, 15-Skill validator and 55-eval validator in GitHub Actions `39972418888`. Release PR HEAD and merged main require separate green checks.
+
+### Sources and copyright
+
+- Independently derived from this repository's existing snapshot schema, nested-collection evidence contract and comparator. No third-party code, prompts, schemas, workflows, or templates copied. Amazon Ads official documentation remains platform context, not an assumed connector capability.
+
 ## v1.23.0 — 2026-10-23
 
 ### Safety
