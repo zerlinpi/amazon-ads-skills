@@ -2,6 +2,28 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.18.0 — 2026-10-23
+
+### Added
+
+- Read-only Global Sponsored Products control-state comparison supports profile-less snapshots when a source-supported Global Account ID and marketplace scope are explicit. Legacy profile-scoped snapshots remain supported.
+- Optional account-identity envelope preserves global, regional, legacy and profile identifiers without assuming cross-generation mappings.
+
+### Safety
+
+- Reject conflicting or one-sided advertiser identity, country context, missing strong identifiers and profile/global identity mismatches as Unknown, even if control values are identical.
+- The comparator does not infer marketplace-wide control equivalence, connector capability, account mappings or Ads write authorization.
+
+### Verification
+
+- Deterministic RED on PR #120 commit 912dee834bc78571e1bd309646ac4891247632ca: five failures in 452 repository unit tests (GitHub Actions 39927421372).
+- GREEN requires repository unit tests, Skill validator and Eval validator to pass on the final PR HEAD before merge.
+
+### Source and copyright
+
+- Amazon Ads Global Campaigns API guide (reviewed 2026-10-23; publication date not established): https://advertising.amazon.com/API/docs/en-us/guides/campaign-management/global-campaigns
+- Only publicly documented identity/header semantics were used; no Amazon API examples, code, schemas or third-party workflows were copied.
+
 ## v1.17.0 — 2026-10-23
 
 ### Fixed
