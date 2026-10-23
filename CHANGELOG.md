@@ -1,5 +1,23 @@
 # Changelog
 
+## v1.32.0 — 2026-10-24
+
+### Safety
+
+- Reject explicit per-marketplace Global SP configured-state row source, observation time, or global-account/campaign identity that contradicts the trusted readback envelope or original request. Previously, stale or cross-connector state rows could be falsely `Confirmed`.
+- Preserve optional row metadata, single-item HTTP 207 `Partial` precedence, state drift detection, daily monetary-budget comparison, 15 Skills and the read-only/external Executor boundary.
+
+### RED → GREEN
+
+- RED commit `d41cb0d16a826960a04cf5472e0de467ab722d5e`, Actions `40036180458`: 629 tests, 10 failed on ignored state-row provenance.
+- GREEN commit `9b730eaf98f8390fdb3b8c4e5fd4bb7c99b580b1`, Actions `40036236621`: 629/629 tests and both validators passed; final PR-head and merged-main checks remain required.
+
+### Sources and reuse
+
+- Amazon Ads Global SP guide (checked 2026-10-24): platform facts for global identity, per-marketplace state and 207/readback separation. Row-lineage contradiction is an independent repository safety rule, not an Amazon-mandated payload field.
+- Previously reviewed KuudoAI Amazon Ads MCP (MIT), OpenLineage (Apache-2.0), Promptfoo (MIT) and Agent Skills (Apache-2.0) were not adopted; no third-party code, schema, prompts, templates or workflows copied.
+
+
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
 ## v1.31.0 — 2026-10-24
