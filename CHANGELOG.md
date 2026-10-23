@@ -2,6 +2,18 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.17.0 — 2026-10-23
+
+### Fixed
+
+- Fail closed on duplicate or malformed material control identities before constructing control-state maps, preventing silent evidence overwrites.
+- Accept only observed/derived evidence statuses for comparability; missing, invalid, stale, unsupported, and unknown evidence remain Unknown rather than being interpreted as stable controls.
+- Preserve existing read-only decision boundaries, required-control registry checks, and 15 canonical Skills.
+
+### Verification
+
+- Deterministic RED on PR #119 commit 21f3db4a00841cb5e59d89d31bb7141e56018ea0: five failed assertions and one missing-key error; GREEN on 7f1f6eeb1f77f7f589ea952f7147144cce54d648: repository unit tests, Skill validator and Eval validator passed in GitHub Actions 39920200834.
+
 ## v1.16.0 — 2026-10-15
 
 ### Fixed
