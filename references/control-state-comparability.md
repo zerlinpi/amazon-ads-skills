@@ -12,6 +12,16 @@ When control evidence is exchanged between a Skill, connector, replay fixture, o
 
 The snapshot must declare the decision-material control types expected and a coverage status. `Complete` is allowed only when every required control is represented by source-supported evidence. `Partial` or `Unknown` coverage is not evidence that omitted controls were absent.
 
+### Global Sponsored Products account identity
+
+Amazon's Global Sponsored Products campaign-management APIs use a Global Account ID in the `Amazon-Ads-AccountId` header rather than the legacy profile-scope header. A profile ID must therefore not be fabricated merely to populate a control-state snapshot. The optional `scope.account_identity` envelope permits a profile-less snapshot only when an explicit `global_advertiser_account_id` and the decision marketplace are present. Legacy profile-scoped snapshots remain valid.
+
+For read-side comparisons, matching `marketplace_id` and matching control values are insufficient when explicit advertiser identities disagree. Compare any provided global, regional, legacy, advertiser, regional-profile, manager and country identity fields; missing or conflicting values fail closed to `Unknown`. An account-identity envelope on only one side is not proof of equivalence. If an envelope is present, require a shared, nonempty, matching strong advertiser/profile identifier. Identity mapping provenance may be retained, but does not automatically establish equivalence between distinct identifier generations. Profile-less Global SP evidence requires the same explicit Global Account ID on both sides. Do not compare one profile-scoped snapshot with one profile-less snapshot by inference.
+
+This is a read-only evidence envelope, not an Amazon API payload, eligibility assertion or connector capability claim. It does not prove that a global campaign's marketplace-specific budget, bid, state, reporting or currency settings are identical. Preserve those dimensions and verify the active acquisition path separately. No Ads write, retry or reconciliation is performed by this comparator.
+
+Source: Amazon Ads Global Campaigns API guide (reviewed 2026-10-23): https://advertising.amazon.com/API/docs/en-us/guides/campaign-management/global-campaigns . Platform facts are independently paraphrased; no Amazon source code, examples, prompts or schemas are reused.
+
 ### Collection-valued control evidence
 
 When a registry-required control is represented as a top-level list, the list contents alone do not prove that the control state is complete. This applies to both empty and non-empty lists: one returned row/page is still partial evidence when additional rows may exist.
