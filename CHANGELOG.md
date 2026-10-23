@@ -2,6 +2,22 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.27.0 — 2026-10-24
+
+### Safety
+
+- Fail closed on unverified nested collections inside registry-required top-level list controls, including Sponsored Products audience bid adjustments. A complete root list does not establish completeness of its descendant arrays. Each descendant requires independent RFC 6901 pointer-keyed enumeration, pagination and connector-capability evidence.
+- Preserve verified nested collections, flat root lists, isolated/confounded classifications and all 15 Skills. No live Ads write, retry, idempotency or executor capability was added.
+
+### Verification
+
+- RED: commit `cb6f002ccaf783ebc2c6bb7cf73134a6d326e45e` failed 7 of 542 unit tests in GitHub Actions `39998447014`; the old comparator incorrectly isolated a bid change despite missing required-audience descendant evidence.
+- GREEN: commit `2aaa27ce2691d6a65b1ff4db86ec6c9ceff6338b` passed 542 unit tests and both validators in GitHub Actions `39998570537`. Final release PR HEAD and merged main require their own checks.
+
+### Sources and copyright
+
+- Derived independently from the repository's existing material-control and collection-completeness contracts using synthetic regressions. Amazon Ads official API documentation supplies context, not imported code or schemas. Third-party candidates were not copied or adopted; no new dependencies.
+
 ## v1.26.0 — 2026-10-24
 
 ### Safety
