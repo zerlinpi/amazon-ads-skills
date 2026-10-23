@@ -8,6 +8,12 @@ Amazon Ads' [Global Sponsored Products API guide](https://advertising.amazon.com
 
 Those facts are platform behavior, **not proof** that a particular connector can expose all required fields. A trusted external adapter must produce source-supported, identity-verified **effective configured state per marketplace**, resolving top-level state and any overrides using the actual query evidence. It must not guess from delivery status, infer unsupported marketplaces, or treat a missing override as evidence without the complete global query context.
 
+## Supported intent boundary (v1.33.0)
+
+This evaluator can confirm only the requested campaign **configured effective states** and, when explicitly present, the supported **daily monetary marketplace budgets**. An external adapter MUST NOT interpret this `Confirmed` as verification of an ad-group default bid, target bid, placement adjustment, bid strategy, or other independent update. Any additional request key beginning `expected_` that is not `expected_effective_states` or `expected_marketplace_budgets` returns `Unknown` after valid 207 success, even when its value is an empty object. This is intentional forward-compatibility safety: new intended change dimensions require their own verified readback contract. HTTP 207 `error` / `partialSuccess` still takes precedence as `Partial`.
+
+The official Global SP guide documents marketplace-local ad-group bids as a distinct entity/API resource; this campaign-only helper does not fetch ad groups or targets. Generic non-intent metadata remains compatible. Do not drop unsupported expected fields in the normalization layer to force `Confirmed`.
+
 ## Normalized input
 
 Call `python -m scripts.evaluate_global_sp_readback < normalized-evidence.json`. This tool consumes one **single request item** only; batch receipts with additional indices return `Unknown` rather than a false batch-wide confirmation.
