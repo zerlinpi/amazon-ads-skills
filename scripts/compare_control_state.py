@@ -228,9 +228,13 @@ def _deep_extra_collection_problem(control: dict[str, Any], control_type: str, s
     evidence_map = control.get("nested_collection_evidence")
     expected = {"enumeration_status": "Complete", "pagination_status": "Complete", "capability_status": "Supported"}
 
+    # Root-list completeness is checked by _collection_problem. Descendant
+    # lists still require independent evidence, including list-in-list values.
+    descendant_depth = 0 if isinstance(control.get("state"), list) else 1
+
     def walk(value: Any, pointer: str, depth: int) -> str | None:
         if isinstance(value, list):
-            if depth > 1:
+            if depth > descendant_depth:
                 evidence = evidence_map.get(pointer) if isinstance(evidence_map, dict) else None
                 if not isinstance(evidence, dict):
                     return f"{side} {control_type}{pointer} collection lacks completeness evidence"
@@ -284,15 +288,17 @@ def _coverage_problem(snapshot: dict[str, Any], control_map: dict[str, dict[str,
             return problem
         # An extra material control is still causal evidence: direct nested
         # lists need their own enumeration/pagination/capability proof.
-        if control_type not in registry_required and isinstance(control.get("state"), dict):
-            for field, value in control["state"].items():
-                if isinstance(value, list):
-                    problem = _nested_collection_problem(control, control_type, field, side)
-                    if problem:
-                        return problem
-            problem = _deep_extra_collection_problem(control, control_type, side)
-            if problem:
-                return problem
+        if control_type not in registry_required:
+            if isinstance(control.get("state"), dict):
+                for field, value in control["state"].items():
+                    if isinstance(value, list):
+                        problem = _nested_collection_problem(control, control_type, field, side)
+                        if problem:
+                            return problem
+            if isinstance(control.get("state"), (dict, list)):
+                problem = _deep_extra_collection_problem(control, control_type, side)
+                if problem:
+                    return problem
     return None
 
 
