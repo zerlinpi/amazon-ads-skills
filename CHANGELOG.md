@@ -2,6 +2,23 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.31.0 — 2026-10-24
+
+### Safety
+
+- Reject explicit per-row Global SP monetary-budget source, observation time, or global-account/campaign identity that contradicts the trusted readback envelope and original request. Missing optional row metadata still inherits the trusted envelope contract; a contradictory row never becomes `Confirmed`.
+- Preserve single-item HTTP 207 `Partial` precedence, state-only compatibility, decimal/currency exactness, 15 Skills, and read-only/Suggest/Shadow with an external authorized Executor.
+
+### RED → GREEN
+
+- RED commit `57ab2ed44ba694ceafe63f5bffb011f2c8f9e2c9`, Actions `40029482779`: 614 unit tests, 9 failed on ignored row provenance.
+- GREEN commit `fa816aab6f3e6a7fda49b34eedfed82c1fec17b2`, Actions `40029540853`: 614/614 unit tests passed. Required Skill and eval validators passed; final PR-head and merged-main validation required.
+
+### Sources and reuse boundary
+
+- Amazon Ads Global Sponsored Products API guide (checked 2026-10-24): independent factual basis for Global Account, marketplace-specific budget identity and 207/readback separation. The row-level contradiction rule is a repository-owned conservative safety invariant, not an Amazon-mandated payload field.
+- Previously reviewed KuudoAI Amazon Ads MCP (MIT), OpenLineage (Apache-2.0), Promptfoo (MIT), and Agent Skills (Apache-2.0) remain non-adopted for this narrow deterministic guard. No third-party code, schema, prompts, workflows or templates copied.
+
 ## v1.30.0 — 2026-10-24
 
 ### Safety / capability

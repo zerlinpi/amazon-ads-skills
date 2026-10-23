@@ -162,6 +162,22 @@ def evaluate_global_sp_readback(evidence: Any) -> dict[str, Any]:
                 return unknown(f"readback duplicate budget marketplace: {market}")
             if row.get("evidence_status") != "observed":
                 return unknown(f"readback {market} monetary budget is not observed")
+            # Optional row-level lineage must not contradict the trusted
+            # readback envelope. Absent row metadata inherits the envelope's
+            # assertion; explicitly stale or cross-source rows fail closed.
+            for identity in ("global_account_id", "campaign_id"):
+                if identity in row and row[identity] != request[identity]:
+                    return unknown(f"readback {market} budget {identity} contradicts request")
+            if "source" in row:
+                row_source = row["source"]
+                if (not isinstance(row_source, dict)
+                        or any(row_source.get(key) != source[key] for key in
+                               ("source_system", "acquisition_channel", "connector_id"))):
+                    return unknown(f"readback {market} budget source contradicts envelope")
+            if "observed_at" in row:
+                row_observed = _rfc3339_instant(row["observed_at"])
+                if row_observed is None or row_observed <= completed or row_observed > observed:
+                    return unknown(f"readback {market} budget observation time is inconsistent")
             if (not isinstance(row.get("currency_code"), str)
                     or re.fullmatch(r"[A-Z]{3}", row["currency_code"]) is None
                     or not _nonempty(row.get("budget_type"))
