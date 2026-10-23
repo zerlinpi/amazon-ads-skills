@@ -76,6 +76,36 @@ def _scope_identity_problem(bscope: Any, pscope: Any) -> str | None:
     return None
 
 
+
+def _source_lineage_problem(bsource: Any, psource: Any) -> str | None:
+    """Do not infer equivalence across absent or differently acquired control evidence.
+
+    readback_id identifies individual observations and may legitimately change.
+    This envelope has no verified cross-source mapping contract, so a mismatch
+    in source/acquisition/connector identity cannot be silently accepted.
+    """
+    if not isinstance(bsource, dict) or not isinstance(psource, dict):
+        return "control-state source provenance must be an object on both sides"
+    for field in ("source_system", "acquisition_channel"):
+        before, after = bsource.get(field), psource.get(field)
+        if (
+            not isinstance(before, str) or not before.strip()
+            or not isinstance(after, str) or not after.strip()
+            or before != after
+        ):
+            return f"control-state source provenance missing or changed for {field}"
+    before_connector, after_connector = bsource.get("connector_id"), psource.get("connector_id")
+    if before_connector is None and after_connector is None:
+        return None
+    if (
+        not isinstance(before_connector, str) or not before_connector.strip()
+        or not isinstance(after_connector, str) or not after_connector.strip()
+        or before_connector != after_connector
+    ):
+        return "control-state source provenance missing or changed for connector_id"
+    return None
+
+
 def _rfc3339_instant(value: Any) -> tuple[datetime, Decimal] | None:
     """Parse an explicit UTC instant, retaining fractions beyond microseconds."""
     if not isinstance(value, str) or value.endswith("-00:00"):
@@ -270,6 +300,9 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
     scope_problem = _scope_identity_problem(bscope, pscope)
     if scope_problem:
         return {"classification": "Unknown", "reasons": [scope_problem]}
+    source_problem = _source_lineage_problem(baseline.get("source"), post.get("source"))
+    if source_problem:
+        return {"classification": "Unknown", "reasons": [source_problem]}
     for key in ("campaign_id", "ad_group_id", "entity_id"):
         if bscope.get(key) != pscope.get(key):
             return {"classification": "Unknown", "reasons": [f"decision-scope identity changed for {key}"]}

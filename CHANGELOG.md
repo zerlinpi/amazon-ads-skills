@@ -2,6 +2,23 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.21.0 — 2026-10-23
+
+### Safety
+
+- Fail closed when a control-state comparison lacks the required source envelope, source system, or acquisition channel, or when those identities differ without a verified cross-source mapping contract.
+- Preserve connector identity when supplied: a mismatched or one-sided connector ID cannot silently establish Comparable or Treatment Isolated. Different per-observation readback IDs remain valid; legacy snapshots without connector IDs on both sides remain compatible.
+- This is a read-only source-provenance gate. It does not equate missing source information with zero, assert cross-source semantic equivalence, or grant Ads write permission.
+
+### Verification
+
+- Deterministic RED: PR #123 commit 3bba9996ed5487c05828d1bd059af8b81e98248e failed 8 of 479 unit tests in GitHub Actions 39948565519.
+- GREEN: source-lineage guard commit a157440cc2c38d6af157a618b37c3bf4c6fb955e passed repository unit tests, Skill validator and Eval validator in GitHub Actions 39948651042. Final release PR HEAD must pass required validate again before merge.
+
+### Sources and copyright
+
+- Independently implemented from this repository's own schema-required source fields and data-lineage safety contract. No external code, prompts, schemas, workflows, or templates copied. Amazon Ads documentation remains platform context.
+
 ## v1.20.0 — 2026-10-23
 
 ### Safety
