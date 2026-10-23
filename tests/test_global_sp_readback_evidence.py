@@ -118,6 +118,15 @@ class GlobalSpReadbackEvidenceTests(unittest.TestCase):
     def test_unknown_marketplace_state_is_not_zero_or_paused(self):
         self.assert_class("Unknown", lambda e: e["readback"]["marketplace_states"][1].update(effective_state="Unknown"))
 
+    def test_malformed_unhashable_expected_state_is_unknown(self):
+        self.assert_class("Unknown", lambda e: e["request"]["expected_effective_states"].update(GB=[]))
+
+    def test_malformed_unhashable_readback_state_is_unknown(self):
+        self.assert_class("Unknown", lambda e: e["readback"]["marketplace_states"][1].update(effective_state={}))
+
+    def test_partial_readback_coverage_is_unknown(self):
+        self.assert_class("Unknown", lambda e: e["readback"].update(coverage_status="Partial"))
+
     def test_receipt_does_not_authorize_multi_item_batch(self):
         self.assert_class("Unknown", lambda e: e["receipt"].update(success=[{"index": 0}, {"index": 1}]))
 

@@ -51,7 +51,7 @@ def evaluate_global_sp_readback(evidence: Any) -> dict[str, Any]:
             or len(set(markets)) != len(markets)):
         return unknown("request marketplaces must be nonempty, distinct identifiers")
     if (not isinstance(expected, dict) or set(expected) != set(markets)
-            or any(value not in STATES for value in expected.values())):
+            or any(not isinstance(value, str) or value not in STATES for value in expected.values())):
         return unknown("expected effective states must cover every requested marketplace")
     completed = _rfc3339_instant(request.get("completed_at"))
     if completed is None:
@@ -71,7 +71,7 @@ def evaluate_global_sp_readback(evidence: Any) -> dict[str, Any]:
             receipt_indices.append(entry["index"])
     # Explicitly single-item. Never interpret a subset of a multi-item batch
     # as complete application of the whole batch.
-    if receipt_indices != [0] and (len(receipt_indices) != 1 or receipt_indices[0] != 0):
+    if receipt_indices != [0]:
         return unknown("receipt indices do not uniquely cover one request item")
     if receipt.get("error") or receipt.get("partialSuccess"):
         return _result("Partial", "Global SP 207 contains error or partialSuccess; application is not fully confirmed")
@@ -111,7 +111,7 @@ def evaluate_global_sp_readback(evidence: Any) -> dict[str, Any]:
         if row.get("evidence_status") != "observed":
             return unknown(f"readback {market} effective state is not observed")
         state = row.get("effective_state")
-        if state not in STATES:
+        if not isinstance(state, str) or state not in STATES:
             return unknown(f"readback {market} effective configured state is missing or unsupported")
         actual[market] = state
     if set(actual) != set(markets):
