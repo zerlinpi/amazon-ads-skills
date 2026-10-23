@@ -281,6 +281,7 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
         if before_type != after_type:
             return {"classification": "Unknown", "reasons": ["decision-scope identity changed for entity_type"]}
 
+    observed_instants: list[tuple[datetime, Decimal]] = []
     for snapshot, side in ((baseline, "baseline"), (post, "post")):
         inventory_problem = _control_inventory_problem(snapshot, side)
         if inventory_problem:
@@ -288,6 +289,7 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
         observed = _rfc3339_instant(snapshot.get("observed_at"))
         if observed is None:
             return {"classification": "Unknown", "reasons": [f"{side} observed_at is not a verified RFC3339 instant"]}
+        observed_instants.append(observed)
         for control in snapshot["controls"]:
             effective_at = control.get("effective_at")
             if effective_at is None:
@@ -297,6 +299,9 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
                 return {"classification": "Unknown", "reasons": [f"{side} {control['control_type']} effective_at is not a verified RFC3339 instant"]}
             if effective > observed:
                 return {"classification": "Unknown", "reasons": [f"{side} {control['control_type']} effective_at is later than observed_at"]}
+
+    if observed_instants[1] < observed_instants[0]:
+        return {"classification": "Unknown", "reasons": ["post observed_at precedes baseline observed_at"]}
 
     bmap, pmap = _control_map(baseline), _control_map(post)
     for snapshot, control_map, side in ((baseline, bmap, "baseline"), (post, pmap, "post")):
