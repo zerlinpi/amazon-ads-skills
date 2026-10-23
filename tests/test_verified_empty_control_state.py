@@ -21,7 +21,7 @@ def sp_snapshot(base_bid: float, audience_complete=False):
         audience,
         {"control_type": "video_bid_adjustment", "state": 0, "effective_at": "2026-09-20T00:00:00Z", "evidence_status": "observed"},
         {"control_type": "schedule_or_event_rule", "state": {"schedule_rules": [], "event_rules": []}, "effective_at": "2026-09-20T00:00:00Z", "evidence_status": "observed", "nested_collection_evidence": {"schedule_rules": {"enumeration_status": "Complete", "pagination_status": "Complete", "capability_status": "Supported"}, "event_rules": {"enumeration_status": "Complete", "pagination_status": "Complete", "capability_status": "Supported"}}},
-        {"control_type": "budget_or_pacing", "state": {"base_average_daily_budget": 100, "effective_daily_budget": 100, "active_budget_rules": [], "average_daily_budget_policy": "monthly_average_with_daily_flexibility"}, "effective_at": "2026-09-20T00:00:00Z", "evidence_status": "observed"},
+        {"control_type": "budget_or_pacing", "state": {"base_average_daily_budget": 100, "effective_daily_budget": 100, "active_budget_rules": [], "average_daily_budget_policy": "monthly_average_with_daily_flexibility"}, "effective_at": "2026-09-20T00:00:00Z", "evidence_status": "observed", "nested_collection_evidence": {"active_budget_rules": {"enumeration_status": "Complete", "pagination_status": "Complete", "capability_status": "Supported"}}},
         {"control_type": "targeting_or_routing", "state": {"site_restriction": "ALL_ELIGIBLE"}, "effective_at": "2026-09-20T00:00:00Z", "evidence_status": "observed"},
     ]
     return {
