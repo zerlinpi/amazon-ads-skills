@@ -14,6 +14,65 @@ VALID_EVIDENCE = {"observed", "derived"}
 REGISTRY_PATH = Path(__file__).resolve().parents[1] / "references" / "control-requirement-registry.json"
 
 
+ACCOUNT_ID_FIELDS = (
+    "global_advertiser_account_id",
+    "regional_advertiser_account_id",
+    "legacy_advertiser_account_id",
+    "advertiser_account_id",
+    "regional_profile_id",
+)
+ACCOUNT_CONTEXT_FIELDS = ("manager_account_id", "country_code")
+
+
+def _scope_identity_problem(bscope: Any, pscope: Any) -> str | None:
+    """Compare explicit account identities without inventing global/profile mappings."""
+    if not isinstance(bscope, dict) or not isinstance(pscope, dict):
+        return "decision scope must be an object"
+    if not bscope.get("marketplace_id") or bscope.get("marketplace_id") != pscope.get("marketplace_id"):
+        return "scope mismatch or missing marketplace_id"
+
+    before_profile, after_profile = bscope.get("profile_id"), pscope.get("profile_id")
+    if before_profile or after_profile:
+        if not before_profile or before_profile != after_profile:
+            return "scope mismatch or missing profile_id"
+
+    before_explicit = "account_identity" in bscope
+    after_explicit = "account_identity" in pscope
+    if before_explicit != after_explicit:
+        return "account identity envelope is present on only one side"
+
+    if not before_explicit:
+        if not before_profile:
+            return "scope missing profile_id and global advertiser identity"
+        return None
+
+    before_identity, after_identity = bscope["account_identity"], pscope["account_identity"]
+    if not isinstance(before_identity, dict) or not isinstance(after_identity, dict):
+        return "account identity envelope is malformed"
+
+    shared_strong = False
+    for field in (*ACCOUNT_ID_FIELDS, *ACCOUNT_CONTEXT_FIELDS):
+        before_value, after_value = before_identity.get(field), after_identity.get(field)
+        if before_value is None and after_value is None:
+            continue
+        if (
+            not isinstance(before_value, str)
+            or not before_value.strip()
+            or not isinstance(after_value, str)
+            or not after_value.strip()
+            or before_value != after_value
+        ):
+            return f"account identity mismatch or missing {field}"
+        if field in ACCOUNT_ID_FIELDS:
+            shared_strong = True
+
+    if not shared_strong:
+        return "account identity lacks a shared strong advertiser/profile identifier"
+    if not before_profile and not before_identity.get("global_advertiser_account_id"):
+        return "profile-less Global SP scope lacks global advertiser account identity"
+    return None
+
+
 def _control_map(snapshot: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return {item["control_type"]: item for item in snapshot.get("controls", [])}
 
@@ -185,9 +244,9 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
     """Return a fail-closed comparability classification and evidence reasons."""
     reasons: list[str] = []
     bscope, pscope = baseline.get("scope", {}), post.get("scope", {})
-    for key in ("marketplace_id", "profile_id"):
-        if not bscope.get(key) or bscope.get(key) != pscope.get(key):
-            return {"classification": "Unknown", "reasons": [f"scope mismatch or missing {key}"]}
+    scope_problem = _scope_identity_problem(bscope, pscope)
+    if scope_problem:
+        return {"classification": "Unknown", "reasons": [scope_problem]}
     for key in ("campaign_id", "ad_group_id", "entity_id"):
         if bscope.get(key) != pscope.get(key):
             return {"classification": "Unknown", "reasons": [f"decision-scope identity changed for {key}"]}
