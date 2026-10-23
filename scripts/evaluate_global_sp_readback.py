@@ -35,7 +35,7 @@ def _monetary_amount(value: Any) -> Decimal | None:
     The trusted adapter must preserve source precision when normalizing API
     numeric values. No FX conversion or inferred missing/zero budget occurs here.
     """
-    if not isinstance(value, str) or re.fullmatch(r"[0-9]+(?:\\.[0-9]+)?", value) is None:
+    if not isinstance(value, str) or re.fullmatch(r"[0-9]+(?:\.[0-9]+)?", value) is None:
         return None
     return Decimal(value)
 
