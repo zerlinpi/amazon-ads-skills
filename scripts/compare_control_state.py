@@ -7,6 +7,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
+from datetime import datetime, timezone
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
@@ -71,6 +74,26 @@ def _scope_identity_problem(bscope: Any, pscope: Any) -> str | None:
     if not before_profile and not before_identity.get("global_advertiser_account_id"):
         return "profile-less Global SP scope lacks global advertiser account identity"
     return None
+
+
+def _rfc3339_instant(value: Any) -> tuple[datetime, Decimal] | None:
+    """Parse an explicit UTC instant, retaining fractions beyond microseconds."""
+    if not isinstance(value, str) or value.endswith("-00:00"):
+        return None
+    match = re.fullmatch(
+        r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.(?P<fraction>\d+))?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)",
+        value,
+    )
+    if match is None:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return (
+        parsed.astimezone(timezone.utc).replace(microsecond=0),
+        Decimal("0." + (match.group("fraction") or "0")),
+    )
 
 
 def _control_map(snapshot: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -262,6 +285,18 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
         inventory_problem = _control_inventory_problem(snapshot, side)
         if inventory_problem:
             return {"classification": "Unknown", "reasons": [inventory_problem]}
+        observed = _rfc3339_instant(snapshot.get("observed_at"))
+        if observed is None:
+            return {"classification": "Unknown", "reasons": [f"{side} observed_at is not a verified RFC3339 instant"]}
+        for control in snapshot["controls"]:
+            effective_at = control.get("effective_at")
+            if effective_at is None:
+                continue  # Missing effective_at remains guarded when a control changes.
+            effective = _rfc3339_instant(effective_at)
+            if effective is None:
+                return {"classification": "Unknown", "reasons": [f"{side} {control['control_type']} effective_at is not a verified RFC3339 instant"]}
+            if effective > observed:
+                return {"classification": "Unknown", "reasons": [f"{side} {control['control_type']} effective_at is later than observed_at"]}
 
     bmap, pmap = _control_map(baseline), _control_map(post)
     for snapshot, control_map, side in ((baseline, bmap, "baseline"), (post, pmap, "post")):
