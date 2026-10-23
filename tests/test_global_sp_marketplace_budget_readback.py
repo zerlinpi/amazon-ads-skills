@@ -100,5 +100,31 @@ class GlobalSpMarketplaceBudgetReadbackTests(unittest.TestCase):
         self.assert_budget("Unknown", lambda e: e["readback"]["marketplace_budgets"][0].update(amount=100.0))
 
 
+    def test_partial_receipt_overrides_matching_budget_readback(self):
+        def mutate(e):
+            e["receipt"]["success"] = []
+            e["receipt"]["partialSuccess"] = [{"index": 0}]
+        self.assert_budget("Partial", mutate)
+
+    def test_state_drift_remains_drifted_with_complete_matching_budgets(self):
+        self.assert_budget("Drifted", lambda e: e["readback"]["marketplace_states"][0].update(effective_state="PAUSED"))
+
+    def test_extra_budget_marketplace_is_unknown(self):
+        def mutate(e):
+            extra = copy.deepcopy(e["readback"]["marketplace_budgets"][0])
+            extra["marketplace"] = "DE"
+            e["readback"]["marketplace_budgets"].append(extra)
+        self.assert_budget("Unknown", mutate)
+
+    def test_fractional_precision_is_not_float_rounded(self):
+        self.assert_budget("Drifted", lambda e: (
+            e["request"]["expected_marketplace_budgets"]["US"].update(amount="0.10000000000000000000000000000000000000001"),
+            e["readback"]["marketplace_budgets"][0].update(amount="0.1"),
+        ))
+
+    def test_boolean_amount_is_unknown_not_zero_or_one(self):
+        self.assert_budget("Unknown", lambda e: e["readback"]["marketplace_budgets"][0].update(amount=False))
+
+
 if __name__ == "__main__":
     unittest.main()
