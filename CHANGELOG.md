@@ -2,6 +2,22 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.25.0 — 2026-10-23
+
+### Safety
+
+- Fail closed on deep list-valued descendants of an extra material control, including lists inside nested objects or elements of already-verified parent lists. Require per-list source-supported Complete enumeration, Complete pagination and Supported connector capability. Direct list keys remain backward compatible; deep paths use RFC 6901 JSON Pointer.
+- Preserve complete nested evidence, JSON Pointer key escaping, isolated/confounded treatment classifications and all 15 Skills. No live Amazon Ads write, retry, executor or credential capability was introduced.
+
+### Verification
+
+- RED: commit `cab5df09651e07ceb149bea130cc552fd0d905e2` failed 7 of 517 unit tests in Actions `39980796062` (old comparator incorrectly returned Comparable for incomplete deep lists).
+- GREEN: commit `642b771d88ed518969ee7497f1f28ed3e210cf58` passed all 517 unit tests plus Skill and Eval validators in Actions `39980927430`. Latest release PR HEAD and merged main require independent required-check verification.
+
+### Sources and copyright
+
+- The behavior is independently derived from this repository's existing snapshot evidence contract and deterministic failure cases. Official Amazon Global SP documentation is platform context only; no third-party code, prompts, schemas, workflows or templates were copied. Existing source reviews were not duplicated.
+
 ## v1.24.0 — 2026-10-23
 
 ### Safety
