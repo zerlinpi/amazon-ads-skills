@@ -53,6 +53,30 @@ class MeasurementComparisonHistoryProjectionTests(unittest.TestCase):
         self.assertIsNone(result["latest_measurement_comparison"])
         self.assertEqual(result["measurement_comparison_status"], "Superseded Without Replacement")
 
+    def test_cross_action_correction_does_not_erase_independent_audit(self):
+        original = event("eval-a", "2026-10-19T09:00:00Z", measurement_comparison=comparison("Comparable"))
+        for parent_action_id in ("action-b", None, "", " "):
+            with self.subTest(parent_action_id=parent_action_id):
+                correction = event(
+                    "corr-b", "2026-10-19T10:00:00Z",
+                    event_type="corrected", supersedes_event_id="eval-a",
+                )
+                correction["parent_action_id"] = parent_action_id
+                with self.assertRaisesRegex(ValueError, "parent_action_id"):
+                    project_measurement_comparison_history([original, correction])
+
+    def test_missing_original_action_identity_cannot_be_superseded(self):
+        for parent_action_id in (None, "", " "):
+            with self.subTest(parent_action_id=parent_action_id):
+                original = event("eval-a", "2026-10-19T09:00:00Z", measurement_comparison=comparison("Comparable"))
+                original["parent_action_id"] = parent_action_id
+                correction = event(
+                    "corr-a", "2026-10-19T10:00:00Z",
+                    event_type="corrected", supersedes_event_id="eval-a",
+                )
+                with self.assertRaisesRegex(ValueError, "parent_action_id"):
+                    project_measurement_comparison_history([original, correction])
+
     def test_mixed_entity_scope_fails_closed(self):
         with self.assertRaisesRegex(ValueError, "single entity scope"):
             project_measurement_comparison_history([
@@ -90,6 +114,134 @@ class MeasurementComparisonHistoryProjectionTests(unittest.TestCase):
             event("b", "2026-10-09T02:00:00Z", measurement_comparison=comparison("Comparable")),
         ])
         self.assertEqual(result["latest_measurement_comparison"]["source_event_id"], "b")
+
+
+class MeasurementComparisonAccountIdentityTests(unittest.TestCase):
+    """Same legacy entity key does not authorize cross-advertiser audit reuse."""
+
+    def _event(self, event_id, account_identity):
+        item = event(
+            event_id,
+            "2026-10-19T10:00:00Z" if event_id == "a" else "2026-10-19T11:00:00Z",
+            measurement_comparison=comparison("Comparable"),
+        )
+        item["account_identity"] = account_identity
+        return item
+
+    def test_conflicting_advertiser_identity_fails_closed(self):
+        with self.assertRaisesRegex(ValueError, "account identity"):
+            project_measurement_comparison_history([
+                self._event("a", {"global_advertiser_account_id": "global-a"}),
+                self._event("b", {"global_advertiser_account_id": "global-b"}),
+            ])
+
+    def test_known_and_missing_identity_cannot_merge(self):
+        with self.assertRaisesRegex(ValueError, "account identity"):
+            project_measurement_comparison_history([
+                self._event("a", None),
+                self._event("b", {"global_advertiser_account_id": "global-b"}),
+            ])
+
+    def test_unverified_global_regional_mapping_cannot_merge(self):
+        with self.assertRaisesRegex(ValueError, "account identity"):
+            project_measurement_comparison_history([
+                self._event("a", {"global_advertiser_account_id": "global-a"}),
+                self._event("b", {"regional_advertiser_account_id": "regional-a"}),
+            ])
+
+    def test_compatible_identity_enrichment_is_allowed(self):
+        result = project_measurement_comparison_history([
+            self._event("a", {"global_advertiser_account_id": "global-a"}),
+            self._event("b", {
+                "global_advertiser_account_id": "global-a",
+                "regional_advertiser_account_id": "regional-a",
+            }),
+        ])
+        self.assertEqual(result["measurement_comparison_status"], "Available")
+        self.assertEqual(result["latest_measurement_comparison"]["source_event_id"], "b")
+
+    def test_all_legacy_missing_identity_remains_supported(self):
+        result = project_measurement_comparison_history([
+            self._event("a", None),
+            self._event("b", None),
+        ])
+        self.assertEqual(result["latest_measurement_comparison"]["source_event_id"], "b")
+
+
+class MeasurementComparisonExpectedScopeTests(unittest.TestCase):
+    """A single-account slice must still be bound to the caller's requested account."""
+
+    @staticmethod
+    def _scope(**overrides):
+        value = {
+            "marketplace": "US",
+            "profile_scope": "profile-us-1",
+            "entity_type": "keyword",
+            "entity_id": "keyword-1",
+            "account_identity": {"global_advertiser_account_id": "global-a"},
+        }
+        value.update(overrides)
+        return value
+
+    @staticmethod
+    def _event(identity):
+        item = event(
+            "eval-1",
+            "2026-10-19T10:00:00Z",
+            measurement_comparison=comparison("Comparable"),
+        )
+        item["account_identity"] = identity
+        return item
+
+    def test_single_event_from_wrong_account_fails_closed(self):
+        with self.assertRaisesRegex(ValueError, "expected_scope"):
+            project_measurement_comparison_history(
+                [self._event({"global_advertiser_account_id": "global-b"})],
+                expected_scope=self._scope(),
+            )
+
+    def test_single_event_without_account_identity_fails_closed(self):
+        with self.assertRaisesRegex(ValueError, "expected_scope"):
+            project_measurement_comparison_history(
+                [self._event(None)],
+                expected_scope=self._scope(),
+            )
+
+    def test_missing_requested_regional_identity_is_not_inferred(self):
+        with self.assertRaisesRegex(ValueError, "expected_scope"):
+            project_measurement_comparison_history(
+                [self._event({"global_advertiser_account_id": "global-a"})],
+                expected_scope=self._scope(account_identity={
+                    "global_advertiser_account_id": "global-a",
+                    "regional_advertiser_account_id": "regional-a",
+                }),
+            )
+
+    def test_wrong_requested_entity_fails_closed(self):
+        with self.assertRaisesRegex(ValueError, "expected_scope"):
+            project_measurement_comparison_history(
+                [self._event({"global_advertiser_account_id": "global-a"})],
+                expected_scope=self._scope(entity_id="keyword-2"),
+            )
+
+    def test_matching_account_and_scope_is_available(self):
+        result = project_measurement_comparison_history(
+            [self._event({"global_advertiser_account_id": "global-a"})],
+            expected_scope=self._scope(),
+        )
+        self.assertEqual(result["measurement_comparison_status"], "Available")
+        self.assertEqual(result["latest_measurement_comparison"]["source_event_id"], "eval-1")
+
+    def test_legacy_unbound_caller_remains_supported(self):
+        result = project_measurement_comparison_history([self._event(None)])
+        self.assertEqual(result["measurement_comparison_status"], "Available")
+
+    def test_invalid_requested_account_envelope_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "expected_scope"):
+            project_measurement_comparison_history(
+                [self._event({"global_advertiser_account_id": "global-a"})],
+                expected_scope=self._scope(account_identity={"country_code": "US"}),
+            )
 
 if __name__ == "__main__":
     unittest.main()

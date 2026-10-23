@@ -9,6 +9,7 @@ def event(event_id, timestamp):
         "timestamp": timestamp,
         "marketplace": "US",
         "profile_scope": "fixture-profile",
+        "parent_action_id": "fixture-action",
         "entity": {"type": "campaign", "id": "fixture-campaign"},
         "measurement_comparison": {
             "comparator_id": "fixture",

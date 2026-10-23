@@ -84,6 +84,8 @@ When post-change evaluation uses `scripts/compare_measurement_composition.py`, a
 - `reasons` — deterministic evidence-quality/explanation strings returned by the comparator;
 - `baseline_snapshot_id` and `post_snapshot_id` — source evidence identities when known.
 
+When retrieving a bounded comparison for a specific advertiser, call `scripts/project_measurement_comparison_history.py` with `expected_scope` (marketplace, profile scope, entity type/id, and the requested account-identity envelope). The projector must reject a mismatched or missing requested account identity even when every event in the slice agrees with every other event. Unbound legacy calls remain supported, but their output is not proof of caller-account membership.
+
 This is audit lineage, not a replacement for raw evidence. Preserve the source snapshots/events and never reconstruct missing snapshot IDs from timestamps, entity IDs, metric values, or a newer connector response. A null snapshot ID remains unknown.
 
 Do not collapse an `Inconclusive` outcome into a bare label when the machine comparator materially gated causality. Later reviewers should be able to distinguish, for example, lower-grain allocation drift from a modeled-inclusion or allocation-grain incompatibility without rerunning against unavailable historical inputs. If a later correction changes the comparison, append a linked `corrected` event with the new `measurement_comparison`; do not overwrite the original audit record.

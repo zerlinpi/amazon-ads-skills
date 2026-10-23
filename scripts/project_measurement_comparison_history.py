@@ -5,6 +5,15 @@ from datetime import datetime, timezone
 from decimal import Decimal
 import re
 
+from scripts.project_measurement_history import (
+    _event_account_identity,
+    _merge_account_identity,
+    _normalize_expected_scope,
+    _normalize_expected_account_identity,
+    _validate_scope,
+    _validate_expected_account_identity,
+)
+
 
 _REQUIRED_AUDIT_FIELDS = (
     "comparator_id",
@@ -44,8 +53,10 @@ def _timestamp(event):
     fraction = Decimal("0." + (match.group("fraction") or "0"))
     return parsed.astimezone(timezone.utc).replace(microsecond=0), fraction
 
-def project_measurement_comparison_history(events):
+def project_measurement_comparison_history(events, *, expected_scope=None):
     """Return a bounded projection without resurrecting superseded audit evidence."""
+    expected = _normalize_expected_scope(expected_scope)
+    expected_account_identity = _normalize_expected_account_identity(expected_scope)
     events = list(events or [])
     if not events:
         return {
@@ -58,11 +69,48 @@ def project_measurement_comparison_history(events):
     if len(scopes) != 1:
         raise ValueError("measurement comparison history requires a single entity scope")
 
-    by_id = {
-        event.get("event_id"): event
-        for event in events
-        if event.get("event_id")
-    }
+    # Account identity is a stronger boundary than legacy marketplace/profile/entity.
+    # Reuse the existing read-only projection's fail-closed identity contract.
+    account_identity = None
+    missing_account_identity_seen = False
+    for event in events:
+        _validate_scope(event, expected)
+        current_identity = _event_account_identity(event)
+        _validate_expected_account_identity(current_identity, expected_account_identity)
+        account_identity, missing_account_identity_seen = _merge_account_identity(
+            account_identity,
+            current_identity,
+            missing_seen=missing_account_identity_seen,
+        )
+
+    by_id = {}
+    for event in events:
+        event_id = event.get("event_id")
+        if not isinstance(event_id, str) or not event_id:
+            raise ValueError("measurement comparison history requires nonempty event_id")
+        if event_id in by_id:
+            raise ValueError("measurement comparison history has duplicate event_id")
+        by_id[event_id] = event
+
+    # Predecessors may be absent from bounded history; cycles wholly inside
+    # the supplied slice cannot represent a valid audit correction chain.
+    visited = set()
+    for event_id in by_id:
+        if event_id in visited:
+            continue
+        path = set()
+        cursor = event_id
+        while cursor in by_id and cursor not in visited:
+            if cursor in path:
+                raise ValueError("measurement comparison supersession contains a cycle")
+            path.add(cursor)
+            current = by_id[cursor]
+            cursor = (
+                current.get("supersedes_event_id")
+                if current.get("event_type") == "corrected"
+                else None
+            )
+        visited.update(path)
     superseded = set()
     for event in events:
         if event.get("event_type") != "corrected":
@@ -70,6 +118,14 @@ def project_measurement_comparison_history(events):
         target = event.get("supersedes_event_id")
         if target not in by_id:
             continue  # Bounded history may omit the predecessor.
+        # A correction cannot supersede a different or unidentified action.
+        parent_action_id = event.get("parent_action_id")
+        if (
+            not isinstance(parent_action_id, str)
+            or not parent_action_id.strip()
+            or parent_action_id != by_id[target].get("parent_action_id")
+        ):
+            raise ValueError("measurement comparison correction crosses parent_action_id boundary")
         if target in superseded:
             raise ValueError("measurement comparison supersession has an ambiguous correction fork")
         superseded.add(target)
