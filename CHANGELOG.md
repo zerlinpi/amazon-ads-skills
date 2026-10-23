@@ -2,6 +2,23 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.20.0 — 2026-10-23
+
+### Safety
+
+- Fail closed when a post-change control-state snapshot was observed before its baseline, preventing reversed evidence windows from being labeled Comparable or Treatment Isolated.
+- Compare actual UTC instants across explicit offsets and preserve submicrosecond fractional precision; same-instant fixture comparisons and forward-ordered observations remain valid.
+- This is a read-only causal-evidence gate. It does not infer Ads account state, change controls, or grant execution permission.
+
+### Verification
+
+- Deterministic RED: PR #122 commit 6082db48220931d31bc62aed85013a1dbf25b6c2 produced 4 failures among 468 unit tests (GitHub Actions 39941157426).
+- GREEN: comparator fix 9a30c84230ca862b5f153a3e06014be6a8e0195e passed unit tests, Skill validator and Eval validator (GitHub Actions 39941273340). The final PR HEAD must pass required validate again before merge.
+
+### Sources and copyright
+
+- Repository-owned observation-order and measurement-lineage invariant; no third-party code, prompt, schema, workflow or template copied. Official Amazon Ads materials are platform context, not a claimed API change.
+
 ## v1.19.0 — 2026-10-23
 
 ### Safety
