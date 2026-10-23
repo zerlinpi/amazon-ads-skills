@@ -219,6 +219,39 @@ def _nested_collection_problem(control: dict[str, Any], control_type: str, field
     return None
 
 
+def _deep_extra_collection_problem(control: dict[str, Any], control_type: str, side: str) -> str | None:
+    """Require independent evidence for lists below the first state-object level.
+
+    Direct state fields retain legacy nested_collection_evidence keys; deeper
+    list paths use JSON Pointer (RFC 6901), including array indices.
+    """
+    evidence_map = control.get("nested_collection_evidence")
+    expected = {"enumeration_status": "Complete", "pagination_status": "Complete", "capability_status": "Supported"}
+
+    def walk(value: Any, pointer: str, depth: int) -> str | None:
+        if isinstance(value, list):
+            if depth > 1:
+                evidence = evidence_map.get(pointer) if isinstance(evidence_map, dict) else None
+                if not isinstance(evidence, dict):
+                    return f"{side} {control_type}{pointer} collection lacks completeness evidence"
+                incomplete = [key for key, required in expected.items() if evidence.get(key) != required]
+                if incomplete:
+                    return f"{side} {control_type}{pointer} collection completeness is unproven: " + ", ".join(incomplete)
+            for index, child in enumerate(value):
+                problem = walk(child, f"{pointer}/{index}", depth + 1)
+                if problem:
+                    return problem
+        elif isinstance(value, dict):
+            for field, child in value.items():
+                escaped = str(field).replace("~", "~0").replace("/", "~1")
+                problem = walk(child, f"{pointer}/{escaped}", depth + 1)
+                if problem:
+                    return problem
+        return None
+
+    return walk(control.get("state"), "", 0)
+
+
 def _coverage_problem(snapshot: dict[str, Any], control_map: dict[str, dict[str, Any]], side: str) -> str | None:
     coverage = snapshot.get("coverage")
     if not isinstance(coverage, dict):
@@ -257,6 +290,9 @@ def _coverage_problem(snapshot: dict[str, Any], control_map: dict[str, dict[str,
                     problem = _nested_collection_problem(control, control_type, field, side)
                     if problem:
                         return problem
+            problem = _deep_extra_collection_problem(control, control_type, side)
+            if problem:
+                return problem
     return None
 
 
