@@ -2,6 +2,24 @@
 
 This file records user-visible repository releases. The canonical current version is stored in `VERSION`.
 
+## v1.19.0 — 2026-10-23
+
+### Safety
+
+- Reject malformed or ambiguous-offset RFC3339 control-state observation/effective timestamps and controls whose effective instant occurs after their snapshot observation. This prevents future-dated control evidence from being misclassified as Comparable or Treatment Isolated.
+- Compare UTC instants with their full fractional-second precision, including offsets and digits beyond microseconds; preserve valid historical controls, legacy profile/global identity semantics and read-only behavior.
+- An absent effective timestamp for an unchanged control retains the prior comparator contract; changed controls still require effective timestamp evidence.
+
+### Verification
+
+- Deterministic RED: PR #121 commit d2a027a89f56f3f63c893e2359f57e9cac53250a failed 8 of 462 repository unit tests in GitHub Actions 39933928276.
+- GREEN: comparator fix at 0f0aef29ac97bbb01fa2c82513555ee063531e40 passed repository unit tests, Skill validator and Eval validator in GitHub Actions 39934023587. Final release commit must pass the same required validate check before merge.
+
+### Source and copyright
+
+- Independent safety invariant derived from the repository's existing event-time/measurement lineage contract; no external code, prompts, schemas or workflows reused. Amazon Ads product documentation remains platform context, not a claim about a new API field.
+
+
 ## v1.18.0 — 2026-10-23
 
 ### Added
