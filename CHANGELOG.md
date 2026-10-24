@@ -1,5 +1,23 @@
 # Changelog
 
+## v1.36.0 — 2026-10-24
+
+### Read-only safety capability
+
+- Add `scripts/evaluate_global_sp_target_batch_readback.py` for one-call homogeneous Global SP positive-target batch updates. Require complete, unique 207 request indices, a single Global Account, unique target/request identities, and independently verified native-currency target bid query evidence for every successful item. Reuse the v1.35.0 single-target gate instead of weakening it or treating a 207 receipt as readback.
+- Aggregate conservatively: `Confirmed` only if every item is confirmed; `Unknown` for missing/ambiguous/unsupported evidence (even alongside a partial receipt), `Partial` for error/partialSuccess, and `Drifted` for fully observed mismatched bids. Preserve per-index outcomes; no live Ads writes, retries, idempotency, or Executor reconciliation.
+- Keep 15 canonical Skills and all three runtime manifests in version parity.
+
+### RED → GREEN
+
+- Initial RED test-first commit `0bbd87e8ad67fcd10e9cdda808b2043df25328a5` (Actions `40055866092`) proved the batch verifier absent. GREEN core implementation `c2138e8380cce577e176308149eef8dca223ac4c` (Actions `40055902890`). Additional malformed receipt-account RED `1967ca16be00679712d137c8e423c835e2efd39f` (Actions `40055937115`), then minimum fix `8f64024be8d5d9a1586528bb97f4d99da21e4338`. Final PR-head/main checks must pass before merge.
+
+### Sources and copyright
+
+- Official Global Sponsored Products API guide confirms indexed HTTP 207 success/error/partialSuccess and independent paginated query. The batch correlation and aggregation contract is repository-defined, not an Amazon-provided Executor or native request-ID field.
+- External projects reviewed as alternatives; no third-party code, prompt, schema, template or workflow imported. See `docs/SOURCES.md`.
+
+
 ## v1.35.0 — 2026-10-24
 
 ### Read-only safety capability
