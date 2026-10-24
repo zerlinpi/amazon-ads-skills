@@ -211,6 +211,23 @@ class GlobalSpTargetBidReadbackTests(unittest.TestCase):
         self.check("Confirmed", lambda d: d["readback"]["target_bid"].update(
             observed_at="2026-10-24T08:04:00+08:00"))
 
+    def test_unhashable_target_type_unknown(self):
+        self.check("Unknown", lambda d: d["request"].update(target_type=["KEYWORD"]))
+
+    def test_bid_row_target_type_conflict_unknown(self):
+        self.check("Unknown", lambda d: d["readback"]["target_bid"].update(target_type="PRODUCT"))
+
+    def test_bid_row_negative_conflict_unknown(self):
+        self.check("Unknown", lambda d: d["readback"]["target_bid"].update(negative=True))
+
+    def test_receipt_returned_target_type_conflict_unknown(self):
+        self.check("Unknown", lambda d: d["receipt"]["success"][0].update(
+            target={"target_type": "PRODUCT"}))
+
+    def test_receipt_returned_negative_conflict_unknown(self):
+        self.check("Unknown", lambda d: d["receipt"]["success"][0].update(
+            target={"negative": True}))
+
 
 if __name__ == "__main__":
     unittest.main()
