@@ -75,7 +75,7 @@ def evaluate_global_sp_mixed_plan_readback(evidence: Any) -> dict[str, Any]:
         if not isinstance(item, dict) or not _nonempty(item.get("component_id")):
             return unknown("invalid declared component identity")
         cid, kind = item["component_id"], item.get("kind")
-        if cid in declared or kind not in _EVALUATORS:
+        if cid in declared or not isinstance(kind, str) or kind not in _EVALUATORS:
             return unknown("duplicate or unsupported declared component")
         required = ({"component_id", "kind", "campaign_id"} if kind == "campaign"
                     else {"component_id", "kind", "request_ids"})
