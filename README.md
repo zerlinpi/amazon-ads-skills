@@ -2,7 +2,7 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.46.0`  
+> 当前版本：`v1.46.1`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
@@ -15,6 +15,7 @@ A portable **Amazon Ads decision library for AI agents**. It packages 15 focused
 - Find guarded growth opportunities only after retail readiness, economics, incrementality and binding-control checks.
 - Design experiments when evidence is not strong enough for a direct recommendation.
 - Review previous changes using readback, validation windows, confounders and append-first optimization memory.
+- Sponsored Products budget-change causal reviews now reject Unknown/Unsupported placeholders, booleans, negative/non-finite amounts and missing average-daily-budget policy; only observed finite budget values can support Treatment Isolated. Explicit numeric zero remains distinct from missing evidence.
 - For Global SP campaign, ad-group and target readback, reject unsupported or malformed marketplace country codes before an otherwise matching receipt/query can be classified `Confirmed`; eligibility follows the dated official Global SP country-code list, not arbitrary ISO codes or raw marketplace IDs.
 - When a trusted adapter explicitly retains query page `response_body` evidence, require every page's `campaigns[]` and `nextToken` to match the declared trace, and require the complete native campaign to appear exactly once on the claimed provenance page; missing, duplicated, displaced or contradictory response members are `Unknown`. Legacy traces without retained response bodies remain compatible.
 - When both native Global SP campaign configuration and its paginated query trace are supplied, require an explicit source/time/filter/identity binding to one enumerated query page before confirming; contradictory or missing page provenance is `Unknown`. Native-only or trace-only legacy evidence remains compatible.

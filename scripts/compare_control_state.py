@@ -303,6 +303,23 @@ def _coverage_problem(snapshot: dict[str, Any], control_map: dict[str, dict[str,
     return None
 
 
+def _observed_budget_amount(value: Any) -> bool:
+    """Require a finite nonnegative amount, not an evidence-status placeholder.
+
+    Accept JSON numbers or exact plain decimal strings. Python booleans are
+    numbers by inheritance but are never valid monetary observations.
+    """
+    if isinstance(value, bool) or not isinstance(value, (int, float, str, Decimal)):
+        return False
+    if isinstance(value, str) and re.fullmatch(r"[0-9]+(?:\.[0-9]+)?", value) is None:
+        return False
+    try:
+        amount = Decimal(str(value))
+    except (ValueError, ArithmeticError):
+        return False
+    return amount.is_finite() and amount >= 0
+
+
 def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[str, dict[str, Any]], side: str) -> str | None:
     """Validate decision-surface state that generic control presence cannot prove."""
     coverage = snapshot.get("coverage", {})
@@ -354,9 +371,18 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
     missing = sorted(required_fields - set(state))
     if missing:
         return f"{side} Sponsored Products budget state is missing: " + ", ".join(missing)
-    for field in ("base_average_daily_budget", "effective_daily_budget", "average_daily_budget_policy"):
-        if state.get(field) is None:
-            return f"{side} Sponsored Products budget state has unknown {field}"
+    for field in ("base_average_daily_budget", "effective_daily_budget"):
+        if not _observed_budget_amount(state.get(field)):
+            return f"{side} Sponsored Products budget state has unknown or invalid {field}"
+    policy = state.get("average_daily_budget_policy")
+    # A connector's Unknown/Unsupported label is not a stable observed policy.
+    # A structured policy requires its own verified contract; arbitrary dicts
+    # cannot be accepted as proof of a known account/platform setting.
+    if (not isinstance(policy, str) or not policy.strip()
+            or policy.strip().casefold().replace("-", "_").replace(" ", "_") in {
+                "unknown", "unsupported", "partial", "missing", "unavailable", "not_available",
+            }):
+        return f"{side} Sponsored Products budget state has unknown average_daily_budget_policy"
     if not isinstance(state.get("active_budget_rules"), list):
         return f"{side} Sponsored Products active_budget_rules must be source-supported list evidence"
     nested_problem = _nested_collection_problem(budget_control, "budget_or_pacing", "active_budget_rules", side)

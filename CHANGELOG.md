@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.46.1 — 2026-10-24
+
+### Sponsored Products budget-state value evidence (PATCH)
+
+- Fix false Treatment Isolated classifications from Unknown/Unsupported budget placeholders, boolean, negative/non-finite amounts and empty/unknown daily-budget policy. Plain decimal strings and explicit observed numeric zero remain distinct from missing data.
+- RED-first 1019 tests with 11 failures (Actions 40108252702); minimal repair restored 1019/1019 plus 15 Skill and 55 Eval validations (Actions 40108325621). Additional boundary tests cover stable Unknown and explicit zero.
+- Read-only only: no new Skills, Ads writes, retries, dependencies or third-party code reuse.
+
 ## v1.46.0 — 2026-10-24
 
 ### Global SP native campaign query-response membership proof (MINOR)
