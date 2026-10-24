@@ -91,6 +91,37 @@ def evaluate_global_sp_readback(evidence: Any) -> dict[str, Any]:
     if len(receipt["success"]) != 1:
         return unknown("Global SP receipt lacks an unambiguous success for request index 0")
 
+    # HTTP 207 is an indexed write receipt, not a query. A trusted adapter
+    # may preserve explicit request/resource identities at either level.
+    # If supplied, they must bind to THIS campaign before an independent
+    # query can confirm the intended update. Native campaignId and normalized
+    # campaign_id aliases are both checked; a conflicting alias is not ignored.
+    if "resource_type" in receipt and receipt["resource_type"] != "campaign":
+        return unknown("receipt resource type contradicts campaign update")
+    for field in ("request_id", "global_account_id", "campaign_id"):
+        if field in receipt and (
+            not _nonempty(request.get(field)) or receipt[field] != request[field]
+        ):
+            return unknown(f"receipt {field} contradicts or cannot bind to request")
+    success_item = receipt["success"][0]
+    for field in ("request_id", "global_account_id", "campaign_id"):
+        if field in success_item and (
+            not _nonempty(request.get(field)) or success_item[field] != request[field]
+        ):
+            return unknown(f"receipt success {field} contradicts or cannot bind to request")
+    if "campaign" in success_item:
+        returned = success_item["campaign"]
+        if not isinstance(returned, dict):
+            return unknown("receipt campaign resource is malformed")
+        if not any(alias in returned for alias in ("campaignId", "campaign_id")):
+            return unknown("receipt campaign resource has no campaign identity")
+        for alias in ("campaignId", "campaign_id"):
+            if alias in returned and returned[alias] != request["campaign_id"]:
+                return unknown(f"receipt campaign {alias} contradicts request")
+        for alias in ("globalAccountId", "global_account_id"):
+            if alias in returned and returned[alias] != request["global_account_id"]:
+                return unknown(f"receipt campaign {alias} contradicts global account")
+
     # This is a CAMPAIGN configured-state / optional daily-budget gate, not
     # an ad-group, target, placement or general-purpose write reconciler.
     # Future normalized expected_* intent must be explicitly supported before
