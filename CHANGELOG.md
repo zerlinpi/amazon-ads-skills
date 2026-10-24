@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.47.0 — 2026-10-25
+
+### Amazon Business placement modifier evidence (MINOR)
+
+- Extend the read-only Sponsored Products bid/budget causal gate to validate an explicitly supplied `placement_adjustment.state.amazon_business` independently from Top of Search, Rest of Search and Product Pages. Invalid numeric evidence and one-sided omission now fail closed to `Unknown`; a changed observed B2B modifier is a confounder.
+- RED-first synthetic regression: 1052 tests with 12 expected failures on the prior comparator (Actions 40118010958). Positive cases retain numeric zero, decimal-string values, and legacy three-placement snapshots without falsely claiming B2B capability proof.
+- Amazon Ads official help updated 2026-09-28 identifies B2B placement separately and excludes across-retailers Sponsored Products from B2B placement adjustment. No marketplace eligibility assumption, exact bid-stacking formula, live Ads write, new Skill, dependency or third-party code reuse.
+
+
 ## v1.46.2 — 2026-10-25
 
 ### Sponsored Products placement modifier value evidence (PATCH)
