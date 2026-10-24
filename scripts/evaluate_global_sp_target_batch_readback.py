@@ -67,7 +67,8 @@ def evaluate_global_sp_target_batch_readback(evidence: Any) -> dict[str, Any]:
     if len(accounts) != 1:
         return unknown("a single Global SP batch must have one global account")
     if ("global_account_id" in receipt
-            and receipt["global_account_id"] not in accounts):
+            and (not _nonempty(receipt["global_account_id"])
+                 or receipt["global_account_id"] not in accounts)):
         return unknown("batch receipt global account contradicts request")
 
     indexed: dict[int, tuple[str, dict[str, Any]]] = {}
