@@ -2,7 +2,7 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.41.0`  
+> 当前版本：`v1.42.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
@@ -15,7 +15,7 @@ A portable **Amazon Ads decision library for AI agents**. It packages 15 focused
 - Find guarded growth opportunities only after retail readiness, economics, incrementality and binding-control checks.
 - Design experiments when evidence is not strong enough for a direct recommendation.
 - Review previous changes using readback, validation windows, confounders and append-first optimization memory.
-- For Global SP campaign queries, an optional source-attributed pagination trace must have a complete terminating nextToken chain, stable campaign/account/filter identity, consistent source, and post-write page timestamps; contradictory traces cannot be marked `Confirmed`.
+- When both native Global SP campaign configuration and its paginated query trace are supplied, require an explicit source/time/filter/identity binding to one enumerated query page before confirming; contradictory or missing page provenance is `Unknown`. Native-only or trace-only legacy evidence remains compatible.\n- For Global SP campaign queries, an optional source-attributed pagination trace must have a complete terminating nextToken chain, stable campaign/account/filter identity, consistent source, and post-write page timestamps; contradictory traces cannot be marked `Confirmed`.
 - For Global SP campaign updates, reject explicitly contradictory campaign/account/request identities in the HTTP 207 receipt before independently verifying per-marketplace configured-state readback; optional daily monetary-budget changes additionally require per-marketplace currency, amount, recurrence and independently complete budget readback. Explicitly supplied per-budget-row source, observation time, and account/campaign identity must also agree with the enclosing readback; a successful receipt is not a confirmed application.
 - When a Global SP campaign configured-state or daily-budget readback includes raw marketplace IDs, require a complete, uniquely sourced raw-ID-to-country-code crosswalk and exact row binding; missing, duplicate or contradictory identity evidence returns `Unknown`. Country-code-only legacy evidence remains supported; this is not independent adapter authentication.
 - When a trusted adapter retains a complete native Global SP campaign query resource in `readback.raw_campaign`, independently recompute marketplace configured states from top-level `state` and `marketplaceConfigurations` overrides; reject contradictions as `Unknown`. Never derive configured state from `deliveryStatus`. Legacy normalized envelopes remain supported; raw query authenticity remains an external adapter responsibility.
