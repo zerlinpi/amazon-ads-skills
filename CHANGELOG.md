@@ -1,5 +1,23 @@
 # Changelog
 
+## v1.35.0 — 2026-10-24
+
+### Read-only safety capability
+
+- Add independent Global Sponsored Products **positive KEYWORD/PRODUCT target** configured-bid readback gate (`scripts/evaluate_global_sp_target_bid_readback.py`). Targets are one-marketplace resources, unlike global ad groups; the gate requires exact global account/campaign/ad group/target identity, native-currency Decimal bid, bound single-item 207 receipt, complete post-write query and connector capability evidence.
+- Reject negative/THEME/unverified target types, missing or contradictory bid/lineage, partial/truncated/unsupported evidence and unsupported extra `expected_*` intent as `Unknown`; valid partial/error receipts remain `Partial`. Keep campaign state, ad-group default bids and target bids independent; no FX, auction-bid inference, batch reconciliation or live Ads writes.
+- Preserve 15 Skills, default Suggest/Shadow safety, and external authorized Executor ownership of mutations/retries/idempotency.
+
+### RED → GREEN
+
+- RED test-first commit `d9ade7c81cdd2d3a380e2e9be2b8a43434783e0f`, Actions `40051661207`: 713 unit tests, 40 expected failures because target-specific gate was missing.
+- GREEN initial implementation `82e140bb7845e25cdf8779e5a3246c693cae6769`, Actions `40051691194`: required validation passed. Additional contradictory target-type/negative evidence regression cases and fix follow on the same feature branch; final PR-head and merged-main required validation must succeed before merge.
+
+### Sources and copyright
+
+- Official Amazon Ads Global SP API guide checked 2026-10-24: targets have one marketplace and a target-specific bid distinct from ad-group default bid. Adapter request correlation and conservative row-level lineage are repository-defined safety contracts.
+- Previously reviewed open-source candidates rechecked, none imported. No third-party code, schema, prompt, workflow or template copied. See `docs/SOURCES.md`.
+
 ## v1.34.0 — 2026-10-24
 
 ### Read-only safety capability
