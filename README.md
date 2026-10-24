@@ -2,7 +2,7 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.33.0`  
+> 当前版本：`v1.34.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
@@ -17,6 +17,7 @@ A portable **Amazon Ads decision library for AI agents**. It packages 15 focused
 - Review previous changes using readback, validation windows, confounders and append-first optimization memory.
 - For Global SP campaign updates, independently verify HTTP 207 per-item status against complete per-marketplace configured-state readback; optional daily monetary-budget changes additionally require per-marketplace currency, amount, recurrence and independently complete budget readback. Explicitly supplied per-budget-row source, observation time, and account/campaign identity must also agree with the enclosing readback; a successful receipt is not a confirmed application.
 - Do not interpret a Global SP campaign-state/budget `Confirmed` as verification of separate ad-group/target bid or placement changes: unsupported `expected_*` intent now returns `Unknown`, not false confirmation.
+- Independently verify a **single Global SP ad-group** 207 update against complete native-currency marketplace **default-bid** query readback using `scripts/evaluate_global_sp_adgroup_bid_readback.py`; this is separate from campaign/target verification and never writes Ads.
 - Run recurring weekly reviews that preserve campaign mission instead of applying one universal ACOS rule to every campaign.
 
 ## Start here
