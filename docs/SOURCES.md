@@ -1,5 +1,11 @@
 # Methodology sources
 
+## 2026-10-25: Sponsored Products video value-evidence review
+
+- **Official platform evidence:** Amazon Ads, *Sponsored Products video: A complete guide*, https://advertising.amazon.com/library/guides/sponsored-products-video (checked 2026-10-25). Video bid boosts are distinct from placement adjustments and may stack. This supports separate observed control evidence, not a hard-coded cross-marketplace ceiling, a bid-stacking formula, or causal attribution from a single observation.
+- **Open-source candidates (metadata observed 2026-10-25):** KuudoAI/amazon_ads_mcp (74 stars, MIT, non-fork, recent successful public integration Actions); vaibuep/amazon-ads-mcp (0 stars, MIT, non-fork, recent integration success, separate PR-title check failure); aws/agent-toolkit-for-aws (3055 stars, Apache-2.0, non-fork, recent CodeQL/dependency checks successful); nospicyplease/amazon-ppc-advanced-skills (14 stars, MIT, non-fork, older code activity). These observations are not full security, issue/PR, or implementation audits. The current video-value defect is deterministic and needs no external SDK/MCP, so all were **rejected for integration**. Generic capability/least-privilege ideas only; no third-party code, prompt, schema, template, or workflow copied. License scope for any nested vendored content must be separately verified before future reuse.
+
+
 This repository does not copy third-party skill text wholesale. Public repositories are used to discover generic methods, operating concepts and documentation structures. Ideas are independently rewritten for Amazon Ads, checked against the repository safety model, and kept connector/runtime neutral.
 
 ## Reviewed repositories
