@@ -16,6 +16,13 @@ from typing import Any
 from scripts.compare_control_state import _rfc3339_instant
 
 STATES = {"ENABLED", "PAUSED", "ARCHIVED"}
+# Country codes enumerated in Amazon's Global Sponsored Products API guide
+# (verified 2026-10-24). Unsupported/new codes fail closed until reviewed;
+# this is a versioned platform eligibility assertion, not an ISO-3166 catalog.
+SUPPORTED_GLOBAL_SP_MARKETPLACES = frozenset({
+    "AE", "AU", "BE", "BR", "CA", "DE", "EG", "ES", "FR", "GB", "IN",
+    "IT", "JP", "MX", "NL", "PL", "SA", "SE", "SG", "TR", "US",
+})
 
 
 def _result(status: str, reason: str, mismatched: list[str] | None = None) -> dict[str, Any]:
@@ -343,9 +350,10 @@ def evaluate_global_sp_readback(evidence: Any) -> dict[str, Any]:
     markets = request.get("marketplaces")
     expected = request.get("expected_effective_states")
     if (not isinstance(markets, list) or not markets
-            or any(not _nonempty(m) for m in markets)
+            or any(not isinstance(m, str) or m not in SUPPORTED_GLOBAL_SP_MARKETPLACES
+                   for m in markets)
             or len(set(markets)) != len(markets)):
-        return unknown("request marketplaces must be nonempty, distinct identifiers")
+        return unknown("request marketplaces must be distinct supported Global SP country codes")
     if (not isinstance(expected, dict) or set(expected) != set(markets)
             or any(not isinstance(value, str) or value not in STATES for value in expected.values())):
         return unknown("expected effective states must cover every requested marketplace")
