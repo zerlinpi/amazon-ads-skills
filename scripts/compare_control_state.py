@@ -320,6 +320,32 @@ def _observed_budget_amount(value: Any) -> bool:
     return amount.is_finite() and amount >= 0
 
 
+def _audience_member_problem(control: Any, side: str) -> str | None:
+    """A complete audience list is not proof that its members are usable.
+
+    This is the repository's normalized read-side shape, not an Amazon-native
+    request schema. A complete empty list is valid only with collection proof
+    from _coverage_problem. Each populated row needs stable identity and a
+    finite nonnegative observed bid boost; duplicates are ambiguous.
+    """
+    state = control.get("state") if isinstance(control, dict) else None
+    if not isinstance(state, list):
+        return f"{side} Sponsored Products audience bid adjustment must be a source-supported list"
+    seen: set[str] = set()
+    for index, member in enumerate(state):
+        if not isinstance(member, dict):
+            return f"{side} Sponsored Products audience member {index} is not an object"
+        identity = member.get("audience_id")
+        if not isinstance(identity, str) or not identity.strip() or identity != identity.strip():
+            return f"{side} Sponsored Products audience member {index} lacks a stable audience_id"
+        if identity in seen:
+            return f"{side} Sponsored Products duplicate audience_id: {identity}"
+        seen.add(identity)
+        if not _observed_budget_amount(member.get("bid_boost")):
+            return f"{side} Sponsored Products audience member {index} has unknown or invalid bid_boost"
+    return None
+
+
 def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[str, dict[str, Any]], side: str) -> str | None:
     """Validate decision-surface state that generic control presence cannot prove."""
     coverage = snapshot.get("coverage", {})
@@ -327,6 +353,10 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
     surface = provenance.get("decision_surface")
 
     if surface in {"sponsored_products_bid_change", "sponsored_products_budget_change"}:
+        audience_problem = _audience_member_problem(control_map.get("audience_bid_adjustment"), side)
+        if audience_problem:
+            return audience_problem
+
         bidding_control = control_map.get("bidding_strategy")
         bidding_state = bidding_control.get("state") if isinstance(bidding_control, dict) else None
         if bidding_state is None:
