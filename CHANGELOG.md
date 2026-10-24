@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.40.0 — 2026-10-24
+
+### Native Global SP campaign configured-state evidence cross-check (MINOR)
+
+- When a trusted adapter explicitly retains `readback.raw_campaign`, cross-check native campaign/account/marketplace scope and derive per-marketplace configured states from native `state` plus `marketplaceConfigurations[].overrides.state`. Contradictory, incomplete or malformed native evidence now yields `Unknown`; a complete matching raw and normalized readback still yields `Drifted` when the intended state differs. Delivery health is never treated as configured state. Legacy normalized-only inputs remain compatible.
+- RED-first synthetic regression `tests/test_global_sp_native_campaign_configuration.py`: 862 tests, 20 failures on previous behavior (Actions 40075256711). Minimal fix commit `f8dc5d518c1da9be3b5726e24d335a4b36ad85df` restored 862/862 GREEN (Actions 40075280259), with Skill and Eval validators passing.
+- Amazon Global Sponsored Products official guide distinguishes configured campaign `state` / marketplace overrides from query `status.deliveryStatus`. The optional raw query snapshot is an externally asserted source, not independent authentication. No Ads writes or third-party code copied.
+
+
 ## v1.39.0 — 2026-10-24
 
 ### Raw marketplace identity evidence safety (MINOR)
