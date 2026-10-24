@@ -51,7 +51,7 @@ This gate is additive to connector capability, realized-exposure, control-intera
 - impressions、clicks、spend、orders、sales；
 - CPC、CVR、ACOS/ROAS；
 - current base/target bid；
-- current placement modifier；
+- current placement modifier (Top of Search, Rest of Search, Product Pages, and separately Amazon Business placement when source-supported and eligible)；
 - campaign bidding strategy；
 - current audience bid adjustment state when the campaign/surface supports it；
 - current Sponsored Products video bid adjustment state when applicable；
@@ -68,6 +68,12 @@ This gate is additive to connector capability, realized-exposure, control-intera
 `../../references/platform-capability-lineage.md`
 
 平台规则发生版本/来源冲突时，先完成 capability lineage reconciliation；不要把旧 guide、launch announcement、不同 ad product 或不同 control surface 的数值直接当成当前 action-safe rule。
+
+## Amazon Business placement control boundary
+
+Amazon Ads documents a distinct Sponsored Products **Amazon Business placements** bid adjustment. When supported by the active campaign/marketplace and connector, collect its configured value and observation/effective time separately from the three ordinary placement modifiers. Do not treat missing/unsupported B2B evidence as 0 or as proof that the control is ineligible. When explicit B2B values are supplied to the read-only control comparator, invalid values or one-sided missing evidence must yield `Unknown`; overlapping observed changes are confounders. Legacy snapshots that omit the field remain compatible but cannot independently establish B2B-complete control coverage. Across-retailers Sponsored Products campaigns have different placement eligibility, so verify dated capability scope before an action-safe conclusion. Amazon Business exclusive-campaign site restriction is a separate routing control, not the same modifier.
+
+Source: Amazon Ads, *Adjust Sponsored Products bids* (2026-09-28), https://advertising.amazon.com/help/GYYZVM7LGSRYGWV5 . No universal stacking formula or modifier recommendation is inferred.
 
 ## 分析思路
 

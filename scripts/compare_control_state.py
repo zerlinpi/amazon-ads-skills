@@ -347,6 +347,13 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
             if not _observed_budget_amount(placement_state.get(field)):
                 return f"{side} Sponsored Products placement state has unknown or invalid {field}"
 
+        # Amazon Business placements are a distinct Sponsored Products boost.
+        # When supplied, the modifier must be observed numeric evidence, not
+        # an unsupported/unknown placeholder. Its absence in legacy snapshots
+        # is NOT proof of zero or universal marketplace ineligibility.
+        if "amazon_business" in placement_state and not _observed_budget_amount(placement_state["amazon_business"]):
+            return f"{side} Sponsored Products placement state has unknown or invalid amazon_business"
+
         rule_control = control_map.get("schedule_or_event_rule")
         rule_state = rule_control.get("state") if isinstance(rule_control, dict) else None
         if not isinstance(rule_state, dict):
@@ -457,6 +464,15 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
         return {"classification": "Unknown", "reasons": ["material-control requirement decision surface changed between snapshots"]}
     if provenance_before.get("requirement_registry_id") != provenance_after.get("requirement_registry_id"):
         return {"classification": "Unknown", "reasons": ["material-control requirement registry changed between snapshots"]}
+
+    if provenance_before.get("decision_surface") in {"sponsored_products_bid_change", "sponsored_products_budget_change"}:
+        before_placement = bmap["placement_adjustment"]["state"]
+        after_placement = pmap["placement_adjustment"]["state"]
+        # One-sided optional evidence cannot establish an unchanged B2B
+        # modifier or a causal effect. Both absent stays legacy-compatible,
+        # without claiming B2B capability/eligibility was independently proved.
+        if ("amazon_business" in before_placement) != ("amazon_business" in after_placement):
+            return {"classification": "Unknown", "reasons": ["amazon_business placement evidence is missing on one side"]}
 
     all_types = sorted(set(bmap) | set(pmap))
     if not all_types:
