@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.47.2 — 2026-10-25
+
+### Sponsored Products base-bid value evidence (PATCH)
+
+- Fix false `Treatment Isolated` classifications when registered Sponsored Products bid/budget causal snapshots contain invalid `base_bid` values. Reject status placeholders, booleans, negative/non-finite numbers, percent strings and structured placeholders; do not treat missing as numeric zero.
+- RED-first 21 synthetic tests: 1088 total, 15 failures on previous comparator (Actions 40126940011). Minimal repair restored 1088/1088 (Actions 40126986158), with Skill and Eval validators successful. Valid numeric/decimal-string bids and distinct budget treatment remain supported.
+- This read-only validation does not assert Amazon marketplace bid minima/ceilings or authenticate the connector. No live Ads writes, new Skills, dependencies, third-party code or Executor changes.
+
 ## v1.47.1 — 2026-10-25
 
 ### Sponsored Products video bid value evidence (PATCH)
