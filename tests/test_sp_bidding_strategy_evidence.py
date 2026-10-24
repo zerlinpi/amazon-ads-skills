@@ -87,8 +87,9 @@ class SponsoredProductsBiddingStrategyEvidenceTests(unittest.TestCase):
     def test_valid_fixed(self):
         self.assertEqual(compare_strategy("fixed")["classification"], "Treatment Isolated")
 
-    def test_valid_rule_based(self):
-        self.assertEqual(compare_strategy("rule_based")["classification"], "Treatment Isolated")
+    def test_valid_rule_based_with_observed_roas_guardrail(self):
+        state = {"strategy": "rule_based", "roas_guardrail": 3}
+        self.assertEqual(compare_strategy(state)["classification"], "Treatment Isolated")
 
     def test_valid_legacy_hyphen_alias(self):
         self.assertEqual(compare_strategy("dynamic-down-only")["classification"], "Treatment Isolated")
