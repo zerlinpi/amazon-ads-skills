@@ -370,7 +370,7 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
                 return f"{side} Sponsored Products bidding strategy is unknown or lacks rule-based ROAS guardrail evidence"
         elif isinstance(bidding_state, dict):
             if set(bidding_state) != {"strategy", "roas_guardrail"}:
-                return f"{side} Sponsored Products rule-based bidding has missing or unverified configuration fields"
+                return f"{side} Sponsored Products bidding strategy rule-based configuration has missing or unverified fields"
             strategy = bidding_state.get("strategy")
             if (
                 not isinstance(strategy, str)
@@ -380,7 +380,7 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
                 return f"{side} Sponsored Products bidding strategy state is unknown or unrecognized"
             guardrail = bidding_state.get("roas_guardrail")
             if not _observed_budget_amount(guardrail) or Decimal(str(guardrail)) <= 0:
-                return f"{side} Sponsored Products rule-based bidding ROAS guardrail is missing or invalid"
+                return f"{side} Sponsored Products bidding strategy rule-based ROAS guardrail is missing or invalid"
         else:
             return f"{side} Sponsored Products bidding strategy state is unknown or unrecognized"
 
