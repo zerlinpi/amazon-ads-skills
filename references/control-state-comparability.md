@@ -70,6 +70,14 @@ Control timestamps are decision-time evidence, not arbitrary labels. The compara
 
 Do not invent an auction-level composition formula from configured controls. Treat them as a control graph whose realized effect is observed through delivery, CPC, traffic mix, placement/audience/video mix, conversion, and economic outcomes.
 
+## Sponsored Products Amazon Business placement evidence
+
+Amazon Ads help updated 2026-09-28 lists **Amazon Business placements** as a distinct Sponsored Products bid-adjustment surface in addition to Top of Search, Rest of Search, and Product Pages. It also notes that Sponsored Products across-retailers campaigns cannot adjust bids for Amazon Business placements. Preserve this as a separate configured control dimension; do not add it to ordinary placement reporting totals or infer a universal account/marketplace eligibility rule.
+
+For the existing read-only SP bid/budget causal comparator, an explicitly supplied `placement_adjustment.state.amazon_business` is validated as a finite nonnegative numeric value (or plain decimal string). Unknown/Unsupported/Partial, booleans, non-finite/negative values, percent strings and structured placeholders cannot prove stability. If only one snapshot provides the field, the comparison is `Unknown`; a genuine numeric change is a placement-control confounder. Both snapshots omitting the field remain **legacy-compatible**, but this does **not** prove Amazon Business capability, absence, or a zero modifier. A source/connector-supported capability-and-eligibility contract is still required before claiming B2B-complete causal coverage. Keep Amazon Business exclusive-campaign site routing under `targeting_or_routing`, not under this bid modifier.
+
+Sources: Amazon Ads, *Adjust Sponsored Products bids*, updated 2026-09-28, https://advertising.amazon.com/help/GYYZVM7LGSRYGWV5 ; Amazon Ads, *Advertising on Amazon Business*, https://advertising.amazon.com/channels/amazon-business . Repository-authored guard only; no copied API schema or platform formula.
+
 ## Sponsored Products video bid adjustment
 
 Amazon currently exposes a distinct Sponsored Products video bid adjustment that can combine with other bid modifiers. For registered Sponsored Products bid/budget causal surfaces, preserve `video_bid_adjustment` as a separate material control rather than folding it into placement or creative metadata.
