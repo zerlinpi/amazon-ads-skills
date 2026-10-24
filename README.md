@@ -2,7 +2,7 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.47.2`  
+> 当前版本：`v1.47.3`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
@@ -15,6 +15,7 @@ A portable **Amazon Ads decision library for AI agents**. It packages 15 focused
 - Find guarded growth opportunities only after retail readiness, economics, incrementality and binding-control checks.
 - Design experiments when evidence is not strong enough for a direct recommendation.
 - Review previous changes using readback, validation windows, confounders and append-first optimization memory.
+- Sponsored Products bid/budget causal reviews now validate every member of a fully enumerated audience bid-adjustment collection: unique nonblank audience identity and finite nonnegative bid boost are required. A verified empty list and observed zero remain valid; missing, duplicate or invalid members yield Unknown. This is a repository-normalized readback contract, not an Amazon-native schema.
 - Sponsored Products bid/budget causal reviews now reject invalid base-bid evidence (Unknown/Unsupported/Partial, boolean, negative, non-finite, percentage strings or structured placeholders) before claiming treatment isolation. Valid observed numeric and plain decimal-string values remain supported; bid eligibility/limits require separate dated evidence.
 - Sponsored Products bid/budget causal reviews reject unknown, unsupported, boolean, negative, non-finite, percentage-formatted or structured video bid-adjustment evidence before claiming an isolated treatment. Explicit numeric zero remains valid; platform-specific limits and eligibility require separate dated evidence.
 - Explicit Amazon Business placement modifier evidence is now checked separately from the three standard Sponsored Products placements: invalid or one-sided missing B2B values yield Unknown, while legacy omission remains compatible but does not prove B2B eligibility or zero.
