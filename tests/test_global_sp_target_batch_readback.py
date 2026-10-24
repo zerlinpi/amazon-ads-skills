@@ -151,6 +151,9 @@ class GlobalSpTargetBatchTests(unittest.TestCase):
     def test_cross_account_batch_unknown(self):
         self.check("Unknown", lambda d: d["requests"][1].update(global_account_id="global-2"))
 
+    def test_malformed_receipt_global_account_unknown(self):
+        self.check("Unknown", lambda d: d["receipt"].update(global_account_id=["global-1"]))
+
     def test_wrong_resource_receipt_unknown(self):
         self.check("Unknown", lambda d: d["receipt"].update(resource_type="ad_group"))
 
