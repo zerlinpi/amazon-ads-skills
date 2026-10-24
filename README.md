@@ -2,7 +2,7 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.36.0`  
+> 当前版本：`v1.37.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
@@ -18,7 +18,7 @@ A portable **Amazon Ads decision library for AI agents**. It packages 15 focused
 - For Global SP campaign updates, independently verify HTTP 207 per-item status against complete per-marketplace configured-state readback; optional daily monetary-budget changes additionally require per-marketplace currency, amount, recurrence and independently complete budget readback. Explicitly supplied per-budget-row source, observation time, and account/campaign identity must also agree with the enclosing readback; a successful receipt is not a confirmed application.
 - Do not interpret a Global SP campaign-state/budget `Confirmed` as verification of separate ad-group/target bid or placement changes: unsupported `expected_*` intent now returns `Unknown`, not false confirmation.
 - Independently verify a **single Global SP ad-group** 207 update against complete native-currency marketplace **default-bid** query readback using `scripts/evaluate_global_sp_adgroup_bid_readback.py`; this is separate from campaign/target verification and never writes Ads.
-- Independently verify a **single positive Global SP keyword/product target** bid update with `scripts/evaluate_global_sp_target_bid_readback.py`: one marketplace, target-specific identity, native-currency bid, a bound 207 receipt and complete post-write query evidence. Never substitute ad-group default bid, campaign status, or an auction bid.
+- Independently verify a **single-call Global SP multi-ad-group batch** with `scripts/evaluate_global_sp_adgroup_batch_readback.py`: correlate every 207 index with one distinct ad-group request and independently complete native-currency marketplace default-bid readback for each success; Unknown/Partial/Drifted never become a blanket Confirmed. No Ads writes.\n- Independently verify a **single positive Global SP keyword/product target** bid update with `scripts/evaluate_global_sp_target_bid_readback.py`: one marketplace, target-specific identity, native-currency bid, a bound 207 receipt and complete post-write query evidence. Never substitute ad-group default bid, campaign status, or an auction bid.
 - Independently verify a **single-call Global SP positive-target batch** using `scripts/evaluate_global_sp_target_batch_readback.py`: bind every 207 index to its ordered target request, require unique target/request identities and exactly one independently complete query readback for each successful item; a mixed or incomplete batch never becomes Confirmed.
 - Run recurring weekly reviews that preserve campaign mission instead of applying one universal ACOS rule to every campaign.
 
