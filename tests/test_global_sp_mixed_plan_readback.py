@@ -139,6 +139,10 @@ class MixedPlanReadbackTests(unittest.TestCase):
             d["components"][2]["kind"] = "placement"
         self.check("Unknown", change)
 
+    def test_unhashable_manifest_kind_is_unknown_not_exception(self):
+        self.check("Unknown", lambda d: d["manifest"]["components"][2].update(
+            kind=[]))
+
     def test_child_claimed_verdict_is_not_trusted(self):
         self.check("Unknown", lambda d: d["components"][2].update(
             application_status="Confirmed"))
