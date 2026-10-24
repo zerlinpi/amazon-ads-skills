@@ -124,6 +124,10 @@ def _pagination_trace_issue(
             or query.get("marketplace_scope") != "GLOBAL"
             or not _nonempty(query.get("query_fingerprint"))):
         return "query pagination trace identity or filter fingerprint is unverified"
+    # The query-level source is optional for older adapters, but an explicitly
+    # supplied declaration must not contradict the page/envelope lineage.
+    if "source" in query and query["source"] != source:
+        return "query pagination query source contradicts readback envelope"
 
     expected_token: str | None = None
     seen_tokens: set[str] = set()
