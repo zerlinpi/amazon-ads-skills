@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.44.0 — 2026-10-24
+
+### Global SP supported marketplace identity guard (MINOR)
+
+- Fail closed on unsupported, malformed or incorrectly aliased country codes across campaign configured-state/daily-budget, ad-group default-bid and positive target-bid readback. Amazon's dated Global SP guide enumerates eligible codes; `GB` is required instead of `UK`. A 207 receipt and an echoed unknown code cannot prove valid resource identity.
+- RED-first 16 synthetic tests: 954 tests with 11 failures (Actions 40091597995); minimal shared eligibility guard restores 954/954 GREEN (Actions 40091645120), plus 15 Skill and 55 Eval validators. Existing valid marketplaces remain compatible. Unsupported/new marketplace eligibility requires fresh official verification before expanding the code set.
+- Read-only classification only. No Amazon Ads writes, retries, idempotency, FX conversion, third-party code or new Skill.
+
 ## v1.43.0 — 2026-10-24
 
 ### Global SP retained native campaign budget cross-check (MINOR)
