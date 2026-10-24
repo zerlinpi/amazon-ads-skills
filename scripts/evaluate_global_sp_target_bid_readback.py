@@ -37,7 +37,8 @@ def evaluate_global_sp_target_bid_readback(evidence: Any) -> dict[str, Any]:
     market = request.get("marketplace")
     if not isinstance(market, str) or re.fullmatch(r"[A-Z]{2}", market) is None:
         return unknown("target request requires exactly one country-code marketplace")
-    if request.get("target_type") not in _SUPPORTED_TARGET_TYPES:
+    if (not isinstance(request.get("target_type"), str)
+            or request["target_type"] not in _SUPPORTED_TARGET_TYPES):
         return unknown("only positive KEYWORD and PRODUCT target bids are supported")
     if request.get("negative") is not False:
         return unknown("negative or unverified target type cannot have a confirmed bid")
@@ -80,6 +81,10 @@ def evaluate_global_sp_target_bid_readback(evidence: Any) -> dict[str, Any]:
         for key in _RESOURCE_IDENTITIES:
             if key in returned and returned[key] != request[key]:
                 return unknown(f"receipt target {key} contradicts request")
+        if "target_type" in returned and returned["target_type"] != request["target_type"]:
+            return unknown("receipt target type contradicts request")
+        if "negative" in returned and returned["negative"] is not False:
+            return unknown("receipt target negative status contradicts request")
         if "marketplace" in returned and returned["marketplace"] != market:
             return unknown("receipt target marketplace contradicts request")
         if "marketplaces" in returned and returned["marketplaces"] != [market]:
@@ -122,6 +127,10 @@ def evaluate_global_sp_target_bid_readback(evidence: Any) -> dict[str, Any]:
     for identity in _RESOURCE_IDENTITIES:
         if identity in bid and bid[identity] != request[identity]:
             return unknown(f"target bid row {identity} contradicts request")
+    if "target_type" in bid and bid["target_type"] != request["target_type"]:
+        return unknown("target bid row type contradicts request")
+    if "negative" in bid and bid["negative"] is not False:
+        return unknown("target bid row negative status contradicts request")
     if "source" in bid:
         row_source = bid["source"]
         if (not isinstance(row_source, dict)
