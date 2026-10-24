@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.41.0 — 2026-10-24
+
+### Global SP campaign query pagination trace consistency (MINOR)
+
+- When an external trusted adapter supplies optional `readback.pagination_trace`, validate exact campaign/account/product/scope/filter identity, per-page source and observation time, and an unbroken, nonrepeating `nextToken` chain ending at null. A contradictory, incomplete or malformed trace now yields `Unknown` rather than `Confirmed`, even when the envelope asserts `pagination_status: Complete`. Legacy envelopes without this optional trace remain compatible.
+- RED-first synthetic regression `tests/test_global_sp_query_pagination_trace.py`: 889 unit tests, 23 failures before the fix (Actions 40079424196). Minimal implementation commit `b0913d6926beab7a028e3a272e9d2d2bf41f52dc` restored GREEN (Actions 40079467166). The query trace remains an external assertion, not independent API authentication or row-completeness proof.
+- Official Global Sponsored Products documentation specifies paginated query responses with `nextToken` and separate HTTP 207 write receipts. No live Ads calls, retries, third-party code or new Skills.
+
+
 ## v1.40.0 — 2026-10-24
 
 ### Native Global SP campaign configured-state evidence cross-check (MINOR)
