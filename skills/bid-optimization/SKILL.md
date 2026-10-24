@@ -67,7 +67,7 @@ This gate is additive to connector capability, sample sufficiency, retail state,
 - CPC；
 - campaign bidding strategy；
 - placement modifiers；
-- current Sponsored Products video bid adjustment state when applicable；
+- current Sponsored Products video bid adjustment state when applicable； for bid/budget causal review, an explicitly observed finite nonnegative numeric value (including zero) is distinct from Unknown/Unsupported/Partial or a missing connector field. Use `../../scripts/compare_control_state.py` and `../../references/control-state-comparability.md` rather than treating an unknown video modifier as unchanged；
 - 最近一次 bid 变更时间；
 - 日期范围和业务阶段。
 
