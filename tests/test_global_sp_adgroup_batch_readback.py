@@ -4,7 +4,7 @@ import unittest
 
 
 def fixture():
-    from tests.test_global_sp_adgroup_bid_readback import fixture as single
+    from test_global_sp_adgroup_bid_readback import fixture as single
     a, b = single(), single()
     b["request"]["request_id"] = "synthetic-request-02"
     b["request"]["ad_group_id"] = "synthetic-adgroup-b"
