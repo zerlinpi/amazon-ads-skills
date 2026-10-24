@@ -2,7 +2,7 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.45.0`  
+> 当前版本：`v1.46.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
@@ -16,6 +16,7 @@ A portable **Amazon Ads decision library for AI agents**. It packages 15 focused
 - Design experiments when evidence is not strong enough for a direct recommendation.
 - Review previous changes using readback, validation windows, confounders and append-first optimization memory.
 - For Global SP campaign, ad-group and target readback, reject unsupported or malformed marketplace country codes before an otherwise matching receipt/query can be classified `Confirmed`; eligibility follows the dated official Global SP country-code list, not arbitrary ISO codes or raw marketplace IDs.
+- When a trusted adapter explicitly retains query page `response_body` evidence, require every page's `campaigns[]` and `nextToken` to match the declared trace, and require the complete native campaign to appear exactly once on the claimed provenance page; missing, duplicated, displaced or contradictory response members are `Unknown`. Legacy traces without retained response bodies remain compatible.
 - When both native Global SP campaign configuration and its paginated query trace are supplied, require an explicit source/time/filter/identity binding to one enumerated query page before confirming; contradictory or missing page provenance is `Unknown`. Native-only or trace-only legacy evidence remains compatible.
 - For a Global SP single-campaign query, optional adapter-retained native request filters and every page's request body must select exactly the same Sponsored Products / GLOBAL / campaign ID scope, with page continuation tokens matching the trace. Explicit contradictory or incomplete request evidence is `Unknown`; an opaque query fingerprint alone does not authenticate HTTP filters.
 - For Global SP campaign queries, an optional source-attributed pagination trace must have a complete terminating nextToken chain, stable campaign/account/filter identity, consistent source, and post-write page timestamps; contradictory traces cannot be marked `Confirmed`. An explicitly supplied query-level source must also match the envelope/page source; missing or contradictory explicit lineage cannot confirm.

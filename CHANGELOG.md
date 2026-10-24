@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.46.0 — 2026-10-24
+
+### Global SP native campaign query-response membership proof (MINOR)
+
+- Add an optional, read-only trusted-adapter `pagination_trace.pages[].response_body` consistency contract. If any page supplies native response evidence, every page must supply a `campaigns[]` array and `nextToken` matching the page trace; the complete `raw_campaign` must appear exactly once on the page identified by `raw_campaign_provenance.page_index`. Unexpected, missing, duplicate, displaced or internally contradictory campaign resources cannot produce false `Confirmed`.
+- RED-first 20 synthetic tests: 1007 total, 14 failures (Actions 40103908902). Minimal fix `15f1a3e8ab23acbd0ea2e65087846269710af08a` restored 1007/1007 plus both validators (Actions 40103962004). Legacy traces without native page response bodies remain compatible.
+- The adapter remains responsible for authentic HTTP capture, source completeness and execution; no Amazon Ads writes, retries, external code copying, new Skills or runtime dependencies.
+
+
 ## v1.45.0 — 2026-10-24
 
 ### Global SP native query-request filter and pagination binding (MINOR)
