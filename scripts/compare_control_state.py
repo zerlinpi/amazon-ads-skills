@@ -332,6 +332,14 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
         if bidding_state is None:
             return f"{side} Sponsored Products bidding strategy state is unknown"
 
+        # An invalid base bid cannot establish a valid treatment or a stable
+        # competing control, even when both snapshots repeat the same label.
+        # Platform-specific bid minima/ceilings are separate dated capability checks.
+        base_control = control_map.get("base_bid")
+        base_state = base_control.get("state") if isinstance(base_control, dict) else None
+        if not _observed_budget_amount(base_state):
+            return f"{side} Sponsored Products base_bid has unknown or invalid numeric evidence"
+
         # Video bid boosts are independent of placement adjustments. An
         # unsupported, missing, boolean, negative, or non-finite modifier
         # cannot establish an unchanged material control in a causal review.
