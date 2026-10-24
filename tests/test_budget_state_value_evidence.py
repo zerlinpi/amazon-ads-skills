@@ -56,6 +56,13 @@ class BudgetStateValueEvidenceTests(unittest.TestCase):
     def test_empty_policy_object_is_not_an_observed_control(self):
         self.assert_unknown("average_daily_budget_policy", {})
 
+    def test_unknown_effective_budget_on_both_sides_is_not_stability_proof(self):
+        self.assert_unknown("effective_daily_budget", "Unknown", both=True)
+
+    def test_explicit_numeric_zero_is_not_missing_evidence(self):
+        result = self.compare_with("effective_daily_budget", 0)
+        self.assertEqual(result["classification"], "Treatment Isolated", result)
+
     def test_valid_decimal_string_budget_remains_supported(self):
         result = self.compare_with("effective_daily_budget", "120.00")
         self.assertEqual(result["classification"], "Treatment Isolated", result)
