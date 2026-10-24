@@ -90,6 +90,68 @@ def _marketplace_identity_issue(
 
 
 
+
+def _pagination_trace_issue(
+    readback: dict[str, Any],
+    request: dict[str, Any],
+    source: dict[str, str],
+    completed: Any,
+    observed: Any,
+) -> str | None:
+    """Validate an optional adapter-retained query nextToken chain.
+
+    This only detects internal contradictions. The external adapter remains
+    responsible for raw API authenticity, result coverage and filter capture.
+    """
+    if "pagination_trace" not in readback:
+        return None
+    trace = readback["pagination_trace"]
+    if not isinstance(trace, dict):
+        return "query pagination trace is malformed"
+    query, pages = trace.get("query"), trace.get("pages")
+    if not isinstance(query, dict) or not isinstance(pages, list) or not pages:
+        return "query pagination trace has missing query identity or pages"
+    if (query.get("global_account_id") != request["global_account_id"]
+            or query.get("campaign_id") != request["campaign_id"]
+            or query.get("ad_product") != "SPONSORED_PRODUCTS"
+            or query.get("marketplace_scope") != "GLOBAL"
+            or not _nonempty(query.get("query_fingerprint"))):
+        return "query pagination trace identity or filter fingerprint is unverified"
+
+    expected_token: str | None = None
+    seen_tokens: set[str] = set()
+    previous_observed = None
+    for index, page in enumerate(pages):
+        if not isinstance(page, dict):
+            return "query pagination page is malformed"
+        if "request_token" not in page or "next_token" not in page:
+            return "query pagination page has missing token evidence"
+        incoming, outgoing = page["request_token"], page["next_token"]
+        if (incoming is not None and not _nonempty(incoming)
+                or outgoing is not None and not _nonempty(outgoing)):
+            return "query pagination token is malformed"
+        if incoming != expected_token:
+            return "query pagination continuation token does not bind to prior page"
+        if outgoing is not None:
+            if outgoing in seen_tokens:
+                return "query pagination continuation token repeats"
+            seen_tokens.add(outgoing)
+        if index == len(pages) - 1 and outgoing is not None:
+            return "query pagination trace has no terminal page"
+        if (page.get("global_account_id") != request["global_account_id"]
+                or page.get("campaign_id") != request["campaign_id"]
+                or page.get("query_fingerprint") != query["query_fingerprint"]
+                or page.get("source") != source):
+            return "query pagination page identity, filters or source contradict envelope"
+        page_time = _rfc3339_instant(page.get("observed_at"))
+        if (page_time is None or page_time <= completed or page_time > observed
+                or previous_observed is not None and page_time < previous_observed):
+            return "query pagination page observation time is inconsistent"
+        previous_observed = page_time
+        expected_token = outgoing
+    return None
+
+
 def _native_campaign_config_issue(
     readback: dict[str, Any],
     request: dict[str, Any],
@@ -264,6 +326,10 @@ def evaluate_global_sp_readback(evidence: Any) -> dict[str, Any]:
                             ("capability_status", "Supported")):
         if readback.get(field) != required:
             return unknown(f"readback {field} is not {required}")
+
+    pagination_issue = _pagination_trace_issue(readback, request, source, completed, observed)
+    if pagination_issue is not None:
+        return unknown(pagination_issue)
 
     rows = readback.get("marketplace_states")
     if not isinstance(rows, list):
