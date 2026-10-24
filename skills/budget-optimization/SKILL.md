@@ -13,6 +13,8 @@ metadata:
 
 # Budget Optimization
 
+For Sponsored Products budget-change causal review, base/effective daily budgets must be observed finite nonnegative values and the average-daily-budget policy must be known. Missing, Unknown/Unsupported, boolean, negative or non-finite values cannot establish a stable control or Treatment Isolated; do not infer zero from missing connector evidence.
+
 ## Connector capability gate
 
 When a conclusion depends on live MCP/API/connector data, load `../../references/connector-capability.md` before interpreting missing or empty fields. If a machine-readable capability snapshot is available, identify the exact required capability IDs and run `../../scripts/evaluate_connector_capability_gate.py` **before metric interpretation**.
