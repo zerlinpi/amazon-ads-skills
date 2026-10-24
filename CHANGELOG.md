@@ -10,7 +10,7 @@
 
 ### RED → GREEN
 
-- Deterministic RED-first tests `24ab2d2aca9d725344a1fb12da44ad7e319cc223` (Actions `40063718187`, failure); implementation `486edab38de75b99bf8eccf500ba238716a5f34f` (Actions `40063745263`, success). All repository unit tests, Skill validator and Eval validator passed on implementation HEAD. Final PR-head and merged-main checks must also succeed.
+- Deterministic RED-first tests `24ab2d2aca9d725344a1fb12da44ad7e319cc223` (Actions `40063718187`, failure); implementation `486edab38de75b99bf8eccf500ba238716a5f34f` (Actions `40063745263`, success). An additional malformed-kind regression test `1a65f54389b7cf35cb7736a62d8e568037c26dc4` reproduced a TypeError (RED Actions `40063856519`); `227870b4b6455c249e0f097565765803da4118a8` now returns `Unknown` instead. All repository unit tests, Skill validator and Eval validator must pass on final PR HEAD. Final PR-head and merged-main checks must also succeed.
 
 ### Sources and copyright
 
