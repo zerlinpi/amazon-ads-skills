@@ -332,6 +332,15 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
         if bidding_state is None:
             return f"{side} Sponsored Products bidding strategy state is unknown"
 
+        # Video bid boosts are independent of placement adjustments. An
+        # unsupported, missing, boolean, negative, or non-finite modifier
+        # cannot establish an unchanged material control in a causal review.
+        # Platform-specific upper bounds remain a dated capability check.
+        video_control = control_map.get("video_bid_adjustment")
+        video_state = video_control.get("state") if isinstance(video_control, dict) else None
+        if not _observed_budget_amount(video_state):
+            return f"{side} Sponsored Products video_bid_adjustment has unknown or invalid numeric evidence"
+
         placement_control = control_map.get("placement_adjustment")
         placement_state = placement_control.get("state") if isinstance(placement_control, dict) else None
         if not isinstance(placement_state, dict):
