@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.47.1 — 2026-10-25
+
+### Sponsored Products video bid value evidence (PATCH)
+
+- Fix false `Treatment Isolated`/`Confounded` classifications when a registered SP bid/budget causal snapshot contains an invalid `video_bid_adjustment` value. Require finite nonnegative observed numeric evidence; reject Unknown/Unsupported/Partial, booleans, negative/non-finite numbers, percent strings and structured placeholders. Do not convert missing data to zero or invent a universal platform ceiling.
+- RED-first 15 deterministic tests: 1067 tests, 11 failures on the previous comparator (Actions 40121930613); minimal repair restored 1067/1067, 15 Skill validations and 55 Eval validations (Actions 40121987510). Observed zero and decimal-string modifiers remain valid, and a real video-boost change remains a confounder.
+- Official Sponsored Products video guide confirms video-specific bid boosts are separate from and can stack with placement adjustments. No live Ads writes, new Skills, dependencies, third-party code reuse, or Executor behavior changes.
+
+
 ## v1.47.0 — 2026-10-25
 
 ### Amazon Business placement modifier evidence (MINOR)
