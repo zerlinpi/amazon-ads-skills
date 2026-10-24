@@ -341,8 +341,11 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
         if missing_placements:
             return f"{side} Sponsored Products placement state is missing: " + ", ".join(missing_placements)
         for field in sorted(required_placements):
-            if placement_state.get(field) is None:
-                return f"{side} Sponsored Products placement state has unknown {field}"
+            # Presence is not numeric evidence: Unknown, Unsupported, booleans,
+            # non-finite and negative modifiers cannot establish stability.
+            # Exact platform upper limits remain a separate dated capability gate.
+            if not _observed_budget_amount(placement_state.get(field)):
+                return f"{side} Sponsored Products placement state has unknown or invalid {field}"
 
         rule_control = control_map.get("schedule_or_event_rule")
         rule_state = rule_control.get("state") if isinstance(rule_control, dict) else None
