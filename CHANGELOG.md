@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.45.0 — 2026-10-24
+
+### Global SP native query-request filter and pagination binding (MINOR)
+
+- Add an optional, read-only adapter-retained `pagination_trace.query.request_filters` and per-page `request_body` consistency contract. Every query must uniquely select the intended Sponsored Products GLOBAL campaign, reject additional ambiguous filters, and bind each continuation page's actual request token to the trace. A query fingerprint by itself remains an unverified adapter assertion.
+- RED-first 24 synthetic tests (987 total, 20 RED failures; Actions 40099355669); minimal implementation restores 987/987 GREEN (Actions 40099426067). Legacy fingerprint-only traces remain compatible; explicit partial or contradictory native request evidence is `Unknown` rather than false `Confirmed`.
+- No live Amazon Ads mutation, retry, idempotency, third-party code reuse, new Skill, or connector authentication claim.
+
+
 ## v1.44.1 — 2026-10-24
 
 ### Global SP query-level source contradiction guard (PATCH)
