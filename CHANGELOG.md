@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.46.2 — 2026-10-25
+
+### Sponsored Products placement modifier value evidence (PATCH)
+
+- Fix false `Treatment Isolated` from placeholder, boolean, negative or non-finite Top of Search, Rest of Search and Product Pages modifiers in bid/budget causal comparisons. Require finite nonnegative observed values; do not invent a universal modifier ceiling or convert unsupported evidence to zero.
+- RED-first 1036 tests with 14 failures (Actions 40113031972); focused repair restored 1036/1036 and Skill/Eval validation (Actions 40113090733). Positive regression cases retain zero, plain decimal string and numeric modifiers.
+- No new Skill, runtime dependency, Amazon Ads write, Executor retry or third-party code reuse.
+
+
 ## v1.46.1 — 2026-10-24
 
 ### Sponsored Products budget-state value evidence (PATCH)
