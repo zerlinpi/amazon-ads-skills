@@ -71,11 +71,11 @@ class SponsoredProductsPlacementValueEvidenceTests(unittest.TestCase):
         self.assertEqual(result["classification"], "Treatment Isolated", result)
 
     def test_valid_decimal_string_remains_supported(self):
-        result = compare_with("rest_of_search", "12.50")
+        result = compare_with("rest_of_search", "12.50", both=True)
         self.assertEqual(result["classification"], "Treatment Isolated", result)
 
     def test_valid_numeric_float_remains_supported(self):
-        result = compare_with("product_pages", 12.5)
+        result = compare_with("product_pages", 12.5, both=True)
         self.assertEqual(result["classification"], "Treatment Isolated", result)
 
 
