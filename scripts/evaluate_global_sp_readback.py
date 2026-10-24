@@ -89,6 +89,69 @@ def _marketplace_identity_issue(
     return None
 
 
+
+def _native_campaign_config_issue(
+    readback: dict[str, Any],
+    request: dict[str, Any],
+    markets: list[str],
+    actual: dict[str, str],
+) -> str | None:
+    """Cross-check explicitly retained native query configuration, if supplied.
+
+    The trusted adapter still authenticates the source and query completion.
+    This checks that the retained campaign resource cannot contradict its
+    normalized per-marketplace configured-state assertions. Delivery status
+    is deliberately not used to derive configured state.
+    """
+    if "raw_campaign" not in readback:
+        return None
+    native = readback["raw_campaign"]
+    if not isinstance(native, dict):
+        return "retained native campaign query resource is malformed"
+    if native.get("campaignId") != request["campaign_id"]:
+        return "native campaign identity contradicts request"
+    for alias in ("globalAccountId", "global_account_id", "campaign_id"):
+        if alias in native:
+            expected = request["campaign_id"] if alias == "campaign_id" else request["global_account_id"]
+            if native[alias] != expected:
+                return f"native campaign {alias} contradicts request"
+    if native.get("adProduct") != "SPONSORED_PRODUCTS" or native.get("marketplaceScope") != "GLOBAL":
+        return "native campaign product or scope is not Global Sponsored Products"
+    native_markets = native.get("marketplaces")
+    if (not isinstance(native_markets, list)
+            or any(not _nonempty(m) for m in native_markets)
+            or len(set(native_markets)) != len(native_markets)
+            or set(native_markets) != set(markets)):
+        return "native campaign marketplace scope is missing, duplicated or contradictory"
+    global_state = native.get("state")
+    if not isinstance(global_state, str) or global_state not in STATES:
+        return "native campaign configured global state is missing or unsupported"
+    configurations = native.get("marketplaceConfigurations")
+    if not isinstance(configurations, list):
+        return "native campaign marketplace configurations are not a complete list"
+    overrides: dict[str, str] = {}
+    seen: set[str] = set()
+    for config in configurations:
+        if not isinstance(config, dict) or not _nonempty(config.get("marketplace")):
+            return "native campaign marketplace configuration is malformed"
+        market = config["marketplace"]
+        if market not in actual or market in seen:
+            return "native campaign marketplace configuration is duplicated or out of scope"
+        seen.add(market)
+        values = config.get("overrides")
+        if not isinstance(values, dict):
+            return f"native campaign {market} overrides are malformed"
+        if "state" in values:
+            state = values["state"]
+            if not isinstance(state, str) or state not in STATES:
+                return f"native campaign {market} override state is unsupported"
+            overrides[market] = state
+    for market in markets:
+        if actual[market] != overrides.get(market, global_state):
+            return f"native campaign {market} configured state contradicts normalized readback"
+    return None
+
+
 def evaluate_global_sp_readback(evidence: Any) -> dict[str, Any]:
     """Classify one Global SP campaign update without equating HTTP 207 to application.
 
@@ -235,6 +298,9 @@ def evaluate_global_sp_readback(evidence: Any) -> dict[str, Any]:
         actual[market] = state
     if set(actual) != set(markets):
         return unknown("readback marketplace coverage differs from requested marketplace scope")
+    native_issue = _native_campaign_config_issue(readback, request, markets, actual)
+    if native_issue is not None:
+        return unknown(native_issue)
     identity_issue = _marketplace_identity_issue(readback, markets, rows)
     if identity_issue is not None:
         return unknown(identity_issue)
