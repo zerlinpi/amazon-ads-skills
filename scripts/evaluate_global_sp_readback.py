@@ -154,6 +154,53 @@ def _pagination_trace_issue(
     return None
 
 
+
+def _native_campaign_page_provenance_issue(
+    readback: dict[str, Any],
+    request: dict[str, Any],
+) -> str | None:
+    """Bind two explicitly supplied evidence surfaces to one query page.
+
+    The trusted adapter asserts provenance; this only checks internal
+    consistency, not native HTTP authenticity or completeness of results.
+    """
+    has_native = "raw_campaign" in readback
+    has_trace = "pagination_trace" in readback
+    has_binding = "raw_campaign_provenance" in readback
+    if not has_native and not has_binding:
+        return None
+    if not has_trace and not has_binding:
+        return None  # Legacy native-only envelope is still supported.
+    if not has_native or not has_trace or not has_binding:
+        return "native campaign and query pagination evidence lack a shared page binding"
+    binding = readback["raw_campaign_provenance"]
+    trace = readback["pagination_trace"]
+    if not isinstance(binding, dict) or not isinstance(trace, dict):
+        return "native campaign page provenance is malformed"
+    pages, query = trace.get("pages"), trace.get("query")
+    page_index = binding.get("page_index")
+    if (not isinstance(pages, list) or not isinstance(query, dict)
+            or type(page_index) is not int or page_index < 0 or page_index >= len(pages)):
+        return "native campaign page index is missing or outside query trace"
+    page = pages[page_index]
+    if not isinstance(page, dict):
+        return "native campaign source page is malformed"
+    if (binding.get("global_account_id") != request["global_account_id"]
+            or binding.get("campaign_id") != request["campaign_id"]
+            or not _nonempty(binding.get("query_fingerprint"))
+            or binding["query_fingerprint"] != query.get("query_fingerprint")):
+        return "native campaign page identity or query filters contradict trace"
+    if (not isinstance(binding.get("source"), dict)
+            or binding["source"] != page.get("source")
+            or binding["source"] != readback.get("source")):
+        return "native campaign source does not bind to query page"
+    binding_time = _rfc3339_instant(binding.get("observed_at"))
+    page_time = _rfc3339_instant(page.get("observed_at"))
+    if binding_time is None or page_time is None or binding_time != page_time:
+        return "native campaign observation time does not bind to query page"
+    return None
+
+
 def _native_campaign_config_issue(
     readback: dict[str, Any],
     request: dict[str, Any],
@@ -332,6 +379,10 @@ def evaluate_global_sp_readback(evidence: Any) -> dict[str, Any]:
     pagination_issue = _pagination_trace_issue(readback, request, source, completed, observed)
     if pagination_issue is not None:
         return unknown(pagination_issue)
+
+    native_page_issue = _native_campaign_page_provenance_issue(readback, request)
+    if native_page_issue is not None:
+        return unknown(native_page_issue)
 
     rows = readback.get("marketplace_states")
     if not isinstance(rows, list):
