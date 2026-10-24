@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.48.0 — 2026-10-25
+
+### Sponsored Products rule-based ROAS guardrail evidence (MINOR)
+
+- Amazon's rule-based bidding strategy uses a ROAS guardrail and is distinct from schedule/event bid rules. An unchanged bare `rule_based` label no longer proves treatment isolation; the normalized read-side `bidding_strategy.state` requires exactly `{"strategy":"rule_based","roas_guardrail":3}` (illustrative positive ROAS ratio) with source-supported, finite, strictly positive guardrail evidence. Unknown, unsupported, zero, negative, non-finite and unverified extra rule fields fail closed. This is not an Amazon API payload or proof of eligibility, activation or realized auction bids.
+- RED-first 21 deterministic cases: 1159 tests, 9 failures on old comparator (Actions 40140153095). The updated comparison distinguishes stable complete rule-based evidence from guardrail changes, which are competing controls. Existing positive strategy fixture migrated; no new Skills, third-party dependencies or Ads writes.
+
+
 ## v1.47.4 — 2026-10-25
 
 ### Sponsored Products bidding-strategy evidence (PATCH)
