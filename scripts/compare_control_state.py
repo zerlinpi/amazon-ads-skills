@@ -311,7 +311,7 @@ def _observed_budget_amount(value: Any) -> bool:
     """
     if isinstance(value, bool) or not isinstance(value, (int, float, str, Decimal)):
         return False
-    if isinstance(value, str) and re.fullmatch(r"[0-9]+(?:\\.[0-9]+)?", value) is None:
+    if isinstance(value, str) and re.fullmatch(r"[0-9]+(?:\.[0-9]+)?", value) is None:
         return False
     try:
         amount = Decimal(str(value))
