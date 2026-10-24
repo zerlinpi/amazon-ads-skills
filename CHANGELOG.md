@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.47.3 — 2026-10-25
+
+### Sponsored Products audience-member value and identity evidence (PATCH)
+
+- Fix false Treatment Isolated or misclassified Confounded when complete audience collections contain invalid boosts, missing or duplicate IDs, malformed members or placeholders. Require unique nonblank string audience IDs and finite nonnegative observed boosts in repository-normalized readback. Retain verified empty collections, numeric zero, decimal strings and genuine audience-change confounders.
+- RED-first 29 deterministic tests: 1117 total, 21 failures on old comparator (Actions 40130929665). Minimal repair and migration of older synthetic fixtures to the stronger member contract restored 1117/1117, Skill and Eval validation (Actions 40130997972).
+- Official audience guidance supports per-audience bid controls but the normalized member shape is repository-owned. No new Skills, dependencies, live Ads writes, Executor behavior, universal platform ceiling or third-party code reuse.
+
+
 ## v1.47.2 — 2026-10-25
 
 ### Sponsored Products base-bid value evidence (PATCH)

@@ -1,5 +1,12 @@
 # Methodology sources
 
+## 2026-10-25: Sponsored Products audience-member evidence (v1.47.3)
+
+- Official: Amazon Ads Help, Bidding strategies for Sponsored Products (updated 2026-09-28), https://advertising.amazon.com/help/GCU2BUWJH2W3A8Z7, describes independent per-audience bid boosts and market-dependent audience selection limits. Amazon Ads launch note (2024-10-15), https://advertising.amazon.com/resources/whats-new/unboxed-audience-bid-boosting, discusses AMC audience identity and SP audience boosting. Neither specifies the repository-normalized audience_id/bid_boost JSON shape or authenticates connector completeness. No auction formula or universal bid ceiling adopted.
+- Operator evidence: Reddit r/PPC discussions in April 2026 mention combined audience and placement boosts, but are uncontrolled anecdotes, not Amazon platform policy or causal proof. No fixed bidding heuristic adopted.
+- GitHub candidates checked 2026-10-25: MarketplaceAdPros/skill-amazon-ads (27 stars, MIT, non-fork, pushed 2026-03-11, no public Actions runs returned or open PRs sampled) depends on a hosted MCP; ferrants/amazon-seller-agent-claude-code (8 stars, GitHub license NOASSERTION, non-fork, pushed 2026-05-18, recent successful public CI, bundled Skills separately licensed) is not uniformly MIT; KuudoAI/amazon_ads_mcp (74 stars, MIT, non-fork, pushed 2026-10-14, tests and CI present, recent successful integration run, 5 open issues and 5 open PRs sampled) does not authenticate external audience readback; promptfoo/promptfoo (26,380 stars, MIT, non-fork, active 2026-10-24, recent successful CI) offers general eval tooling without a necessary improvement for this narrow deterministic defect. All rejected for integration; metadata/CI samples are not complete code, security, or issue audits. No third-party code, prompt, schema, template or workflow copied; generic safety ideas independently implemented.
+
+
 ## 2026-10-25: Sponsored Products video value-evidence review
 
 - **Official platform evidence:** Amazon Ads, *Sponsored Products video: A complete guide*, https://advertising.amazon.com/library/guides/sponsored-products-video (checked 2026-10-25). Video bid boosts are distinct from placement adjustments and may stack. This supports separate observed control evidence, not a hard-coded cross-marketplace ceiling, a bid-stacking formula, or causal attribution from a single observation.

@@ -53,7 +53,7 @@ This gate is additive to connector capability, realized-exposure, control-intera
 - current base/target bid；
 - current placement modifier (Top of Search, Rest of Search, Product Pages, and separately Amazon Business placement when source-supported and eligible)；
 - campaign bidding strategy；
-- current audience bid adjustment state when the campaign/surface supports it；
+- current audience bid adjustment state when the campaign/surface supports it；for registered Sponsored Products bid/budget causal comparisons, complete audience lists still require unique nonblank audience IDs and valid finite nonnegative per-member bid boosts (observed zero is allowed); invalid/duplicate members mean Unknown, not an unchanged audience control；
 - current Sponsored Products video bid adjustment state when applicable；
 - active schedule/event bid rules or other material modifiers；
 - material control-change timestamps；

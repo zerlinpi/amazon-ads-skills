@@ -63,34 +63,35 @@ class RequiredListDescendantEvidenceTests(unittest.TestCase):
         self.assertEqual(compare_control_state(before, after, "base_bid")["classification"], "Unknown")
 
     def test_complete_child_preserves_isolated_bid(self):
-        state = [{"segments": ["s1"]}]
+        state = [{"audience_id": "a", "bid_boost": 10, "segments": ["s1"]}]
         self.assertEqual(compare_audience(state, {"/0/segments": COMPLETE})["classification"],
                          "Treatment Isolated")
 
     def test_complete_child_change_confounds_bid(self):
-        state = [{"segments": ["s1"]}]
+        state = [{"audience_id": "a", "bid_boost": 10, "segments": ["s1"]}]
         self.assertEqual(compare_audience(
-            state, {"/0/segments": COMPLETE}, post_state=[{"segments": ["s2"]}],
+            state, {"/0/segments": COMPLETE}, post_state=[{"audience_id": "a", "bid_boost": 10, "segments": ["s2"]}],
         )["classification"], "Confounded")
 
     def test_direct_nested_array_without_evidence_is_unknown(self):
         self.assertEqual(compare_audience([[]])["classification"], "Unknown")
 
-    def test_direct_nested_array_with_evidence_is_isolated(self):
+    def test_direct_nested_array_with_evidence_is_still_invalid_audience_member(self):
+        # Collection completeness cannot authenticate a non-object audience row.
         self.assertEqual(compare_audience([[]], {"/0": COMPLETE})["classification"],
-                         "Treatment Isolated")
+                         "Unknown")
 
     def test_deeper_child_needs_own_evidence(self):
-        state = [{"segments": [{"rules": []}]}]
+        state = [{"audience_id": "a", "bid_boost": 10, "segments": [{"rules": []}]}]
         self.assertEqual(compare_audience(state, {"/0/segments": COMPLETE})["classification"], "Unknown")
 
     def test_deeper_child_complete_is_isolated(self):
-        state = [{"segments": [{"rules": []}]}]
+        state = [{"audience_id": "a", "bid_boost": 10, "segments": [{"rules": []}]}]
         evidence = {"/0/segments": COMPLETE, "/0/segments/0/rules": COMPLETE}
         self.assertEqual(compare_audience(state, evidence)["classification"], "Treatment Isolated")
 
     def test_flat_required_audience_list_remains_isolated(self):
-        self.assertEqual(compare_audience([{"audience_id": "a", "boost": 10}])["classification"],
+        self.assertEqual(compare_audience([{"audience_id": "a", "bid_boost": 10}])["classification"],
                          "Treatment Isolated")
 
 
