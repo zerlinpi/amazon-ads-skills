@@ -196,3 +196,8 @@ A bid increase requires evidence that bid/auction exposure is the **binding cont
 ## Base-bid evidence safety in causal review
 
 For registered Sponsored Products bid/budget control-state comparisons, the observed `base_bid` must be a finite, nonnegative numeric value or plain decimal string. Unknown/Unsupported/Partial, missing, boolean, negative/non-finite, percentage-formatted and structured placeholder values cannot support `Treatment Isolated`, even if the same placeholder is repeated in both windows. This is a repository-owned read-only evidence guard, not a claim that any numeric zero or amount is eligible for an Amazon marketplace; consult dated platform capability and connector evidence before action sizing. Keep bid strategy, placements, audience/video modifiers, rules, budget and routing as separate controls. Do not infer realized CPC or causal lift from configured base bid alone.
+
+
+## Bidding-strategy evidence in causal comparisons
+
+When using the registered Sponsored Products bid/budget read-only comparator, require a source-supported recognized normalized bidding strategy (`dynamic_down_only`, `dynamic_up_and_down`, `fixed`, or `rule_based`; hyphen variants accepted). A repeated `Unknown` / `Unsupported` / `Partial`, malformed value, or unrecognized strategy cannot establish treatment isolation. A verified strategy change is a competing control, not evidence that a base-bid change alone caused an outcome. These are repository-owned normalization labels, not Amazon-native API enums or proof of account/marketplace eligibility. Confirm current eligibility through platform-capability lineage; do not calculate realized bids or execute account changes from this classification.
