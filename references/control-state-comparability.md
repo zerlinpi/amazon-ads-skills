@@ -80,6 +80,9 @@ Sources: Amazon Ads, *Adjust Sponsored Products bids*, updated 2026-09-28, https
 
 ## Sponsored Products video bid adjustment
 
+For the registered Sponsored Products bid/budget causal surfaces, the read-only comparator requires `video_bid_adjustment.state` to be a finite, nonnegative observed number or plain decimal string. Explicit zero is valid; missing/Unknown/Unsupported/Partial, booleans, negative/non-finite numbers, percentage-formatted strings and structured placeholders are not valid observed video-boost values. Repeating an unknown value on both sides cannot prove an unchanged control. This is a local evidence guard, not an Amazon-native API field definition, marketplace eligibility proof, or universal platform bid-boost ceiling. Amazon's Sponsored Products video guide states that video-specific bid boosts can stack on top of other placement adjustments; preserve them as separate controls.
+
+
 Amazon currently exposes a distinct Sponsored Products video bid adjustment that can combine with other bid modifiers. For registered Sponsored Products bid/budget causal surfaces, preserve `video_bid_adjustment` as a separate material control rather than folding it into placement or creative metadata.
 
 - A source-supported zero/no-boost state is different from missing or unsupported evidence.
