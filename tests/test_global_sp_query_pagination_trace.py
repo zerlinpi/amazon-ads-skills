@@ -85,6 +85,17 @@ class GlobalSpPaginationTraceTests(unittest.TestCase):
         e["readback"]["pagination_trace"]["pages"].pop()
         self.check("Unknown", e)
 
+    def test_terminal_token_before_final_page_unknown(self):
+        e = with_trace()
+        e["readback"]["pagination_trace"]["pages"][0]["next_token"] = None
+        e["readback"]["pagination_trace"]["pages"][1]["request_token"] = None
+        self.check("Unknown", e)
+
+    def test_missing_page_token_key_unknown(self):
+        e = with_trace()
+        del e["readback"]["pagination_trace"]["pages"][1]["next_token"]
+        self.check("Unknown", e)
+
     def test_wrong_continuation_token_unknown(self):
         e = with_trace()
         e["readback"]["pagination_trace"]["pages"][1]["request_token"] = "wrong-token"
