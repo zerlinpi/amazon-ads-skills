@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.37.0 — 2026-10-24
+
+### Read-only safety capability
+
+- Add `scripts/evaluate_global_sp_adgroup_batch_readback.py` for one-call homogeneous Global SP multi-ad-group updates. Require unique ordered request/index binding, one Global Account, distinct ad-group identities and independent complete native-currency marketplace default-bid query evidence for every successful item. Reuse the existing single-ad-group readback gate rather than inferring default bids from target/campaign state or 207 receipts.
+- Aggregate `Unknown > Partial > Drifted > Confirmed` conservatively; preserve indexed item outcomes. Explicit partial/unsupported/missing evidence never becomes zero or full confirmation. No Ads writes, retries, idempotency, or external Executor reconciliation.
+- Keep the canonical 15 Skills and Codex/Claude Code/WorkBuddy runtime manifests synchronized.
+
+### RED → GREEN
+
+- RED-first synthetic tests: `d9ac164d2f0ac2efce40123ed79f646bb267998b`, import-path correction `3f6dcf407315ff4b9700fd8a2db4670d58f0f167`; Actions `40059332505` failed on missing batch verifier. Core implementation `2be858064fd5236f3def8cc45301e44311a4a9fa`; Actions `40059351920` succeeded. Final PR-head required validation and main validation must pass before merge.
+
+### Sources and copyright
+
+- Official Global SP guide confirms indexed HTTP 207 and per-marketplace ad-group default bids; normalized correlation/readback policy is repository-defined. Fresh candidate metadata and adopt/reject reasoning recorded in `docs/SOURCES.md`. No external code, prompts, API examples, schemas, or workflows copied.
+
 ## v1.36.0 — 2026-10-24
 
 ### Read-only safety capability
