@@ -72,5 +72,46 @@ class GlobalSpMarketplaceEligibilityTests(unittest.TestCase):
         self.assert_status(replace_marketplace(native(fixture()), "GB", "AE"), "Confirmed")
 
 
+
+from test_global_sp_adgroup_bid_readback import fixture as adgroup_fixture, evaluate as evaluate_adgroup
+from test_global_sp_target_bid_readback import fixture as target_fixture, evaluate as evaluate_target
+
+
+class OtherGlobalSpResourceMarketplaceTests(unittest.TestCase):
+    def test_adgroup_unknown_country_code_not_confirmed(self):
+        e = adgroup_fixture()
+        e["request"]["marketplaces"][1] = "ZZ"
+        e["request"]["expected_marketplace_default_bids"]["ZZ"] = e["request"]["expected_marketplace_default_bids"].pop("GB")
+        e["readback"]["marketplace_default_bids"][1]["marketplace"] = "ZZ"
+        self.assertEqual(evaluate_adgroup(e)["application_status"], "Unknown")
+
+    def test_adgroup_uk_alias_not_confirmed(self):
+        e = adgroup_fixture()
+        e["request"]["marketplaces"][1] = "UK"
+        e["request"]["expected_marketplace_default_bids"]["UK"] = e["request"]["expected_marketplace_default_bids"].pop("GB")
+        e["readback"]["marketplace_default_bids"][1]["marketplace"] = "UK"
+        self.assertEqual(evaluate_adgroup(e)["application_status"], "Unknown")
+
+    def test_target_unknown_country_code_not_confirmed(self):
+        e = target_fixture()
+        e["request"]["marketplace"] = "ZZ"
+        e["readback"]["marketplace"] = "ZZ"
+        e["readback"]["target_bid"]["marketplace"] = "ZZ"
+        self.assertEqual(evaluate_target(e)["application_status"], "Unknown")
+
+    def test_target_uk_alias_not_confirmed(self):
+        e = target_fixture()
+        e["request"]["marketplace"] = "UK"
+        e["readback"]["marketplace"] = "UK"
+        e["readback"]["target_bid"]["marketplace"] = "UK"
+        self.assertEqual(evaluate_target(e)["application_status"], "Unknown")
+
+    def test_supported_country_code_remains_valid_for_target(self):
+        e = target_fixture()
+        e["request"]["marketplace"] = "AE"
+        e["readback"]["marketplace"] = "AE"
+        e["readback"]["target_bid"]["marketplace"] = "AE"
+        self.assertEqual(evaluate_target(e)["application_status"], "Confirmed")
+
 if __name__ == "__main__":
     unittest.main()
