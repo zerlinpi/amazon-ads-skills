@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.47.4 — 2026-10-25
+
+### Sponsored Products bidding-strategy evidence (PATCH)
+
+- Fail closed when registered SP bid/budget causal snapshots supply Unknown, Unsupported, Partial, missing, malformed or unrecognized bidding strategy states; a repeated placeholder is not stable control evidence.
+- Recognize four repository-normalized strategy families (dynamic down only, dynamic up and down, fixed, rule based), including hyphen spellings. Verified strategy changes remain confounders. These are local evidence labels, not Amazon-native API enums or proof of account eligibility.
+- RED-first 21 deterministic tests: 1138 total, 14 failures on previous comparator (Actions 40135424725). A first implementation run exposed one overly strict test-reason assertion; corrected without weakening production behavior. No Ads writes, new Skills, dependencies or third-party code reuse.
+
+
 ## v1.47.3 — 2026-10-25
 
 ### Sponsored Products audience-member value and identity evidence (PATCH)
