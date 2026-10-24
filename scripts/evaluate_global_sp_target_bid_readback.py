@@ -12,7 +12,9 @@ import sys
 from typing import Any
 
 from scripts.compare_control_state import _rfc3339_instant
-from scripts.evaluate_global_sp_readback import _monetary_amount, _nonempty, _result
+from scripts.evaluate_global_sp_readback import (
+    SUPPORTED_GLOBAL_SP_MARKETPLACES, _monetary_amount, _nonempty, _result,
+)
 
 _IDENTITIES = ("request_id", "global_account_id", "campaign_id", "ad_group_id", "target_id")
 _RESOURCE_IDENTITIES = ("global_account_id", "campaign_id", "ad_group_id", "target_id")
@@ -35,8 +37,8 @@ def evaluate_global_sp_target_bid_readback(evidence: Any) -> dict[str, Any]:
         if not _nonempty(request.get(key)):
             return unknown(f"request missing {key}")
     market = request.get("marketplace")
-    if not isinstance(market, str) or re.fullmatch(r"[A-Z]{2}", market) is None:
-        return unknown("target request requires exactly one country-code marketplace")
+    if not isinstance(market, str) or market not in SUPPORTED_GLOBAL_SP_MARKETPLACES:
+        return unknown("target request requires one supported Global SP country-code marketplace")
     if (not isinstance(request.get("target_type"), str)
             or request["target_type"] not in _SUPPORTED_TARGET_TYPES):
         return unknown("only positive KEYWORD and PRODUCT target bids are supported")
