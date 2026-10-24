@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.44.1 — 2026-10-24
+
+### Global SP query-level source contradiction guard (PATCH)
+
+- Fix a false-`Confirmed` path when an explicitly retained `pagination_trace.query.source` contradicts the readback envelope and query pages. Malformed, incomplete and null explicit query sources now yield `Unknown`; legacy traces without query-level source remain compatible.
+- RED-first 9 synthetic tests: 963 tests, 7 failures (Actions 40095254247). No new Skills, dependencies, Ads writes, retries, idempotency or Executor reconciliation.
+
+
 ## v1.44.0 — 2026-10-24
 
 ### Global SP supported marketplace identity guard (MINOR)
