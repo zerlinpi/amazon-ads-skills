@@ -136,6 +136,8 @@ def _pagination_trace_issue(
             if outgoing in seen_tokens:
                 return "query pagination continuation token repeats"
             seen_tokens.add(outgoing)
+        if index < len(pages) - 1 and outgoing is None:
+            return "query pagination trace continues after a terminal page"
         if index == len(pages) - 1 and outgoing is not None:
             return "query pagination trace has no terminal page"
         if (page.get("global_account_id") != request["global_account_id"]
