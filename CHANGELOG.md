@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.39.0 — 2026-10-24
+
+### Raw marketplace identity evidence safety (MINOR)
+
+- Extend the existing read-only Global SP campaign state/daily-budget readback gate: if raw marketplace IDs are explicitly retained on normalized rows, require a complete, one-to-one country-code crosswalk with explicit verified status and source lineage. Reject missing, duplicate, contradictory or malformed mapping evidence as `Unknown`; never treat unsupported mapping as zero, a configured state or a verified budget. Existing country-code-only envelopes remain compatible.
+- RED-first synthetic regression in `tests/test_global_sp_raw_marketplace_identity.py`: 835 tests, 15 failures against v1.38.1 (Actions 40071280587). The minimal code fix is commit `903eb5eaa91862099ad0a879113e3169477644a8`. Final green validation is required before merge.
+- Amazon's Global SP guide states that query `status.marketplaceSettings` can use raw marketplace IDs while resource configuration uses country codes. A source-attributed adapter crosswalk is a repository-defined assertion, not a native Amazon requirement or independent proof of adapter authenticity. Delivery status cannot substitute for configured state. No live Ads calls or third-party code copied.
+
+
 ## v1.38.1 — 2026-10-24
 
 ### Campaign 207 receipt identity binding (PATCH)

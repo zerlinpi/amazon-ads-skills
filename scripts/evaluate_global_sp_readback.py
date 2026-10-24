@@ -40,6 +40,55 @@ def _monetary_amount(value: Any) -> Decimal | None:
     return Decimal(value)
 
 
+def _marketplace_identity_issue(
+    readback: dict[str, Any],
+    markets: list[str],
+    state_rows: list[dict[str, Any]],
+    budget_rows: list[dict[str, Any]] | None = None,
+) -> str | None:
+    """Bind optional raw marketplace IDs to normalized country codes.
+
+    Raw marketplace IDs (for example in query status marketplace settings)
+    are not ISO country codes. An external adapter may assert a sourced
+    one-to-one crosswalk; this verifies internal evidence consistency only,
+    not the independent authenticity of the adapter or its mapping source.
+    Legacy normalized country-code-only envelopes remain compatible.
+    """
+    rows = state_rows + (budget_rows if budget_rows is not None else [])
+    if ("marketplace_identity_map" not in readback
+            and not any("marketplace_id" in row for row in rows)):
+        return None
+    entries = readback.get("marketplace_identity_map")
+    if not isinstance(entries, list) or not entries:
+        return "raw marketplace identity requires an explicit verified crosswalk"
+    crosswalk: dict[str, str] = {}
+    raw_ids: set[str] = set()
+    for entry in entries:
+        if not isinstance(entry, dict):
+            return "marketplace identity crosswalk entry is malformed"
+        country, raw_id = entry.get("marketplace"), entry.get("marketplace_id")
+        if not _nonempty(country) or not _nonempty(raw_id):
+            return "marketplace identity crosswalk has missing identifiers"
+        if entry.get("evidence_status") != "verified":
+            return "marketplace identity crosswalk is not verified"
+        source = entry.get("source")
+        if (not isinstance(source, dict)
+                or any(not _nonempty(source.get(key)) for key in
+                       ("source_system", "acquisition_channel", "connector_id"))):
+            return "marketplace identity crosswalk source lineage is unverified"
+        if country in crosswalk or raw_id in raw_ids:
+            return "marketplace identity crosswalk is not one-to-one"
+        crosswalk[country] = raw_id
+        raw_ids.add(raw_id)
+    if set(crosswalk) != set(markets):
+        return "marketplace identity crosswalk does not cover requested scope"
+    for row in rows:
+        country = row["marketplace"]
+        if row.get("marketplace_id") != crosswalk.get(country):
+            return f"marketplace {country} raw identity does not bind to country code"
+    return None
+
+
 def evaluate_global_sp_readback(evidence: Any) -> dict[str, Any]:
     """Classify one Global SP campaign update without equating HTTP 207 to application.
 
@@ -186,6 +235,9 @@ def evaluate_global_sp_readback(evidence: Any) -> dict[str, Any]:
         actual[market] = state
     if set(actual) != set(markets):
         return unknown("readback marketplace coverage differs from requested marketplace scope")
+    identity_issue = _marketplace_identity_issue(readback, markets, rows)
+    if identity_issue is not None:
+        return unknown(identity_issue)
 
     budget_mismatched: set[str] = set()
     # Optional, independently evidenced monetary-budget comparison. A state
@@ -244,6 +296,9 @@ def evaluate_global_sp_readback(evidence: Any) -> dict[str, Any]:
             actual_budgets[market] = row
         if set(actual_budgets) != set(markets):
             return unknown("readback monetary budget coverage differs from requested marketplace scope")
+        identity_issue = _marketplace_identity_issue(readback, markets, rows, budget_rows)
+        if identity_issue is not None:
+            return unknown(identity_issue)
         for market in markets:
             desired, observed_budget = expected_budgets[market], actual_budgets[market]
             if (desired["currency_code"] != observed_budget["currency_code"]
