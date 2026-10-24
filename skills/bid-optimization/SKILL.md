@@ -192,3 +192,7 @@ A bid increase requires evidence that bid/auction exposure is the **binding cont
 - Generic traffic or budget expansion space is insufficient by itself.
 - For a general scale question, route growth qualification through `growth-opportunity-finder`; historical average efficiency does not prove marginal profitability.
 - If the binding control is unresolved, hold the bid or propose a bounded experiment instead of presenting a bid increase as the causal answer.
+
+## Base-bid evidence safety in causal review
+
+For registered Sponsored Products bid/budget control-state comparisons, the observed `base_bid` must be a finite, nonnegative numeric value or plain decimal string. Unknown/Unsupported/Partial, missing, boolean, negative/non-finite, percentage-formatted and structured placeholder values cannot support `Treatment Isolated`, even if the same placeholder is repeated in both windows. This is a repository-owned read-only evidence guard, not a claim that any numeric zero or amount is eligible for an Amazon marketplace; consult dated platform capability and connector evidence before action sizing. Keep bid strategy, placements, audience/video modifiers, rules, budget and routing as separate controls. Do not infer realized CPC or causal lift from configured base bid alone.
