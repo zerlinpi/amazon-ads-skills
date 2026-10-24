@@ -266,6 +266,57 @@ def _native_campaign_page_provenance_issue(
     return None
 
 
+
+def _native_campaign_response_membership_issue(
+    readback: dict[str, Any],
+    request: dict[str, Any],
+) -> str | None:
+    """Check opt-in retained query responses against native campaign provenance.
+
+    A page-index/source assertion alone does not prove that a retained native
+    campaign was in that page's response. This compares trusted adapter copies;
+    it does not authenticate HTTP or certify omitted results.
+    """
+    trace = readback.get("pagination_trace")
+    if not isinstance(trace, dict):
+        return None  # Existing trace/provenance validators handle this.
+    pages = trace.get("pages")
+    if not isinstance(pages, list) or not pages:
+        return None
+    if not any(isinstance(page, dict) and "response_body" in page for page in pages):
+        return None  # Legacy page metadata remains compatible.
+
+    native = readback.get("raw_campaign")
+    binding = readback.get("raw_campaign_provenance")
+    if not isinstance(native, dict) or not isinstance(binding, dict):
+        return "native query response evidence lacks a bound campaign snapshot"
+    claimed_index = binding.get("page_index")
+    if type(claimed_index) is not int or not 0 <= claimed_index < len(pages):
+        return "native query response page index is invalid"
+
+    found_on: list[int] = []
+    for index, page in enumerate(pages):
+        if not isinstance(page, dict):
+            return "native query response page metadata is malformed"
+        body = page.get("response_body")
+        if (not isinstance(body, dict) or "campaigns" not in body
+                or "nextToken" not in body
+                or body["nextToken"] != page.get("next_token")
+                or not isinstance(body["campaigns"], list)):
+            return f"native query response page {index} is missing or inconsistent"
+        for campaign in body["campaigns"]:
+            if (not isinstance(campaign, dict)
+                    or campaign.get("campaignId") != request["campaign_id"]):
+                return f"native query response page {index} has an unexpected campaign"
+            found_on.append(index)
+            if campaign != native:
+                return f"native query response page {index} contradicts retained campaign"
+    if found_on != [claimed_index]:
+        return "native campaign is absent, duplicated or on a different query page"
+    return None
+
+
+
 def _native_campaign_config_issue(
     readback: dict[str, Any],
     request: dict[str, Any],
@@ -509,6 +560,10 @@ def evaluate_global_sp_readback(evidence: Any) -> dict[str, Any]:
     native_page_issue = _native_campaign_page_provenance_issue(readback, request)
     if native_page_issue is not None:
         return unknown(native_page_issue)
+
+    response_membership_issue = _native_campaign_response_membership_issue(readback, request)
+    if response_membership_issue is not None:
+        return unknown(response_membership_issue)
 
     rows = readback.get("marketplace_states")
     if not isinstance(rows, list):
