@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.42.0 — 2026-10-24
+
+### Global SP native campaign-to-query-page provenance (MINOR)
+
+- When both optional `raw_campaign` and `pagination_trace` are supplied, require `raw_campaign_provenance` to bind campaign/account/filter/source/time to exactly one page. Unbound or contradictory adapter assertions return `Unknown` instead of false `Confirmed`; native-only and pagination-only legacy evidence remain supported. A complete but different state still returns `Drifted`.
+- RED-first 20 synthetic tests in `tests/test_global_sp_native_page_provenance.py`: 911 tests, 15 failures (Actions 40083450668). Minimal code fix `58ea73207c5db3c0450058667f15c5cdea6291c2` restored 911/911 and both validators (Actions 40083485657).
+- This is an internal trusted-adapter consistency check, not independent Amazon API authenticity, source completeness, or permission to write. No new Skills, dependencies or copied third-party code.
+
+
 ## v1.41.0 — 2026-10-24
 
 ### Global SP campaign query pagination trace consistency (MINOR)
