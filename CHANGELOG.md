@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.38.0 — 2026-10-24
+
+### Read-only mixed-resource safety capability
+
+- Add `scripts/evaluate_global_sp_mixed_plan_readback.py` and `references/global-sp-mixed-plan-readback.md` to classify a complete externally asserted Global SP optimization plan spanning campaign, ad-group, target and existing homogeneous batch readback gates. Require a single global account, complete trusted plan manifest, exact declared component coverage, ordered request IDs, and unique resource identities; never trust caller-supplied component verdicts.
+- Reuse existing independently validated child receipts/readbacks. Whole-plan `Confirmed` requires every component `Confirmed`; `Unknown > Partial > Drifted > Confirmed` is a conservative repository policy. No new Skills, Ads writes, retries, idempotency, Executor reconciliation, FX inference, or causal outcome claims.
+- The manifest's authenticity and completeness are **external Executor assertions**, not Amazon Ads native API fields or independently verified by this classifier.
+
+### RED → GREEN
+
+- Deterministic RED-first tests `24ab2d2aca9d725344a1fb12da44ad7e319cc223` (Actions `40063718187`, failure); implementation `486edab38de75b99bf8eccf500ba238716a5f34f` (Actions `40063745263`, success). An additional malformed-kind regression test `1a65f54389b7cf35cb7736a62d8e568037c26dc4` reproduced a TypeError (RED Actions `40063856519`); `227870b4b6455c249e0f097565765803da4118a8` now returns `Unknown` instead. All repository unit tests, Skill validator and Eval validator must pass on final PR HEAD. Final PR-head and merged-main checks must also succeed.
+
+### Sources and copyright
+
+- Amazon Ads official Global SP guide establishes distinct resource operations and indexed HTTP 207/query separation; plan-level completeness is a repository-owned external evidence contract. Fresh candidate license/adoption decisions are in `docs/SOURCES.md`. No third-party code, prompts, schemas, workflow, template or API example copied.
+
 ## v1.37.0 — 2026-10-24
 
 ### Read-only safety capability

@@ -31,6 +31,7 @@ Load only what the case needs:
 - Independent Global Sponsored Products **ad-group default-bid** 207 receipts and native-currency marketplace bid query evidence: `../../references/global-sp-adgroup-bid-readback.md`.
 - Homogeneous Global SP multi-ad-group 207 default-bid updates with complete indexed receipts and independent native-currency marketplace query readback: `../../references/global-sp-adgroup-batch-readback.md`. Never interpret partial batch success as a blanket confirmation.
 - Independent Global Sponsored Products **positive single-marketplace target bid** 207 receipts and target-specific native-currency query evidence: `../../references/global-sp-target-bid-readback.md`.
+- Mixed-resource Global SP plans spanning campaign, ad-group and target changes: `../../references/global-sp-mixed-plan-readback.md`. Require an externally authenticated, complete plan manifest and independent per-component readback before calling the whole plan `Confirmed`; a local resource success is not an overall plan outcome.
 - Homogeneous multi-target Global SP HTTP 207 updates with index-bound per-target query readbacks: `../../references/global-sp-target-batch-readback.md`. Only use this read-only batch gate when the trusted adapter can prove the ordered request list and complete indexed receipt; do not promote any partial/unknown item to batch Confirmed.
 - action-time/current campaign objective semantics: `../../references/campaign-objective.md`.
 
