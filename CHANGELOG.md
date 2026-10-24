@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.34.0 — 2026-10-24
+
+### Read-only safety capability
+
+- Add independent single-item Global Sponsored Products **ad-group** marketplace **default-bid** 207/readback gate (`scripts/evaluate_global_sp_adgroup_bid_readback.py`). It requires external request/receipt correlation, exact global account/campaign/ad-group identity, source-supported complete query coverage, per-marketplace native currency/Decimal amounts, and post-write time lineage.
+- Keep the existing campaign configured-state/budget gate separate: campaign `Confirmed` never certifies an ad-group or target update. Unknown/Partial/Unsupported data never become zero or confirmation. No Ads API writes, retries, FX, multi-item batch reconciliation, or additional Skills.
+
+### RED → GREEN
+
+- RED: synthetic 35-case test suite first, commit `f2ca5a42455b8770a8d3961cc5a023f6f0de0a34`, Actions `40046688664`: 673 unit tests, 35 expected failures because independent gate was missing.
+- GREEN: implementation commit `56fddc9bdb3258494c3f9ceb3f869a1b4f6a7de1`, Actions `40046773273`: required validation passed. Latest PR-head and merged-main validation are required before merge.
+
+### Sources and copyright
+
+- Official Amazon Ads Global SP guide checked 2026-10-24: ad-group `bid.marketplaceSettings` native `currencyCode`/`defaultBid` is distinct from campaign state/budget and target bids. External request/receipt correlation is repository-owned normalization, not an Amazon API-mandated response field.
+- Existing MIT/Apache-2.0/NOASSERTION open-source candidates rechecked; none adopted as a dependency. No third-party code, prompts, schemas, workflows, or templates copied. See `docs/SOURCES.md`.
+
 ## v1.33.0 — 2026-10-24
 
 ### Safety
