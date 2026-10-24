@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.48.1 — 2026-10-25
+
+### Sponsored Products site-routing evidence (PATCH)
+
+- Fix a real causal-readback gap: a repeated missing/Unknown/Unsupported `targeting_or_routing.state.site_restriction` could previously yield `Treatment Isolated` for Sponsored Products base-bid or budget changes. The comparator now requires a source-supported, explicitly mapped normalized site routing label (`ALL_ELIGIBLE` or `AMAZON_BUSINESS`) on both snapshots; unrecognized/malformed labels fail closed. A verified routing change remains a competing control (`Confounded`).
+- RED-first 22 deterministic tests: 1181 total, 17 failures before the fix (Actions 40144118642); production fix passed 1181/1181 (Actions 40144167464). The normalized routing labels are not an Amazon Ads API schema and do not prove eligibility, platform-wide routing completeness or actual delivery. No new Skill, dependency, Ads write, retry or Executor behavior.
+
 ## v1.48.0 — 2026-10-25
 
 ### Sponsored Products rule-based ROAS guardrail evidence (MINOR)

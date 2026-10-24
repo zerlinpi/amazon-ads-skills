@@ -176,3 +176,7 @@ Base bid、dynamic/rule-based bidding、placement modifier、audience bid adjust
 - 不把未完成 capability lineage reconciliation 的旧/冲突 Amazon 文档数值写成当前确定的平台上限或自动调整公式；
 - 不在 material control state 缺失/过期时输出 action-safe 精确 modifier。
 - Sponsored Products 三个必需 placement modifier 的 `Unknown` / `Unsupported` / `Partial`、布尔值、负值或非有限数不是已观测稳定控制；即使前后相同，也不得据此声称单一 base bid 或 budget 变化可归因。明确观测到的数值 0 不等于缺失；上限与适用市场另查平台能力证据。
+
+## Sponsored Products site-routing evidence in causal reviews
+
+For registered Sponsored Products bid/budget comparisons, do not infer unchanged delivery routing from a complete control inventory alone. `targeting_or_routing.state.site_restriction` must be a source-supported recognized repository-normalized label (`ALL_ELIGIBLE` or `AMAZON_BUSINESS`); repeated Unknown/Unsupported/Partial, absent, malformed or unmapped site modes return `Unknown`, not zero or stable routing. A verified switch to Amazon Business-exclusive routing is a competing control, distinct from an Amazon Business placement bid modifier. Consult `../../references/control-state-comparability.md` and dated platform/connector capability evidence before any B2B interpretation. These labels do not certify campaign eligibility or actual delivery, and this Skill remains Suggest-only.
