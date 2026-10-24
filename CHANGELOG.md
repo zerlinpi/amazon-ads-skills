@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.43.0 — 2026-10-24
+
+### Global SP retained native campaign budget cross-check (MINOR)
+
+- When a trusted adapter explicitly retains native campaign `budgets` and the request includes supported daily monetary budget intent, cross-check the native marketplace monetary amounts/currencies/recurrence against independently normalized budget rows. Missing, malformed, duplicated or contradictory native budget evidence is `Unknown`; native and normalized agreement with a different requested amount remains `Drifted`.
+- Native monetary numeric lexemes must be preserved as plain decimal strings; float/boolean source values cannot prove exact precision. The native budget field is optional for backward compatibility, and a state-only request does not claim budget verification.
+- RED-first 27 synthetic tests: 938 tests, 21 failures (Actions 40087100016). Minimal read-only implementation: 938/938 passing, 15 Skills and 55 Eval fixtures validated (Actions 40087160510). No Ads writes, SDKs, or external code copying.
+
+
 ## v1.42.0 — 2026-10-24
 
 ### Global SP native campaign-to-query-page provenance (MINOR)

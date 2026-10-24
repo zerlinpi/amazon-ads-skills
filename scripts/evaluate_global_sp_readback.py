@@ -263,6 +263,66 @@ def _native_campaign_config_issue(
     return None
 
 
+
+def _native_campaign_budget_issue(
+    readback: dict[str, Any],
+    request: dict[str, Any],
+    markets: list[str],
+    normalized: dict[str, dict[str, Any]],
+) -> str | None:
+    """Check retained native campaign budgets against independently normalized rows.
+
+    Only the supported daily monetary budget is compared. Native numeric
+    lexemes must be retained as decimal text by the trusted adapter: a JSON
+    float cannot prove original precision. This is not HTTP authentication.
+    """
+    native = readback.get("raw_campaign")
+    if not isinstance(native, dict) or "budgets" not in native:
+        return None  # Legacy normalized-only/native-state-only envelopes.
+    budgets = native["budgets"]
+    if not isinstance(budgets, list) or len(budgets) != 1 or not isinstance(budgets[0], dict):
+        return "native campaign monetary budgets are missing, ambiguous or malformed"
+    budget = budgets[0]
+    if budget.get("budgetType") != "MONETARY" or budget.get("recurrenceTimePeriod") != "DAILY":
+        return "native campaign budget type or recurrence is unsupported"
+    value = budget.get("budgetValue")
+    if not isinstance(value, dict):
+        return "native campaign budget value is malformed"
+    monetary = value.get("monetaryBudgetValue")
+    if not isinstance(monetary, dict):
+        return "native campaign monetary budget value is malformed"
+    settings = monetary.get("marketplaceSettings")
+    if not isinstance(settings, list):
+        return "native campaign monetary marketplace settings are missing"
+    actual: dict[str, tuple[str, Decimal]] = {}
+    for entry in settings:
+        if not isinstance(entry, dict) or not _nonempty(entry.get("marketplace")):
+            return "native campaign monetary marketplace entry is malformed"
+        market = entry["marketplace"]
+        if market not in markets or market in actual:
+            return "native campaign monetary marketplace is duplicated or out of scope"
+        amount = entry.get("monetaryBudget")
+        if not isinstance(amount, dict):
+            return f"native campaign {market} monetary budget is malformed"
+        currency = amount.get("currencyCode")
+        decimal = _monetary_amount(amount.get("value"))
+        if (not isinstance(currency, str)
+                or re.fullmatch(r"[A-Z]{3}", currency) is None
+                or decimal is None):
+            return f"native campaign {market} monetary currency or exact amount is unverified"
+        actual[market] = (currency, decimal)
+    if set(actual) != set(markets):
+        return "native campaign monetary marketplace coverage is incomplete"
+    for market in markets:
+        row = normalized[market]
+        if (actual[market][0] != row["currency_code"]
+                or actual[market][1] != _monetary_amount(row["amount"])
+                or row["budget_type"] != "MONETARY"
+                or row["recurrence"] != "DAILY"):
+            return f"native campaign {market} monetary budget contradicts normalized readback"
+    return None
+
+
 def evaluate_global_sp_readback(evidence: Any) -> dict[str, Any]:
     """Classify one Global SP campaign update without equating HTTP 207 to application.
 
@@ -481,6 +541,9 @@ def evaluate_global_sp_readback(evidence: Any) -> dict[str, Any]:
             actual_budgets[market] = row
         if set(actual_budgets) != set(markets):
             return unknown("readback monetary budget coverage differs from requested marketplace scope")
+        native_budget_issue = _native_campaign_budget_issue(readback, request, markets, actual_budgets)
+        if native_budget_issue is not None:
+            return unknown(native_budget_issue)
         identity_issue = _marketplace_identity_issue(readback, markets, rows, budget_rows)
         if identity_issue is not None:
             return unknown(identity_issue)
