@@ -423,6 +423,17 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
         if "amazon_business" in placement_state and not _observed_budget_amount(placement_state["amazon_business"]):
             return f"{side} Sponsored Products placement state has unknown or invalid amazon_business"
 
+        # A complete material-control inventory is not proof of a usable site
+        # restriction. These two labels are repository-normalized read-side
+        # evidence, not Amazon API enum tokens or proof of account eligibility.
+        # A new/unmapped site mode requires an explicit adapter contract.
+        routing_control = control_map.get("targeting_or_routing")
+        routing_state = routing_control.get("state") if isinstance(routing_control, dict) else None
+        if not isinstance(routing_state, dict) or routing_state.get("site_restriction") not in (
+            "ALL_ELIGIBLE", "AMAZON_BUSINESS"
+        ) or not isinstance(routing_state.get("site_restriction"), str):
+            return f"{side} Sponsored Products targeting_or_routing has missing, unknown or unrecognized site_restriction"
+
         rule_control = control_map.get("schedule_or_event_rule")
         rule_state = rule_control.get("state") if isinstance(rule_control, dict) else None
         if not isinstance(rule_state, dict):
