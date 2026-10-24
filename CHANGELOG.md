@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.38.1 — 2026-10-24
+
+### Campaign 207 receipt identity binding (PATCH)
+
+- Fix `scripts/evaluate_global_sp_readback.py`: explicit 207 receipt account, campaign, request and resource-type identities must agree with the intended campaign update. If the success item contains a returned campaign resource, validate native `campaignId` and normalized `campaign_id` aliases and any supplied account identity; malformed or contradictory evidence returns `Unknown` instead of falsely `Confirmed`. Legacy index-only receipts remain compatible under the existing trusted-adapter contract.
+- RED-first deterministic regression `tests/test_global_sp_campaign_receipt_identity.py`: 816 tests, 10 failures on old behavior (Actions 40067650845). Minimal fix `e7ffb6c165dfc09c0c40afc7f19ac8a2f7140076` restored GREEN (Actions 40067675016). Final PR-head and merged-main required checks must pass before merge.
+- Official Global SP documentation establishes indexed HTTP 207 success responses with returned campaign identities. This stricter optional-field contradiction guard is repository-defined safety policy, not a claim that Amazon requires a particular normalized adapter schema. No third-party code, API examples, prompts or workflows copied; no live Ads writes.
+
 ## v1.38.0 — 2026-10-24
 
 ### Read-only mixed-resource safety capability

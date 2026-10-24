@@ -24,6 +24,10 @@ The normalized JSON envelope contains:
 - `receipt`: integer `http_status: 207` and all three `success`, `error`, `partialSuccess` arrays, with exactly one unique `index: 0` across the arrays. Receipt status alone never proves readback.
 - `readback`: matching global-account/campaign identity, source-system/acquisition-channel/connector identity, RFC3339 `observed_at` strictly later than request completion, `coverage_status: Complete`, `pagination_status: Complete`, `capability_status: Supported`, and `marketplace_states` with one source-observed `effective_state` for **every** requested marketplace. A trusted adapter must prove that normalized country codes map to the source's marketplace identifiers.
 
+### Optional 207 campaign receipt identity (v1.38.1)
+
+A 207 success index is necessary but not sufficient when the adapter retains explicit identities. If the normalized receipt provides `resource_type`, `global_account_id`, `campaign_id`, or `request_id`, each must bind to the intended campaign request. A receipt `request_id` cannot be accepted when the request lacks that identity. If the successful item includes a returned `campaign` object, it must contain a matching `campaignId` (native) or `campaign_id` (normalized); both aliases are checked if both exist. Supplied account identities and success-item correlation fields must also agree. Malformed or contradictory evidence is `Unknown`, not `Confirmed`. Index-only receipts remain compatible when the trusted adapter has no additional identity fields. This is a conservative repository guard, not a substitute for raw receipt preservation or independent adapter authentication.
+
 `effective_state` is the source-supported configured `ENABLED`, `PAUSED`, or `ARCHIVED` state, not delivery status or performance. `Unknown`, missing, partial, unsupported, and unverified observations are not zero or paused.
 
 ### Optional configured-state row lineage (v1.32.0)
