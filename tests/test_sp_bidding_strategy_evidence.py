@@ -34,7 +34,7 @@ class SponsoredProductsBiddingStrategyEvidenceTests(unittest.TestCase):
     def assert_unknown(self, value, *, budget_treatment=False):
         result = compare_strategy(value, budget_treatment=budget_treatment)
         self.assertEqual(result["classification"], "Unknown", result)
-        self.assertTrue(any("bidding strategy" in reason for reason in result["reasons"]), result)
+        self.assertTrue(any("bidding strategy" in reason.replace("_", " ") for reason in result["reasons"]), result)
 
     def test_unknown_label(self):
         self.assert_unknown("Unknown")
