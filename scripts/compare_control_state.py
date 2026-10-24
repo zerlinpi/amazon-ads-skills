@@ -359,15 +359,29 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
 
         bidding_control = control_map.get("bidding_strategy")
         bidding_state = bidding_control.get("state") if isinstance(bidding_control, dict) else None
-        # A repeated placeholder or unrecognized strategy is not evidence of
-        # a stable auction-control mode. These are repository-normalized
-        # labels, not Amazon-native API enums or universal eligibility claims.
-        known_strategies = {"dynamic_down_only", "dynamic_up_and_down", "fixed", "rule_based"}
-        if (
-            not isinstance(bidding_state, str)
-            or bidding_state != bidding_state.strip()
-            or bidding_state.lower().replace("-", "_") not in known_strategies
-        ):
+        # Rule-based bidding is a distinct ROAS-guardrail strategy, not a
+        # schedule/event bid rule. A bare "rule_based" label omits a material
+        # auction control and cannot prove that competing controls were stable.
+        # This is a normalized read-side contract, not an Amazon API payload.
+        known_simple_strategies = {"dynamic_down_only", "dynamic_up_and_down", "fixed"}
+        if isinstance(bidding_state, str):
+            normalized = bidding_state.lower().replace("-", "_")
+            if bidding_state != bidding_state.strip() or normalized not in known_simple_strategies:
+                return f"{side} Sponsored Products bidding strategy is unknown or lacks rule-based ROAS guardrail evidence"
+        elif isinstance(bidding_state, dict):
+            if set(bidding_state) != {"strategy", "roas_guardrail"}:
+                return f"{side} Sponsored Products rule-based bidding has missing or unverified configuration fields"
+            strategy = bidding_state.get("strategy")
+            if (
+                not isinstance(strategy, str)
+                or strategy != strategy.strip()
+                or strategy.lower().replace("-", "_") != "rule_based"
+            ):
+                return f"{side} Sponsored Products bidding strategy state is unknown or unrecognized"
+            guardrail = bidding_state.get("roas_guardrail")
+            if not _observed_budget_amount(guardrail) or Decimal(str(guardrail)) <= 0:
+                return f"{side} Sponsored Products rule-based bidding ROAS guardrail is missing or invalid"
+        else:
             return f"{side} Sponsored Products bidding strategy state is unknown or unrecognized"
 
         # An invalid base bid cannot establish a valid treatment or a stable
