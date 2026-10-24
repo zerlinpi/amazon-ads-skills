@@ -359,8 +359,16 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
 
         bidding_control = control_map.get("bidding_strategy")
         bidding_state = bidding_control.get("state") if isinstance(bidding_control, dict) else None
-        if bidding_state is None:
-            return f"{side} Sponsored Products bidding strategy state is unknown"
+        # A repeated placeholder or unrecognized strategy is not evidence of
+        # a stable auction-control mode. These are repository-normalized
+        # labels, not Amazon-native API enums or universal eligibility claims.
+        known_strategies = {"dynamic_down_only", "dynamic_up_and_down", "fixed", "rule_based"}
+        if (
+            not isinstance(bidding_state, str)
+            or bidding_state != bidding_state.strip()
+            or bidding_state.lower().replace("-", "_") not in known_strategies
+        ):
+            return f"{side} Sponsored Products bidding strategy state is unknown or unrecognized"
 
         # An invalid base bid cannot establish a valid treatment or a stable
         # competing control, even when both snapshots repeat the same label.
