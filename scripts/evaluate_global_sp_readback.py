@@ -98,6 +98,60 @@ def _marketplace_identity_issue(
 
 
 
+def _query_request_binding_issue(
+    query: dict[str, Any],
+    pages: list[dict[str, Any]],
+    request: dict[str, Any],
+) -> str | None:
+    """Cross-check optional adapter-retained query filters against each page request.
+
+    This is a narrow single-campaign query contract, not a reconstruction of
+    arbitrary Amazon Ads API filters or independent authentication of HTTP.
+    A fingerprint alone is an external assertion, never proof of raw filters.
+    """
+    has_filters = "request_filters" in query
+    if not has_filters:
+        if any("request_body" in page for page in pages):
+            return "query page request bodies have no declared filter binding"
+        return None  # Legacy fingerprint-only adapters remain compatible.
+
+    filters = query["request_filters"]
+    required = {
+        "adProductFilter": "SPONSORED_PRODUCTS",
+        "marketplaceScopeFilter": "GLOBAL",
+        "campaignIdFilter": request["campaign_id"],
+    }
+    if not isinstance(filters, dict) or set(filters) not in (
+        set(required), set(required) | {"maxResults"}
+    ):
+        return "query request filters are missing, unsupported or ambiguous"
+    for name, expected in required.items():
+        value = filters.get(name)
+        if (not isinstance(value, dict) or set(value) != {"include"}
+                or value["include"] != [expected]):
+            return f"query {name} does not uniquely select intended campaign scope"
+    if "maxResults" in filters and (
+        type(filters["maxResults"]) is not int or filters["maxResults"] <= 0
+    ):
+        return "query maxResults is not a positive integer"
+
+    for index, page in enumerate(pages):
+        body = page.get("request_body")
+        if not isinstance(body, dict):
+            return f"query page {index} has no verifiable request body"
+        # The first native query may omit nextToken or explicitly send null.
+        # Every continuation page must carry the exact preceding nextToken.
+        expected_body = dict(filters)
+        token = page["request_token"]
+        if token is not None:
+            expected_body["nextToken"] = token
+        elif "nextToken" in body and body["nextToken"] is None:
+            expected_body["nextToken"] = None
+        if body != expected_body:
+            return f"query page {index} request filters or nextToken contradict trace"
+    return None
+
+
 def _pagination_trace_issue(
     readback: dict[str, Any],
     request: dict[str, Any],
@@ -162,7 +216,7 @@ def _pagination_trace_issue(
             return "query pagination page observation time is inconsistent"
         previous_observed = page_time
         expected_token = outgoing
-    return None
+    return _query_request_binding_issue(query, pages, request)
 
 
 
