@@ -13,7 +13,9 @@ import sys
 from typing import Any
 
 from scripts.compare_control_state import _rfc3339_instant
-from scripts.evaluate_global_sp_readback import _monetary_amount, _nonempty, _result
+from scripts.evaluate_global_sp_readback import (
+    SUPPORTED_GLOBAL_SP_MARKETPLACES, _monetary_amount, _nonempty, _result,
+)
 
 
 def evaluate_global_sp_adgroup_bid_readback(evidence: Any) -> dict[str, Any]:
@@ -32,10 +34,10 @@ def evaluate_global_sp_adgroup_bid_readback(evidence: Any) -> dict[str, Any]:
             return unknown(f"request missing {key}")
     markets = request.get("marketplaces")
     if (not isinstance(markets, list) or not markets
-            or any(not isinstance(m, str) or re.fullmatch(r"[A-Z]{2}", m) is None
+            or any(not isinstance(m, str) or m not in SUPPORTED_GLOBAL_SP_MARKETPLACES
                    for m in markets)
             or len(set(markets)) != len(markets)):
-        return unknown("request marketplaces must be distinct country-code identifiers")
+        return unknown("request marketplaces must be distinct supported Global SP country codes")
 
     expected = request.get("expected_marketplace_default_bids")
     if not isinstance(expected, dict) or set(expected) != set(markets):
