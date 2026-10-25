@@ -687,7 +687,11 @@ def evaluate_connector_capability_gate(payload):
             elif status=="Supported" and access=="write":
                 effect="blocked";has_blocked=True
                 warnings.append("write-only capability access mode cannot substantiate a read-side requirement")
-            elif status=="Supported" and (not isinstance(access,str) or access not in READ_SIDE_ACCESS_MODES):
+            elif status=="Supported" and (
+                not isinstance(access,str)
+                or (access not in READ_SIDE_ACCESS_MODES
+                    and not (access=="observe" and declared_modes.get(cid)=="observe"))
+            ):
                 effect="degraded";has_partial=True
                 warnings.append("capability access mode is missing, ambiguous or not verified as read-side")
             elif status=="Supported":
