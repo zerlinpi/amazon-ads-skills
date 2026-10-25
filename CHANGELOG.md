@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.49.0 — 2026-10-25
+
+### Optional Sponsored Products rule activation evidence (MINOR)
+
+- Close an observed causal-isolation gap: a schedule/event bid rule or active budget rule could include repeated explicit `activation_status: Unknown`/`Unsupported` while a base-bid or budget change still returned `Treatment Isolated`. Reject invalid normalized activation status and one-sided activation evidence for the same rule identity; preserve valid `active`/`inactive`/`scheduled` states and real activation changes as competing controls.
+- RED-first 18 deterministic tests: 1233 total, 13 failures on previous behavior (Actions 40151792978). Minimal production repair passed 1233/1233 tests, 15 Skill validations and 55 eval fixtures (Actions 40151826044). Both-absent legacy activation fields remain compatible but are not activation/continuous-time proof. No Amazon Ads writes, new Skills, third-party code, or new runtime dependency.
+
 ## v1.48.2 — 2026-10-25
 
 ### Sponsored Products rule-member evidence (PATCH)

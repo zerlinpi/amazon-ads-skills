@@ -207,3 +207,8 @@ For `rule_based` Sponsored Products bidding, a strategy label alone is incomplet
 ## Schedule/event and budget rule member evidence
 
 When a Sponsored Products base-bid change is reviewed causally, complete rule-list pagination is insufficient if a listed rule has unknown identity or adjustment. Use `../../scripts/compare_control_state.py` with `../../references/control-state-comparability.md`: every normalized schedule/event rule needs a unique observed `rule_id` and finite nonnegative `bid_increase`, and every active budget rule needs a unique observed `rule_id` and finite nonnegative `increase_percent`. A verified empty list or numeric zero is not inferred from absent capability; unknown or malformed members require `Unknown`/Hold. This read-only evidence guard does not prove activation, auction bids or performance lift.
+
+
+## Optional schedule/event rule activation evidence
+
+If a readback supplies normalized `activation_status` on a schedule/event or active budget-rule member, require `active`, `inactive`, or `scheduled` with the same field evidenced for that rule identity on both snapshots. Unknown/Unsupported or one-sided status is not stable control evidence. Use `../../scripts/compare_control_state.py` and `../../references/control-state-comparability.md`; two observed statuses do not prove continuous execution, timing or campaign eligibility. Default to Hold/Manual Review when activation is decision-critical but unproven; never infer missing as inactive.

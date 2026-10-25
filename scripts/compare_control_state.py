@@ -367,6 +367,39 @@ def _rule_member_problem(members: Any, collection: str, amount_field: str, side:
         seen.add(identity)
         if not _observed_budget_amount(member.get(amount_field)):
             return f"{side} Sponsored Products {collection} member {index} has unknown or invalid {amount_field}"
+        # Optional normalized activation evidence is not a platform enum or
+        # continuous-time execution proof. If supplied, it must be usable:
+        # repeated Unknown/Unsupported is not a stable competing control.
+        if "activation_status" in member:
+            status = member["activation_status"]
+            if not isinstance(status, str) or status not in {"active", "inactive", "scheduled"}:
+                return f"{side} Sponsored Products {collection} member {index} has unknown or invalid activation_status"
+    return None
+
+
+def _rule_activation_presence_problem(bmap: dict[str, dict[str, Any]], pmap: dict[str, dict[str, Any]]) -> str | None:
+    """Reject one-sided optional activation evidence for the same rule identity.
+
+    Added/removed rules are still competing control changes. This only checks
+    common IDs, after each snapshot's member identity/value checks have passed.
+    """
+    for control_type, fields in (
+        ("schedule_or_event_rule", ("schedule_rules", "event_rules")),
+        ("budget_or_pacing", ("active_budget_rules",)),
+    ):
+        before = bmap.get(control_type, {}).get("state")
+        after = pmap.get(control_type, {}).get("state")
+        if not isinstance(before, dict) or not isinstance(after, dict):
+            continue
+        for field in fields:
+            bmembers, pmembers = before.get(field), after.get(field)
+            if not isinstance(bmembers, list) or not isinstance(pmembers, list):
+                continue
+            bby_id = {member["rule_id"]: member for member in bmembers if isinstance(member, dict) and "rule_id" in member}
+            pby_id = {member["rule_id"]: member for member in pmembers if isinstance(member, dict) and "rule_id" in member}
+            for rule_id in bby_id.keys() & pby_id.keys():
+                if ("activation_status" in bby_id[rule_id]) != ("activation_status" in pby_id[rule_id]):
+                    return f"Sponsored Products {field} rule {rule_id} has one-sided activation_status evidence"
     return None
 
 
@@ -592,6 +625,9 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
         # without claiming B2B capability/eligibility was independently proved.
         if ("amazon_business" in before_placement) != ("amazon_business" in after_placement):
             return {"classification": "Unknown", "reasons": ["amazon_business placement evidence is missing on one side"]}
+        activation_problem = _rule_activation_presence_problem(bmap, pmap)
+        if activation_problem:
+            return {"classification": "Unknown", "reasons": [activation_problem]}
 
     all_types = sorted(set(bmap) | set(pmap))
     if not all_types:

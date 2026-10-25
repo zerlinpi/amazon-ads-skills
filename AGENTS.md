@@ -66,6 +66,8 @@ Modes:
 
 - For registered Sponsored Products bid/budget causal comparisons, a Complete schedule/event bid-rule or active budget-rule collection must also have usable member evidence: unique nonblank normalized `rule_id` and finite nonnegative observed `bid_increase` (schedule/event) or `increase_percent` (active budget). Missing, duplicate, unknown, unsupported, boolean, negative and non-finite member values are `Unknown`, not zero or unchanged. This is a read-side evidence contract, not an Amazon API payload, activation proof or bid-composition formula.
 
+- For registered Sponsored Products bid/budget causal comparisons, an optional normalized schedule/event/active-budget rule member `activation_status` is accepted only as `active`, `inactive`, or `scheduled`; repeated Unknown/Unsupported, malformed or one-sided activation status on a shared `rule_id` is `Unknown`, not an unchanged control. Absence on both legacy snapshots remains backward-compatible but does not prove activation or continuous rule execution. This field is repository-owned read-side evidence, not an Amazon-native enum or a substitute for time-window proof.
+
 ## Shared references, playbooks and evals
 
 - Weekly operating cadence: `playbooks/weekly-review.md`
