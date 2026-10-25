@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.56.0 — 2026-10-25
+
+### Verified connector binding identity integrity (MINOR)
+
+- Reject unavailable placeholder or whitespace-padded `binding_id`/`surface_id` and evidence `kind`/`reference` from Verified connector surface proof; a repeated `Unknown` is not independent provenance. Valid alternate bindings, mixed evidence and real IDs containing such words remain compatible.
+- RED-first 17 synthetic deterministic tests: 1353 total, 13 failures on previous behavior (Actions 40177634475); minimum repair GREEN 1353/1353 plus 15 Skill and 55 eval validators (Actions 40177671009).
+- Read-only normalized evidence integrity only. No Amazon API enum, marketplace/advertiser entitlement, authenticated raw HTTP, new Skills, third-party dependency or Ads write.
+
+
 ## v1.55.0 — 2026-10-25
 
 ### Finite connector freshness horizon (MINOR)

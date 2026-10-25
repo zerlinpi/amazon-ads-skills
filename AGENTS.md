@@ -39,6 +39,8 @@ Modes:
 
 ## Safety rules
 
+- A `Verified` connector binding is not independently identified by an unavailable placeholder in its binding ID, surface ID or supporting evidence kind/reference. Reject whole-label Unknown/Unsupported/Partial/Missing/Unavailable/Not Available/Not Supported and whitespace-padded verification identifiers before high-confidence Pass. A separate valid binding can still qualify; this does not authenticate remote responses, establish advertiser eligibility, or grant write authority.
+
 - A connector capability marked Supported and a binding marked Verified do not override impossible chronology. Independently validate snapshot capture, binding verification, and explicitly dated supporting evidence even when no freshness horizon was requested. A future/malformed/unknown-offset binding or evidence timestamp is not a verified surface and must not produce high-confidence Pass. This read-side rule does not authenticate raw HTTP, confer platform entitlement, or authorize writes.
 
 - Never invent missing advertising data, source lineage, optimization history, or action-sizing precision.
