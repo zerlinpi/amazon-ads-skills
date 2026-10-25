@@ -98,6 +98,7 @@ class FeatureEligibilitySnapshotAsOfChronologyTests(unittest.TestCase):
 
     def test_explicit_freshness_still_applies_independently(self):
         p = fixture()
+        p["snapshot"]["capabilities"][0]["bindings"][0]["evidence"][0]["observed_at"] = "2026-10-25T23:00:00Z"
         p["freshness_requirement"] = {
             "as_of": "2026-10-26T00:00:00Z",
             "max_age_seconds": 7200,
