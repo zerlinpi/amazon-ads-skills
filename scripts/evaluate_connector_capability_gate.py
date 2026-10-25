@@ -59,6 +59,7 @@ def _catalog() -> tuple[set[str], str | None]:
         cid=item["capability_id"].strip()
         if cid in ids: raise ValueError(f"connector capability catalog contains duplicate capability_id {cid!r}")
         ids.add(cid)
+        declared_modes[cid]=item.get("access_mode")
     version=obj.get("catalog_version")
     if version is not None and not _s(version): raise ValueError("connector capability catalog version must be a non-empty string or null")
     return ids,version
