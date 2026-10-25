@@ -108,10 +108,10 @@ class ConnectorSnapshotSourceIdentityTests(unittest.TestCase):
     def test_valid_other_capability_cannot_rehabilitate_unknown_connector(self):
         payload = fixture()
         extra = copy.deepcopy(payload["snapshot"]["capabilities"][0])
-        extra["capability_id"] = "search-term-report-read"
+        extra["capability_id"] = "target-performance-read"
         extra["bindings"][0]["binding_id"] = "synthetic:search-term-binding"
         payload["snapshot"]["capabilities"].append(extra)
-        payload["required_capabilities"] = ["campaign-performance-read", "search-term-report-read"]
+        payload["required_capabilities"] = ["campaign-performance-read", "target-performance-read"]
         payload["snapshot"]["connector_id"] = "Unknown"
         self.assert_conservative(payload)
 
