@@ -25,19 +25,45 @@ ACCOUNT_ID_FIELDS = (
     "regional_profile_id",
 )
 ACCOUNT_CONTEXT_FIELDS = ("manager_account_id", "country_code")
+UNUSABLE_IDENTITY_LABELS = {
+    "unknown", "unsupported", "partial", "missing", "unavailable",
+    "not_available", "not_supported",
+}
+
+
+def _unusable_identity_label(value: Any) -> bool:
+    """Reject reserved evidence labels, not real observed identity strings."""
+    if not isinstance(value, str) or not value.strip() or value != value.strip():
+        return True
+    return re.sub(r"[\s-]+", "_", value.casefold()) in UNUSABLE_IDENTITY_LABELS
 
 
 def _scope_identity_problem(bscope: Any, pscope: Any) -> str | None:
     """Compare explicit account identities without inventing global/profile mappings."""
     if not isinstance(bscope, dict) or not isinstance(pscope, dict):
         return "decision scope must be an object"
-    if not bscope.get("marketplace_id") or bscope.get("marketplace_id") != pscope.get("marketplace_id"):
-        return "scope mismatch or missing marketplace_id"
+    if (
+        _unusable_identity_label(bscope.get("marketplace_id"))
+        or _unusable_identity_label(pscope.get("marketplace_id"))
+        or bscope["marketplace_id"] != pscope["marketplace_id"]
+    ):
+        return "scope mismatch or missing/unknown marketplace_id"
+
+    # Optional scope identities must not become valid simply because the
+    # same unavailable label appears in both observations.
+    for field in ("campaign_id", "ad_group_id", "entity_id", "entity_type"):
+        for scope in (bscope, pscope):
+            if scope.get(field) is not None and _unusable_identity_label(scope[field]):
+                return f"decision-scope {field} is missing or unknown"
 
     before_profile, after_profile = bscope.get("profile_id"), pscope.get("profile_id")
-    if before_profile or after_profile:
-        if not before_profile or before_profile != after_profile:
-            return "scope mismatch or missing profile_id"
+    if before_profile is not None or after_profile is not None:
+        if (
+            _unusable_identity_label(before_profile)
+            or _unusable_identity_label(after_profile)
+            or before_profile != after_profile
+        ):
+            return "scope mismatch or missing/unknown profile_id"
 
     before_explicit = "account_identity" in bscope
     after_explicit = "account_identity" in pscope
@@ -59,10 +85,8 @@ def _scope_identity_problem(bscope: Any, pscope: Any) -> str | None:
         if before_value is None and after_value is None:
             continue
         if (
-            not isinstance(before_value, str)
-            or not before_value.strip()
-            or not isinstance(after_value, str)
-            or not after_value.strip()
+            _unusable_identity_label(before_value)
+            or _unusable_identity_label(after_value)
             or before_value != after_value
         ):
             return f"account identity mismatch or missing {field}"
@@ -89,8 +113,8 @@ def _source_lineage_problem(bsource: Any, psource: Any) -> str | None:
     for field in ("source_system", "acquisition_channel"):
         before, after = bsource.get(field), psource.get(field)
         if (
-            not isinstance(before, str) or not before.strip()
-            or not isinstance(after, str) or not after.strip()
+            _unusable_identity_label(before)
+            or _unusable_identity_label(after)
             or before != after
         ):
             return f"control-state source provenance missing or changed for {field}"
@@ -98,8 +122,8 @@ def _source_lineage_problem(bsource: Any, psource: Any) -> str | None:
     if before_connector is None and after_connector is None:
         return None
     if (
-        not isinstance(before_connector, str) or not before_connector.strip()
-        or not isinstance(after_connector, str) or not after_connector.strip()
+        _unusable_identity_label(before_connector)
+        or _unusable_identity_label(after_connector)
         or before_connector != after_connector
     ):
         return "control-state source provenance missing or changed for connector_id"

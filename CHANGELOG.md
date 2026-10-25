@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.52.0 — 2026-10-25
+
+### Scope, account and connector identity evidence (MINOR)
+
+- Reject repeated unavailable labels and blank/whitespace-padded scope, account and source identifiers before causal classification; valid identifiers and both-absent optional connector IDs remain compatible.
+- RED-first 20 deterministic tests: 1294 total, 17 failures on old behavior (Actions 40163083690); minimum fix passed 1294/1294, 15 Skill validations and 55 eval fixtures (Actions 40163139367).
+- Repository-owned read-side evidence check only. No Ads writes, new Skills, dependencies or third-party code/schema.
+
 ## v1.51.0 — 2026-10-25
 
 ### Generic material-control placeholder evidence (MINOR)
