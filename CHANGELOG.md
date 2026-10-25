@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.69.0 — 2026-10-26
+
+### Feature eligibility as-of connector snapshot chronology (MINOR)
+
+- An independently Verified feature-specific Eligible record cannot combine with a connector snapshot captured after the requested feature decision `as_of` to yield high-confidence Pass. Expose `feature_snapshot_chronology_effect` as `pass`, `unknown` or `not_evaluated`; missing/invalid/future capture degrades. Preserve independently verified Ineligible blocking, explicit connector freshness requirements, equal/earlier capture and legacy no-feature requests. No inferred TTL, Amazon-native entitlement claim, live writes or new Skills.
+- RED `fb1b05f68475947bf300626bc43d729e2910c12d` [Actions #40237374264](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40237374264): 1543 tests, 12 FAIL. Code `0dda06bd1e145df833323a8741c2df5e71850d83`; GREEN fixture `bd3f46630bd94bb33c3f63d7025ecaca1e575948` [Actions #40237456989](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40237456989): 1543 PASS, 15 Skills PASS, 55 Eval fixtures PASS. Twelve synthetic tests.
+- Research: `docs/research/feature-eligibility-snapshot-asof-chronology-2026-10.md`.
+
 ## v1.68.0 — 2026-10-26
 
 ### Exact-scope feature eligibility evidence join (MINOR)

@@ -39,6 +39,8 @@ Modes:
 
 ## Safety rules
 
+- When a named feature eligibility decision declares `as_of`, a connector capability snapshot captured **after** that decision instant cannot prove read-side coverage as of the earlier time. Missing/invalid/unknown-offset capture is also Unknown: `feature_snapshot_chronology_effect=unknown` degrades the final gate unless another independent block applies. Equal/earlier capture only passes chronology, not entitlement, freshness, or source authenticity. Do not reuse the eligibility evidence TTL as a connector TTL; explicit connector freshness and supporting binding timestamps remain independent. Calls without a feature requirement remain compatible. No Amazon Ads writes are authorized.
+
 - Connector capability and exact advertiser/campaign scope do not establish feature enrollment. For a decision requiring a named feature, provide a concrete `feature_eligibility_requirement` matching the exact `expected_scope` advertiser/campaign/marketplace and a separately supplied feature-specific Verified eligibility record with concrete source/reference and valid observation time. Verified Eligible can pass the eligibility subgate only alongside all connector checks; Verified Ineligible blocks; missing, partial, unknown, stale, future, generic product-group, unverified or mismatched records degrade. Never equate Amazon Ads advertiser product-group eligibility with Amazon Business exclusive campaign enrollment, infer absent metrics as zero, or treat a normalized Verified label as authenticated raw API proof. No live Ads writes or external Executor behavior is introduced.
 
 

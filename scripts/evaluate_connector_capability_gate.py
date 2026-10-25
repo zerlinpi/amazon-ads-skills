@@ -762,10 +762,33 @@ def _feature_eligibility_effect(payload, expected):
     return "unknown", ["feature eligibility is Partial, Unknown or unavailable"]
 
 
+
+def _feature_snapshot_chronology(snapshot, requirement):
+    """Prevent future connector evidence from proving a feature decision as_of.
+
+    The feature requirement's horizon applies to eligibility evidence only;
+    this check does not invent a connector TTL or authenticate raw API data.
+    """
+    if requirement is None:
+        return "not_evaluated", []
+    try:
+        captured = _binding_time(snapshot.get("captured_at"), "snapshot.captured_at")
+    except ValueError:
+        return "unknown", [
+            "connector snapshot captured_at is missing, invalid or has unknown offset for feature eligibility as_of"
+        ]
+    as_of = _binding_time(requirement["as_of"], "feature_eligibility_requirement.as_of")
+    if captured > as_of:
+        return "unknown", [
+            "connector snapshot captured_at is after feature eligibility decision as_of; future connector evidence cannot prove earlier scope"
+        ]
+    return "pass", []
+
+
 def evaluate_connector_capability_gate(payload):
     if not isinstance(payload,dict):raise ValueError("input must be a JSON object")
-    registered,version,declared_modes=_catalog();reqs=_requirements(payload.get("required_capabilities"),registered);expected=_scope(payload.get("expected_scope"));fresh=_freshness(payload.get("freshness_requirement"));data_requirements=_data_requirements(payload.get("data_requirements"),reqs);eligibility_effect,eligibility_warnings=_feature_eligibility_effect(payload,expected);indexed,snapshot=_index(payload.get("snapshot"));snapshot_freshness_effect,snapshot_warnings=_snapshot_freshness(snapshot,fresh);snapshot_identity_warnings=_snapshot_identity_warnings(snapshot)
-    evaluated=[];has_partial=snapshot_freshness_effect in {"stale","unknown"} or bool(snapshot_identity_warnings) or eligibility_effect=="unknown";has_blocked=eligibility_effect=="blocked"
+    registered,version,declared_modes=_catalog();reqs=_requirements(payload.get("required_capabilities"),registered);expected=_scope(payload.get("expected_scope"));fresh=_freshness(payload.get("freshness_requirement"));data_requirements=_data_requirements(payload.get("data_requirements"),reqs);eligibility_effect,eligibility_warnings=_feature_eligibility_effect(payload,expected);indexed,snapshot=_index(payload.get("snapshot"));feature_snapshot_chronology_effect,feature_snapshot_chronology_warnings=_feature_snapshot_chronology(snapshot,payload.get("feature_eligibility_requirement"));snapshot_freshness_effect,snapshot_warnings=_snapshot_freshness(snapshot,fresh);snapshot_identity_warnings=_snapshot_identity_warnings(snapshot)
+    evaluated=[];has_partial=snapshot_freshness_effect in {"stale","unknown"} or bool(snapshot_identity_warnings) or eligibility_effect=="unknown" or feature_snapshot_chronology_effect=="unknown";has_blocked=eligibility_effect=="blocked"
     for cid in reqs:
         cap=indexed.get(cid);scope_effect="not_evaluated";binding_effect="unknown";freshness_effect="not_evaluated";data_contract_effect="not_evaluated";verified=[]
         if cap is None:status="Unknown";access="unknown";effect="blocked";has_blocked=True;warnings=["required capability is absent from the observed connector snapshot"]
@@ -794,7 +817,7 @@ def evaluate_connector_capability_gate(payload):
     if has_blocked:gate,allowed,high="Blocked",BLOCKED,False
     elif has_partial:gate,allowed,high="Degraded",DEGRADED,False
     else:gate,allowed,high="Pass",PASS,True
-    return {"gate_status":gate,"catalog_version":version,"high_confidence_allowed":high,"missing_evidence_policy":"never_zero","allowed_decision_classes":allowed,"connector_id":snapshot.get("connector_id"),"connector_version":snapshot.get("connector_version"),"snapshot_captured_at":snapshot.get("captured_at"),"snapshot_freshness_effect":snapshot_freshness_effect,"feature_eligibility_effect":eligibility_effect,"freshness_requirement":None if fresh is None else {"as_of":fresh["as_of_raw"],"max_age_seconds":fresh["max_age_seconds"]},"data_requirements":data_requirements or None,"requirements":evaluated,"warnings":snapshot_warnings + snapshot_identity_warnings + eligibility_warnings}
+    return {"gate_status":gate,"catalog_version":version,"high_confidence_allowed":high,"missing_evidence_policy":"never_zero","allowed_decision_classes":allowed,"connector_id":snapshot.get("connector_id"),"connector_version":snapshot.get("connector_version"),"snapshot_captured_at":snapshot.get("captured_at"),"snapshot_freshness_effect":snapshot_freshness_effect,"feature_eligibility_effect":eligibility_effect,"feature_snapshot_chronology_effect":feature_snapshot_chronology_effect,"freshness_requirement":None if fresh is None else {"as_of":fresh["as_of_raw"],"max_age_seconds":fresh["max_age_seconds"]},"data_requirements":data_requirements or None,"requirements":evaluated,"warnings":snapshot_warnings + snapshot_identity_warnings + eligibility_warnings + feature_snapshot_chronology_warnings}
 
 
 def main():
