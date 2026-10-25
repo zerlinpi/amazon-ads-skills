@@ -6,7 +6,7 @@ At main `09698986a0103d74910221a391c05d77827365b8` (v1.57.0), `scripts/evaluate_
 
 ## RED → GREEN
 
-Tests committed first: `6e4e6d301d12b48653d2435c78b744efa2ce70b3` (follow-up fixture correction `6e4e6d301d12b48653d2435c78b744efa2ce70b3`), followed by minimal repair `627bbf53d01586485162a81049ba43a6adafa716`. RED [Actions 40186241773](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40186241773): 1380 tests, 11 FAIL. GREEN [Actions 40186288201](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40186288201): 1380/1380 PASS, 15 Skill and 55 eval fixture validators PASS. Fourteen deterministic cases, eleven previously failing. Synthetic inputs only; no Amazon Ads live reads/writes.
+Tests committed first: `f5dd802ffbe4bda3470454fd88f6fb72f8824b85` (registered-capability fixture correction `6e4e6d301d12b48653d2435c78b744efa2ce70b3`), followed by minimal repair `627bbf53d01586485162a81049ba43a6adafa716`. RED [Actions 40186241773](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40186241773): 1380 tests, 11 FAIL. GREEN [Actions 40186288201](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40186288201): 1380/1380 PASS, 15 Skill and 55 eval fixture validators PASS. Fourteen deterministic cases, eleven previously failing. Synthetic inputs only; no Amazon Ads live reads/writes.
 
 ## Decision boundary
 
