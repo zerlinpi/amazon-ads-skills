@@ -329,7 +329,24 @@ def _data_contract_effect(cap, requirement, snapshot_captured_at):
 
         sunset_at = contract.get("sunset_at")
         if sunset_at is not None:
-            _time(sunset_at, "capability.data_contract.sunset_at")
+            sunset = _time(sunset_at, "capability.data_contract.sunset_at")
+            # An overdue scheduled sunset contradicts a snapshot that still
+            # claims the generation is active or awaiting sunset. Do not
+            # infer actual retirement: request refreshed source evidence.
+            try:
+                captured = _binding_time(snapshot_captured_at, "snapshot.captured_at")
+            except ValueError:
+                captured = None
+            if (
+                captured is not None
+                and sunset < captured
+                and generation_status in {"active", "sunset_scheduled"}
+            ):
+                effect = _combine_data_effect(effect, "unknown")
+                warnings.append(
+                    "reporting generation sunset precedes snapshot capture "
+                    "but observed status has not been reconciled; refresh source evidence"
+                )
 
     if requirement.get("requires_historical_data") is True:
         history_status = contract.get("historical_availability_status")
