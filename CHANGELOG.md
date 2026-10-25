@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.54.0 — 2026-10-25
+
+### Verified connector binding temporal lineage (MINOR)
+
+- A `Supported` connector capability and `Verified` surface binding can no longer produce a high-confidence Pass with impossible or malformed provenance chronology when no freshness horizon is supplied. Validate snapshot capture, binding verification and explicitly dated supporting evidence; reject unknown `-00:00` offsets and future/invalid times. A separate valid binding can still pass. Legacy undated supporting evidence remains compatible without a freshness claim.
+- RED-first 13 deterministic tests: 1328 total, 10 failures on old behavior (Actions 40170267499); minimum repair GREEN 1328/1328 plus 15 Skills and 55 eval fixtures (Actions 40170330502).
+- Connector-neutral read-side evidence guard only; no native Amazon Ads schema, eligibility proof, authenticated HTTP guarantee, account writes, new Skills or external dependency.
+
+
 ## v1.53.0 — 2026-10-25
 
 ### Optional Sponsored Products retailer-scope and Amazon Business control consistency (MINOR)
