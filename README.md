@@ -2,7 +2,7 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.48.1`  
+> 当前版本：`v1.48.2`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
@@ -11,6 +11,7 @@ A portable **Amazon Ads decision library for AI agents**. It packages 15 focused
 - Audit an Amazon Ads account without treating missing connector/report data as zero.
 - Diagnose sustained performance drops and separate observations, hypotheses, causes, actions and outcomes.
 - Analyze search terms, keyword/target structure, bids, budgets and placements with report-coverage and control-state gates.
+- For Sponsored Products bid/budget causal reviews, complete schedule/event bid-rule and active budget-rule lists also require individually observed, uniquely identified rule members and valid nonnegative modifiers. Missing, duplicated, Unknown or unsupported rule members cannot establish treatment isolation; this is read-side normalization, not proof of activation or Amazon-native API fields.
 - For Sponsored Products causal reviews, distinguish observed site routing (`ALL_ELIGIBLE` versus Amazon Business-exclusive) from unknown/unsupported routing; a complete control inventory alone does not prove site eligibility or unchanged delivery.
 - Evaluate break-even ACOS, contribution economics and TACOS without confusing historical efficiency with marginal headroom.
 - Find guarded growth opportunities only after retail readiness, economics, incrementality and binding-control checks.

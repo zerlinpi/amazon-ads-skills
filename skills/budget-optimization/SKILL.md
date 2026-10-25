@@ -227,3 +227,7 @@ If effective budget or rule state is unavailable, say what is unknown and keep t
 - 不同时大幅改 budget、bid、placement 而没有分阶段验证计划；
 - 不把第三方/平台示例百分比直接当作本账户默认预算动作幅度；
 - 不引入未经授权的真实账户写入。
+
+## Active budget-rule member evidence
+
+A complete list of active budget rules is not proof that its rows are usable. For a registered Sponsored Products budget-change causal review, require each repository-normalized rule member to have a unique nonblank `rule_id` and finite nonnegative observed `increase_percent`; also check schedule/event bid-rule members separately. Unknown/Unsupported/Partial, duplicate/missing IDs, boolean, negative or non-finite modifiers yield `Unknown`, not an assumed zero or stable budget. An observed zero and a source-supported empty list remain distinct from missing evidence. This comparator is read-only and does not prove rule activation or effective-time coverage; see `../../references/control-state-comparability.md`.

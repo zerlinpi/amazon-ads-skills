@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.48.2 — 2026-10-25
+
+### Sponsored Products rule-member evidence (PATCH)
+
+- Fix a verified causal-isolation defect: complete schedule/event bid-rule and active budget-rule collections could contain duplicate/missing rule identities, Unknown/Unsupported modifiers, boolean/negative/non-finite values or malformed rows while the comparator still returned `Treatment Isolated`. Check each normalized member's unique nonblank `rule_id` and finite nonnegative `bid_increase` (schedule/event) or `increase_percent` (active budget rule). Active budget-rule members are checked during both bid and budget reviews.
+- RED-first 34 deterministic tests: 1215 total, 28 failures on old behavior (Actions 40147934489); minimal fix passed 1215/1215 plus 15 Skills and 55 eval fixtures (Actions 40147983329). Observed numeric zero and valid decimal strings remain distinct from missing values; verified empty collections and genuine rule changes retain existing semantics. No native Amazon API schema, rule-activation guarantee, Ads write, new Skill or dependency.
+
+
 ## v1.48.1 — 2026-10-25
 
 ### Sponsored Products site-routing evidence (PATCH)
