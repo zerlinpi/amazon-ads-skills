@@ -346,6 +346,30 @@ def _audience_member_problem(control: Any, side: str) -> str | None:
     return None
 
 
+def _rule_member_problem(members: Any, collection: str, amount_field: str, side: str) -> str | None:
+    """Check normalized SP rule member identity and observed modifier values.
+
+    Complete pagination proves collection coverage, not usable member fields.
+    This read-side shape is repository-owned, not an Amazon API schema; it
+    does not establish rule activation, schedule timing or bid composition.
+    """
+    if not isinstance(members, list):
+        return f"{side} Sponsored Products {collection} is not a rule list"
+    seen: set[str] = set()
+    for index, member in enumerate(members):
+        if not isinstance(member, dict):
+            return f"{side} Sponsored Products {collection} member {index} is not an object"
+        identity = member.get("rule_id")
+        if not isinstance(identity, str) or not identity.strip() or identity != identity.strip():
+            return f"{side} Sponsored Products {collection} member {index} lacks stable rule_id"
+        if identity in seen:
+            return f"{side} Sponsored Products {collection} has duplicate rule_id: {identity}"
+        seen.add(identity)
+        if not _observed_budget_amount(member.get(amount_field)):
+            return f"{side} Sponsored Products {collection} member {index} has unknown or invalid {amount_field}"
+    return None
+
+
 def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[str, dict[str, Any]], side: str) -> str | None:
     """Validate decision-surface state that generic control presence cannot prove."""
     coverage = snapshot.get("coverage", {})
@@ -448,6 +472,21 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
             nested_problem = _nested_collection_problem(rule_control, "schedule_or_event_rule", field, side)
             if nested_problem:
                 return nested_problem
+            member_problem = _rule_member_problem(rule_state[field], field, "bid_increase", side)
+            if member_problem:
+                return member_problem
+
+        # Active budget rules are material even when the intended treatment
+        # is a bid change. A complete list with unverified members cannot
+        # prove that competing budget controls stayed stable.
+        budget_control = control_map.get("budget_or_pacing")
+        budget_state = budget_control.get("state") if isinstance(budget_control, dict) else None
+        if isinstance(budget_state, dict) and isinstance(budget_state.get("active_budget_rules"), list):
+            member_problem = _rule_member_problem(
+                budget_state["active_budget_rules"], "active_budget_rules", "increase_percent", side
+            )
+            if member_problem:
+                return member_problem
 
     if surface != "sponsored_products_budget_change":
         return None

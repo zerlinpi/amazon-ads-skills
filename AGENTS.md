@@ -64,6 +64,8 @@ Modes:
 - Any `Execute` plan must include evidence, confidence, guardrails, validation window, and rollback criteria.
 - A `Rollback Candidate` is a proposal only; this repository does not perform the rollback itself.
 
+- For registered Sponsored Products bid/budget causal comparisons, a Complete schedule/event bid-rule or active budget-rule collection must also have usable member evidence: unique nonblank normalized `rule_id` and finite nonnegative observed `bid_increase` (schedule/event) or `increase_percent` (active budget). Missing, duplicate, unknown, unsupported, boolean, negative and non-finite member values are `Unknown`, not zero or unchanged. This is a read-side evidence contract, not an Amazon API payload, activation proof or bid-composition formula.
+
 ## Shared references, playbooks and evals
 
 - Weekly operating cadence: `playbooks/weekly-review.md`
