@@ -346,7 +346,7 @@ def _audience_member_problem(control: Any, side: str) -> str | None:
     return None
 
 
-def _rule_member_problem(members: Any, collection: str, amount_field: str, side: str) -> str | None:
+def _rule_member_problem(members: Any, collection: str, amount_field: str, side: str, observed_at: Any) -> str | None:
     """Check normalized SP rule member identity and observed modifier values.
 
     Complete pagination proves collection coverage, not usable member fields.
@@ -374,6 +374,15 @@ def _rule_member_problem(members: Any, collection: str, amount_field: str, side:
             status = member["activation_status"]
             if not isinstance(status, str) or status not in {"active", "inactive", "scheduled"}:
                 return f"{side} Sponsored Products {collection} member {index} has unknown or invalid activation_status"
+        # Explicit transition evidence must be valid, source-observed and no
+        # later than its snapshot. This is not continuous rule execution proof.
+        if "activation_effective_at" in member:
+            if "activation_status" not in member:
+                return f"{side} Sponsored Products {collection} member {index} has activation_effective_at without activation_status"
+            instant = _rfc3339_instant(member["activation_effective_at"])
+            observation = _rfc3339_instant(observed_at)
+            if instant is None or observation is None or instant > observation:
+                return f"{side} Sponsored Products {collection} member {index} has invalid or future activation_effective_at"
     return None
 
 
@@ -398,8 +407,9 @@ def _rule_activation_presence_problem(bmap: dict[str, dict[str, Any]], pmap: dic
             bby_id = {member["rule_id"]: member for member in bmembers if isinstance(member, dict) and "rule_id" in member}
             pby_id = {member["rule_id"]: member for member in pmembers if isinstance(member, dict) and "rule_id" in member}
             for rule_id in bby_id.keys() & pby_id.keys():
-                if ("activation_status" in bby_id[rule_id]) != ("activation_status" in pby_id[rule_id]):
-                    return f"Sponsored Products {field} rule {rule_id} has one-sided activation_status evidence"
+                for evidence_field in ("activation_status", "activation_effective_at"):
+                    if (evidence_field in bby_id[rule_id]) != (evidence_field in pby_id[rule_id]):
+                        return f"Sponsored Products {field} rule {rule_id} has one-sided {evidence_field} evidence"
     return None
 
 
@@ -505,7 +515,7 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
             nested_problem = _nested_collection_problem(rule_control, "schedule_or_event_rule", field, side)
             if nested_problem:
                 return nested_problem
-            member_problem = _rule_member_problem(rule_state[field], field, "bid_increase", side)
+            member_problem = _rule_member_problem(rule_state[field], field, "bid_increase", side, snapshot.get("observed_at"))
             if member_problem:
                 return member_problem
 
@@ -516,7 +526,8 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
         budget_state = budget_control.get("state") if isinstance(budget_control, dict) else None
         if isinstance(budget_state, dict) and isinstance(budget_state.get("active_budget_rules"), list):
             member_problem = _rule_member_problem(
-                budget_state["active_budget_rules"], "active_budget_rules", "increase_percent", side
+                budget_state["active_budget_rules"], "active_budget_rules", "increase_percent", side,
+                snapshot.get("observed_at")
             )
             if member_problem:
                 return member_problem
