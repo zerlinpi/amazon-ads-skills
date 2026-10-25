@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.62.0 — 2026-10-25
+
+### Historical reporting grain identity evidence (MINOR)
+
+- Reject placeholder/padded requested historical grain identities and degrade padded observed apparent matches, including valid-plus-padded duplicate ambiguity. Concrete case-insensitive grains and bounded dates remain compatible; no new Skill or live Ads writes.
+- RED `0f1195bef1c2d509f7cd332edbb96f0345b58f96` [Actions 40203462802](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40203462802): 1439 tests, 8 FAIL. GREEN `6f1a632f255ce3a4b6a58c84182f12b29f675da0` [Actions 40203519607](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40203519607): 1439 PASS, 15 Skills and 55 eval fixtures PASS. Fourteen synthetic tests.
+- Research: `docs/research/historical-grain-identity-evidence-2026-10.md`.
+
+
 ## v1.61.0 — 2026-10-25
 
 ### Reporting-generation identity evidence (MINOR)
