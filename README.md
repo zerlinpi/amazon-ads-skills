@@ -2,11 +2,14 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.61.0`  
+> 当前版本：`v1.62.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- Require **concrete historical reporting grain evidence** before accepting a dated availability window. Requested unavailable/padded grain identities are invalid; observed padded apparent matches degrade even alongside valid matches. Concrete case-insensitive grains remain compatible. This does not prove per-metric history, source authenticity or account eligibility.
+
 
 - Require **concrete reporting-generation identity** before high-confidence report interpretation: repeated Unknown/Unsupported/Partial/Missing/Unavailable/Not Available/Not Supported cannot prove a matching reporting generation. Invalid requested generation labels are configuration errors; explicitly unavailable or whitespace-padded observed generation degrades to Unknown, not zero or a verified mismatch. Concrete matching/mismatching generations remain compatible. This read-side guard does not authenticate Amazon API responses or prove advertiser eligibility.
 
