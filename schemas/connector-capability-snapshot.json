@@ -49,6 +49,8 @@
               "marketplaces": {"type": "array", "items": {"type": "string"}},
               "ad_products": {"type": "array", "items": {"type": "string"}},
               "account_types": {"type": "array", "items": {"type": "string"}},
+              "advertiser_account_ids": {"type": "array", "items": {"type": "string"}},
+              "campaign_ids": {"type": "array", "items": {"type": "string"}},
               "identity_fields_exposed": {"type": "array", "items": {"type": "string"}}
             },
             "additionalProperties": true
@@ -156,7 +158,9 @@
                     "regions": {"type": "array", "items": {"type": "string"}},
                     "marketplaces": {"type": "array", "items": {"type": "string"}},
                     "ad_products": {"type": "array", "items": {"type": "string"}},
-                    "account_types": {"type": "array", "items": {"type": "string"}}
+                    "account_types": {"type": "array", "items": {"type": "string"}},
+                    "advertiser_account_ids": {"type": "array", "items": {"type": "string"}},
+                    "campaign_ids": {"type": "array", "items": {"type": "string"}}
                   },
                   "additionalProperties": true
                 },

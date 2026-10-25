@@ -17,7 +17,7 @@ VERIFY = {"Verified", "Unverified", "Unknown"}
 SURFACES = {"tool", "report", "dataset", "stream", "export", "endpoint", "warehouse_table", "manual_export"}
 # Canonical capabilities are read-side; a Verified binding does not grant read access.
 READ_SIDE_ACCESS_MODES = {"read", "report", "export", "stream"}
-SCOPE_FIELDS = {"region": "regions", "marketplace": "marketplaces", "ad_product": "ad_products", "account_type": "account_types"}
+SCOPE_FIELDS = {"region": "regions", "marketplace": "marketplaces", "ad_product": "ad_products", "account_type": "account_types", "advertiser_account_id": "advertiser_account_ids", "campaign_id": "campaign_ids"}
 DATA_REQUIREMENT_FIELDS = {"required_reporting_generation", "requires_historical_data", "history_window", "required_control_types", "required_transition_provenance_fields"}
 TRANSITION_FIELDS = {"management_mode", "last_transition_actor", "transition_reason", "transition_observed_at", "actor_evidence_status"}
 REPORTING_GENERATION_STATUSES = {"active", "read_only", "sunset_scheduled", "retired", "unknown"}
@@ -538,8 +538,11 @@ def _scope_effect(obj,expected,label):
             continue
         # Unknown members cannot prove either inclusion or exclusion.
         # A concrete match remains usable even if another member is unknown.
-        concrete={value.casefold() for value in vals if _verified_identity(value)}
-        if wanted.casefold() in concrete:
+        # Advertiser and campaign IDs are opaque identities, not display labels.
+        # Never case-fold them into an apparent match across distinct resources.
+        exact_identity = field in {"advertiser_account_id", "campaign_id"}
+        concrete={value if exact_identity else value.casefold() for value in vals if _verified_identity(value)}
+        if (wanted if exact_identity else wanted.casefold()) in concrete:
             continue
         if any(not _verified_identity(value) for value in vals):
             unknown=True
