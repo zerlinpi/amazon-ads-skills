@@ -1,5 +1,12 @@
 # Connector capability contract
 
+## Requested scope and observed membership evidence (2026-10-25)
+
+A requested connector decision scope must be a concrete identity, not a repeated Unknown/Unsupported/Partial/Missing/Unavailable/Not Available/Not Supported label or whitespace-padded string. For a capability or verified binding scope, a matching concrete member proves only that bounded connector surface; an unmatched list containing an unavailable/malformed member is Unknown, not proof of marketplace, ad-product, region or account-type exclusion. A fully concrete unmatched list remains blocked. No scope list alone establishes Amazon Business advertiser/campaign eligibility, account entitlement, actual delivery, or authority to write.
+
+`expected_scope` rejects unavailable or padded scope labels as invalid caller input. A declared `scope.marketplaces`, `regions`, `ad_products`, or `account_types` array with no concrete match and at least one unavailable/malformed member has `scope_effect=unknown`; a fully concrete mismatch has `scope_effect=blocked`. If a concrete match is present, other unavailable members do not erase the positive match. Binding scope uncertainty does not create a verified binding for that decision. This is an internal normalized read-side evidence contract, not an Amazon Ads API scope enum, proof of advertiser eligibility, or an inference that missing traffic/metrics equal zero.
+
+
 ## Snapshot-level connector/source identity (2026-10-25)
 
 A `Supported`/`Verified` read capability must also have a concrete snapshot-level `connector_id`. A missing, blank, placeholder (`Unknown`/`Unsupported`/`Partial`/`Missing`/`Unavailable`/`Not Available`/`Not Supported`) or whitespace-padded connector identity degrades the entire decision, even with multiple valid bindings. Optional `source_system` and `acquisition_channel` may be omitted for legacy snapshots, but when explicitly provided they must be concrete identities, not null/placeholder/whitespace-padded values. This is a repository-owned read-side provenance check, not authentication of remote API responses, proof of account eligibility, or permission to write.

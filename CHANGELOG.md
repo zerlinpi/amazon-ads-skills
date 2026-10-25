@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.59.0 — 2026-10-25
+
+### Connector scope identity and exclusion evidence (MINOR)
+
+- Reject unavailable or whitespace-padded requested decision scope labels; a matching Unknown label cannot prove marketplace/account/ad-product support. A capability/binding scope with unmatched unknown/malformed members is `unknown`, not proof of exclusion. Preserve verified concrete matches and fully concrete mismatches. This is read-side evidence only, not Amazon Ads entitlement or live writes.
+- RED `50500f991d8f92fe7f45d66f872d5eb5fcc33838` [Actions 40190109725](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40190109725): 1397 tests, 12 FAIL. GREEN `f4fabf40499d5b71f323792d8638758f9925a254` [Actions 40190166935](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40190166935): 1397/1397 PASS, 15 Skill and 55 eval fixtures PASS. 17 synthetic deterministic tests; no new Skill, dependency or Executor.
+- Research: `docs/research/connector-scope-placeholder-evidence-2026-10.md`.
+
+
 ## v1.58.0 — 2026-10-25
 
 ### Connector snapshot/source provenance identity (MINOR)

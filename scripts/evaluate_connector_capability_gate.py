@@ -127,8 +127,9 @@ def _scope(v):
     if unknown:raise ValueError(f"expected_scope contains unsupported fields: {unknown}")
     out={}
     for k,item in v.items():
-        if not _s(item):raise ValueError(f"expected_scope.{k} must be a non-empty string")
-        out[k]=item.strip()
+        if not _verified_identity(item):
+            raise ValueError(f"expected_scope.{k} must be a concrete, non-placeholder scope identity")
+        out[k]=item
     return out
 
 
@@ -488,8 +489,21 @@ def _scope_effect(obj,expected,label):
     unknown=blocked=False;warnings=[]
     for field,wanted in expected.items():
         vals=scope.get(SCOPE_FIELDS[field])
-        if not isinstance(vals,list) or not vals:unknown=True;warnings.append(f"{label} does not expose bounded {field} scope")
-        elif wanted.casefold() not in {x.strip().casefold() for x in vals if _s(x)}:blocked=True;warnings.append(f"{label} does not cover requested {field} {wanted!r}")
+        if not isinstance(vals,list) or not vals:
+            unknown=True
+            warnings.append(f"{label} does not expose bounded {field} scope")
+            continue
+        # Unknown members cannot prove either inclusion or exclusion.
+        # A concrete match remains usable even if another member is unknown.
+        concrete={value.casefold() for value in vals if _verified_identity(value)}
+        if wanted.casefold() in concrete:
+            continue
+        if any(not _verified_identity(value) for value in vals):
+            unknown=True
+            warnings.append(f"{label} has unavailable {field} scope evidence; requested scope cannot be excluded")
+        else:
+            blocked=True
+            warnings.append(f"{label} does not cover requested {field} {wanted!r}")
     return ("blocked" if blocked else "unknown" if unknown else "pass"),warnings
 
 
