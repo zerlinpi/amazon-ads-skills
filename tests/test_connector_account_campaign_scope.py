@@ -167,5 +167,25 @@ class ExactAccountCampaignScopeTests(unittest.TestCase):
         self.assertEqual(r["missing_evidence_policy"], "never_zero", r)
 
 
+    def test_advertiser_ids_are_opaque_and_case_sensitive(self):
+        p = fixture()
+        cap(p)["scope"]["advertiser_account_ids"] = ["SYNTHETIC-ACCOUNT-A"]
+        self.assertEqual(check(p)["gate_status"], "Blocked")
+
+    def test_campaign_ids_are_opaque_and_case_sensitive(self):
+        p = fixture()
+        cap(p)["scope"]["campaign_ids"] = ["SYNTHETIC-CAMPAIGN-A"]
+        self.assertEqual(check(p)["gate_status"], "Blocked")
+
+    def test_binding_campaign_id_case_difference_is_not_verified(self):
+        p = fixture()
+        binding(p)["scope"]["campaign_ids"] = ["SYNTHETIC-CAMPAIGN-A"]
+        self.assertEqual(check(p)["gate_status"], "Degraded")
+
+    def test_legacy_ad_product_case_insensitive_matching_retained(self):
+        p = fixture()
+        p["expected_scope"]["ad_product"] = "sponsored products"
+        self.assertEqual(check(p)["gate_status"], "Pass")
+
 if __name__ == "__main__":
     unittest.main()
