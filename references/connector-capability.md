@@ -1,5 +1,9 @@
 # Connector capability contract
 
+## Exact advertiser and campaign identity scope (2026-10-26)
+
+Optional `expected_scope.advertiser_account_id` and `expected_scope.campaign_id` bind a decision to exact, concrete, unpadded opaque IDs. The observed capability and at least one qualifying Verified binding must independently expose matching `scope.advertiser_account_ids` and `scope.campaign_ids`; a marketplace-only match cannot prove another account or campaign. These two IDs compare **case-sensitively**; region, marketplace, ad product and account type retain existing case-insensitive matching. Missing bounded scope is not global support; an explicit concrete mismatch blocks at the capability level, while unmatched lists with unknown members degrade without inferring exclusion or zero. A separate valid binding may qualify. Calls that do not request exact IDs remain backward compatible. This read-side adapter-normalized evidence check does **not** prove Amazon advertiser/campaign eligibility, account authorization, live delivery, source authenticity or permission to write.
+
 ## Reporting sunset versus snapshot capture (2026-10-26)
 
 A reporting generation declared `active` or `sunset_scheduled` with a `sunset_at` earlier than the same connector snapshot's `captured_at` has unreconciled lifecycle evidence. When that generation is required, return `data_contract_effect=unknown` / `Degraded`, not high-confidence `Pass`. This does **not** assert that the report was retired, that Amazon's planned dates cannot change, or that unavailable metrics are zero. Future/equal sunsets, explicit retired blocking, and no-generation requirements retain their existing behavior. All dates are compared as offset-aware instants; actual Ads writes remain outside this repository.

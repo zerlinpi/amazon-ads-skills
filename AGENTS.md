@@ -39,6 +39,8 @@ Modes:
 
 ## Safety rules
 
+- When a decision depends on an exact advertiser account or campaign, set `expected_scope.advertiser_account_id` and/or `campaign_id` and require a concrete matching `scope.advertiser_account_ids` / `campaign_ids` on both the capability and an independently Verified binding. These opaque IDs compare case-sensitively; same marketplace/ad product does not prove same account/campaign. Missing scope never implies global coverage; Unknown/Partial membership is not zero or verified exclusion. Legacy requests without exact identity scope remain compatible. This is read-side provenance only, not advertiser/campaign feature eligibility, raw HTTP authentication, live delivery or write authority.
+
 - For Global Sponsored Products campaign readback, an echoed placeholder or whitespace-padded global-account, campaign, explicit request, connector-source, or raw marketplace crosswalk identity cannot establish a verified post-write match. Return `Unknown`, not `Confirmed`, even when the request, 207 receipt, state and budget rows repeat the same unavailable label. Whole-label Unknown/Unsupported/Partial/Missing/Unavailable/Not Available/Not Supported are unusable; legitimate IDs containing those substrings remain valid. Legacy country-code-only and index-only receipts remain compatible. This is repository-owned evidence validation, not an Amazon-native ID grammar, proof of marketplace/advertiser eligibility, raw HTTP authentication or permission to execute.
 
 

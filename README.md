@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.65.0`  
+> 当前版本：`v1.66.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Bind connector capability to exact advertiser/campaign identity when required**: optional `expected_scope.advertiser_account_id` and `campaign_id` require matching concrete, case-sensitive opaque IDs on both the observed capability and a Verified binding. A shared marketplace alone is insufficient; missing/unknown membership cannot prove coverage or become zero. Existing calls omitting exact IDs remain compatible. This does not establish feature eligibility, delivery, source authentication or permission to write.
 
 - **Fail closed on repeated Global SP identity placeholders**: a matching `Unknown`/unavailable account, campaign, explicit request ID, connector source or raw marketplace crosswalk cannot confirm an externally executed campaign update. Require concrete, unpadded identities; retain legitimate IDs containing placeholder substrings and legacy index-only/country-code-only readbacks. This read-only gate does not authenticate raw API responses or establish advertiser eligibility.
 
