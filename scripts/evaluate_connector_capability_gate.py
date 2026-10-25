@@ -29,6 +29,21 @@ def _s(v: Any) -> bool:
     return isinstance(v, str) and bool(v.strip())
 
 
+# These are evidence placeholders, not verified surface or source identities.
+# Match whole normalized labels only: a legitimate ID may contain "unknown".
+_UNUSABLE_VERIFICATION_LABELS = {
+    "unknown", "unsupported", "partial", "missing", "unavailable",
+    "not available", "not supported",
+}
+
+
+def _verified_identity(value: Any) -> bool:
+    if not _s(value) or value != value.strip():
+        return False
+    normalized = " ".join(value.casefold().replace("_", " ").replace("-", " ").split())
+    return normalized not in _UNUSABLE_VERIFICATION_LABELS
+
+
 def _catalog() -> tuple[set[str], str | None]:
     try: obj = json.loads(CATALOG.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc: raise ValueError("connector capability catalog is unavailable or invalid") from exc
@@ -502,6 +517,10 @@ def _binding_effect(cap,expected,fresh,snapshot_captured_at):
         if not isinstance(b.get("evidence"),list):raise ValueError(f"{field}.evidence must be an array")
         if status!="Verified":saw_unverified|=status=="Unverified";continue
         saw_verified=True
+        if not _verified_identity(b.get("binding_id")) or not _verified_identity(b.get("surface_id")):
+            saw_identity_unknown = True
+            warnings.append(f"verified connector binding {bid!r} has unavailable binding_id or surface_id identity")
+            continue
         if not b["evidence"]:raise ValueError(f"{field} is Verified but has no evidence supporting the binding")
         try:
             observed = _binding_time(b["observed_at"], f"{field}.observed_at")
@@ -520,7 +539,7 @@ def _binding_effect(cap,expected,fresh,snapshot_captured_at):
         identifiable=[]
         for j,evidence in enumerate(b["evidence"]):
             if not isinstance(evidence,dict):raise ValueError(f"{field}.evidence[{j}] must be an object")
-            if _s(evidence.get("kind")) and _s(evidence.get("reference")):identifiable.append(evidence)
+            if _verified_identity(evidence.get("kind")) and _verified_identity(evidence.get("reference")):identifiable.append(evidence)
         if not identifiable:
             saw_identity_unknown=True;warnings.append(f"verified connector binding {bid!r} has no supporting evidence with kind/reference identity");continue
         # An explicitly dated supporting record cannot postdate the binding
