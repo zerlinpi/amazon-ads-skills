@@ -334,7 +334,7 @@ def _explicit_material_state_problem(value: Any, pointer: str = "$") -> str | No
     strings and non-finite numeric leaves, including in nested structures.
     """
     if isinstance(value, str):
-        normalized = re.sub(r"[\\s-]+", "_", value.strip().casefold())
+        normalized = re.sub(r"[\s-]+", "_", value.strip().casefold())
         if not normalized or normalized in {
             "unknown", "unsupported", "partial", "missing", "unavailable",
             "not_available", "not_supported",
