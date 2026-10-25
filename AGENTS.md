@@ -39,6 +39,9 @@ Modes:
 
 ## Safety rules
 
+- A requested historical reporting `history_window.grain` must be concrete and unpadded; matching Unknown/Unsupported/Partial/Missing/Unavailable/Not Available/Not Supported labels do not prove historical availability. A padded connector-observed matching grain, including alongside a concrete match, is ambiguous and degrades rather than passing. Preserve valid case-insensitive grains and verified dates; do not infer metric zero, per-metric history, API entitlement or write authorization.
+
+
 - A reporting-generation requirement must name a concrete, non-placeholder, unpadded identity. Repeating `Unknown` or `Unsupported` on both sides is not verified reporting-generation comparability. A connector-observed generation that is missing, placeholder, or whitespace-padded degrades to Unknown rather than asserting a real generation mismatch or matching it. Valid concrete generations still match case-insensitively; a concrete mismatch blocks. This is a repository-owned read-side provenance rule, not an Amazon API enum, permission to write, or proof of source authenticity.
 
 - An observed, nonempty connector scope list with unmatched Unknown/Partial/malformed members yields `scope_effect=unknown` and a **Degraded**, not `Blocked`, final capability gate: unknown membership cannot prove exclusion. An omitted/empty/unbounded capability scope remains **Blocked** (no global assumption); a fully concrete unmatched scope also remains **Blocked**. A concrete match can pass the scope preflight subject to verified binding and all other gates. Do not infer marketplace/advertiser/campaign eligibility, actual delivery or write authorization from this distinction.
