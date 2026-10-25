@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.55.0 — 2026-10-25
+
+### Finite connector freshness horizon (MINOR)
+
+- Reject NaN, positive/negative infinity and overflowing `freshness_requirement.max_age_seconds` values before connector snapshot/binding freshness checks. A non-finite horizon can no longer turn stale evidence into a high-confidence `Pass`; finite zero and positive horizons retain their behavior.
+- RED-first 8 deterministic tests: 1336 total, 3 failures on previous behavior (Actions 40174166525). Minimal repair GREEN 1336/1336 plus 15 Skill and 55 eval validations (Actions 40174214895).
+- Read-only decision-evidence guard; no Amazon-native TTL policy, account writes, new Skills, third-party dependencies or live connector authentication.
+
+
 ## v1.54.0 — 2026-10-25
 
 ### Verified connector binding temporal lineage (MINOR)

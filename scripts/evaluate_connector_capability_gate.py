@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 import sys
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -161,8 +162,15 @@ def _freshness(v):
     if not isinstance(v,dict):raise ValueError("freshness_requirement must be an object or null")
     if set(v)!={"as_of","max_age_seconds"}:raise ValueError("freshness_requirement must contain exactly as_of and max_age_seconds")
     as_of=_time(v["as_of"],"freshness_requirement.as_of");age=v["max_age_seconds"]
-    if isinstance(age,bool) or not isinstance(age,(int,float)) or age<0:raise ValueError("freshness_requirement.max_age_seconds must be a non-negative number")
-    return {"as_of":as_of,"as_of_raw":v["as_of"],"max_age_seconds":float(age)}
+    if isinstance(age, bool) or not isinstance(age, (int, float)):
+        raise ValueError("freshness_requirement.max_age_seconds must be a finite non-negative number")
+    try:
+        seconds = float(age)
+    except OverflowError as exc:
+        raise ValueError("freshness_requirement.max_age_seconds must be a finite non-negative number") from exc
+    if not math.isfinite(seconds) or seconds < 0:
+        raise ValueError("freshness_requirement.max_age_seconds must be a finite non-negative number")
+    return {"as_of": as_of, "as_of_raw": v["as_of"], "max_age_seconds": seconds}
 
 
 def _data_requirements(v, required_capabilities):

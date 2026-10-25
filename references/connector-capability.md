@@ -182,6 +182,9 @@ A report job completing successfully proves only that the report completed under
 
 ## Capability evidence and freshness
 
+When a task supplies `freshness_requirement`, `max_age_seconds` must be a finite non-negative numeric duration. The deterministic gate rejects NaN, infinity and overflowing numeric values instead of allowing a non-finite comparison to make old snapshots, bindings or supporting evidence appear current. A valid zero horizon remains strict and a valid finite positive horizon remains supported. This is a repository-owned decision-evidence integrity check, **not** an Amazon-native freshness SLA or a claim that a connector response is authentic.
+
+
 Prefer capability evidence in this order when available:
 
 1. observed active connector/tool response for the exact scope;
