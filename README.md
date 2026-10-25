@@ -8,6 +8,8 @@ A portable **Amazon Ads decision library for AI agents**. It packages 15 focused
 
 ## What you can do
 
+- Reject temporally impossible connector capability verification: a Verified binding cannot postdate its snapshot, and explicitly dated supporting evidence cannot postdate binding verification. This chronology gate applies even without a caller-supplied freshness horizon; legacy undated evidence remains compatible but does not prove freshness or source authenticity.
+
 - Reject repeated unavailable labels as marketplace, profile, campaign, entity, advertiser-account, connector, source or acquisition identity. Shared `Unknown` is not verified shared identity or provenance; valid IDs and both-absent optional legacy connector IDs remain compatible. Read-side only, not authentication.
 
 - Fail closed on explicitly unavailable material-control state values, even inside a nested object or complete list and even when both snapshots repeat the same placeholder. Generic Unknown/Unsupported/Partial/Missing/Unavailable, blank scalar strings and non-finite numbers are not observed stable controls. Verified numeric zero, boolean switches and valid descriptive values remain distinct; this is read-only evidence validation, not Amazon-native schema or eligibility proof.
