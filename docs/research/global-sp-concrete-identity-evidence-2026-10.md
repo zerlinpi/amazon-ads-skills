@@ -10,6 +10,15 @@ At main `d84475e40f02cd3ff7a55b04b0c8e82232ba9be6` (v1.64.0), zero open PRs and 
 - Minimal source fix: `ba70013601547d7145f0d12651760c09feb1aab1`, [Actions 40218449534](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40218449534): 1475/1475 PASS, 15 Skills and 55 eval fixtures PASS.
 - 18 synthetic deterministic tests include account, campaign, optional request ID, source lineage, crosswalk raw ID, crosswalk source and budget crosswalk; legitimate IDs containing `unknown` and legacy index-only receipts still confirm. No live Ads reads/writes.
 
+## Decision examples
+
+| Request/readback evidence | Required classification | Why |
+| --- | --- | --- |
+| Both account IDs are `Unknown` | `Unknown` | Repeated absence is not shared account identity. |
+| A `verified` raw marketplace crosswalk maps US to `Not-Supported`, and state/budget rows echo it | `Unknown` | Crosswalk agreement does not make a placeholder a raw ID. |
+| A valid crosswalk and complete per-marketplace configured-state readback match the request | `Confirmed` | Concrete normalized evidence is internally consistent, subject to external adapter trust. |
+| A concrete ID contains `unknown` as part of a longer identifier | Unchanged | Reject whole placeholder labels, not arbitrary substrings. |
+
 ## Bounded contract
 
 Require concrete unpadded identities in the campaign request, explicit correlation ID, query source and optional raw marketplace crosswalk. Reject only whole-label placeholders after casefold/space/hyphen/underscore normalization, not valid IDs containing the same substring. Return `Unknown`, not `Confirmed`, for unusable provenance. The source adapter still owns raw API authenticity, complete query coverage, advertiser/campaign eligibility, exact marketplace mapping, and application reconciliation. No Amazon-native ID grammar, API retry, bid policy, Executor, new Skill or metric-zero inference is introduced.
