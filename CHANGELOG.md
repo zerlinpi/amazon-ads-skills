@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.64.0 — 2026-10-26
+
+### Reporting sunset capture-time consistency (MINOR)
+
+- A required reporting generation marked active/sunset_scheduled with an already-passed declared `sunset_at` at snapshot capture is unreconciled: return Unknown/Degraded rather than high-confidence Pass. This does not automatically retire a reporting generation or hard-code Amazon's changing migration dates. Preserve future/equal sunsets, explicit retired blocks, and no-generation requests.
+- RED `597329a99a6ef14c156f0541ab0aeb36f0714ab2` [Actions 40213666049](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40213666049): 1457 tests, 3 FAIL. GREEN `e4ed8e6bb5edac71cff49e4aca63114522a6c48c` [Actions 40213715351](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40213715351): 1457 PASS, 15 Skill and 55 eval fixture validators PASS. Eight deterministic synthetic tests; no live Ads writes or new Skills.
+- Research: `docs/research/reporting-sunset-capture-consistency-2026-10.md`.
+
+
 ## v1.63.0 — 2026-10-25
 
 ### Historical availability capture-horizon integrity (MINOR)

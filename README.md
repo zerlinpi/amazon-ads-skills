@@ -2,11 +2,14 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.63.0`  
+> 当前版本：`v1.64.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Degrade overdue reporting sunset evidence**: when a connector snapshot claims a required reporting generation is still active or awaiting sunset after its own declared `sunset_at`, require refreshed source evidence rather than high-confidence Pass. Do not infer actual retirement or zero metrics; future sunset, explicitly retired, and no-generation cases remain compatible.
+
 
 - **Reject future-dated historical availability claims**: a per-grain `available_through` more than one calendar day after snapshot capture cannot prove history was already retrievable. Degrade rather than high-confidence Pass; preserve valid earlier ranges and no-history decisions. This does not establish an Amazon API SLA, completeness, eligibility or causal effect.
 
