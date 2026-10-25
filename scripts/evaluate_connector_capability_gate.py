@@ -233,9 +233,9 @@ def _data_requirements(v, required_capabilities):
             requirement.get("history_window"),
             f"data_requirements[{cid!r}].history_window",
         )
-        if generation is not None and not _s(generation):
+        if generation is not None and not _verified_identity(generation):
             raise ValueError(
-                f"data_requirements[{cid!r}].required_reporting_generation must be a non-empty string or null"
+                f"data_requirements[{cid!r}].required_reporting_generation must be a concrete, non-placeholder identity or null"
             )
         if history is not None and not isinstance(history, bool):
             raise ValueError(
@@ -297,10 +297,10 @@ def _data_contract_effect(cap, requirement):
 
     if generation is not None:
         observed_generation = contract.get("reporting_generation")
-        if not _s(observed_generation):
+        if not _verified_identity(observed_generation):
             effect = _combine_data_effect(effect, "unknown")
-            warnings.append("required reporting generation is not identified by the connector snapshot")
-        elif observed_generation.strip().casefold() != generation.casefold():
+            warnings.append("required reporting generation has no concrete, verified identity in the connector snapshot")
+        elif observed_generation.casefold() != generation.casefold():
             effect = _combine_data_effect(effect, "blocked")
             warnings.append(
                 f"observed reporting generation {observed_generation!r} does not match required generation {generation!r}"

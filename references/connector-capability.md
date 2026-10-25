@@ -1,5 +1,9 @@
 # Connector capability contract
 
+## Reporting-generation identity evidence (2026-10-25)
+
+When `data_requirements[capability_id].required_reporting_generation` is supplied, the requested identity must be a concrete, unpadded label. Whole-label `Unknown`, `Unsupported`, `Partial`, `Missing`, `Unavailable`, `Not Available`, and `Not Supported` are not valid caller requirements. The connector-observed `data_contract.reporting_generation` must also be concrete: explicit unavailable or padded values produce `data_contract_effect=unknown` and a `Degraded` decision rather than a false `Pass` or definitive mismatch. Valid concrete generation matches are case-insensitive; a concrete mismatch remains `Blocked`. If no reporting-generation requirement was supplied, the existing no-evaluation behavior remains. This is a normalized read-side evidence rule, not an Amazon API enum or proof of raw HTTP provenance, reporting completeness, account eligibility or causal lift.
+
 ## Final gate classification for unknown scope (2026-10-25)
 
 A capability scope with a **present, nonempty** observed member list containing an unmatched unavailable/malformed member is `scope_effect=unknown` and `gate_effect=degraded` (overall `Degraded` unless another independent requirement blocks). This is a lack of exclusion proof, **not** evidence that the requested marketplace/ad product/account type is supported. An omitted/empty/unbounded capability scope still blocks the dependent read-side decision rather than assuming global access. A fully concrete mismatch is also `Blocked`; a concrete match remains subject to independent Verified Binding, source identity, access mode, freshness and data contract checks. A Partial capability with observed unknown membership degrades; Unsupported capability remains blocked. These are repository-owned evidence classes, not Amazon-native enums or eligibility proof.

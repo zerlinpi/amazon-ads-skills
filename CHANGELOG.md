@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.61.0 — 2026-10-25
+
+### Reporting-generation identity evidence (MINOR)
+
+- Reject unavailable, placeholder or whitespace-padded requested reporting-generation identities; repeated Unknown is not verified report compatibility. Explicitly unavailable or padded observed generation degrades to Unknown rather than proving a concrete mismatch or a false match. Concrete matches and mismatches retain existing semantics. No live Ads mutation, new Skill or external runtime dependency.
+- RED commit `78e8072f56dc58e206bdcab6bd5e8eebaa887a13` [Actions 40199527214](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40199527214): 1425 tests, 13 FAIL. GREEN commit `e354a59688f88a8104bbb77c2793bd2c7379b76c` [Actions 40199576967](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40199576967): 1425/1425 PASS, Skill and Eval validators PASS. Eighteen deterministic synthetic cases.
+- Research: `docs/research/reporting-generation-identity-evidence-2026-10.md`.
+
+
 ## v1.60.0 — 2026-10-25
 
 ### Connector unknown scope final-gate classification (MINOR)
