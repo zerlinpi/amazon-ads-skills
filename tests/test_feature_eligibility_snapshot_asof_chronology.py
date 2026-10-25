@@ -17,8 +17,8 @@ class FeatureEligibilitySnapshotAsOfChronologyTests(unittest.TestCase):
     def assert_unknown_join(self, payload):
         result = check(payload)
         self.assertEqual(result["feature_eligibility_effect"], "pass", result)
-        self.assertEqual(result["feature_snapshot_chronology_effect"], "unknown", result)
         self.assertEqual(result["gate_status"], "Degraded", result)
+        self.assertEqual(result.get("feature_snapshot_chronology_effect"), "unknown", result)
         self.assertFalse(result["high_confidence_allowed"], result)
         self.assertEqual(result["missing_evidence_policy"], "never_zero", result)
         self.assertNotIn("High Confidence", result["allowed_decision_classes"])
@@ -47,35 +47,35 @@ class FeatureEligibilitySnapshotAsOfChronologyTests(unittest.TestCase):
 
     def test_equal_snapshot_and_asof_remain_compatible(self):
         result = check(fixture())
-        self.assertEqual(result["feature_snapshot_chronology_effect"], "pass", result)
+        self.assertEqual(result.get("feature_snapshot_chronology_effect"), "pass", result)
         self.assertEqual(result["gate_status"], "Pass", result)
 
     def test_earlier_snapshot_does_not_invent_a_ttl(self):
         p = fixture()
         p["snapshot"]["captured_at"] = "2026-10-25T23:30:00Z"
         result = check(p)
-        self.assertEqual(result["feature_snapshot_chronology_effect"], "pass", result)
+        self.assertEqual(result.get("feature_snapshot_chronology_effect"), "pass", result)
         self.assertEqual(result["gate_status"], "Pass", result)
 
     def test_equivalent_offset_capture_is_not_future(self):
         p = fixture()
         p["snapshot"]["captured_at"] = "2026-10-26T01:00:00+01:00"
         result = check(p)
-        self.assertEqual(result["feature_snapshot_chronology_effect"], "pass", result)
+        self.assertEqual(result.get("feature_snapshot_chronology_effect"), "pass", result)
         self.assertEqual(result["gate_status"], "Pass", result)
 
     def test_missing_capture_cannot_prove_feature_time(self):
         p = fixture()
         del p["snapshot"]["captured_at"]
         result = check(p)
-        self.assertEqual(result["feature_snapshot_chronology_effect"], "unknown", result)
+        self.assertEqual(result.get("feature_snapshot_chronology_effect"), "unknown", result)
         self.assertEqual(result["gate_status"], "Degraded", result)
 
     def test_unknown_offset_capture_cannot_prove_feature_time(self):
         p = fixture()
         p["snapshot"]["captured_at"] = "2026-10-26T00:00:00-00:00"
         result = check(p)
-        self.assertEqual(result["feature_snapshot_chronology_effect"], "unknown", result)
+        self.assertEqual(result.get("feature_snapshot_chronology_effect"), "unknown", result)
         self.assertEqual(result["gate_status"], "Degraded", result)
 
     def test_verified_ineligible_still_blocks_with_future_snapshot(self):
@@ -83,7 +83,7 @@ class FeatureEligibilitySnapshotAsOfChronologyTests(unittest.TestCase):
         p["feature_eligibility_requirement"]["as_of"] = "2026-10-25T23:30:00Z"
         p["feature_eligibility_evidence"]["eligibility_status"] = "Ineligible"
         result = check(p)
-        self.assertEqual(result["feature_snapshot_chronology_effect"], "unknown", result)
+        self.assertEqual(result.get("feature_snapshot_chronology_effect"), "unknown", result)
         self.assertEqual(result["feature_eligibility_effect"], "blocked", result)
         self.assertEqual(result["gate_status"], "Blocked", result)
 
@@ -93,7 +93,7 @@ class FeatureEligibilitySnapshotAsOfChronologyTests(unittest.TestCase):
         del p["feature_eligibility_evidence"]
         p["snapshot"]["captured_at"] = "2026-10-26T00:00:01Z"
         result = check(p)
-        self.assertEqual(result["feature_snapshot_chronology_effect"], "not_evaluated", result)
+        self.assertEqual(result.get("feature_snapshot_chronology_effect"), "not_evaluated", result)
         self.assertEqual(result["gate_status"], "Pass", result)
 
     def test_explicit_freshness_still_applies_independently(self):
@@ -103,7 +103,7 @@ class FeatureEligibilitySnapshotAsOfChronologyTests(unittest.TestCase):
             "max_age_seconds": 7200,
         }
         result = check(p)
-        self.assertEqual(result["feature_snapshot_chronology_effect"], "pass", result)
+        self.assertEqual(result.get("feature_snapshot_chronology_effect"), "pass", result)
         self.assertEqual(result["gate_status"], "Pass", result)
 
 
