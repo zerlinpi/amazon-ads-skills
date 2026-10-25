@@ -676,7 +676,7 @@ def _snapshot_identity_warnings(snapshot):
 
 def evaluate_connector_capability_gate(payload):
     if not isinstance(payload,dict):raise ValueError("input must be a JSON object")
-    registered,version=_catalog();reqs=_requirements(payload.get("required_capabilities"),registered);expected=_scope(payload.get("expected_scope"));fresh=_freshness(payload.get("freshness_requirement"));data_requirements=_data_requirements(payload.get("data_requirements"),reqs);indexed,snapshot=_index(payload.get("snapshot"));snapshot_freshness_effect,snapshot_warnings=_snapshot_freshness(snapshot,fresh);snapshot_identity_warnings=_snapshot_identity_warnings(snapshot)
+    registered,version,declared_modes=_catalog();reqs=_requirements(payload.get("required_capabilities"),registered);expected=_scope(payload.get("expected_scope"));fresh=_freshness(payload.get("freshness_requirement"));data_requirements=_data_requirements(payload.get("data_requirements"),reqs);indexed,snapshot=_index(payload.get("snapshot"));snapshot_freshness_effect,snapshot_warnings=_snapshot_freshness(snapshot,fresh);snapshot_identity_warnings=_snapshot_identity_warnings(snapshot)
     evaluated=[];has_partial=snapshot_freshness_effect in {"stale","unknown"} or bool(snapshot_identity_warnings);has_blocked=False
     for cid in reqs:
         cap=indexed.get(cid);scope_effect="not_evaluated";binding_effect="unknown";freshness_effect="not_evaluated";data_contract_effect="not_evaluated";verified=[]
