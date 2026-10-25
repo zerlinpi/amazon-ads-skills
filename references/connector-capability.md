@@ -1,5 +1,9 @@
 # Connector capability contract
 
+## Historical availability capture-horizon evidence (2026-10-25)
+
+An observed historical `available_through` bound more than one calendar day beyond the snapshot UTC capture date cannot be treated as already retrieved history. When an exact history window is requested, this yields `data_contract_effect=unknown` and `Degraded` unless an independent requirement blocks. A one-day allowance avoids inventing a marketplace timezone for date-only bounds; it does not prove completeness, data maturity, or future availability. Valid earlier bounds and no-history requests remain compatible. This is a repository-owned read-side chronology guard, not an Amazon API retention/latency rule or authenticated HTTP proof. Missing/unknown history is never metric zero.
+
 ## Historical reporting grain identity evidence (2026-10-25)
 
 A requested `data_requirements[capability_id].history_window.grain` must be a concrete, unpadded identity. Repeated Unknown/Unsupported/Partial/Missing/Unavailable/Not Available/Not Supported cannot establish a historical retention grain. A connector-observed padded apparent match yields `data_contract_effect=unknown` and `Degraded`, including when another valid entry matches: it cannot prove unambiguous availability. Valid case-insensitive grains and dated bounds remain compatible; missing history is never metric zero. This read-only normalized rule is not an Amazon API enum, proof of metric/dimension coverage, advertiser eligibility or raw-response authenticity.

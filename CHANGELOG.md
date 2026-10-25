@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.63.0 — 2026-10-25
+
+### Historical availability capture-horizon integrity (MINOR)
+
+- A per-grain observed `available_through` more than one calendar day beyond snapshot capture cannot prove already-retrievable history for an exact requested window. Return Unknown/Degraded rather than high-confidence Pass. One-day date-only tolerance avoids inventing a marketplace timezone; no Amazon API SLA or data-maturity claim. Preserve earlier valid ranges, explicit unavailable/retired blocks and no-history behavior.
+- RED `66e09b0a5eee15d1dbfc8f5a226de0bb1988f83b` [Actions 40208517094](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40208517094): 1449 tests, 3 FAIL. GREEN `315dac82d12335f219364278da0b439bee0af2f6` [Actions 40208569404](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40208569404): 1449 PASS, Skill/Eval validators PASS. Ten deterministic tests; no new Skill or live Ads write.
+- Research: `docs/research/connector-history-capture-horizon-2026-10.md`.
+
 ## v1.62.0 — 2026-10-25
 
 ### Historical reporting grain identity evidence (MINOR)

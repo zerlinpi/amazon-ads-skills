@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.62.0`  
+> 当前版本：`v1.63.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Reject future-dated historical availability claims**: a per-grain `available_through` more than one calendar day after snapshot capture cannot prove history was already retrievable. Degrade rather than high-confidence Pass; preserve valid earlier ranges and no-history decisions. This does not establish an Amazon API SLA, completeness, eligibility or causal effect.
 
 - Require **concrete historical reporting grain evidence** before accepting a dated availability window. Requested unavailable/padded grain identities are invalid; observed padded apparent matches degrade even alongside valid matches. Concrete case-insensitive grains remain compatible. This does not prove per-metric history, source authenticity or account eligibility.
 

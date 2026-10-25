@@ -39,6 +39,8 @@ Modes:
 
 ## Safety rules
 
+- For an exact history-window requirement, an observed per-grain `available_through` more than one calendar day beyond the connector snapshot capture cannot prove already available history. Degrade to Unknown rather than high-confidence Pass, even if requested dates precede capture. The one-day allowance is only for date-only bounds without marketplace timezone, not an Amazon latency SLA or proof of data maturity. Never infer zero or authorize live Ads writes.
+
 - A requested historical reporting `history_window.grain` must be concrete and unpadded; matching Unknown/Unsupported/Partial/Missing/Unavailable/Not Available/Not Supported labels do not prove historical availability. A padded connector-observed matching grain, including alongside a concrete match, is ambiguous and degrades rather than passing. Preserve valid case-insensitive grains and verified dates; do not infer metric zero, per-metric history, API entitlement or write authorization.
 
 
