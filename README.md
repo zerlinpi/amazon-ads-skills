@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.51.0`  
+> 当前版本：`v1.52.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- Reject repeated unavailable labels as marketplace, profile, campaign, entity, advertiser-account, connector, source or acquisition identity. Shared `Unknown` is not verified shared identity or provenance; valid IDs and both-absent optional legacy connector IDs remain compatible. Read-side only, not authentication.
 
 - Fail closed on explicitly unavailable material-control state values, even inside a nested object or complete list and even when both snapshots repeat the same placeholder. Generic Unknown/Unsupported/Partial/Missing/Unavailable, blank scalar strings and non-finite numbers are not observed stable controls. Verified numeric zero, boolean switches and valid descriptive values remain distinct; this is read-only evidence validation, not Amazon-native schema or eligibility proof.
 
