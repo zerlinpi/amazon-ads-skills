@@ -483,14 +483,14 @@ def _snapshot_freshness(snapshot,fresh):
 
 
 def _scope_effect(obj,expected,label):
-    if not expected:return "not_evaluated" if label=="capability" else "pass",[]
+    if not expected:return "not_evaluated" if label=="capability" else "pass",[],False
     scope=obj.get("scope")
-    if not isinstance(scope,dict):return "unknown",[f"{label} does not expose bounded decision scope"]
-    unknown=blocked=False;warnings=[]
+    if not isinstance(scope,dict):return "unknown",[f"{label} does not expose bounded decision scope"],False
+    unknown=blocked=missing=False;warnings=[]
     for field,wanted in expected.items():
         vals=scope.get(SCOPE_FIELDS[field])
         if not isinstance(vals,list) or not vals:
-            unknown=True
+            unknown=True;missing=True
             warnings.append(f"{label} does not expose bounded {field} scope")
             continue
         # Unknown members cannot prove either inclusion or exclusion.
@@ -504,7 +504,7 @@ def _scope_effect(obj,expected,label):
         else:
             blocked=True
             warnings.append(f"{label} does not cover requested {field} {wanted!r}")
-    return ("blocked" if blocked else "unknown" if unknown else "pass"),warnings
+    return ("blocked" if blocked else "unknown" if unknown else "pass"),warnings,unknown and not missing and not blocked
 
 
 def _binding_effect(cap,expected,fresh,snapshot_captured_at):
@@ -579,7 +579,7 @@ def _binding_effect(cap,expected,fresh,snapshot_captured_at):
         if evidence_chronology_bad:
             saw_temporal_unknown = True
             continue
-        se,sw=_scope_effect(b,expected,"connector binding");warnings.extend(sw)
+        se,sw,_=_scope_effect(b,expected,"connector binding");warnings.extend(sw)
         if se!="pass":continue
         if fresh is not None:
             age=(fresh["as_of"]-observed).total_seconds()
@@ -632,7 +632,7 @@ def evaluate_connector_capability_gate(payload):
         cap=indexed.get(cid);scope_effect="not_evaluated";binding_effect="unknown";freshness_effect="not_evaluated";data_contract_effect="not_evaluated";verified=[]
         if cap is None:status="Unknown";access="unknown";effect="blocked";has_blocked=True;warnings=["required capability is absent from the observed connector snapshot"]
         else:
-            status=cap.get("status","Unknown");access=cap.get("access_mode","unknown");warnings=list(cap.get("warnings") or []);scope_effect,sw=_scope_effect(cap,expected,"connector capability");warnings+=sw;binding_effect,verified,freshness_effect,bw=_binding_effect(cap,expected,fresh,snapshot.get("captured_at"));warnings+=bw;data_contract_effect,dw=_data_contract_effect(cap,data_requirements.get(cid));warnings+=dw
+            status=cap.get("status","Unknown");access=cap.get("access_mode","unknown");warnings=list(cap.get("warnings") or []);scope_effect,sw,observed_unknown_scope=_scope_effect(cap,expected,"connector capability");warnings+=sw;binding_effect,verified,freshness_effect,bw=_binding_effect(cap,expected,fresh,snapshot.get("captured_at"));warnings+=bw;data_contract_effect,dw=_data_contract_effect(cap,data_requirements.get(cid));warnings+=dw
             if data_contract_effect=="blocked":effect="blocked";has_blocked=True
             elif status=="Supported" and access=="write":
                 effect="blocked";has_blocked=True
@@ -641,11 +641,12 @@ def evaluate_connector_capability_gate(payload):
                 effect="degraded";has_partial=True
                 warnings.append("capability access mode is missing, ambiguous or not verified as read-side")
             elif status=="Supported":
-                if scope_effect not in {"pass","not_evaluated"}:effect="blocked";has_blocked=True
+                if scope_effect=="blocked" or (scope_effect=="unknown" and not observed_unknown_scope):effect="blocked";has_blocked=True
+                elif scope_effect=="unknown":effect="degraded";has_partial=True
                 elif freshness_effect in {"stale","unknown"} or data_contract_effect in {"degraded","unknown"}:effect="degraded";has_partial=True
                 elif binding_effect=="pass" and verified:effect="pass"
                 else:effect="degraded";has_partial=True
-            elif status=="Partial" and scope_effect in {"pass","not_evaluated"}:effect="degraded";has_partial=True
+            elif status=="Partial" and (scope_effect in {"pass","not_evaluated"} or observed_unknown_scope):effect="degraded";has_partial=True
             else:effect="blocked";has_blocked=True
         evaluated.append({"capability_id":cid,"status":status,"access_mode":access,"scope_effect":scope_effect,"binding_effect":binding_effect,"freshness_effect":freshness_effect,"data_contract_effect":data_contract_effect,"verified_binding_ids":verified,"gate_effect":effect,"warnings":warnings})
     if has_blocked:gate,allowed,high="Blocked",BLOCKED,False

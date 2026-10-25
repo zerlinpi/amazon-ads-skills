@@ -2,11 +2,14 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.59.0`  
+> 当前版本：`v1.60.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- Preserve connector scope uncertainty at the **final decision gate**: when a present bounded scope list has unmatched Unknown/Partial/malformed members, report `scope_effect=unknown` and `gate_status=Degraded`, not a definitive exclusion. Missing scope evidence still blocks rather than assuming global coverage; a fully concrete mismatch remains `Blocked`. This read-side distinction is not advertiser/campaign entitlement, a metric zero, or permission to execute.
+
 
 - Fail closed on placeholder connector decision scope: a repeated `Unknown` requested marketplace/ad-product/region/account type is not an identity; an observed scope list containing unknown/malformed members cannot prove an unmatched scope absent. Preserve concrete matches and fully concrete mismatches. This is a read-side connector scope-evidence rule, not advertiser/campaign entitlement or Amazon-native schema.
 

@@ -1,5 +1,10 @@
 # Connector capability contract
 
+## Final gate classification for unknown scope (2026-10-25)
+
+A capability scope with a **present, nonempty** observed member list containing an unmatched unavailable/malformed member is `scope_effect=unknown` and `gate_effect=degraded` (overall `Degraded` unless another independent requirement blocks). This is a lack of exclusion proof, **not** evidence that the requested marketplace/ad product/account type is supported. An omitted/empty/unbounded capability scope still blocks the dependent read-side decision rather than assuming global access. A fully concrete mismatch is also `Blocked`; a concrete match remains subject to independent Verified Binding, source identity, access mode, freshness and data contract checks. A Partial capability with observed unknown membership degrades; Unsupported capability remains blocked. These are repository-owned evidence classes, not Amazon-native enums or eligibility proof.
+
+
 ## Requested scope and observed membership evidence (2026-10-25)
 
 A requested connector decision scope must be a concrete identity, not a repeated Unknown/Unsupported/Partial/Missing/Unavailable/Not Available/Not Supported label or whitespace-padded string. For a capability or verified binding scope, a matching concrete member proves only that bounded connector surface; an unmatched list containing an unavailable/malformed member is Unknown, not proof of marketplace, ad-product, region or account-type exclusion. A fully concrete unmatched list remains blocked. No scope list alone establishes Amazon Business advertiser/campaign eligibility, account entitlement, actual delivery, or authority to write.

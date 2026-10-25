@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.60.0 — 2026-10-25
+
+### Connector unknown scope final-gate classification (MINOR)
+
+- Fix the mismatch between `scope_effect=unknown` and the final `Blocked` decision for **observed unmatched unknown/malformed scope members**. Such evidence is now `Degraded` without high confidence; missing/unbounded capability scope and fully concrete mismatch remain `Blocked`, and concrete matches remain compatible. No live Ads write or new Skill.
+- RED commit `1e8bbe031ee918cff0022d06d8c59fc19626e66f` [Actions 40194559495](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40194559495): 1407 tests, 6 FAIL. GREEN commit `e94535bd29acadad70633cb33e6e63ff32f86328` [Actions 40194643701](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40194643701): 1407/1407 PASS, Skill and Eval validators PASS. Ten synthetic deterministic tests.
+- Research: `docs/research/connector-unknown-scope-gate-classification-2026-10.md`.
+
+
 ## v1.59.0 — 2026-10-25
 
 ### Connector scope identity and exclusion evidence (MINOR)
