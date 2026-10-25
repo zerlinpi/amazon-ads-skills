@@ -86,6 +86,14 @@ For the existing read-only SP bid/budget causal comparator, an explicitly suppli
 
 Sources: Amazon Ads, *Adjust Sponsored Products bids*, updated 2026-09-28, https://advertising.amazon.com/help/GYYZVM7LGSRYGWV5 ; Amazon Ads, *Advertising on Amazon Business*, https://advertising.amazon.com/channels/amazon-business . Repository-authored guard only; no copied API schema or platform formula.
 
+### Optional retailer-scope consistency for Amazon Business controls (v1.53.0)
+
+When an adapter explicitly supplies `targeting_or_routing.state.retailer_scope` in a registered Sponsored Products bid/budget causal comparison, accept only repository-normalized `AMAZON_STORE` or `ACROSS_RETAILERS`. The field must be present in both snapshots or neither; one-sided presence is `Unknown`, not a proven retailer transition. A complete inventory and identical strings do not make an unmapped retailer label valid.
+
+A snapshot with `ACROSS_RETAILERS` cannot simultaneously substantiate `placement_adjustment.state.amazon_business` (even observed numeric `0`) or Amazon Business-exclusive `site_restriction=AMAZON_BUSINESS`; such internally contradictory evidence is `Unknown`. A real, consistently observed change between supported retailer scopes remains a competing routing control (`Confounded`). Both-absent legacy retailer scope remains compatible **without** proving B2B eligibility or an absent modifier. A valid `AMAZON_STORE` label is not proof of marketplace/account/campaign eligibility, connector coverage, native API enum mapping or actual delivery. Mixed retailer/ad-group contexts need a separately verified adapter contract, not a guessed label.
+
+Amazon Ads references: https://advertising.amazon.com/solutions/products/sponsored-products-across-retailers ; https://advertising.amazon.com/en-us/resources/whats-new/amazon-business-exclusive-campaign-for-sponsored-product/ ; https://advertising.amazon.com/help/GYYZVM7LGSRYGWV5 (prior dated platform review). No native API schema or third-party code reused.
+
 ## Sponsored Products video bid adjustment
 
 For the registered Sponsored Products bid/budget causal surfaces, the read-only comparator requires `video_bid_adjustment.state` to be a finite, nonnegative observed number or plain decimal string. Explicit zero is valid; missing/Unknown/Unsupported/Partial, booleans, negative/non-finite numbers, percentage-formatted strings and structured placeholders are not valid observed video-boost values. Repeating an unknown value on both sides cannot prove an unchanged control. This is a local evidence guard, not an Amazon-native API field definition, marketplace eligibility proof, or universal platform bid-boost ceiling. Amazon's Sponsored Products video guide states that video-specific bid boosts can stack on top of other placement adjustments; preserve them as separate controls.
