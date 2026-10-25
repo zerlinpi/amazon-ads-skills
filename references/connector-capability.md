@@ -1,5 +1,9 @@
 # Connector capability contract
 
+## Feature eligibility source-reference independence (2026-10-26)
+
+An optional feature-specific eligibility record must not cite the same opaque `source_reference` as a Verified binding ID, surface ID or supporting evidence reference belonging to any **required** connector capability in the current decision. That is a self-referential assertion, not independent feature-specific provenance. The read-only gate exposes `feature_source_independence_effect=unknown` and `feature_eligibility_effect=unknown`, returning `Degraded` unless another independent condition blocks. This applies to both asserted Eligible and Ineligible statuses: an unproven self-reference cannot establish a verified exclusion. A distinct source reference passes only this identity-consistency subgate; it is **not** cryptographic/API authentication, source attestation, enrollment verification or evidence of causal impact. Legacy requests without feature eligibility are unchanged. Actual Amazon Ads writes remain outside this repository.
+
 ## Feature eligibility decision-time connector snapshot chronology (2026-10-26)
 
 For optional `feature_eligibility_requirement`, the connector snapshot `captured_at` must be a known-offset timestamp no later than the requirement's `as_of`. A future, missing, invalid or unknown-offset capture yields `feature_snapshot_chronology_effect=unknown` and overall `Degraded` at best (independent `Blocked` evidence still blocks). Equal or earlier capture passes **only** the temporal-order subgate. Without a feature requirement the new effect is `not_evaluated`. This does not invent a connector freshness TTL, authenticate remote HTTP, establish feature enrollment, or claim historical availability. The existing `freshness_requirement` independently controls connector staleness; timestamped supporting binding evidence remains required when explicitly requested.
