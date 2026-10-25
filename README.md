@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.70.0`  
+> 当前版本：`v1.71.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Require exact campaign identity for Sponsored Products causal reviews**: bid/budget comparisons with both `scope.campaign_id` values absent or null now return `Unknown`, not `Treatment Isolated`. A shared profile and marketplace do not identify the same campaign; valid, concrete campaign IDs retain existing behavior. This is read-only control comparability, not proof of delivery, continuous rule activation, or API authenticity.
 
 - **Reject self-referential feature eligibility source evidence**: a Verified feature-specific record cannot reuse a required connector binding's ID, surface ID or supporting evidence reference as its supposedly independent source. Such Eligible or Ineligible claims degrade to Unknown, not Pass or verified exclusion. Distinct reference identity is necessary but does not authenticate raw Amazon Ads responses or prove enrollment; no live writes.
 
