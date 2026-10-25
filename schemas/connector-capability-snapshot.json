@@ -38,7 +38,7 @@
           },
           "access_mode": {
             "type": "string",
-            "enum": ["read", "report", "export", "stream", "write", "mixed", "unknown"]
+            "enum": ["read", "report", "export", "stream", "observe", "write", "mixed", "unknown"]
           },
           "source_system": {"type": ["string", "null"]},
           "acquisition_channel": {"type": ["string", "null"]},

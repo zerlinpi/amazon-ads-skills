@@ -51,14 +51,18 @@ def _catalog() -> tuple[set[str], str | None]:
     except (OSError, json.JSONDecodeError) as exc: raise ValueError("connector capability catalog is unavailable or invalid") from exc
     if not isinstance(obj, dict) or not isinstance(obj.get("capabilities"), list): raise ValueError("connector capability catalog capabilities must be an array")
     ids=set()
+    # Observation is read-side evidence only for canonical observation capabilities.
+    # Do not globally permit observe access to stand in for report/read transport.
+    declared_modes={}
     for i,item in enumerate(obj["capabilities"]):
         if not isinstance(item,dict) or not _s(item.get("capability_id")): raise ValueError(f"connector capability catalog capabilities[{i}] has invalid capability_id")
         cid=item["capability_id"].strip()
         if cid in ids: raise ValueError(f"connector capability catalog contains duplicate capability_id {cid!r}")
         ids.add(cid)
+        declared_modes[cid]=item.get("access_mode")
     version=obj.get("catalog_version")
     if version is not None and not _s(version): raise ValueError("connector capability catalog version must be a non-empty string or null")
-    return ids,version
+    return ids,version,declared_modes
 
 
 
@@ -672,7 +676,7 @@ def _snapshot_identity_warnings(snapshot):
 
 def evaluate_connector_capability_gate(payload):
     if not isinstance(payload,dict):raise ValueError("input must be a JSON object")
-    registered,version=_catalog();reqs=_requirements(payload.get("required_capabilities"),registered);expected=_scope(payload.get("expected_scope"));fresh=_freshness(payload.get("freshness_requirement"));data_requirements=_data_requirements(payload.get("data_requirements"),reqs);indexed,snapshot=_index(payload.get("snapshot"));snapshot_freshness_effect,snapshot_warnings=_snapshot_freshness(snapshot,fresh);snapshot_identity_warnings=_snapshot_identity_warnings(snapshot)
+    registered,version,declared_modes=_catalog();reqs=_requirements(payload.get("required_capabilities"),registered);expected=_scope(payload.get("expected_scope"));fresh=_freshness(payload.get("freshness_requirement"));data_requirements=_data_requirements(payload.get("data_requirements"),reqs);indexed,snapshot=_index(payload.get("snapshot"));snapshot_freshness_effect,snapshot_warnings=_snapshot_freshness(snapshot,fresh);snapshot_identity_warnings=_snapshot_identity_warnings(snapshot)
     evaluated=[];has_partial=snapshot_freshness_effect in {"stale","unknown"} or bool(snapshot_identity_warnings);has_blocked=False
     for cid in reqs:
         cap=indexed.get(cid);scope_effect="not_evaluated";binding_effect="unknown";freshness_effect="not_evaluated";data_contract_effect="not_evaluated";verified=[]
@@ -683,7 +687,11 @@ def evaluate_connector_capability_gate(payload):
             elif status=="Supported" and access=="write":
                 effect="blocked";has_blocked=True
                 warnings.append("write-only capability access mode cannot substantiate a read-side requirement")
-            elif status=="Supported" and (not isinstance(access,str) or access not in READ_SIDE_ACCESS_MODES):
+            elif status=="Supported" and (
+                not isinstance(access,str)
+                or (access not in READ_SIDE_ACCESS_MODES
+                    and not (access=="observe" and declared_modes.get(cid)=="observe"))
+            ):
                 effect="degraded";has_partial=True
                 warnings.append("capability access mode is missing, ambiguous or not verified as read-side")
             elif status=="Supported":

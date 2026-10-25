@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.67.0 — 2026-10-26
+
+### Canonical observation-only connector access evidence (MINOR)
+
+- Align the canonical `*-observe` capability catalog with the snapshot schema and read-side gate. A Verified `observe` surface can satisfy only a catalog-declared `observe` requirement; it cannot substitute for report/read access or authorize execution. Preserve all binding, identity, scope, freshness and data-contract checks and legacy transport behavior.
+- RED `75c26edc14b9ab52f57e16504fc62f2ddab46735` [Actions 40227658177](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40227658177): 1509 tests, 6 FAIL. GREEN `3b4bc4b6ea5895b6ed88471b325ad92a4fb72fe6` [Actions 40227736857](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40227736857): 1509 PASS, 15 Skills and 55 eval fixtures PASS. Fourteen synthetic tests; no Ads writes or new Skills.
+- Research: `docs/research/connector-observe-access-catalog-2026-10.md`.
+
 ## v1.66.0 — 2026-10-26
 
 ### Exact advertiser-account/campaign connector scope (MINOR)
