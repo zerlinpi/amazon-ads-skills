@@ -2,11 +2,14 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.64.0`  
+> 当前版本：`v1.65.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Fail closed on repeated Global SP identity placeholders**: a matching `Unknown`/unavailable account, campaign, explicit request ID, connector source or raw marketplace crosswalk cannot confirm an externally executed campaign update. Require concrete, unpadded identities; retain legitimate IDs containing placeholder substrings and legacy index-only/country-code-only readbacks. This read-only gate does not authenticate raw API responses or establish advertiser eligibility.
+
 
 - **Degrade overdue reporting sunset evidence**: when a connector snapshot claims a required reporting generation is still active or awaiting sunset after its own declared `sunset_at`, require refreshed source evidence rather than high-confidence Pass. Do not infer actual retirement or zero metrics; future sunset, explicitly retired, and no-generation cases remain compatible.
 

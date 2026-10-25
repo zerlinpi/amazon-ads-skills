@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.65.0 — 2026-10-26
+
+### Global Sponsored Products concrete identity provenance (MINOR)
+
+- Reject echoed unavailable or whitespace-padded account/campaign/explicit request IDs, readback connector/source identities and raw marketplace crosswalk IDs/source identities before claiming `Confirmed`. This closes a distinct Global SP readback gap rather than modifying the generic Connector Capability Gate. Preserve legitimate identifiers containing placeholder substrings, valid state/budget crosswalks, and legacy index-only receipts. `Unknown` is not a zero value or proof of failure.
+- RED `99c1cfdd07bc1befa262c26ba8e7c8ed1c541259` [Actions 40218402467](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40218402467): 1475 tests, 15 FAIL. GREEN `ba70013601547d7145f0d12651760c09feb1aab1` [Actions 40218449534](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40218449534): 1475/1475 PASS; 15 Skills and 55 eval fixtures PASS. Eighteen deterministic synthetic tests, no Amazon Ads writes or new Skills.
+- Research: `docs/research/global-sp-concrete-identity-evidence-2026-10.md`.
+
+
 ## v1.64.0 — 2026-10-26
 
 ### Reporting sunset capture-time consistency (MINOR)
