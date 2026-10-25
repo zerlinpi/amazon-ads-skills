@@ -39,6 +39,8 @@ Modes:
 
 ## Safety rules
 
+- A `Supported` connector capability with a `Verified` binding still needs a concrete read-side `access_mode`. A `write`-only capability is `Blocked`; `mixed`, `unknown`, missing, malformed or unsupported modes are `Degraded`. Only explicit `read`, `report`, `export` or `stream` access can pass the access-mode preflight, subject to other evidence gates. A second binding or snapshot default mode cannot override write-only access. This repository-owned read-side check does not authenticate remote tool behavior, grant write permission, or replace an authorized external Executor.
+
 - A `Verified` connector binding is not independently identified by an unavailable placeholder in its binding ID, surface ID or supporting evidence kind/reference. Reject whole-label Unknown/Unsupported/Partial/Missing/Unavailable/Not Available/Not Supported and whitespace-padded verification identifiers before high-confidence Pass. A separate valid binding can still qualify; this does not authenticate remote responses, establish advertiser eligibility, or grant write authority.
 
 - A connector capability marked Supported and a binding marked Verified do not override impossible chronology. Independently validate snapshot capture, binding verification, and explicitly dated supporting evidence even when no freshness horizon was requested. A future/malformed/unknown-offset binding or evidence timestamp is not a verified surface and must not produce high-confidence Pass. This read-side rule does not authenticate raw HTTP, confer platform entitlement, or authorize writes.

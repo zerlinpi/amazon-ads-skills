@@ -15,6 +15,8 @@ CONTROL_STATE_SCHEMA = ROOT / "schemas" / "control-state-snapshot.json"
 KNOWN_STATUSES = {"Supported", "Partial", "Unsupported", "Unknown"}
 VERIFY = {"Verified", "Unverified", "Unknown"}
 SURFACES = {"tool", "report", "dataset", "stream", "export", "endpoint", "warehouse_table", "manual_export"}
+# Canonical capabilities are read-side; a Verified binding does not grant read access.
+READ_SIDE_ACCESS_MODES = {"read", "report", "export", "stream"}
 SCOPE_FIELDS = {"region": "regions", "marketplace": "marketplaces", "ad_product": "ad_products", "account_type": "account_types"}
 DATA_REQUIREMENT_FIELDS = {"required_reporting_generation", "requires_historical_data", "history_window", "required_control_types", "required_transition_provenance_fields"}
 TRANSITION_FIELDS = {"management_mode", "last_transition_actor", "transition_reason", "transition_observed_at", "actor_evidence_status"}
@@ -605,6 +607,12 @@ def evaluate_connector_capability_gate(payload):
         else:
             status=cap.get("status","Unknown");access=cap.get("access_mode","unknown");warnings=list(cap.get("warnings") or []);scope_effect,sw=_scope_effect(cap,expected,"connector capability");warnings+=sw;binding_effect,verified,freshness_effect,bw=_binding_effect(cap,expected,fresh,snapshot.get("captured_at"));warnings+=bw;data_contract_effect,dw=_data_contract_effect(cap,data_requirements.get(cid));warnings+=dw
             if data_contract_effect=="blocked":effect="blocked";has_blocked=True
+            elif status=="Supported" and access=="write":
+                effect="blocked";has_blocked=True
+                warnings.append("write-only capability access mode cannot substantiate a read-side requirement")
+            elif status=="Supported" and (not isinstance(access,str) or access not in READ_SIDE_ACCESS_MODES):
+                effect="degraded";has_partial=True
+                warnings.append("capability access mode is missing, ambiguous or not verified as read-side")
             elif status=="Supported":
                 if scope_effect not in {"pass","not_evaluated"}:effect="blocked";has_blocked=True
                 elif freshness_effect in {"stale","unknown"} or data_contract_effect in {"degraded","unknown"}:effect="degraded";has_partial=True
