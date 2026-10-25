@@ -40,6 +40,7 @@ Modes:
 ## Safety rules
 
 - Never invent missing advertising data, source lineage, optimization history, or action-sizing precision.
+- For every material control, even a non-registry extra control, an explicitly observed state containing an exact missing/unknown/unsupported/partial/unavailable placeholder, a blank scalar string, or a non-finite numeric leaf cannot prove stability or treatment isolation. Reject such evidence recursively without turning it into zero, False or an absent control. Valid observed zero, boolean switches, descriptive values and verified complete collections remain usable; this is a repository-owned read-side check, not an Amazon API enum or a substitute for control-specific capability and eligibility proof.
 - Do not recommend aggressive bid/budget changes when sample size is insufficient.
 - A raw economic or directional estimate is not automatically an action-safe final magnitude; require an explicit account/caller policy, calibrated response, defensible marginal headroom, experiment design, or another auditable sizing basis for a concrete proposed value.
 - Check marketplace, profile/account scope, currency, timezone, attribution window, date range, promotion context, data freshness and source comparability before high-confidence recommendations.

@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.50.0`  
+> 当前版本：`v1.51.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- Fail closed on explicitly unavailable material-control state values, even inside a nested object or complete list and even when both snapshots repeat the same placeholder. Generic Unknown/Unsupported/Partial/Missing/Unavailable, blank scalar strings and non-finite numbers are not observed stable controls. Verified numeric zero, boolean switches and valid descriptive values remain distinct; this is read-only evidence validation, not Amazon-native schema or eligibility proof.
 
 - Audit an Amazon Ads account without treating missing connector/report data as zero.
 - Diagnose sustained performance drops and separate observations, hypotheses, causes, actions and outcomes.

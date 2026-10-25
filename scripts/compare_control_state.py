@@ -283,6 +283,11 @@ def _coverage_problem(snapshot: dict[str, Any], control_map: dict[str, dict[str,
         return f"{side} required controls have unknown state: " + ", ".join(null_state)
     for control_type in sorted(control_map):
         control = control_map[control_type]
+        # Complete inventory and observed status cannot make an explicit
+        # Unknown/Unsupported value (or non-finite JSON number) usable.
+        state_problem = _explicit_material_state_problem(control.get("state"))
+        if state_problem:
+            return f"{side} {control_type} has invalid material state: {state_problem}"
         problem = _collection_problem(control, control_type, side)
         if problem:
             return problem
@@ -318,6 +323,38 @@ def _observed_budget_amount(value: Any) -> bool:
     except (ValueError, ArithmeticError):
         return False
     return amount.is_finite() and amount >= 0
+
+
+def _explicit_material_state_problem(value: Any, pointer: str = "$") -> str | None:
+    """Reject explicit unavailable state leaves across *all* material controls.
+
+    This generic check is deliberately narrow: it does not invent a
+    control-specific schema or interpret valid zero, False or other observed
+    values. It rejects only reserved evidence placeholders, blank scalar
+    strings and non-finite numeric leaves, including in nested structures.
+    """
+    if isinstance(value, str):
+        normalized = re.sub(r"[\s-]+", "_", value.strip().casefold())
+        if not normalized or normalized in {
+            "unknown", "unsupported", "partial", "missing", "unavailable",
+            "not_available", "not_supported",
+        }:
+            return f"{pointer} contains an explicit unknown/unsupported placeholder"
+    elif isinstance(value, (float, Decimal)):
+        if not Decimal(str(value)).is_finite():
+            return f"{pointer} contains a non-finite numeric observation"
+    elif isinstance(value, dict):
+        for key, child in value.items():
+            escaped = str(key).replace("~", "~0").replace("/", "~1")
+            problem = _explicit_material_state_problem(child, f"{pointer}/{escaped}")
+            if problem:
+                return problem
+    elif isinstance(value, list):
+        for index, child in enumerate(value):
+            problem = _explicit_material_state_problem(child, f"{pointer}/{index}")
+            if problem:
+                return problem
+    return None
 
 
 def _audience_member_problem(control: Any, side: str) -> str | None:
