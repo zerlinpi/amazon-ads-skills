@@ -51,6 +51,9 @@ def _catalog() -> tuple[set[str], str | None]:
     except (OSError, json.JSONDecodeError) as exc: raise ValueError("connector capability catalog is unavailable or invalid") from exc
     if not isinstance(obj, dict) or not isinstance(obj.get("capabilities"), list): raise ValueError("connector capability catalog capabilities must be an array")
     ids=set()
+    # Observation is read-side evidence only for canonical observation capabilities.
+    # Do not globally permit observe access to stand in for report/read transport.
+    declared_modes={}
     for i,item in enumerate(obj["capabilities"]):
         if not isinstance(item,dict) or not _s(item.get("capability_id")): raise ValueError(f"connector capability catalog capabilities[{i}] has invalid capability_id")
         cid=item["capability_id"].strip()
