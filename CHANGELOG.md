@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.53.0 — 2026-10-25
+
+### Optional Sponsored Products retailer-scope and Amazon Business control consistency (MINOR)
+
+- Validate explicit normalized `targeting_or_routing.state.retailer_scope` (`AMAZON_STORE` or `ACROSS_RETAILERS`) in SP bid/budget causal comparisons. Unmapped/malformed or one-sided evidence is `Unknown`. Across-retailers scope cannot prove an Amazon Business placement modifier (including numeric zero) or Business-exclusive site routing. A real retailer-scope change remains a confounder.
+- RED-first 21 deterministic tests: 1315 total, 15 failures on old behavior (Actions 40166608309); minimal repair passed 1315/1315 plus 15 Skills and 55 eval fixtures (Actions 40166648485). Both-absent legacy retailer scope stays compatible without eligibility proof.
+- Repository-owned read-side labels only; no Amazon-native API schema, entitlement claim, Ads writes, new Skills, third-party code or dependency.
+
+
 ## v1.52.0 — 2026-10-25
 
 ### Scope, account and connector identity evidence (MINOR)

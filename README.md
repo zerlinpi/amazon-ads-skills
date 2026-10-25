@@ -2,7 +2,7 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.52.0`  
+> 当前版本：`v1.53.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
@@ -27,6 +27,7 @@ A portable **Amazon Ads decision library for AI agents**. It packages 15 focused
 - Sponsored Products bid/budget causal reviews now validate every member of a fully enumerated audience bid-adjustment collection: unique nonblank audience identity and finite nonnegative bid boost are required. A verified empty list and observed zero remain valid; missing, duplicate or invalid members yield Unknown. This is a repository-normalized readback contract, not an Amazon-native schema.
 - Sponsored Products bid/budget causal reviews now reject invalid base-bid evidence (Unknown/Unsupported/Partial, boolean, negative, non-finite, percentage strings or structured placeholders) before claiming treatment isolation. Valid observed numeric and plain decimal-string values remain supported; bid eligibility/limits require separate dated evidence.
 - Sponsored Products bid/budget causal reviews reject unknown, unsupported, boolean, negative, non-finite, percentage-formatted or structured video bid-adjustment evidence before claiming an isolated treatment. Explicit numeric zero remains valid; platform-specific limits and eligibility require separate dated evidence.
+- For Sponsored Products causal comparisons, an explicitly supplied normalized retailer scope must be recognized and symmetric across snapshots. Across-retailers scope cannot coexist with an Amazon Business placement modifier (even observed zero) or Business-exclusive site routing. Legacy both-absent retailer scope remains compatible but does not prove eligibility, connector capability or actual delivery.
 - Explicit Amazon Business placement modifier evidence is now checked separately from the three standard Sponsored Products placements: invalid or one-sided missing B2B values yield Unknown, while legacy omission remains compatible but does not prove B2B eligibility or zero.
 - Sponsored Products bid/budget causal reviews now reject unknown, unsupported, boolean, negative and non-finite placement modifiers for Top of Search, Rest of Search and Product Pages; an explicitly observed numeric zero remains valid. Platform-specific upper bounds require separately dated capability evidence.
 - Sponsored Products budget-change causal reviews now reject Unknown/Unsupported placeholders, booleans, negative/non-finite amounts and missing average-daily-budget policy; only observed finite budget values can support Treatment Isolated. Explicit numeric zero remains distinct from missing evidence.

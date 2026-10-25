@@ -562,6 +562,24 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
         ) or not isinstance(routing_state.get("site_restriction"), str):
             return f"{side} Sponsored Products targeting_or_routing has missing, unknown or unrecognized site_restriction"
 
+        # Optional retailer scope is adapter-normalized evidence, not an
+        # Amazon API enum or proof of marketplace/account eligibility. A
+        # Sponsored Products across-retailers control cannot substantiate an
+        # Amazon Business placement boost or Business-exclusive site routing.
+        # Both-absent legacy snapshots retain compatibility without asserting
+        # that retailer scope was independently verified.
+        if "retailer_scope" in routing_state:
+            retailer_scope = routing_state["retailer_scope"]
+            if not isinstance(retailer_scope, str) or retailer_scope not in {
+                "AMAZON_STORE", "ACROSS_RETAILERS"
+            }:
+                return f"{side} Sponsored Products retailer_scope is missing, unknown or unmapped"
+            if retailer_scope == "ACROSS_RETAILERS" and (
+                "amazon_business" in placement_state
+                or routing_state["site_restriction"] == "AMAZON_BUSINESS"
+            ):
+                return f"{side} Sponsored Products retailer_scope contradicts Amazon Business placement or site routing"
+
         rule_control = control_map.get("schedule_or_event_rule")
         rule_state = rule_control.get("state") if isinstance(rule_control, dict) else None
         if not isinstance(rule_state, dict):
@@ -697,6 +715,10 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
         # without claiming B2B capability/eligibility was independently proved.
         if ("amazon_business" in before_placement) != ("amazon_business" in after_placement):
             return {"classification": "Unknown", "reasons": ["amazon_business placement evidence is missing on one side"]}
+        before_routing = bmap["targeting_or_routing"]["state"]
+        after_routing = pmap["targeting_or_routing"]["state"]
+        if ("retailer_scope" in before_routing) != ("retailer_scope" in after_routing):
+            return {"classification": "Unknown", "reasons": ["retailer_scope evidence is missing on one side"]}
         activation_problem = _rule_activation_presence_problem(bmap, pmap)
         if activation_problem:
             return {"classification": "Unknown", "reasons": [activation_problem]}

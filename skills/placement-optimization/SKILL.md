@@ -75,6 +75,8 @@ Amazon Ads documents a distinct Sponsored Products **Amazon Business placements*
 
 Source: Amazon Ads, *Adjust Sponsored Products bids* (2026-09-28), https://advertising.amazon.com/help/GYYZVM7LGSRYGWV5 . No universal stacking formula or modifier recommendation is inferred.
 
+For registered Sponsored Products bid/budget causal reviews, an explicitly supplied normalized `targeting_or_routing.state.retailer_scope` must be `AMAZON_STORE` or `ACROSS_RETAILERS` on **both** snapshots. An across-retailers scope contradicts an Amazon Business placement modifier (including `0`) or Business-exclusive site routing; return `Unknown` rather than inferring an eligible, absent or unchanged B2B control. An actual verified retailer-scope change is a confounder. Both-absent legacy scope remains compatible without B2B eligibility proof; verify marketplace/campaign/connector capability independently. These are local read-side labels, not Amazon-native API enums.
+
 ## 分析思路
 
 ### 1. 看效率，不只看销售额
