@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.66.0 — 2026-10-26
+
+### Exact advertiser-account/campaign connector scope (MINOR)
+
+- Add optional exact advertiser-account and campaign scope checks to the generic read-only connector capability gate and capability/binding JSON schema. Require independent bounded membership for both surfaces; opaque IDs compare case-sensitively. Preserve existing marketplace/ad-product scope behavior, unknown-versus-blocked distinction and legacy requests. This does not assert Amazon feature eligibility or authorize execution.
+- RED test commits `f3b4c62493bf1c86bebd87da123d650ec517bf80` / `06696562cdaf134c986a66faa4be72c79fffecb2`: [Actions 40223225257](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40223225257) 1495 tests, 3 FAIL + 16 ERROR. GREEN code/schema `20d4473c5105d9524f39250892906f47984fe01a`: [Actions 40223291984](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40223291984) 1495 PASS, 15 Skills and 55 eval fixtures PASS. Twenty synthetic tests; no Ads account writes or new Skills.
+- Research: `docs/research/connector-account-campaign-scope-2026-10.md`.
+
 ## v1.65.0 — 2026-10-26
 
 ### Global Sponsored Products concrete identity provenance (MINOR)
