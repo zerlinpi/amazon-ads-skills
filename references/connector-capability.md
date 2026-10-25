@@ -1,5 +1,10 @@
 # Connector capability contract
 
+## Historical reporting grain identity evidence (2026-10-25)
+
+A requested `data_requirements[capability_id].history_window.grain` must be a concrete, unpadded identity. Repeated Unknown/Unsupported/Partial/Missing/Unavailable/Not Available/Not Supported cannot establish a historical retention grain. A connector-observed padded apparent match yields `data_contract_effect=unknown` and `Degraded`, including when another valid entry matches: it cannot prove unambiguous availability. Valid case-insensitive grains and dated bounds remain compatible; missing history is never metric zero. This read-only normalized rule is not an Amazon API enum, proof of metric/dimension coverage, advertiser eligibility or raw-response authenticity.
+
+
 ## Reporting-generation identity evidence (2026-10-25)
 
 When `data_requirements[capability_id].required_reporting_generation` is supplied, the requested identity must be a concrete, unpadded label. Whole-label `Unknown`, `Unsupported`, `Partial`, `Missing`, `Unavailable`, `Not Available`, and `Not Supported` are not valid caller requirements. The connector-observed `data_contract.reporting_generation` must also be concrete: explicit unavailable or padded values produce `data_contract_effect=unknown` and a `Degraded` decision rather than a false `Pass` or definitive mismatch. Valid concrete generation matches are case-insensitive; a concrete mismatch remains `Blocked`. If no reporting-generation requirement was supplied, the existing no-evaluation behavior remains. This is a normalized read-side evidence rule, not an Amazon API enum or proof of raw HTTP provenance, reporting completeness, account eligibility or causal lift.
