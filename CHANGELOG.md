@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.58.0 — 2026-10-25
+
+### Connector snapshot/source provenance identity (MINOR)
+
+- A Supported/Verified connector read capability cannot yield high-confidence Pass when required snapshot connector identity is missing, unknown, null, or whitespace-padded; explicitly invalid optional source/acquisition identities also degrade the overall gate. Valid source identities and omitted legacy optional fields remain compatible.
+- RED [Actions 40186241773](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40186241773): 1380 tests, 11 FAIL. GREEN [Actions 40186288201](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40186288201): 1380/1380 PASS, 15 Skill and 55 eval fixture validators PASS. No new Skill, dependency, Ads write, retry, or Executor functionality. Research: `docs/research/connector-snapshot-source-identity-2026-10.md`.
+
+
 ## v1.57.0 — 2026-10-25
 
 ### Read-side connector capability access-mode evidence (MINOR)

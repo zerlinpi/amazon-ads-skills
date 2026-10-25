@@ -1,5 +1,12 @@
 # Connector capability contract
 
+## Snapshot-level connector/source identity (2026-10-25)
+
+A `Supported`/`Verified` read capability must also have a concrete snapshot-level `connector_id`. A missing, blank, placeholder (`Unknown`/`Unsupported`/`Partial`/`Missing`/`Unavailable`/`Not Available`/`Not Supported`) or whitespace-padded connector identity degrades the entire decision, even with multiple valid bindings. Optional `source_system` and `acquisition_channel` may be omitted for legacy snapshots, but when explicitly provided they must be concrete identities, not null/placeholder/whitespace-padded values. This is a repository-owned read-side provenance check, not authentication of remote API responses, proof of account eligibility, or permission to write.
+
+A verified binding establishes only a declared surface. It cannot establish which connector produced the snapshot when the connector itself is unidentified. `gate_status=Degraded` caps high-confidence decisions without inventing missing measurements or removing any valid binding evidence. An omitted optional source field is not evidence of source equivalence; explicit invalid fields are an observable provenance contradiction.
+
+
 ## Read-side access mode evidence (2026-10-25)
 
 A `Supported` connector capability with a `Verified` binding still needs a concrete read-side `access_mode`. A `write`-only capability is `Blocked`; `mixed`, `unknown`, missing, malformed or unsupported modes are `Degraded`. Only explicit `read`, `report`, `export` or `stream` access can pass the access-mode preflight, subject to other evidence gates. A second binding or snapshot default mode cannot override write-only access. This repository-owned read-side check does not authenticate remote tool behavior, grant write permission, or replace an authorized external Executor. MCP tool annotations are advisory metadata, not enforcement. No Amazon Ads live writes, retries or idempotency are performed by the gate.
