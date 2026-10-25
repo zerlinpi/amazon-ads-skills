@@ -165,7 +165,7 @@ def _history_window(v,field):
     start=_date(v["start_date"],f"{field}.start_date")
     end=_date(v["end_date"],f"{field}.end_date")
     if start>end:raise ValueError(f"{field} start_date must be on or before end_date")
-    if not _s(v["grain"]):raise ValueError(f"{field}.grain must be a non-empty string")
+    if not _verified_identity(v["grain"]):raise ValueError(f"{field}.grain must be a concrete, non-placeholder grain identity")
     return {
         "start":start,
         "end":end,
@@ -366,6 +366,7 @@ def _data_contract_effect(cap, requirement):
                 )
             else:
                 matches = []
+                ambiguous_matching_grain = False
                 for index, observed in enumerate(observed_windows):
                     field = f"capability.data_contract.historical_windows[{index}]"
                     if not isinstance(observed, dict):
@@ -373,9 +374,18 @@ def _data_contract_effect(cap, requirement):
                     grain = observed.get("grain")
                     if not _s(grain):
                         raise ValueError(f"{field}.grain must be a non-empty string")
-                    if grain.strip().casefold() == requested_window["grain"].casefold():
+                    if not _verified_identity(grain):
+                        # A padded apparent match cannot prove the requested grain,
+                        # even if another entry carries a concrete matching label.
+                        if grain.strip().casefold() == requested_window["grain"].casefold():
+                            ambiguous_matching_grain = True
+                        continue
+                    if grain.casefold() == requested_window["grain"].casefold():
                         matches.append((field, observed))
-                if not matches:
+                if ambiguous_matching_grain:
+                    effect = _combine_data_effect(effect, "unknown")
+                    warnings.append("requested historical grain has an unavailable or padded matching availability label")
+                elif not matches:
                     effect = _combine_data_effect(effect, "unknown")
                     warnings.append(
                         f"no verified historical availability window is observed for requested grain {requested_window['grain']!r}"
