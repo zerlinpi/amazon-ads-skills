@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.53.0`  
+> 当前版本：`v1.54.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- Reject temporally impossible connector capability verification: a Verified binding cannot postdate its snapshot, and explicitly dated supporting evidence cannot postdate binding verification. This chronology gate applies even without a caller-supplied freshness horizon; legacy undated evidence remains compatible but does not prove freshness or source authenticity.
 
 - Reject repeated unavailable labels as marketplace, profile, campaign, entity, advertiser-account, connector, source or acquisition identity. Shared `Unknown` is not verified shared identity or provenance; valid IDs and both-absent optional legacy connector IDs remain compatible. Read-side only, not authentication.
 

@@ -123,6 +123,13 @@ def _time(v,field):
     return dt.astimezone(timezone.utc)
 
 
+def _binding_time(v, field):
+    """A verified binding needs a known-offset instant, even without freshness."""
+    if isinstance(v, str) and v.strip().endswith("-00:00"):
+        raise ValueError(f"{field} has an unknown RFC3339 offset")
+    return _time(v, field)
+
+
 def _date(v,field):
     if not _s(v):raise ValueError(f"{field} must be a non-empty ISO date")
     text=v.strip()
@@ -466,8 +473,10 @@ def _binding_effect(cap,expected,fresh,snapshot_captured_at):
     if not bindings:return "unknown",[],"not_evaluated" if fresh is None else "unknown",["supported capability has no verified connector surface binding"]
     if not isinstance(bindings,list):raise ValueError("capability.bindings must be an array")
     verified=[];warnings=[];saw_unverified=saw_verified=saw_stale=saw_temporal_unknown=saw_identity_unknown=False;seen=set();snapshot_time=None
-    if fresh is not None and _s(snapshot_captured_at):
-        try:snapshot_time=_time(snapshot_captured_at,"snapshot.captured_at")
+    # Chronological provenance is a separate requirement from caller-selected
+    # freshness. A binding cannot have been verified after its own snapshot.
+    if _s(snapshot_captured_at):
+        try:snapshot_time=_binding_time(snapshot_captured_at,"snapshot.captured_at")
         except ValueError:snapshot_time=None
     for i,b in enumerate(bindings):
         field=f"capability.bindings[{i}]"
@@ -486,17 +495,50 @@ def _binding_effect(cap,expected,fresh,snapshot_captured_at):
         if status!="Verified":saw_unverified|=status=="Unverified";continue
         saw_verified=True
         if not b["evidence"]:raise ValueError(f"{field} is Verified but has no evidence supporting the binding")
+        try:
+            observed = _binding_time(b["observed_at"], f"{field}.observed_at")
+        except ValueError:
+            saw_temporal_unknown = True
+            warnings.append(f"verified connector binding {bid!r} has invalid observed_at")
+            continue
+        if snapshot_time is None:
+            saw_temporal_unknown = True
+            warnings.append(f"verified connector binding {bid!r} has no valid snapshot captured_at to establish chronology")
+            continue
+        if observed > snapshot_time:
+            saw_temporal_unknown = True
+            warnings.append(f"verified connector binding {bid!r} is observed after snapshot capture")
+            continue
         identifiable=[]
         for j,evidence in enumerate(b["evidence"]):
             if not isinstance(evidence,dict):raise ValueError(f"{field}.evidence[{j}] must be an object")
             if _s(evidence.get("kind")) and _s(evidence.get("reference")):identifiable.append(evidence)
         if not identifiable:
             saw_identity_unknown=True;warnings.append(f"verified connector binding {bid!r} has no supporting evidence with kind/reference identity");continue
+        # An explicitly dated supporting record cannot postdate the binding
+        # it supposedly verified. Legacy undated evidence remains accepted
+        # when no freshness requirement was requested.
+        evidence_chronology_bad = False
+        for j, evidence in enumerate(identifiable):
+            evidence_at = evidence.get("observed_at")
+            if evidence_at is None:
+                continue
+            try:
+                evidence_time = _binding_time(evidence_at, f"{field}.evidence[{j}].observed_at")
+            except ValueError:
+                warnings.append(f"verified connector binding {bid!r} has invalid supporting evidence observed_at")
+                evidence_chronology_bad = True
+                break
+            if evidence_time > observed:
+                warnings.append(f"verified connector binding {bid!r} has supporting evidence observed after binding verification")
+                evidence_chronology_bad = True
+                break
+        if evidence_chronology_bad:
+            saw_temporal_unknown = True
+            continue
         se,sw=_scope_effect(b,expected,"connector binding");warnings.extend(sw)
         if se!="pass":continue
         if fresh is not None:
-            observed=_time(b["observed_at"],f"{field}.observed_at")
-            if snapshot_time is not None and observed>snapshot_time:saw_temporal_unknown=True;warnings.append(f"verified connector binding {bid!r} is observed after snapshot capture and cannot belong to that snapshot");continue
             age=(fresh["as_of"]-observed).total_seconds()
             if age<0:warnings.append(f"{bid} observed_at is after freshness as_of");continue
             if age>fresh["max_age_seconds"]:saw_stale=True;warnings.append(f"verified connector binding {bid!r} is stale for the explicit freshness horizon");continue
@@ -519,7 +561,7 @@ def _binding_effect(cap,expected,fresh,snapshot_captured_at):
         verified.append(bid)
     if verified:return "pass",verified,"pass" if fresh else "not_evaluated",warnings
     if saw_identity_unknown:return "unknown",[],"unknown" if fresh else "not_evaluated",warnings
-    if saw_temporal_unknown:return "pass",[],"unknown",warnings
+    if saw_temporal_unknown:return "unknown",[],"unknown" if fresh else "not_evaluated",warnings
     if saw_stale:return "pass",[],"stale",warnings
     if saw_unverified:warnings.append("connector surface binding exists but is not independently verified");return "unverified",[],"unknown" if fresh else "not_evaluated",warnings
     if saw_verified:warnings.append("verified connector surface binding does not prove the requested decision scope")

@@ -27,6 +27,10 @@ In particular:
 
 Do not infer support from a tool name alone. Do not infer absence from a missing tool alone when progressive discovery, package activation, permissions, advertiser eligibility, region/profile selection, or server-side feature flags can change the visible catalog.
 
+## Verified connector binding chronology (2026-10-25)
+
+A Supported capability with a Verified binding is not sufficient if its provenance timestamps contradict each other. The read-only capability gate checks this **even when the caller omits an optional freshness requirement**: the connector snapshot needs a valid timezone-aware `captured_at`; each qualifying Verified binding needs a valid known-offset `observed_at` no later than that capture; any explicitly dated supporting evidence must have a valid known-offset instant no later than its binding verification. Unknown RFC3339 `-00:00` offsets are not accepted as verified instants. An invalid binding is excluded from `verified_binding_ids` and cannot alone produce high-confidence Pass. A second independently valid binding may still substantiate the capability. Legacy supporting evidence with no timestamp remains usable when no freshness requirement was requested; this is not proof of current freshness or independent raw-response authenticity. A caller-specified freshness horizon still applies additional age checks.
+
 ## Verified connector surface binding
 
 A canonical capability ID is not evidence by itself, and a connector/tool/report name is not evidence by itself.
