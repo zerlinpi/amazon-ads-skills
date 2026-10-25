@@ -39,6 +39,8 @@ Modes:
 
 ## Safety rules
 
+- A reporting generation declared `active` or `sunset_scheduled` with a `sunset_at` earlier than the same connector snapshot's `captured_at` has unreconciled lifecycle evidence. When that generation is required, return `data_contract_effect=unknown` / `Degraded`, not high-confidence `Pass`. This does **not** assert that the report was retired, that Amazon's planned dates cannot change, or that unavailable metrics are zero. Future/equal sunsets, explicit retired blocking, and no-generation requirements retain their existing behavior. All dates are compared as offset-aware instants; actual Ads writes remain outside this repository.
+
 - For an exact history-window requirement, an observed per-grain `available_through` more than one calendar day beyond the connector snapshot capture cannot prove already available history. Degrade to Unknown rather than high-confidence Pass, even if requested dates precede capture. The one-day allowance is only for date-only bounds without marketplace timezone, not an Amazon latency SLA or proof of data maturity. Never infer zero or authorize live Ads writes.
 
 - A requested historical reporting `history_window.grain` must be concrete and unpadded; matching Unknown/Unsupported/Partial/Missing/Unavailable/Not Available/Not Supported labels do not prove historical availability. A padded connector-observed matching grain, including alongside a concrete match, is ambiguous and degrades rather than passing. Preserve valid case-insensitive grains and verified dates; do not infer metric zero, per-metric history, API entitlement or write authorization.

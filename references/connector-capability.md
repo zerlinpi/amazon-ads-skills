@@ -1,5 +1,11 @@
 # Connector capability contract
 
+## Reporting sunset versus snapshot capture (2026-10-26)
+
+A reporting generation declared `active` or `sunset_scheduled` with a `sunset_at` earlier than the same connector snapshot's `captured_at` has unreconciled lifecycle evidence. When that generation is required, return `data_contract_effect=unknown` / `Degraded`, not high-confidence `Pass`. This does **not** assert that the report was retired, that Amazon's planned dates cannot change, or that unavailable metrics are zero. Future/equal sunsets, explicit retired blocking, and no-generation requirements retain their existing behavior. All dates are compared as offset-aware instants; actual Ads writes remain outside this repository.
+
+The vendor's published reporting cutover dates are time-varying external facts, not hard-coded status transitions. A source snapshot taken after its own declared sunset but still marked active/sunset_scheduled is inconsistent until reverified. This is a repository-owned read-side provenance check, not Amazon's native API contract or proof of actual retirement.
+
 ## Historical availability capture-horizon evidence (2026-10-25)
 
 An observed historical `available_through` bound more than one calendar day beyond the snapshot UTC capture date cannot be treated as already retrieved history. When an exact history window is requested, this yields `data_contract_effect=unknown` and `Degraded` unless an independent requirement blocks. A one-day allowance avoids inventing a marketplace timezone for date-only bounds; it does not prove completeness, data maturity, or future availability. Valid earlier bounds and no-history requests remain compatible. This is a repository-owned read-side chronology guard, not an Amazon API retention/latency rule or authenticated HTTP proof. Missing/unknown history is never metric zero.
