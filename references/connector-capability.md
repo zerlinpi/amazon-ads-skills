@@ -1,5 +1,9 @@
 # Connector capability contract
 
+## Feature eligibility decision-time connector snapshot chronology (2026-10-26)
+
+For optional `feature_eligibility_requirement`, the connector snapshot `captured_at` must be a known-offset timestamp no later than the requirement's `as_of`. A future, missing, invalid or unknown-offset capture yields `feature_snapshot_chronology_effect=unknown` and overall `Degraded` at best (independent `Blocked` evidence still blocks). Equal or earlier capture passes **only** the temporal-order subgate. Without a feature requirement the new effect is `not_evaluated`. This does not invent a connector freshness TTL, authenticate remote HTTP, establish feature enrollment, or claim historical availability. The existing `freshness_requirement` independently controls connector staleness; timestamped supporting binding evidence remains required when explicitly requested.
+
 ## Feature-specific eligibility evidence join (2026-10-26)
 
 A `Supported` connector capability scoped to a marketplace, advertiser and campaign proves only declared read-side acquisition coverage, **not** eligibility to use a named Amazon Ads feature. For a decision requiring a specific feature, supply optional top-level `feature_eligibility_requirement` with exactly `feature_id`, `marketplace`, `advertiser_account_id`, `campaign_id`, `as_of` (known-offset timestamp) and finite nonnegative `max_age_seconds`. Marketplace/account/campaign must match `expected_scope`; advertiser/campaign IDs are opaque and case-sensitive. Without the feature requirement, legacy behavior is unchanged.
