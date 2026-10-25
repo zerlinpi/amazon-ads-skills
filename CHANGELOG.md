@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.57.0 — 2026-10-25
+
+### Read-side connector capability access-mode evidence (MINOR)
+
+- A `Supported` connector capability with a `Verified` binding still needs a concrete read-side `access_mode`. A `write`-only capability is `Blocked`; `mixed`, `unknown`, missing, malformed or unsupported modes are `Degraded`. Only explicit `read`, `report`, `export` or `stream` access can pass the access-mode preflight, subject to other evidence gates. A second binding or snapshot default mode cannot override write-only access. This repository-owned read-side check does not authenticate remote tool behavior, grant write permission, or replace an authorized external Executor.
+- RED `06dc8d93e11d1c47861881bc59a3f52f0b9e6f35` [Actions 40181875717](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40181875717): 1366 tests, 9 FAIL. GREEN `f81560b145411a20eeb4f8d43913eb130fec4c76` [Actions 40181914834](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40181914834): 1366 PASS, 15 Skills PASS, 55 eval fixtures PASS. No Amazon Ads writes.
+- Research: `docs/research/connector-read-access-evidence-2026-10.md`. No new Skill or external dependency.
+
+
 ## v1.56.0 — 2026-10-25
 
 ### Verified connector binding identity integrity (MINOR)

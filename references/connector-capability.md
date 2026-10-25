@@ -1,5 +1,10 @@
 # Connector capability contract
 
+## Read-side access mode evidence (2026-10-25)
+
+A `Supported` connector capability with a `Verified` binding still needs a concrete read-side `access_mode`. A `write`-only capability is `Blocked`; `mixed`, `unknown`, missing, malformed or unsupported modes are `Degraded`. Only explicit `read`, `report`, `export` or `stream` access can pass the access-mode preflight, subject to other evidence gates. A second binding or snapshot default mode cannot override write-only access. This repository-owned read-side check does not authenticate remote tool behavior, grant write permission, or replace an authorized external Executor. MCP tool annotations are advisory metadata, not enforcement. No Amazon Ads live writes, retries or idempotency are performed by the gate.
+
+
 Load this reference when a decision depends on what the active MCP, API wrapper, export path, warehouse connector, or other acquisition channel can actually expose.
 
 The purpose is to keep **platform capability**, **connector capability**, **returned data**, and **metric value** separate. A field that exists in Amazon Ads may be absent from the current connector. A supported connector operation may still return an incomplete page, a selected population, immature dates, or a report generated under different semantics.
