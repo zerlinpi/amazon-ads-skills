@@ -39,6 +39,8 @@ Modes:
 
 ## Safety rules
 
+- A `Supported`/`Verified` read capability must also have a concrete snapshot-level `connector_id`. A missing, blank, placeholder (`Unknown`/`Unsupported`/`Partial`/`Missing`/`Unavailable`/`Not Available`/`Not Supported`) or whitespace-padded connector identity degrades the entire decision, even with multiple valid bindings. Optional `source_system` and `acquisition_channel` may be omitted for legacy snapshots, but when explicitly provided they must be concrete identities, not null/placeholder/whitespace-padded values. This is a repository-owned read-side provenance check, not authentication of remote API responses, proof of account eligibility, or permission to write.
+
 - A `Supported` connector capability with a `Verified` binding still needs a concrete read-side `access_mode`. A `write`-only capability is `Blocked`; `mixed`, `unknown`, missing, malformed or unsupported modes are `Degraded`. Only explicit `read`, `report`, `export` or `stream` access can pass the access-mode preflight, subject to other evidence gates. A second binding or snapshot default mode cannot override write-only access. This repository-owned read-side check does not authenticate remote tool behavior, grant write permission, or replace an authorized external Executor.
 
 - A `Verified` connector binding is not independently identified by an unavailable placeholder in its binding ID, surface ID or supporting evidence kind/reference. Reject whole-label Unknown/Unsupported/Partial/Missing/Unavailable/Not Available/Not Supported and whitespace-padded verification identifiers before high-confidence Pass. A separate valid binding can still qualify; this does not authenticate remote responses, establish advertiser eligibility, or grant write authority.
