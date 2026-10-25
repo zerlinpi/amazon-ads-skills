@@ -674,10 +674,98 @@ def _snapshot_identity_warnings(snapshot):
     return warnings
 
 
+
+def _feature_eligibility_effect(payload, expected):
+    """Join an optional feature-specific eligibility record to exact decision scope.
+
+    This is a normalized read-side evidence check, NOT a vendor entitlement
+    lookup or proof that an adapter's source_reference is authentic.
+    """
+    requirement = payload.get("feature_eligibility_requirement")
+    evidence = payload.get("feature_eligibility_evidence")
+    if requirement is None:
+        if evidence is not None:
+            raise ValueError("feature_eligibility_evidence requires feature_eligibility_requirement")
+        return "not_evaluated", []
+
+    field = "feature_eligibility_requirement"
+    required = {
+        "feature_id", "marketplace", "advertiser_account_id", "campaign_id",
+        "as_of", "max_age_seconds",
+    }
+    if not isinstance(requirement, dict) or set(requirement) != required:
+        raise ValueError(f"{field} must contain exactly {sorted(required)}")
+    for key in ("feature_id", "marketplace", "advertiser_account_id", "campaign_id"):
+        if not _verified_identity(requirement[key]):
+            raise ValueError(f"{field}.{key} must be a concrete, non-placeholder identity")
+    # A feature entitlement cannot be inferred from a generic marketplace-only
+    # connector request. Require the exact same identities on both sides.
+    for key in ("marketplace", "advertiser_account_id", "campaign_id"):
+        requested = requirement[key]
+        scoped = expected.get(key)
+        exact = key in {"advertiser_account_id", "campaign_id"}
+        if scoped is None or (scoped if exact else scoped.casefold()) != (
+            requested if exact else requested.casefold()
+        ):
+            raise ValueError(f"{field}.{key} must match exact expected_scope.{key}")
+
+    as_of = _binding_time(requirement["as_of"], f"{field}.as_of")
+    age = requirement["max_age_seconds"]
+    if isinstance(age, bool) or not isinstance(age, (int, float)):
+        raise ValueError(f"{field}.max_age_seconds must be finite and non-negative")
+    try:
+        max_age = float(age)
+    except OverflowError as exc:
+        raise ValueError(f"{field}.max_age_seconds must be finite and non-negative") from exc
+    if not math.isfinite(max_age) or max_age < 0:
+        raise ValueError(f"{field}.max_age_seconds must be finite and non-negative")
+
+    if not isinstance(evidence, dict):
+        return "unknown", ["feature-specific eligibility evidence is absent"]
+    for key in ("feature_id", "marketplace", "advertiser_account_id", "campaign_id"):
+        observed = evidence.get(key)
+        if not _verified_identity(observed):
+            return "unknown", [f"feature eligibility {key} is missing or unavailable"]
+        exact = key in {"feature_id", "advertiser_account_id", "campaign_id"}
+        if (observed if exact else observed.casefold()) != (
+            requirement[key] if exact else requirement[key].casefold()
+        ):
+            return "unknown", [f"feature eligibility {key} does not match requested decision identity"]
+
+    if evidence.get("evidence_type") != "feature-specific":
+        return "unknown", [
+            "generic product-group or other evidence cannot prove this feature-specific eligibility"
+        ]
+    if evidence.get("verification_status") != "Verified":
+        return "unknown", ["feature eligibility record is not independently verified"]
+    if not _verified_identity(evidence.get("source_system")) or not _verified_identity(
+        evidence.get("source_reference")
+    ):
+        return "unknown", ["feature eligibility has no concrete source identity/reference"]
+    try:
+        observed_at = _binding_time(
+            evidence.get("observed_at"), "feature_eligibility_evidence.observed_at"
+        )
+    except ValueError:
+        return "unknown", ["feature eligibility has no valid known-offset observation time"]
+    elapsed = (as_of - observed_at).total_seconds()
+    if elapsed < 0:
+        return "unknown", ["feature eligibility was observed after the requested as_of"]
+    if elapsed > max_age:
+        return "unknown", ["feature eligibility evidence is stale for the requested horizon"]
+
+    status = evidence.get("eligibility_status")
+    if status == "Eligible":
+        return "pass", []
+    if status == "Ineligible":
+        return "blocked", ["verified feature-specific eligibility is explicitly Ineligible"]
+    return "unknown", ["feature eligibility is Partial, Unknown or unavailable"]
+
+
 def evaluate_connector_capability_gate(payload):
     if not isinstance(payload,dict):raise ValueError("input must be a JSON object")
-    registered,version,declared_modes=_catalog();reqs=_requirements(payload.get("required_capabilities"),registered);expected=_scope(payload.get("expected_scope"));fresh=_freshness(payload.get("freshness_requirement"));data_requirements=_data_requirements(payload.get("data_requirements"),reqs);indexed,snapshot=_index(payload.get("snapshot"));snapshot_freshness_effect,snapshot_warnings=_snapshot_freshness(snapshot,fresh);snapshot_identity_warnings=_snapshot_identity_warnings(snapshot)
-    evaluated=[];has_partial=snapshot_freshness_effect in {"stale","unknown"} or bool(snapshot_identity_warnings);has_blocked=False
+    registered,version,declared_modes=_catalog();reqs=_requirements(payload.get("required_capabilities"),registered);expected=_scope(payload.get("expected_scope"));fresh=_freshness(payload.get("freshness_requirement"));data_requirements=_data_requirements(payload.get("data_requirements"),reqs);eligibility_effect,eligibility_warnings=_feature_eligibility_effect(payload,expected);indexed,snapshot=_index(payload.get("snapshot"));snapshot_freshness_effect,snapshot_warnings=_snapshot_freshness(snapshot,fresh);snapshot_identity_warnings=_snapshot_identity_warnings(snapshot)
+    evaluated=[];has_partial=snapshot_freshness_effect in {"stale","unknown"} or bool(snapshot_identity_warnings) or eligibility_effect=="unknown";has_blocked=eligibility_effect=="blocked"
     for cid in reqs:
         cap=indexed.get(cid);scope_effect="not_evaluated";binding_effect="unknown";freshness_effect="not_evaluated";data_contract_effect="not_evaluated";verified=[]
         if cap is None:status="Unknown";access="unknown";effect="blocked";has_blocked=True;warnings=["required capability is absent from the observed connector snapshot"]
@@ -706,7 +794,7 @@ def evaluate_connector_capability_gate(payload):
     if has_blocked:gate,allowed,high="Blocked",BLOCKED,False
     elif has_partial:gate,allowed,high="Degraded",DEGRADED,False
     else:gate,allowed,high="Pass",PASS,True
-    return {"gate_status":gate,"catalog_version":version,"high_confidence_allowed":high,"missing_evidence_policy":"never_zero","allowed_decision_classes":allowed,"connector_id":snapshot.get("connector_id"),"connector_version":snapshot.get("connector_version"),"snapshot_captured_at":snapshot.get("captured_at"),"snapshot_freshness_effect":snapshot_freshness_effect,"freshness_requirement":None if fresh is None else {"as_of":fresh["as_of_raw"],"max_age_seconds":fresh["max_age_seconds"]},"data_requirements":data_requirements or None,"requirements":evaluated,"warnings":snapshot_warnings + snapshot_identity_warnings}
+    return {"gate_status":gate,"catalog_version":version,"high_confidence_allowed":high,"missing_evidence_policy":"never_zero","allowed_decision_classes":allowed,"connector_id":snapshot.get("connector_id"),"connector_version":snapshot.get("connector_version"),"snapshot_captured_at":snapshot.get("captured_at"),"snapshot_freshness_effect":snapshot_freshness_effect,"feature_eligibility_effect":eligibility_effect,"freshness_requirement":None if fresh is None else {"as_of":fresh["as_of_raw"],"max_age_seconds":fresh["max_age_seconds"]},"data_requirements":data_requirements or None,"requirements":evaluated,"warnings":snapshot_warnings + snapshot_identity_warnings + eligibility_warnings}
 
 
 def main():
