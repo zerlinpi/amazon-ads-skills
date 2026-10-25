@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.50.0 — 2026-10-25
+
+### Optional Sponsored Products rule activation transition-time evidence (MINOR)
+
+- Extend the normalized read-only rule-member evidence contract with optional `activation_effective_at`: require timezone-aware RFC3339, no future transition relative to snapshot observation, an explicit valid `activation_status`, and symmetric presence across shared rule identities. Reject repeated Unknown/Unsupported/malformed/future timestamps rather than confirming unchanged controls.
+- RED-first 18 deterministic tests: 1251 total, 15 failures on old behavior (Actions 40156028288); minimal repair passed 1251/1251, 15 Skills and 55 eval fixtures (Actions 40156066387). Verified changes in transition instant remain confounders. Both-absent legacy fields remain compatible; snapshots do not prove continuous execution, eligibility or intervening triggers. No live Amazon Ads writes, new Skills, external runtime or third-party code.
+
 ## v1.49.0 — 2026-10-25
 
 ### Optional Sponsored Products rule activation evidence (MINOR)

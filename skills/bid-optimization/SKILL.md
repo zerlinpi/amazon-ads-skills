@@ -212,3 +212,6 @@ When a Sponsored Products base-bid change is reviewed causally, complete rule-li
 ## Optional schedule/event rule activation evidence
 
 If a readback supplies normalized `activation_status` on a schedule/event or active budget-rule member, require `active`, `inactive`, or `scheduled` with the same field evidenced for that rule identity on both snapshots. Unknown/Unsupported or one-sided status is not stable control evidence. Use `../../scripts/compare_control_state.py` and `../../references/control-state-comparability.md`; two observed statuses do not prove continuous execution, timing or campaign eligibility. Default to Hold/Manual Review when activation is decision-critical but unproven; never infer missing as inactive.
+
+
+When a normalized schedule/event/active-budget rule supplies optional `activation_effective_at`, require a valid RFC3339 transition instant no later than the snapshot observation, a paired valid `activation_status`, and the same field on both snapshots for a shared rule ID. Invalid/future/one-sided transition evidence is Unknown, not stable. See `../../references/control-state-comparability.md`; this is not proof of continuous rule execution or a native Ads API field.
