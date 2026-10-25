@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.51.0 — 2026-10-25
+
+### Generic material-control placeholder evidence (MINOR)
+
+- Close a cross-surface causal-isolation gap: an extra or fixture-required material control with repeated explicit Unknown/Unsupported/Partial/Missing/Unavailable, blank strings, or non-finite numbers could be treated as stable despite a Complete inventory and `observed` status. Validate all material state leaves recursively and return `Unknown` before causal classification. This does not infer zero/false or change the registry's required controls.
+- RED-first 23 deterministic tests: 1274 total, 17 failures on old behavior (Actions 40159277435). Initial fix still failed four placeholder normalization cases (Actions 40159315750); corrected whitespace normalization and passed 1274/1274, 15 Skill validations and 55 eval fixtures (Actions 40159327265). Valid observed zero, booleans, descriptive strings, complete lists and actual competing changes retain existing behavior.
+- Repository-owned read-side validation only; no live Amazon Ads writes, Executor logic, new Skills, external dependencies or third-party code.
+
+
 ## v1.50.0 — 2026-10-25
 
 ### Optional Sponsored Products rule activation transition-time evidence (MINOR)

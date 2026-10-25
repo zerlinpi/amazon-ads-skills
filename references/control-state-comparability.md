@@ -4,6 +4,10 @@ Load this shared reference when a baseline/post-change, period-over-period, expe
 
 Measurement comparability is necessary but not sufficient for causal comparability. Two windows can use the same source, reporting generation, metric definitions, attribution semantics, grain, and mature data while the active advertiser controls differ materially.
 
+## Explicit generic material-state placeholders
+
+For every material control (including a registry-required control and any extra control), `coverage_status=Complete` and `evidence_status=observed` cannot turn a repeated explicit `Unknown`, `Unsupported`, `Partial`, `Missing`, `Unavailable`, `Not Available` or blank scalar string into a stable observation. The deterministic comparator rejects these reserved placeholders and non-finite numeric values even inside nested objects or independently complete lists, returning `Unknown` before claiming treatment isolation or comparability. It does not impute zero, False, absence or an ineligible capability. Genuine observed numeric zero, boolean switches, valid descriptive states and fully verified collections remain compatible. This narrow repository-owned guard is not an Amazon-native field schema, a connector authenticity proof, a complete validator for arbitrary domain-specific values, or a proof of continuous control activation.
+
 ## Control-state comparability gate
 
 For each decision-relevant window, capture when supported and relevant: base/default/target bid state; campaign bidding strategy; placement bid adjustments; audience bid adjustment state; Sponsored Products video bid adjustment state when applicable; schedule/event bid rules; campaign/portfolio/account budget and pacing controls; targeting/negative/routing state; experiment/treatment assignment; and effective timestamps for material control changes.
