@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.60.0`  
+> 当前版本：`v1.61.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- Require **concrete reporting-generation identity** before high-confidence report interpretation: repeated Unknown/Unsupported/Partial/Missing/Unavailable/Not Available/Not Supported cannot prove a matching reporting generation. Invalid requested generation labels are configuration errors; explicitly unavailable or whitespace-padded observed generation degrades to Unknown, not zero or a verified mismatch. Concrete matching/mismatching generations remain compatible. This read-side guard does not authenticate Amazon API responses or prove advertiser eligibility.
 
 - Preserve connector scope uncertainty at the **final decision gate**: when a present bounded scope list has unmatched Unknown/Partial/malformed members, report `scope_effect=unknown` and `gate_status=Degraded`, not a definitive exclusion. Missing scope evidence still blocks rather than assuming global coverage; a fully concrete mismatch remains `Blocked`. This read-side distinction is not advertiser/campaign entitlement, a metric zero, or permission to execute.
 
