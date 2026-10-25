@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.68.0 — 2026-10-26
+
+### Exact-scope feature eligibility evidence join (MINOR)
+
+- Add an optional, independently supplied feature-specific eligibility evidence subgate to the existing read-only connector capability gate. Join feature, marketplace, advertiser account, campaign, concrete source and observation horizon; preserve legacy requests. Verified Ineligible blocks; unknown/partial/stale/mismatched/unverified/generic product-group evidence degrades, never becomes zero or inferred enrollment. No Amazon Ads writes, new Skills, or external Executor.
+- RED `e426200e49ab7172832a9ae3f38ac11e6653feb0` [Actions #40232208710](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40232208710): 1531 tests, 20 FAIL + 1 ERROR. GREEN `59af08746c112ac516ff454749a64c423f75780a` [Actions #40232275602](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40232275602): 1531 PASS, 15 Skills and 55 eval fixtures PASS. 22 synthetic tests.
+- Research: `docs/research/feature-eligibility-evidence-join-2026-10.md`.
+
+
 ## v1.67.0 — 2026-10-26
 
 ### Canonical observation-only connector access evidence (MINOR)
