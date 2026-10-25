@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.71.0 — 2026-10-26
+
+### Concrete campaign identity for Sponsored Products causal reviews (MINOR)
+
+- Registered SP bid/budget control-state comparisons now require a concrete campaign ID on both baseline and post snapshots. Repeated missing/null campaign IDs cannot produce `Treatment Isolated` even with identical profile/marketplace and complete control lists; valid opaque IDs and non-SP surfaces retain existing behavior. No schema change, new Skill, live Ads write or Executor.
+- RED `d2a58cb88d5420a53c6c4d72e274b0e3b61a0465` [Actions #40246750015](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40246750015): 1558 tests, 4 FAIL. GREEN `49d49d3fbbaf59bb27315d61d8578b99e2276399` [Actions #40246791399](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40246791399): 1558 PASS, 15 Skills, 55 eval fixtures. Seven deterministic tests.
+- Research: `docs/research/sp-causal-campaign-scope-2026-10.md`. Disproved duplicate candidate PR #183 closed unmerged.
+
 ## v1.70.0 — 2026-10-26
 
 ### Feature eligibility self-reference provenance guard (MINOR)

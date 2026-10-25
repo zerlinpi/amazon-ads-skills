@@ -708,6 +708,10 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
         return {"classification": "Unknown", "reasons": ["material-control requirement registry changed between snapshots"]}
 
     if provenance_before.get("decision_surface") in {"sponsored_products_bid_change", "sponsored_products_budget_change"}:
+        # A shared marketplace/profile cannot identify a specific SP campaign.
+        # Both-absent campaign IDs are unknown, not a verified identity match.
+        if _unusable_identity_label(bscope.get("campaign_id")) or _unusable_identity_label(pscope.get("campaign_id")):
+            return {"classification": "Unknown", "reasons": ["Sponsored Products bid/budget causal comparison requires concrete campaign_id on both snapshots"]}
         before_placement = bmap["placement_adjustment"]["state"]
         after_placement = pmap["placement_adjustment"]["state"]
         # One-sided optional evidence cannot establish an unchanged B2B
