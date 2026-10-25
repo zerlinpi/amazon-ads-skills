@@ -36,6 +36,21 @@ def _nonempty(value: Any) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
 
+# Repository-owned provenance labels, not Amazon-native ID formats. Match
+# whole normalized placeholders only; a real ID may contain "unknown".
+_UNAVAILABLE_IDENTITIES = {
+    "unknown", "unsupported", "partial", "missing", "unavailable",
+    "not available", "not supported",
+}
+
+
+def _concrete_identity(value: Any) -> bool:
+    if not _nonempty(value) or value != value.strip():
+        return False
+    label = " ".join(value.casefold().replace("_", " ").replace("-", " ").split())
+    return label not in _UNAVAILABLE_IDENTITIES
+
+
 def _monetary_amount(value: Any) -> Decimal | None:
     """Require a finite, nonnegative plain decimal *string*, never a JSON float.
 
@@ -74,13 +89,13 @@ def _marketplace_identity_issue(
         if not isinstance(entry, dict):
             return "marketplace identity crosswalk entry is malformed"
         country, raw_id = entry.get("marketplace"), entry.get("marketplace_id")
-        if not _nonempty(country) or not _nonempty(raw_id):
+        if not _concrete_identity(country) or not _concrete_identity(raw_id):
             return "marketplace identity crosswalk has missing identifiers"
         if entry.get("evidence_status") != "verified":
             return "marketplace identity crosswalk is not verified"
         source = entry.get("source")
         if (not isinstance(source, dict)
-                or any(not _nonempty(source.get(key)) for key in
+                or any(not _concrete_identity(source.get(key)) for key in
                        ("source_system", "acquisition_channel", "connector_id"))):
             return "marketplace identity crosswalk source lineage is unverified"
         if country in crosswalk or raw_id in raw_ids:
@@ -454,8 +469,10 @@ def evaluate_global_sp_readback(evidence: Any) -> dict[str, Any]:
         return unknown("request and HTTP receipt must be objects")
 
     for key in ("global_account_id", "campaign_id"):
-        if not _nonempty(request.get(key)):
-            return unknown(f"request missing {key}")
+        if not _concrete_identity(request.get(key)):
+            return unknown(f"request has missing or unavailable {key}")
+    if "request_id" in request and not _concrete_identity(request["request_id"]):
+        return unknown("request_id is not a concrete correlation identity")
     markets = request.get("marketplaces")
     expected = request.get("expected_effective_states")
     if (not isinstance(markets, list) or not markets
@@ -541,7 +558,7 @@ def evaluate_global_sp_readback(evidence: Any) -> dict[str, Any]:
             return unknown(f"readback {key} identity is missing or mismatched")
     source = readback.get("source")
     if (not isinstance(source, dict)
-            or any(not _nonempty(source.get(k)) for k in
+            or any(not _concrete_identity(source.get(k)) for k in
                    ("source_system", "acquisition_channel", "connector_id"))):
         return unknown("readback source and connector lineage are unverified")
     observed = _rfc3339_instant(readback.get("observed_at"))
