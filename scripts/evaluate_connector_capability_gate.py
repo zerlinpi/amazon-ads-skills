@@ -827,7 +827,11 @@ def evaluate_connector_capability_gate(payload):
     )
     if feature_source_independence_effect == "unknown":
         eligibility_effect = "unknown"
-    eligibility_warnings += source_warnings
+        # An unproven self-referential Ineligible claim is not a verified
+        # exclusion; do not retain a contradictory verified-block warning.
+        eligibility_warnings = source_warnings
+    else:
+        eligibility_warnings += source_warnings
     feature_snapshot_chronology_effect, feature_snapshot_chronology_warnings = _feature_snapshot_chronology(
         snapshot, payload.get("feature_eligibility_requirement")
     )
