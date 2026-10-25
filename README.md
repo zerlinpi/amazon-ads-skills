@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.69.0`  
+> 当前版本：`v1.70.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Reject self-referential feature eligibility source evidence**: a Verified feature-specific record cannot reuse a required connector binding's ID, surface ID or supporting evidence reference as its supposedly independent source. Such Eligible or Ineligible claims degrade to Unknown, not Pass or verified exclusion. Distinct reference identity is necessary but does not authenticate raw Amazon Ads responses or prove enrollment; no live writes.
 
 - **Keep feature-specific decision time separate from connector capture time**: a connector snapshot taken after the feature requirement's `as_of` cannot prove earlier capability coverage. A future/missing/invalid capture degrades; equal/earlier capture passes only chronology. Explicit connector freshness remains separate; Verified Ineligible still blocks. No Amazon Ads entitlement lookup or write authority is implied.
 

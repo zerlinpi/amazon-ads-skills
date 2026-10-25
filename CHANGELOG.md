@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.70.0 — 2026-10-26
+
+### Feature eligibility self-reference provenance guard (MINOR)
+
+- Reject an eligibility `source_reference` that exactly repeats a Verified required connector binding's ID, surface ID or supporting evidence reference. Both self-referential Eligible and Ineligible assertions become Unknown/Degraded rather than high-confidence Pass or a purported verified exclusion. Expose `feature_source_independence_effect`; preserve distinct-reference eligibility, existing scope/time/freshness checks, legacy calls, 15 Skills, and external-only execution. This is not raw API authentication.
+- RED `ef887fedffc413f5baa9498e9ae259e1cf5a929f` [Actions #40241663063](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40241663063): 1551 tests / 4 FAIL. Initial GREEN `47dc61a042084f7b808ed7589ed78f88b912dd8d` [Actions #40241697745](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40241697745): 1551 PASS, 15 Skills and 55 eval fixtures PASS. Eight synthetic tests.
+- Research: `docs/research/feature-eligibility-self-reference-2026-10.md`.
+
 ## v1.69.0 — 2026-10-26
 
 ### Feature eligibility as-of connector snapshot chronology (MINOR)
