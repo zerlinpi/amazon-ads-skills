@@ -74,6 +74,8 @@ Modes:
 - For registered Sponsored Products bid/budget causal comparisons, an optional normalized schedule/event/active-budget rule member `activation_status` is accepted only as `active`, `inactive`, or `scheduled`; repeated Unknown/Unsupported, malformed or one-sided activation status on a shared `rule_id` is `Unknown`, not an unchanged control. Absence on both legacy snapshots remains backward-compatible but does not prove activation or continuous rule execution. This field is repository-owned read-side evidence, not an Amazon-native enum or a substitute for time-window proof.
 - For the same SP rule members, an explicitly supplied optional `activation_effective_at` must be a timezone-aware RFC3339 transition instant no later than its snapshot's `observed_at`, paired with an explicit valid `activation_status`, and present on both snapshots for the same `rule_id`. Invalid, future, status-less or one-sided transition-time evidence is `Unknown`. A changed valid transition time is a competing control. Both-absent legacy evidence is accepted without claiming full-window execution, event-trigger or timezone coverage.
 
+- Connector freshness requirements must use finite non-negative `max_age_seconds`; NaN, infinity or overflowing numeric horizons are invalid and must never bypass stale-evidence checks. This is an internal read-side invariant, not an Amazon Ads API TTL or permission to execute writes.
+
 ## Shared references, playbooks and evals
 
 - Weekly operating cadence: `playbooks/weekly-review.md`

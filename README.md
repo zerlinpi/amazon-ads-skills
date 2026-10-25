@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.54.0`  
+> 当前版本：`v1.55.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- Fail closed on invalid connector freshness horizons: a caller-supplied `max_age_seconds` must be a finite non-negative numeric duration. NaN, infinity and numeric overflow are rejected before freshness evaluation; an invalid horizon cannot make stale connector evidence appear current. Valid zero/finite horizons remain supported. This is a repository-owned evidence rule, not an Amazon API TTL.
 
 - Reject temporally impossible connector capability verification: a Verified binding cannot postdate its snapshot, and explicitly dated supporting evidence cannot postdate binding verification. This chronology gate applies even without a caller-supplied freshness horizon; legacy undated evidence remains compatible but does not prove freshness or source authenticity.
 
