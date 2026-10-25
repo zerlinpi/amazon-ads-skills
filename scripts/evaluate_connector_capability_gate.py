@@ -276,7 +276,7 @@ def _combine_data_effect(current, candidate):
     return candidate if rank[candidate] > rank[current] else current
 
 
-def _data_contract_effect(cap, requirement):
+def _data_contract_effect(cap, requirement, snapshot_captured_at):
     if requirement is None:
         return "not_evaluated", []
     required_control_types = requirement.get("required_control_types")
@@ -410,6 +410,22 @@ def _data_contract_effect(cap, requirement):
                         if start > end:
                             raise ValueError(
                                 f"{field}.available_from must be on or before available_through"
+                            )
+                        # This is an observed historical-availability bound, not
+                        # a forecast. A snapshot cannot attest to history months
+                        # after it was captured. Allow one calendar day for the
+                        # missing marketplace-timezone context in date-only bounds.
+                        try:
+                            captured_day = _binding_time(
+                                snapshot_captured_at, "snapshot.captured_at"
+                            ).date()
+                        except ValueError:
+                            captured_day = None
+                        if captured_day is not None and (end - captured_day).days > 1:
+                            effect = _combine_data_effect(effect, "unknown")
+                            warnings.append(
+                                "observed historical availability extends beyond snapshot "
+                                "capture; future history is not verified"
                             )
                         if requested_window["start"] < start or requested_window["end"] > end:
                             effect = _combine_data_effect(effect, "blocked")
@@ -642,7 +658,7 @@ def evaluate_connector_capability_gate(payload):
         cap=indexed.get(cid);scope_effect="not_evaluated";binding_effect="unknown";freshness_effect="not_evaluated";data_contract_effect="not_evaluated";verified=[]
         if cap is None:status="Unknown";access="unknown";effect="blocked";has_blocked=True;warnings=["required capability is absent from the observed connector snapshot"]
         else:
-            status=cap.get("status","Unknown");access=cap.get("access_mode","unknown");warnings=list(cap.get("warnings") or []);scope_effect,sw,observed_unknown_scope=_scope_effect(cap,expected,"connector capability");warnings+=sw;binding_effect,verified,freshness_effect,bw=_binding_effect(cap,expected,fresh,snapshot.get("captured_at"));warnings+=bw;data_contract_effect,dw=_data_contract_effect(cap,data_requirements.get(cid));warnings+=dw
+            status=cap.get("status","Unknown");access=cap.get("access_mode","unknown");warnings=list(cap.get("warnings") or []);scope_effect,sw,observed_unknown_scope=_scope_effect(cap,expected,"connector capability");warnings+=sw;binding_effect,verified,freshness_effect,bw=_binding_effect(cap,expected,fresh,snapshot.get("captured_at"));warnings+=bw;data_contract_effect,dw=_data_contract_effect(cap,data_requirements.get(cid),snapshot.get("captured_at"));warnings+=dw
             if data_contract_effect=="blocked":effect="blocked";has_blocked=True
             elif status=="Supported" and access=="write":
                 effect="blocked";has_blocked=True
