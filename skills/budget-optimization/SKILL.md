@@ -236,3 +236,6 @@ A complete list of active budget rules is not proof that its rows are usable. Fo
 ## Optional budget-rule activation evidence
 
 When a normalized active budget-rule member explicitly contains `activation_status`, it must be `active`, `inactive`, or `scheduled`; unknown, unsupported, malformed or one-sided status evidence on a shared rule identity is `Unknown` in a causal comparison. Both-absent legacy status is not proof that a rule did not execute during the window. See `../../references/control-state-comparability.md`. Do not infer rule execution from configured modifiers, observed spend or snapshot recency.
+
+
+For explicitly supplied normalized budget-rule `activation_effective_at`, reject malformed, future, status-less or one-sided transition timestamps; do not infer missing from zero or assume unchanged execution. Verified timestamp changes are competing controls. This read-side evidence check is not a guarantee of schedule/event window coverage; see `../../references/control-state-comparability.md`.
