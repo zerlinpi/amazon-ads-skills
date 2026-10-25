@@ -39,6 +39,9 @@ Modes:
 
 ## Safety rules
 
+- For Global Sponsored Products campaign readback, an echoed placeholder or whitespace-padded global-account, campaign, explicit request, connector-source, or raw marketplace crosswalk identity cannot establish a verified post-write match. Return `Unknown`, not `Confirmed`, even when the request, 207 receipt, state and budget rows repeat the same unavailable label. Whole-label Unknown/Unsupported/Partial/Missing/Unavailable/Not Available/Not Supported are unusable; legitimate IDs containing those substrings remain valid. Legacy country-code-only and index-only receipts remain compatible. This is repository-owned evidence validation, not an Amazon-native ID grammar, proof of marketplace/advertiser eligibility, raw HTTP authentication or permission to execute.
+
+
 - A reporting generation declared `active` or `sunset_scheduled` with a `sunset_at` earlier than the same connector snapshot's `captured_at` has unreconciled lifecycle evidence. When that generation is required, return `data_contract_effect=unknown` / `Degraded`, not high-confidence `Pass`. This does **not** assert that the report was retired, that Amazon's planned dates cannot change, or that unavailable metrics are zero. Future/equal sunsets, explicit retired blocking, and no-generation requirements retain their existing behavior. All dates are compared as offset-aware instants; actual Ads writes remain outside this repository.
 
 - For an exact history-window requirement, an observed per-grain `available_through` more than one calendar day beyond the connector snapshot capture cannot prove already available history. Degrade to Unknown rather than high-confidence Pass, even if requested dates precede capture. The one-day allowance is only for date-only bounds without marketplace timezone, not an Amazon latency SLA or proof of data maturity. Never infer zero or authorize live Ads writes.
