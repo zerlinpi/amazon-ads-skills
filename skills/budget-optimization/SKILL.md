@@ -231,3 +231,8 @@ If effective budget or rule state is unavailable, say what is unknown and keep t
 ## Active budget-rule member evidence
 
 A complete list of active budget rules is not proof that its rows are usable. For a registered Sponsored Products budget-change causal review, require each repository-normalized rule member to have a unique nonblank `rule_id` and finite nonnegative observed `increase_percent`; also check schedule/event bid-rule members separately. Unknown/Unsupported/Partial, duplicate/missing IDs, boolean, negative or non-finite modifiers yield `Unknown`, not an assumed zero or stable budget. An observed zero and a source-supported empty list remain distinct from missing evidence. This comparator is read-only and does not prove rule activation or effective-time coverage; see `../../references/control-state-comparability.md`.
+
+
+## Optional budget-rule activation evidence
+
+When a normalized active budget-rule member explicitly contains `activation_status`, it must be `active`, `inactive`, or `scheduled`; unknown, unsupported, malformed or one-sided status evidence on a shared rule identity is `Unknown` in a causal comparison. Both-absent legacy status is not proof that a rule did not execute during the window. See `../../references/control-state-comparability.md`. Do not infer rule execution from configured modifiers, observed spend or snapshot recency.
