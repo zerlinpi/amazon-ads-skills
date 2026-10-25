@@ -62,7 +62,7 @@ def _catalog() -> tuple[set[str], str | None]:
         declared_modes[cid]=item.get("access_mode")
     version=obj.get("catalog_version")
     if version is not None and not _s(version): raise ValueError("connector capability catalog version must be a non-empty string or null")
-    return ids,version
+    return ids,version,declared_modes
 
 
 
