@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.92.0`  
+> 当前版本：`v1.93.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Reject internally stale Ready holdout monitoring** — a supplied latest clean boundary check cannot predate any valid positively verified isolation proof. UTC/offset chronology, omitted legacy fields and exploratory plans remain compatible. This does not establish continuous control coverage or raw source authenticity.
 
 - **Reject whitespace-obfuscated unresolved Ready metric identities** — a combined readout cannot treat `Not  Applicable`, tab/newline/nonbreaking-space variants as real primary or guardrail metrics. The correction is a narrow whitespace normalization of the existing placeholder gate; concrete metric names, non-combined Ready and exploratory plans remain compatible. It does not authenticate reporting, recompute metrics or permit Ads writes.
 

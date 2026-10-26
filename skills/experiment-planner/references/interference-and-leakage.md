@@ -1,5 +1,9 @@
 # Experiment interference and leakage reference
 
+## Verified isolation vs latest boundary chronology (v1.93.0)
+
+A `Ready` holdout's supplied `boundary_monitoring.latest_verified_at` cannot be older than a valid `verified: true` isolation evidence timestamp. Compare UTC instants rather than offset strings. An 11:00 isolation check and 10:00 latest clean monitoring claim are internally inconsistent. This does not establish continuous rule history or authenticate external delivery; optional legacy fields and exploratory states remain compatible.
+
 ## Known-offset verification instants (v1.91.0)
 
 Ready holdouts require known-offset RFC3339 verification instants (T separator, optional fractional seconds, Z or ±HH:MM) for supplied boundary latest/launch verification, material-change timestamps and verified isolation timestamps. Reject -00:00, space separators and second-resolution timezone offsets. Preserve valid offset chronology, optional legacy omissions and exploratory plans. This is internal evidence consistency, not external authentication, continuous-control proof or live Ads write permission.

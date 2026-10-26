@@ -9,6 +9,10 @@ Use this Skill when evidence is insufficient for a confident direct optimization
 
 Default mode: `Shadow` for design/simulation, otherwise `Suggest`. This Skill never executes live Amazon Ads mutations.
 
+## Ready holdout latest verification chronology (v1.93.0)
+
+If a Ready holdout supplies `comparison.boundary_monitoring`, its `latest_verified_at` cannot predate a valid, positively verified `comparison.isolation_evidence[].verified_at`. Compare UTC instants across offsets and fractional seconds; preserve optional legacy omissions, unverified items and exploratory states. This checks internal chronology, not external Ads source authenticity or complete control history. Validate with `../../scripts/validate_experiment_plan.py`.
+
 ## Ready combined metric identity whitespace normalization (v1.92.0)
 
 Before marking a combined readout `Ready`, reject whole-label `Not Applicable` even when its words are separated by repeated spaces, tabs, newlines or nonbreaking spaces. The validator normalizes real whitespace, hyphens and underscores for this exact placeholder only; a concrete metric label containing those words is not automatically unresolved. Apply to primary and guardrail metrics, preserve non-combined and exploratory compatibility, and never infer a missing measurement is zero. This is a repository-owned read-only identity check, not Amazon-native reporting authentication or write authority.
