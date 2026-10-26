@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.84.0 — 2026-10-26
+
+### Block contradictory additive ratio KPIs in standalone direct-sum gate (MINOR)
+
+- When supplied, a bounded canonical ratio `metric_name` (ROAS, ACOS, TACOS, CVR, CTR, CPC) cannot authorize a direct sum under a contradictory `additive` declaration, even when `source_relation=disjoint`. Return Blocked; unnamed legacy calls, additive Sales/Impressions, and unknown semantics remain compatible. This is an internal contradiction check, not a recomputation or source-authenticity guarantee.
+- RED `df175e0065e9c4fa7999860aca51bd9c87835e44` ([Actions #40339525064](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40339525064)): 1711 tests, 8 FAIL. GREEN `f656e102e21e5217ed7ee0969248a733ace7f497` ([Actions #40339653449](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40339653449)): 1711 tests and Skills/Evals validated. Fifteen deterministic synthetic tests.
+- No new Skill, schema, dependency, Amazon Ads write, or external Executor change. Research: `docs/research/standalone-ratio-direct-sum-contradiction-2026-10.md`.
+
 ## v1.83.0 — 2026-10-26
 
 ### Separate unambiguous retail/rank metrics from attributed conversion names (MINOR)
