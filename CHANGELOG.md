@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.90.0 — 2026-10-27
+
+### Reject additive official Amazon Ads benchmark rates (MINOR)
+
+- Both the standalone aggregation gate and Ready combined experiment gate now reject additive or non-additive-deduplicated declarations for bounded official purchase/add-to-cart/detail-page-view/branded-search rates, cost-per-purchase/detail-page-view, and percent-of-purchases-new-to-brand metrics. No automatic ratio calculation, raw source authentication, or Ads write capability.
+- RED `5aa792219be0fad06f9dc6e9b6226abf7c4682ad` ([Actions #40390201710](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40390201710)): 1816 tests, 14 FAIL. GREEN ([Actions #40390377095](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40390377095)): 1816 PASS; Skill/Eval validators PASS. Twenty-one deterministic synthetic tests; additive counts, ratio-derived declarations, non-combined and exploratory plans retain compatibility.
+- Research: `docs/research/official-benchmark-derived-rate-aggregation-2026-10.md`. Source definitions from Amazon Ads benchmark reporting updated 2026-10-06. No Skill, schema or third-party dependency added.
+
 ## v1.89.0 — 2026-10-27
 
 ### Reject unresolved Ready combined-readout metric identities (MINOR)
