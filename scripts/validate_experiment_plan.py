@@ -116,7 +116,9 @@ def _parse_timestamp(value: Any, label: str, errors: list[str]) -> datetime | No
     return parsed.astimezone(timezone.utc)
 
 
-def _validate_ready_boundary_freshness(comparison: dict[str, Any]) -> list[str]:
+def _validate_ready_boundary_freshness(
+    comparison: dict[str, Any], verified_isolation_instants: list[tuple[int, datetime]]
+) -> list[str]:
     errors: list[str] = []
     if "boundary_monitoring" not in comparison:
         return errors
@@ -137,6 +139,16 @@ def _validate_ready_boundary_freshness(comparison: dict[str, Any]) -> list[str]:
         "comparison.boundary_monitoring.latest_verified_at",
         errors,
     )
+    # A later verified isolation check cannot coexist with an older claimed
+    # "latest" clean boundary check. Compare actual UTC instants, not strings.
+    if latest_verified_at is not None:
+        for index, verified_at in verified_isolation_instants:
+            if verified_at > latest_verified_at:
+                errors.append(
+                    f"Ready holdout boundary_monitoring.latest_verified_at predates "
+                    f"verified isolation_evidence[{index}].verified_at"
+                )
+
     if "launch_verified_at" in monitoring:
         launch_verified_at = _parse_timestamp(
             monitoring["launch_verified_at"],
@@ -197,6 +209,7 @@ def _validate_ready_holdout(comparison: dict[str, Any]) -> list[str]:
         return errors
 
     has_verified_boundary = False
+    verified_isolation_instants: list[tuple[int, datetime]] = []
     for index, item in enumerate(isolation_evidence):
         if not isinstance(item, dict):
             continue
@@ -227,21 +240,26 @@ def _validate_ready_holdout(comparison: dict[str, Any]) -> list[str]:
                 f"Ready holdout isolation_evidence[{index}].source must be concrete when supplied"
             )
             continue
-        if "verified_at" in item and _parse_timestamp(
-            item.get("verified_at"),
-            f"comparison.isolation_evidence[{index}].verified_at",
-            errors,
-        ) is None:
-            continue
+        verified_at = None
+        if "verified_at" in item:
+            verified_at = _parse_timestamp(
+                item.get("verified_at"),
+                f"comparison.isolation_evidence[{index}].verified_at",
+                errors,
+            )
+            if verified_at is None:
+                continue
 
         has_verified_boundary = True
+        if verified_at is not None:
+            verified_isolation_instants.append((index, verified_at))
 
     if not has_verified_boundary:
         errors.append(
             "Ready holdout requires at least one verified isolation_evidence item with non-empty evidence"
         )
 
-    errors.extend(_validate_ready_boundary_freshness(comparison))
+    errors.extend(_validate_ready_boundary_freshness(comparison, verified_isolation_instants))
     return errors
 
 

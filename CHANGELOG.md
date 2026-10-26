@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.93.0 — 2026-10-27
+
+### Guard Ready holdout latest monitoring chronology (MINOR)
+
+- When a Ready holdout supplies boundary monitoring, its latest verification must be at least as recent as every valid, positively verified isolation proof timestamp. UTC instant comparison preserves offsets/fractions, optional legacy fields, unverified records and exploratory statuses. No new Skill, schema, dependency, source authentication, full-window coverage claim or Ads write authority.
+- RED `1ffd1edf70f27a9f54cf5ca66e42d907e690ed40` ([Actions #40414421617](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40414421617)): 1854 tests / 5 FAIL. GREEN `57c998ae97e706f79a253fe58045a23ad754401c` ([Actions #40414491229](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40414491229)): 1854 PASS, Skills/Evals PASS. Eleven synthetic tests; research: `docs/research/ready-holdout-isolation-monitoring-chronology-2026-10.md`.
+
 ## v1.92.0 — 2026-10-27
 
 ### Reject whitespace-obfuscated Not Applicable combined metric identities (MINOR)
