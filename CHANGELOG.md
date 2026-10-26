@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.92.0 — 2026-10-27
+
+### Reject whitespace-obfuscated Not Applicable combined metric identities (MINOR)
+
+- Correct a bounded regex escaping error so `Ready` combined primary/guardrail metric labels such as `Not  Applicable`, tabs, newlines and nonbreaking spaces are unresolved rather than accepted as concrete. Valid metrics, non-combined Ready, Shadow Only and existing placeholder forms remain compatible. No new Skill, schema, dependency, source authentication or Ads write capability.
+- RED `b1b031f4ec9009d4e34c70cdd4079acbce1aceaa` ([Actions #40407197848](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40407197848)): 1843 tests / 7 FAIL. GREEN `95e5e5381f43d763a04fc3633699c25c8f2ab0fb` ([Actions #40407278247](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40407278247)): 1843 PASS; Skill/Eval validators PASS. Thirteen synthetic tests. Research: `docs/research/ready-combined-not-applicable-whitespace-2026-10.md`.
+
+
 ## v1.91.0 — 2026-10-27
 
 ### Require known-offset RFC3339 Ready holdout evidence (MINOR)
