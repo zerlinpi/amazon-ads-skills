@@ -225,7 +225,7 @@ def _validate_conversion_identity(semantics: Any, label: str) -> list[str]:
     for field in ("attribution_family", "semantic_version"):
         value = semantics.get(field)
         if not _concrete_identity(value) or re.sub(
-            r"[\\s-]+", "_", value.casefold()
+            r"[\s-]+", "_", value.casefold()
         ) == "not_applicable":
             errors.append(f"{label} requires concrete metric semantics.{field}")
     return errors
