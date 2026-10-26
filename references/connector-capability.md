@@ -360,3 +360,7 @@ This contract deliberately does not implement:
 - private connector schemas or workflows.
 
 Those remain responsibilities of an authorized external Connector / Executor. This repository consumes bounded capability evidence so its Skills know what they can safely conclude.
+
+## Feature eligibility source references and unverified probes (2026-10-26)
+
+A separately supplied feature-specific eligibility `source_reference` cannot reuse any binding ID, surface ID or supporting evidence reference attached to a **required** connector capability, including an `Unverified` or `Unknown` binding. An independent Verified read-side binding does not transform an unverified probe on that same capability into independent feature entitlement evidence. Exact reference collisions degrade Eligible **and** Ineligible assertions to Unknown, without overriding another independently Blocked requirement. A different reference passes only this narrow identity-collision check; it does not authenticate Amazon's HTTP response, prove advertiser enrollment, or grant permission to write. The connector's ability to read a campaign and the advertiser's feature eligibility remain separate questions.

@@ -766,9 +766,9 @@ def _feature_eligibility_effect(payload, expected):
 def _feature_source_independence(payload, indexed, required_capabilities, eligibility_effect):
     """Reject obvious self-references, not authenticate remote entitlement.
 
-    An eligibility record must not reuse the exact identity of a Verified
-    connector binding or its supporting probe as its supposedly independent
-    feature-specific source. Distinct labels alone do not prove authenticity.
+    An eligibility record must not reuse a required connector binding's
+    identity or supporting probe, even when that binding is Unverified.
+    Distinct labels alone do not prove authenticity.
     """
     if eligibility_effect not in {"pass", "blocked"}:
         return "not_evaluated", []
@@ -778,7 +778,8 @@ def _feature_source_independence(payload, indexed, required_capabilities, eligib
         if not isinstance(capability, dict):
             continue
         for binding in capability.get("bindings") or []:
-            if not isinstance(binding, dict) or binding.get("verification_status") != "Verified":
+            # An unverified probe is not independent feature evidence either.
+            if not isinstance(binding, dict):
                 continue
             aliases = [binding.get("binding_id"), binding.get("surface_id")]
             for record in binding.get("evidence") or []:
