@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.88.0 — 2026-10-27
+
+### Reject explicitly unresolved Ready combined-readout requirements (MINOR)
+
+- When a `Ready` experiment explicitly supplies `comparison.requires_combined_readout`, require a JSON boolean. Null, placeholder strings, numeric and collection values no longer bypass the combined ratio KPI gate; omitted legacy fields, explicit false and exploratory plans remain compatible.
+- RED `f9646ea99d354aa21c705be0b98abac5cf81bb1d` ([Actions #40371547946](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40371547946)): 1775 tests, 8 FAIL. GREEN `472dc5c7e3ee8edbca2af96ff358f568c0a2387b` ([Actions #40371654073](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40371654073)): 1775 PASS; Skill/Eval validators PASS. Twelve deterministic synthetic tests.
+- No new Skill, schema, dependency, external data authentication or Amazon Ads write. Research: `docs/research/ready-combined-readout-requirement-2026-10.md`.
+
 ## v1.87.0 — 2026-10-27
 
 ### Reject explicitly unresolved standalone aggregation metric identities (MINOR)
