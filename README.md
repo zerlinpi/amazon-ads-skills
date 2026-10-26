@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.84.0`  
+> 当前版本：`v1.85.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Block additional cost/return ratio roll-up errors** — CPA, CPM, vCPM and ROI now join the bounded ratio KPI checks in both the standalone direct-sum gate and `Ready` combined experiment readouts. An `additive` declaration cannot make these ratios summable. These name guards do not calculate ratios, prove denominator completeness, authenticate reporting, or authorize Amazon Ads writes.
 
 - **Prevent ratio KPI summation in the standalone gate** — when an explicit `metric_name` identifies ROAS, ACOS, TACOS, CVR, CTR or CPC, `scripts/evaluate_metric_aggregation_gate.py` rejects a contradictory `additive` declaration even for supposedly disjoint rows. This is a narrow optional name/semantics consistency check; unnamed legacy calls remain compatible, and the gate does not authenticate source rows or recompute ratios.
 
