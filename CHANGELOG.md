@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.86.0 — 2026-10-26
+
+### Reject explicit unresolved Ready holdout monitoring evidence (MINOR)
+
+- `scripts/validate_experiment_plan.py` distinguishes omitted optional `comparison.boundary_monitoring` from explicitly supplied null/non-object. A supplied object cannot silently accept explicit null `launch_verified_at` or non-array `material_scope_changes`. Empty arrays and genuinely omitted optional fields remain compatible; exploratory plans retain unknown evidence.
+- RED `bf292aa59a1b0e41f515c401fc2f6cb0ea3a2f62` ([Actions #40352431603](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40352431603)): 1744 tests, 9 FAIL. GREEN `9db9ae89691b126b4085b457d75ed62ffd498d1e` ([Actions #40352546029](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40352546029)): 1744 PASS, Skill/Eval validators PASS. Fourteen deterministic synthetic tests.
+- No new Skill, schema, dependency, Amazon Ads write or external Executor change. Internal checks do not authenticate external holdout allocation or continuous rule execution. Research: `docs/research/ready-holdout-explicit-monitoring-evidence-2026-10.md`.
+
 ## v1.85.0 — 2026-10-26
 
 ### Block additive CPA/CPM/vCPM/ROI contradictions across both aggregation gates (MINOR)

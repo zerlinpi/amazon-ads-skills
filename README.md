@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.85.0`  
+> 当前版本：`v1.86.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Distinguish absent from unresolved holdout monitoring** — when a `Ready` holdout explicitly supplies `boundary_monitoring`, a null/scalar/list cannot silently pass as if no monitoring were provided. Explicit null launch verification or malformed material-change collections are also unresolved. Omitted optional fields, exploratory plans and 15-Skill read-only boundaries remain compatible; this does not authenticate continuous delivery.
 
 - **Block additional cost/return ratio roll-up errors** — CPA, CPM, vCPM and ROI now join the bounded ratio KPI checks in both the standalone direct-sum gate and `Ready` combined experiment readouts. An `additive` declaration cannot make these ratios summable. These name guards do not calculate ratios, prove denominator completeness, authenticate reporting, or authorize Amazon Ads writes.
 
