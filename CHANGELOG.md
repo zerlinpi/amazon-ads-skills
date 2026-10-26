@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.87.0 — 2026-10-27
+
+### Reject explicitly unresolved standalone aggregation metric identities (MINOR)
+
+- The read-only standalone gate distinguishes omitted optional `metric_name` from explicitly supplied null, blank, whole-label Unknown/Partial/Unsupported/Not Available/N/A or non-string names. Explicit unresolved identity with additive/disjoint declarations returns Unknown, not Allowed. Omitted legacy names, concrete additive names, ratio and overlap guards remain compatible.
+- RED `ae3ef9647afd3dba7104725609d468521625c8ee` ([Actions #40362141223](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40362141223)): 1763 tests / 12 FAIL. GREEN `381d2d79d86ffa586e1f54f36e0cdd348f615941` ([Actions #40362301091](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40362301091)): 1763 PASS; Skill/Eval validators PASS. Nineteen synthetic tests.
+- No new Skill, schema, dependency, remote authentication or Ads write. Research: `docs/research/standalone-explicit-unknown-metric-identity-2026-10.md`.
+
 ## v1.86.0 — 2026-10-26
 
 ### Reject explicit unresolved Ready holdout monitoring evidence (MINOR)
