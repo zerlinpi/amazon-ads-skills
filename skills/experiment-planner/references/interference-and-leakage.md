@@ -219,9 +219,9 @@ Track this in the experiment-plan schema when available:
 - `comparison.boundary_monitoring.launch_verified_at` — launch-time boundary check;
 - `comparison.boundary_monitoring.latest_verified_at` — latest trustworthy boundary check;
 - `comparison.boundary_monitoring.current_status` — current compact integrity state;
-- `comparison.boundary_monitoring.material_scope_changes` — dated scope changes, each with `reverified` when known.
+- `comparison.boundary_monitoring.material_scope_changes` — dated scope changes, each with `reverified` when known; only boolean `true` establishes positive re-verification for a `Ready` holdout.
 
-For a `Ready` holdout, a material change newer than `boundary_monitoring.latest_verified_at` means the boundary is stale. A change explicitly marked `reverified = false` also blocks `Ready`. Do not treat a stale launch check as evidence that later routing, audience, budget, entity, retail, or automation conditions remained clean.
+For a `Ready` holdout, a material change newer than `boundary_monitoring.latest_verified_at` means the boundary is stale. Every recorded material change must explicitly have boolean `reverified = true` for `Ready`; absent, null, false or non-boolean values are unresolved even if the latest boundary check is later. Do not treat a stale launch check as evidence that later routing, audience, budget, entity, retail, or automation conditions remained clean.
 
 If the latest trustworthy boundary check predates a material scope-changing event, do not claim the entire later window remained clean.
 

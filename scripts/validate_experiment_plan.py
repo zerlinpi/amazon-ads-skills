@@ -113,9 +113,9 @@ def _validate_ready_boundary_freshness(comparison: dict[str, Any]) -> list[str]:
             )
             continue
 
-        if change.get("reverified") is False:
+        if change.get("reverified") is not True:
             errors.append(
-                f"Ready holdout material scope change #{index + 1} is explicitly unreverified"
+                f"Ready holdout material scope change #{index + 1} is not positively reverified"
             )
 
         change_timestamp = _parse_timestamp(

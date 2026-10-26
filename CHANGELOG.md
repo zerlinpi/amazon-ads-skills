@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.77.0 — 2026-10-26
+
+### Positive re-verification for material holdout boundary changes (MINOR)
+
+- A `Ready` holdout now requires explicit boolean `reverified: true` on every recorded `comparison.boundary_monitoring.material_scope_changes` entry. Previously missing, null or non-boolean flags were accepted whenever the latest verification timestamp was later; that timestamp does not itself prove each change was re-verified. Existing chronology, Clean status and positive evidence remain necessary.
+- RED `5370f7fbcbeefc113ff3cc0b38b6f48892fa765d`, [Actions #40276084171](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40276084171): 1613 tests, 6 FAIL; GREEN `eba5db8b194f3907186ecda1f1ec9e4a3ef8b93c`, [Actions #40276152016](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40276152016): 1613 PASS, 15 Skills and 55 eval fixtures PASS. Ten synthetic deterministic tests; `Shadow Only`/`Hold`/`Redesign` unchanged.
+- No new Skill, schema, dependency, Amazon Ads account write, retry, idempotency or Executor logic. This internal readiness gate does not authenticate external holdout delivery or source records. Research: `docs/research/experiment-material-change-positive-reverification-2026-10.md`.
+
+
 ## v1.76.0 — 2026-10-26
 
 ### Concrete Ready experiment identity and arm-boundary guard (MINOR)
