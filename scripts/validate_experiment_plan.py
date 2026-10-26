@@ -106,8 +106,11 @@ def _parse_timestamp(value: Any, label: str, errors: list[str]) -> datetime | No
 
 def _validate_ready_boundary_freshness(comparison: dict[str, Any]) -> list[str]:
     errors: list[str] = []
-    monitoring = comparison.get("boundary_monitoring")
+    if "boundary_monitoring" not in comparison:
+        return errors
+    monitoring = comparison["boundary_monitoring"]
     if not isinstance(monitoring, dict):
+        errors.append("Ready holdout comparison.boundary_monitoring must be an object when supplied")
         return errors
 
     # An optional monitoring record is not proof unless its claimed current
@@ -122,7 +125,7 @@ def _validate_ready_boundary_freshness(comparison: dict[str, Any]) -> list[str]:
         "comparison.boundary_monitoring.latest_verified_at",
         errors,
     )
-    if monitoring.get("launch_verified_at") is not None:
+    if "launch_verified_at" in monitoring:
         launch_verified_at = _parse_timestamp(
             monitoring["launch_verified_at"],
             "comparison.boundary_monitoring.launch_verified_at",
@@ -138,7 +141,10 @@ def _validate_ready_boundary_freshness(comparison: dict[str, Any]) -> list[str]:
             )
 
     material_changes = monitoring.get("material_scope_changes")
-    if not isinstance(material_changes, list) or not material_changes:
+    if "material_scope_changes" in monitoring and not isinstance(material_changes, list):
+        errors.append("Ready holdout comparison.boundary_monitoring.material_scope_changes must be an array when supplied")
+        return errors
+    if not material_changes:
         return errors
 
     for index, change in enumerate(material_changes):
