@@ -39,6 +39,8 @@ Modes:
 
 ## Safety rules
 
+- A `Ready` experiment with `comparison.requires_combined_readout=true` cannot claim canonical ratio KPIs (ROAS, ACOS, TACOS, CVR, CTR, CPC) are `additive` or `non_additive_deduplicated`. For bounded metric names, require `metric_semantics.aggregation_semantics=ratio_or_derived` for primary and decision-driving guardrail metrics. This is a narrow contradiction check: it does not compute ratios, prove source disjointness or complete denominators, unify TACOS with ad-attributed ACOS, infer missing data as zero, or grant live Ads write authority. Other additive metrics, non-combined and exploratory plans retain compatibility.
+
 - A `Ready` experiment cannot bypass conversion attribution identity by labeling **ACOS, CVR, attributed orders/units, or units sold** as traffic/Unknown. The metric-name gate complements Purchases/Sales/ROAS and requires concrete `conversion` family, attribution family and semantic version for both primary and guardrail metrics. Use token boundaries for ACOS/CVR so **TACOS** (ad spend / total retail sales) is not automatically equated with attributed ACOS. Do not infer all total retail orders are ad-attributed. Exploratory plans and actual non-conversion metrics remain compatible; this is internal read-only consistency, not external reporting authentication or Ads write authority.
 
 
