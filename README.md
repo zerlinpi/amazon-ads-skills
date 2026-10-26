@@ -8,6 +8,8 @@ A portable **Amazon Ads decision library for AI agents**. It packages 15 focused
 
 ## What you can do
 
+- **Reject unknown post-change holdout re-verification** — a `Ready` experiment cannot rely on a later `boundary_monitoring.latest_verified_at` alone when any recorded material scope change lacks explicit boolean `reverified: true`. Missing/null/false/non-boolean flags fail closed; positive evidence and chronology both matter. Shadow/Hold remain exploratory, and this does not authenticate delivery or grant Ads write access.
+
 - **Reject false Ready experiment scope** — unresolved or padded marketplace/profile/entity identifiers, duplicate treatment/control IDs and explicit arm overlap cannot masquerade as a verified experiment boundary; Shadow/Hold designs retain unresolved evidence without inventing IDs.
 
 - **Avoid false SP rule confounding from enumeration order**: normalized, complete schedule/event/active-budget rule lists are compared by stable unique `rule_id` for the registered bid/budget causal surfaces. Different row order alone no longer counts as another control change; changed values/status/identities remain material, and incomplete evidence remains Unknown. This does not establish continuous rule execution or grant Ads write access.
