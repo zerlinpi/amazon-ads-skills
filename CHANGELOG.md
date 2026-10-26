@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.81.0 — 2026-10-26
+
+### Fail closed on additional Ready conversion metric aliases (MINOR)
+
+- ACOS, CVR, Attributed Orders/Units and Units Sold primary metrics or guardrails can no longer declare traffic/Unknown to bypass conversion attribution family and semantic version. ACOS/CVR use bounded tokens so TACOS (total retail sales) is not mistaken for ad-attributed ACOS. Genuine non-conversion and exploratory plans remain compatible.
+- RED `81fb26b7dceddf1afbc42f91c8effd5e6a02bbd8` ([Actions #40310486694](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40310486694)): 1668 tests, 10 FAIL. GREEN `c7ba5a903a5a74cf1f06b4da4d147d889224135f` ([Actions #40310592404](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40310592404)): 1668 PASS, 15 Skills, 55 eval fixtures. Fifteen synthetic tests.
+- No new Skill, schema, dependency, Amazon Ads write or external Executor logic; internal metric labels do not authenticate remote attribution. Research: `docs/research/experiment-ready-conversion-alias-coverage-2026-10.md`.
+
 ## v1.80.0 — 2026-10-26
 
 ### Fail closed on contradictory Ready conversion metric identity (MINOR)

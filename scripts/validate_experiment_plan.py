@@ -25,6 +25,12 @@ HOLDOUT_ISOLATION_MECHANISMS = {
     "verified_delivery_partition",
 }
 CONVERSION_METRIC_TOKENS = ("purchase", "sale", "roas", "conversion")
+CONVERSION_METRIC_NAME_PATTERNS = (
+    r"\bacos\b",
+    r"\bcvr\b",
+    r"\battributed[\s_-]+(?:orders?|units?)\b",
+    r"\bunits[\s_-]+sold\b",
+)
 AGGREGATION_SEMANTICS = {
     "additive",
     "non_additive_deduplicated",
@@ -55,8 +61,9 @@ def _concrete_identity(value: Any) -> bool:
 def _is_conversion_metric(name: Any, semantics: Any) -> bool:
     # A caller-provided non-conversion family must not hide an obvious
     # conversion display name from the Ready attribution-identity gate.
-    name_indicates_conversion = _non_empty_string(name) and any(
-        token in name.lower() for token in CONVERSION_METRIC_TOKENS
+    name_indicates_conversion = _non_empty_string(name) and (
+        any(token in name.casefold() for token in CONVERSION_METRIC_TOKENS)
+        or any(re.search(pattern, name.casefold()) for pattern in CONVERSION_METRIC_NAME_PATTERNS)
     )
     family = semantics.get("metric_family") if isinstance(semantics, dict) else None
     return bool(name_indicates_conversion or (

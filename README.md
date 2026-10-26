@@ -2,11 +2,14 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.80.0`  
+> 当前版本：`v1.81.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Protect additional Ready conversion metric names** — ACOS, CVR, attributed orders/units and units sold cannot claim a traffic/Unknown family to bypass attribution/version evidence. Exact-name ACOS recognition does not conflate TACOS (total retail sales) with ad-attributed ACOS; genuine traffic and Shadow plans stay compatible. Internal checks do not authenticate external reports or execute Ads changes.
+
 
 - **Fail closed on Ready conversion metric identity** — Purchases/Sales/ROAS cannot escape attribution requirements by declaring a traffic or Unknown metric family; conversion primary metrics and guardrails require a concrete attribution family and semantic version, not Missing/Partial/Unsupported placeholders. Non-conversion and exploratory plans remain compatible; no external attribution authentication or Ads writes.
 
