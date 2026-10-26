@@ -301,7 +301,12 @@ def _validate_ready_combined_readout_semantics(
     guardrails: Any,
     comparison: Any,
 ) -> list[str]:
-    if not isinstance(comparison, dict) or comparison.get("requires_combined_readout") is not True:
+    if not isinstance(comparison, dict):
+        return []
+    if ("requires_combined_readout" in comparison
+            and type(comparison["requires_combined_readout"]) is not bool):
+        return ["Ready comparison.requires_combined_readout must be boolean when supplied"]
+    if comparison.get("requires_combined_readout") is not True:
         return []
 
     errors: list[str] = []
