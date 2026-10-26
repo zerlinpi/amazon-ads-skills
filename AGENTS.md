@@ -39,6 +39,8 @@ Modes:
 
 ## Safety rules
 
+- **Ready holdout exact fractional chronology (v1.94.0):** Preserve every supplied RFC3339 fractional-second digit when ordering Ready holdout launch/latest boundary checks, positively verified isolation proof, and material scope changes. Python `datetime.fromisoformat` truncates beyond six digits; compare UTC whole seconds plus the original exact fractional part instead. A 100-nanosecond-later proof/change cannot be treated as simultaneous with a clean check. Preserve known-offset format validation, optional legacy omissions, and exploratory states. Internal chronology is not authenticated full-window Amazon Ads control evidence or write authority.
+
 - **Ready holdout latest-monitoring chronology:** When supplied, `comparison.boundary_monitoring.latest_verified_at` cannot predate any valid, positively verified `comparison.isolation_evidence[].verified_at`. Compare UTC instants, not timestamp strings. Omitted optional legacy fields, unverified evidence and exploratory plans retain compatibility. This internal record check cannot authenticate external source evidence, prove full-window rule execution or grant live Amazon Ads write authority.
 
 - **Ready holdout verification timestamps:** Ready holdouts require known-offset RFC3339 verification instants (T separator, optional fractional seconds, Z or ±HH:MM) for supplied boundary latest/launch verification, material-change timestamps and verified isolation timestamps. Reject -00:00, space separators and second-resolution timezone offsets. Preserve valid offset chronology, optional legacy omissions and exploratory plans. This is internal evidence consistency, not external authentication, continuous-control proof or live Ads write permission.

@@ -9,6 +9,10 @@ Use this Skill when evidence is insufficient for a confident direct optimization
 
 Default mode: `Shadow` for design/simulation, otherwise `Suggest`. This Skill never executes live Amazon Ads mutations.
 
+## Exact fractional-second Ready holdout chronology (v1.94.0)
+
+When a Ready holdout supplies known-offset RFC3339 verification timestamps, compare UTC instants at their **full supplied fractional precision**, including seven or more digits. Python `datetime.fromisoformat` truncates past microseconds; a later isolation verification, launch verification or material scope change cannot be hidden by that truncation. Preserve valid high-precision timestamps, offsets, omitted optional legacy evidence and exploratory statuses. Validate with `../../scripts/validate_experiment_plan.py`. This is internal consistency, not continuous-control proof, source authentication or live Ads write permission.
+
 ## Ready holdout latest verification chronology (v1.93.0)
 
 If a Ready holdout supplies `comparison.boundary_monitoring`, its `latest_verified_at` cannot predate a valid, positively verified `comparison.isolation_evidence[].verified_at`. Compare UTC instants across offsets and fractional seconds; preserve optional legacy omissions, unverified items and exploratory states. This checks internal chronology, not external Ads source authenticity or complete control history. Validate with `../../scripts/validate_experiment_plan.py`.

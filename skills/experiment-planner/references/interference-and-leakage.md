@@ -1,5 +1,9 @@
 # Experiment interference and leakage reference
 
+## Exact fractional verification chronology (v1.94.0)
+
+When comparing Ready holdout latest boundary monitoring with verified isolation, launch checks and material scope changes, retain all fractional digits in valid RFC3339 timestamps. Python microsecond truncation can collapse a 10:00:00.0000001Z event into 10:00:00Z, falsely clearing a later change or verification. Compare UTC whole seconds and the original fractional part exactly; do not discard high-precision evidence or invent an interval-complete control history. The validator remains read-only, optional legacy evidence stays optional and Shadow/Hold/Redesign remain exploratory.
+
 ## Verified isolation vs latest boundary chronology (v1.93.0)
 
 A `Ready` holdout's supplied `boundary_monitoring.latest_verified_at` cannot be older than a valid `verified: true` isolation evidence timestamp. Compare UTC instants rather than offset strings. An 11:00 isolation check and 10:00 latest clean monitoring claim are internally inconsistent. This does not establish continuous rule history or authenticate external delivery; optional legacy fields and exploratory states remain compatible.
