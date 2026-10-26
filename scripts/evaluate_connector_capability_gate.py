@@ -777,6 +777,14 @@ def _feature_source_independence(payload, indexed, eligibility_effect):
     for capability in indexed.values():
         if not isinstance(capability, dict):
             continue
+        # The snapshot contract also permits evidence attached directly to a
+        # capability, not just evidence nested under individual bindings.
+        # Neither location can be repurposed as independent entitlement proof.
+        for record in capability.get("evidence") or []:
+            if isinstance(record, dict) and source_reference == record.get("reference"):
+                return "unknown", [
+                    "feature eligibility source_reference reuses connector capability evidence; independent feature-specific source evidence is unproven"
+                ]
         for binding in capability.get("bindings") or []:
             # An unverified probe is not independent feature evidence either.
             if not isinstance(binding, dict):
@@ -787,7 +795,7 @@ def _feature_source_independence(payload, indexed, eligibility_effect):
                     aliases.append(record.get("reference"))
             if source_reference in aliases:
                 return "unknown", [
-                    "feature eligibility source_reference reuses a required connector binding reference; independent feature-specific source evidence is unproven"
+                    "feature eligibility source_reference reuses connector binding evidence; independent feature-specific source evidence is unproven"
                 ]
     return "pass", []
 
