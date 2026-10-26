@@ -53,13 +53,15 @@ def _concrete_identity(value: Any) -> bool:
 
 
 def _is_conversion_metric(name: Any, semantics: Any) -> bool:
-    if isinstance(semantics, dict):
-        metric_family = semantics.get("metric_family")
-        if _non_empty_string(metric_family):
-            return metric_family.strip().lower() == "conversion"
-    return _non_empty_string(name) and any(
+    # A caller-provided non-conversion family must not hide an obvious
+    # conversion display name from the Ready attribution-identity gate.
+    name_indicates_conversion = _non_empty_string(name) and any(
         token in name.lower() for token in CONVERSION_METRIC_TOKENS
     )
+    family = semantics.get("metric_family") if isinstance(semantics, dict) else None
+    return bool(name_indicates_conversion or (
+        _non_empty_string(family) and family.strip().casefold() == "conversion"
+    ))
 
 
 def _parse_timestamp(value: Any, label: str, errors: list[str]) -> datetime | None:
@@ -207,6 +209,28 @@ def _validate_ready_holdout(comparison: dict[str, Any]) -> list[str]:
     return errors
 
 
+def _validate_conversion_identity(semantics: Any, label: str) -> list[str]:
+    if not isinstance(semantics, dict):
+        return [f"{label} requires explicit metric semantics"]
+
+    errors: list[str] = []
+    family = semantics.get("metric_family")
+    if not (
+        _non_empty_string(family)
+        and family == family.strip()
+        and family.casefold() == "conversion"
+    ):
+        errors.append(f"{label} requires metric semantics.metric_family = conversion")
+
+    for field in ("attribution_family", "semantic_version"):
+        value = semantics.get(field)
+        if not _concrete_identity(value) or re.sub(
+            r"[\\s-]+", "_", value.casefold()
+        ) == "not_applicable":
+            errors.append(f"{label} requires concrete metric semantics.{field}")
+    return errors
+
+
 def _validate_ready_metric_semantics(primary_metric: Any) -> list[str]:
     if not isinstance(primary_metric, dict):
         return ["Ready experiment plan requires a primary_metric object"]
@@ -215,15 +239,7 @@ def _validate_ready_metric_semantics(primary_metric: Any) -> list[str]:
     semantics = primary_metric.get("metric_semantics")
     if not _is_conversion_metric(name, semantics):
         return []
-
-    if not isinstance(semantics, dict):
-        return ["Ready conversion primary metric requires explicit metric semantics"]
-
-    errors: list[str] = []
-    for field in ("metric_family", "attribution_family", "semantic_version"):
-        if not _non_empty_string(semantics.get(field)):
-            errors.append(f"Ready conversion primary metric requires non-empty metric semantics.{field}")
-    return errors
+    return _validate_conversion_identity(semantics, "Ready conversion primary metric")
 
 
 def _validate_ready_guardrail_metric_semantics(guardrails: Any) -> list[str]:
@@ -236,16 +252,10 @@ def _validate_ready_guardrail_metric_semantics(guardrails: Any) -> list[str]:
             continue
         name = guardrail.get("metric")
         semantics = guardrail.get("metric_semantics")
-        if not _is_conversion_metric(name, semantics):
-            continue
-
-        label = f"Ready conversion guardrail #{index + 1}"
-        if not isinstance(semantics, dict):
-            errors.append(f"{label} requires explicit metric semantics")
-            continue
-        for field in ("metric_family", "attribution_family", "semantic_version"):
-            if not _non_empty_string(semantics.get(field)):
-                errors.append(f"{label} requires non-empty metric semantics.{field}")
+        if _is_conversion_metric(name, semantics):
+            errors.extend(_validate_conversion_identity(
+                semantics, f"Ready conversion guardrail #{index + 1}"
+            ))
     return errors
 
 
