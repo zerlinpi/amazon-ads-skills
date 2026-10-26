@@ -45,7 +45,7 @@ Load only the reference required by the experiment. Ordinary short, low-overlap 
 
 ## Experiment validity gates
 
-For `Ready` conversion metrics, the declared `metric_family` cannot override an obvious conversion name (Purchases, Sales, ROAS) to bypass attribution checks. Require `metric_family = conversion`, a concrete `attribution_family`, and a concrete `semantic_version` for the primary metric and conversion guardrails. Whole-label Unknown/Partial/Missing/Unsupported/Not Applicable values are unresolved even when non-empty; non-conversion and Shadow/Hold designs retain their distinct semantics. These checks do not independently authenticate Amazon reporting.
+For `Ready` conversion metrics, the declared `metric_family` cannot override an obvious conversion name (Purchases, Sales, ROAS, ACOS, CVR, attributed orders/units, units sold) to bypass attribution checks. Match ACOS/CVR as whole metric tokens, not as substrings of TACOS or unrelated names; TACOS uses total retail sales and must not be silently treated as attributed ACOS. Require `metric_family = conversion`, a concrete `attribution_family`, and a concrete `semantic_version` for the primary metric and conversion guardrails. Whole-label Unknown/Partial/Missing/Unsupported/Not Applicable values are unresolved even when non-empty; non-conversion and Shadow/Hold designs retain their distinct semantics. These checks do not independently authenticate Amazon reporting.
 
 Do not call an experiment decision-ready when any material issue remains unresolved:
 

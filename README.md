@@ -8,6 +8,9 @@ A portable **Amazon Ads decision library for AI agents**. It packages 15 focused
 
 ## What you can do
 
+- **Protect additional Ready conversion metric names** — ACOS, CVR, attributed orders/units and units sold cannot claim a traffic/Unknown family to bypass attribution/version evidence. Exact-name ACOS recognition does not conflate TACOS (total retail sales) with ad-attributed ACOS; genuine traffic and Shadow plans stay compatible. Internal checks do not authenticate external reports or execute Ads changes.
+
+
 - **Fail closed on Ready conversion metric identity** — Purchases/Sales/ROAS cannot escape attribution requirements by declaring a traffic or Unknown metric family; conversion primary metrics and guardrails require a concrete attribution family and semantic version, not Missing/Partial/Unsupported placeholders. Non-conversion and exploratory plans remain compatible; no external attribution authentication or Ads writes.
 
 - **Reject unsupported Ready holdout isolation proof** — a `verified: true` isolation record with placeholder/padded `evidence` is not a verified boundary. Optional `source` and `verified_at`, when supplied, must be concrete and timezone-aware. Valid narrative evidence and omitted optional fields remain compatible; this does not authenticate external delivery or authorize Ads writes.
