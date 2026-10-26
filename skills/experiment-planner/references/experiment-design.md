@@ -1,5 +1,9 @@
 # Experiment design reference
 
+## Ready scope and arm identity (v1.76.0)
+
+For `status=Ready`, `scope.marketplace`, `scope.profile_scope`, `scope.entity_type` and every `scope.entity_ids` member must be concrete, unpadded identities. Reserved whole-label unavailable states (Unknown/Unsupported/Partial/Missing/Unavailable/Not Available/Not Supported) are not experiment identities. Duplicate treatment IDs cannot describe distinct units. If `comparison.control_entity_ids` is supplied, reject unknown/padded or duplicate control IDs and exact treatment/control ID overlap. Opaque real IDs containing these words as substrings are valid; a verified platform-randomized or hard-boundary holdout need not invent control entity IDs. This validation prevents internal contradictions; it does not prove randomization, cohort non-interference, Amazon eligibility or source authenticity. Keep unresolved plans `Shadow Only`, `Redesign` or `Hold` and leave execution to the authorized external Executor.
+
 Use this only when `experiment-planner` needs detailed design logic.
 
 ## 1. Start with a decision, not a metric

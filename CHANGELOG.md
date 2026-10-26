@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.76.0 — 2026-10-26
+
+### Concrete Ready experiment identity and arm-boundary guard (MINOR)
+
+- The read-only `scripts/validate_experiment_plan.py` now rejects whole-label unavailable/placeholder identities and padded marketplace/profile/entity-type/treatment IDs for `status=Ready`. Duplicate treatment IDs, and explicitly supplied duplicate/placeholder/overlapping control-arm IDs, cannot pass readiness.
+- Valid opaque IDs containing words such as `unknown` remain supported; control IDs remain optional for platform-randomized/hard-boundary holdouts; `Shadow Only`, `Redesign` and `Hold` continue to preserve unresolved scope.
+- RED-first synthetic tests: commit `a6152af0b3f7dc26968e0b0eee1fe102f95e72f4`, [Actions #40271192479](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40271192479): 1603 tests, 10 FAIL. Production repair `854e0ddbace1ac2d467b603b7e8449dd3d5b27bb` plus whitespace normalization correction `be860dd7958742a76a4ca42ff78555d2b42a1cbe`; [GREEN Actions #40271281809](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40271281809): 1603/1603 PASS, 15 Skill validators, 55 eval fixtures.
+- This is a repository-owned readiness identity contract, not an Amazon-native ID grammar, independent control allocation verification, raw API authentication or Ads write authority. No new Skill or external dependency; Executor boundaries unchanged.
+- Official platform context, public project re-review and copyright decisions are documented in `docs/SOURCES.md` and `docs/research/experiment-ready-identity-boundary-2026-10.md`.
+
 ## v1.75.0 — 2026-10-26
 
 ### Stable identity-keyed SP rule member comparison (MINOR)
