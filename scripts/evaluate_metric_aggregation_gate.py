@@ -114,7 +114,7 @@ def _known_ratio_metric(name: Any) -> bool:
     return bool(
         isinstance(name, str)
         and re.search(
-            r"(?<![a-z0-9])(?:acos|tacos|roas|cvr|ctr|cpc)(?![a-z0-9])",
+            r"(?<![a-z0-9])(?:acos|tacos|roas|cvr|ctr|cpc|cpa|cpm|vcpm|roi)(?![a-z0-9])",
             name.casefold(),
         )
     )
