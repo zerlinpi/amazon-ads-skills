@@ -763,18 +763,18 @@ def _feature_eligibility_effect(payload, expected):
 
 
 
-def _feature_source_independence(payload, indexed, required_capabilities, eligibility_effect):
+def _feature_source_independence(payload, indexed, eligibility_effect):
     """Reject obvious self-references, not authenticate remote entitlement.
 
-    An eligibility record must not reuse a required connector binding's
-    identity or supporting probe, even when that binding is Unverified.
+    An eligibility record must not reuse any connector binding's identity
+    or supporting probe from the same snapshot, even if that capability is
+    not required for the current decision or its binding is Unverified.
     Distinct labels alone do not prove authenticity.
     """
     if eligibility_effect not in {"pass", "blocked"}:
         return "not_evaluated", []
     source_reference = payload["feature_eligibility_evidence"]["source_reference"]
-    for capability_id in required_capabilities:
-        capability = indexed.get(capability_id)
+    for capability in indexed.values():
         if not isinstance(capability, dict):
             continue
         for binding in capability.get("bindings") or []:
@@ -824,7 +824,7 @@ def evaluate_connector_capability_gate(payload):
     eligibility_effect, eligibility_warnings = _feature_eligibility_effect(payload, expected)
     indexed, snapshot = _index(payload.get("snapshot"))
     feature_source_independence_effect, source_warnings = _feature_source_independence(
-        payload, indexed, reqs, eligibility_effect
+        payload, indexed, eligibility_effect
     )
     if feature_source_independence_effect == "unknown":
         eligibility_effect = "unknown"

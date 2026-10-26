@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.73.0 — 2026-10-26
+
+### Feature eligibility cross-capability source-reference guard (MINOR)
+
+- A feature-specific eligibility source reference cannot reuse a binding ID, surface ID or probe reference from ANY observed connector capability in the same snapshot, even if that capability is not required for the decision or its binding is Unverified/Unsupported. Both Eligible and Ineligible self-references degrade to Unknown; only the source-reference collision check expands. Distinct labels are not remote-source authentication. Preserve 15 Skills, existing capability selection, data/time/identity gates, default Suggest/Shadow and external-only Executor.
+- RED `c971a41633c3fe2328909c5a2682bc64aed60da6` [Actions #40256092116](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40256092116): 1573 tests, 6 FAIL. GREEN `83310e41df04a0ed15689556c7b283e67259ec27` [Actions #40256160583](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40256160583): 1573/1573 PASS, Skill and eval validators PASS. Nine deterministic synthetic tests.
+- Research: `docs/research/feature-eligibility-cross-capability-reference-2026-10.md`. No new Skill, dependency, schema, live Ads write, retry, idempotency or external Executor behavior.
+
 ## v1.72.0 — 2026-10-26
 
 ### Feature eligibility unverified-binding self-reference guard (MINOR)

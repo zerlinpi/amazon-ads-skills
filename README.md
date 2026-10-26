@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.72.0`  
+> 当前版本：`v1.73.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Reject feature eligibility self-references across the entire connector snapshot**: a supposedly independent entitlement record cannot reuse any observed connector binding/probe reference, including on non-required or unverified capabilities. Both Eligible and Ineligible collisions degrade; actual capability requirements and valid distinct evidence remain unchanged. This does not authenticate remote API responses or permit writes.
 
 - **Reject eligibility self-references to unverified connector probes**: a feature-specific source reference cannot reuse a required connector capability's binding ID, surface ID or supporting probe reference even if that binding is Unverified. A separate Verified read-side binding cannot make the reused probe independent entitlement evidence. Eligible and Ineligible self-references degrade; distinct sources retain legacy behavior. This is not raw Amazon API authentication or write authorization.
 
