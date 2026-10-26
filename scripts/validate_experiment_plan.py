@@ -88,6 +88,18 @@ def _parse_timestamp(value: Any, label: str, errors: list[str]) -> datetime | No
         return None
 
     normalized = value.strip()
+    # datetime.fromisoformat also accepts space separators, fractional timezone
+    # offsets, and -00:00. These cannot establish the repository's required
+    # known-offset RFC3339 verification instant.
+    if (
+        re.fullmatch(
+            r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)",
+            normalized,
+        ) is None
+        or normalized.endswith("-00:00")
+    ):
+        errors.append(f"Ready holdout requires valid known-offset RFC3339 {label}")
+        return None
     if normalized.endswith("Z"):
         normalized = f"{normalized[:-1]}+00:00"
 

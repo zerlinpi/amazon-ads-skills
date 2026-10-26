@@ -1,5 +1,10 @@
 # Experiment interference and leakage reference
 
+## Known-offset verification instants (v1.91.0)
+
+Ready holdouts require known-offset RFC3339 verification instants (T separator, optional fractional seconds, Z or ±HH:MM) for supplied boundary latest/launch verification, material-change timestamps and verified isolation timestamps. Reject -00:00, space separators and second-resolution timezone offsets. Preserve valid offset chronology, optional legacy omissions and exploratory plans. This is internal evidence consistency, not external authentication, continuous-control proof or live Ads write permission.
+
+
 ## Explicit monitoring evidence is not optional once supplied (v1.86.0)
 
 A `Ready` holdout may omit `comparison.boundary_monitoring` for legacy compatibility. If the field is explicitly present, however, `null`, strings, booleans, numbers and arrays are **unresolved**, not equivalent to absence. Within a supplied monitoring object, explicit `launch_verified_at: null` cannot masquerade as an omitted optional instant, and `material_scope_changes` must be an array if present (an empty array is allowed). Shadow/Hold/Redesign remain exploratory. This only validates internal record consistency; it does not establish external delivery authenticity or continuous experiment isolation.
