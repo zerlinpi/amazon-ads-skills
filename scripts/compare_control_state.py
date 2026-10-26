@@ -174,6 +174,29 @@ def _json_state_equal(before: Any, after: Any) -> bool:
     return before == after
 
 
+
+def _sp_rule_state_equal(control_type: str, before: Any, after: Any) -> bool:
+    """Compare identity-keyed SP rule members independent of adapter row order.
+
+    Call only after complete-collection and unique rule_id validation. This
+    preserves exact member fields (including activation evidence), and does
+    not infer rule execution continuity or reorder other material lists.
+    """
+    fields = {
+        "schedule_or_event_rule": ("schedule_rules", "event_rules"),
+        "budget_or_pacing": ("active_budget_rules",),
+    }.get(control_type)
+    if not fields or not isinstance(before, dict) or not isinstance(after, dict):
+        return _json_state_equal(before, after)
+    normalized_before, normalized_after = dict(before), dict(after)
+    for field in fields:
+        left, right = before.get(field), after.get(field)
+        if isinstance(left, list) and isinstance(right, list):
+            normalized_before[field] = sorted(left, key=lambda item: item["rule_id"])
+            normalized_after[field] = sorted(right, key=lambda item: item["rule_id"])
+    return _json_state_equal(normalized_before, normalized_after)
+
+
 def _control_inventory_problem(snapshot: dict[str, Any], side: str) -> str | None:
     """Reject ambiguous or malformed control identities before mapping can overwrite them."""
     controls = snapshot.get("controls")
@@ -742,7 +765,16 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
         if before.get("evidence_status") not in VALID_EVIDENCE or after.get("evidence_status") not in VALID_EVIDENCE:
             unknown.append(control_type)
             continue
-        if not _json_state_equal(before.get("state"), after.get("state")):
+        # For registered SP causal surfaces, rule rows form ID-keyed sets;
+        # an adapter's enumeration order is not itself a material change.
+        same_state = (
+            _sp_rule_state_equal(control_type, before.get("state"), after.get("state"))
+            if provenance_before.get("decision_surface") in {
+                "sponsored_products_bid_change", "sponsored_products_budget_change"
+            }
+            else _json_state_equal(before.get("state"), after.get("state"))
+        )
+        if not same_state:
             changed.append(control_type)
             if not before.get("effective_at") or not after.get("effective_at"):
                 timestamp_unknown.append(control_type)
