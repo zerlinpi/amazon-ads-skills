@@ -127,7 +127,7 @@ def _explicit_metric_name_unresolved(payload: dict[str, Any]) -> bool:
     name = payload["metric_name"]
     if not isinstance(name, str) or not name.strip():
         return True
-    normalized = re.sub(r"[\\s_-]+", " ", name.strip().casefold())
+    normalized = re.sub(r"[\s_-]+", " ", name.strip().casefold())
     return normalized in {
         "unknown", "partial", "missing", "unsupported", "unavailable",
         "not available", "not supported", "not applicable", "n/a",
