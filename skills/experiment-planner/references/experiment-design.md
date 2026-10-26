@@ -1,3 +1,7 @@
+## Conversion metric identity guard (2026-10-26)
+
+For a Ready primary metric or guardrail named Purchases, Sales or ROAS, an explicit non-conversion/Unknown `metric_family` does not bypass attribution requirements. Require a resolved `conversion` family plus concrete `attribution_family` and `semantic_version`. Do not treat placeholder strings as verified reporting lineage; do not force these conversion fields on genuine non-conversion or exploratory plans. Amazon's 2026 Store-ad attribution change is inventory-specific, not a universal conversion definition. This repository gate is not remote source authentication.
+
 # Experiment design reference
 
 ## Ready scope and arm identity (v1.76.0)

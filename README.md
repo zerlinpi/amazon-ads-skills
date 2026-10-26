@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.79.0`  
+> 当前版本：`v1.80.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Fail closed on Ready conversion metric identity** — Purchases/Sales/ROAS cannot escape attribution requirements by declaring a traffic or Unknown metric family; conversion primary metrics and guardrails require a concrete attribution family and semantic version, not Missing/Partial/Unsupported placeholders. Non-conversion and exploratory plans remain compatible; no external attribution authentication or Ads writes.
 
 - **Reject unsupported Ready holdout isolation proof** — a `verified: true` isolation record with placeholder/padded `evidence` is not a verified boundary. Optional `source` and `verified_at`, when supplied, must be concrete and timezone-aware. Valid narrative evidence and omitted optional fields remain compatible; this does not authenticate external delivery or authorize Ads writes.
 
