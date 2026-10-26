@@ -1,5 +1,9 @@
 # Experiment interference and leakage reference
 
+## Verified holdout proof is not a boolean-only claim (v1.79.0)
+
+For a `Ready` holdout, `comparison.isolation_evidence[].verified = true` cannot promote a whole-label `Unknown`, `Unsupported`, `Partial`, `Missing`, `Unavailable`, `Not Available` or `Not Supported` evidence string into a proven boundary. Explicit optional `source` and `verified_at` must be resolved, unpadded, and (for time) timezone-aware; omit them only when genuinely unavailable in legacy plans, not to fabricate authentication. Narrative evidence containing those words is not itself a placeholder. Shadow/Hold may preserve unresolved proof. These checks do not attest external Amazon Ads allocation or continuous control execution.
+
 Load this only when treatment and comparison scopes may share auctions, queries, ASIN demand, budgets, routing, automation, platform-managed realization, or another constrained resource. It supplements `experiment-design.md`; ordinary low-overlap experiments do not need it.
 
 The purpose is to stop an observed treatment lift from being mistaken for incrementality when the treatment changes what the control can receive.

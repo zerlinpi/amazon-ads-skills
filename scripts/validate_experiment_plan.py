@@ -159,7 +159,7 @@ def _validate_ready_holdout(comparison: dict[str, Any]) -> list[str]:
         return errors
 
     has_verified_boundary = False
-    for item in isolation_evidence:
+    for index, item in enumerate(isolation_evidence):
         if not isinstance(item, dict):
             continue
 
@@ -174,8 +174,29 @@ def _validate_ready_holdout(comparison: dict[str, Any]) -> list[str]:
             errors.append(f"unsupported holdout isolation mechanism: {mechanism!r}")
             continue
 
-        if item.get("verified") is True and _non_empty_string(item.get("evidence")):
-            has_verified_boundary = True
+        if item.get("verified") is not True:
+            continue
+
+        # A positive flag cannot turn a placeholder into independent boundary
+        # evidence. Optional provenance fields, when supplied, must be resolved.
+        if not _concrete_identity(item.get("evidence")):
+            errors.append(
+                f"Ready holdout isolation_evidence[{index}].evidence must be concrete"
+            )
+            continue
+        if "source" in item and not _concrete_identity(item.get("source")):
+            errors.append(
+                f"Ready holdout isolation_evidence[{index}].source must be concrete when supplied"
+            )
+            continue
+        if "verified_at" in item and _parse_timestamp(
+            item.get("verified_at"),
+            f"comparison.isolation_evidence[{index}].verified_at",
+            errors,
+        ) is None:
+            continue
+
+        has_verified_boundary = True
 
     if not has_verified_boundary:
         errors.append(
