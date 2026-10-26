@@ -8,6 +8,7 @@ query Amazon Ads, or replace source/grain/completeness checks.
 from __future__ import annotations
 
 import json
+import re
 import sys
 from typing import Any
 
@@ -104,6 +105,21 @@ def _semantics(payload: dict[str, Any]) -> str:
     return semantic
 
 
+def _known_ratio_metric(name: Any) -> bool:
+    """Reject contradictory additive declarations for bounded, known ratio KPIs.
+
+    This is not a metric classifier or source authentication: callers still
+    provide their own aggregation semantics and all source/grain evidence.
+    """
+    return bool(
+        isinstance(name, str)
+        and re.search(
+            r"(?<![a-z0-9])(?:acos|tacos|roas|cvr|ctr|cpc)(?![a-z0-9])",
+            name.casefold(),
+        )
+    )
+
+
 def evaluate_metric_aggregation_gate(payload: Any) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError("input must be a JSON object")
@@ -142,6 +158,13 @@ def evaluate_metric_aggregation_gate(payload: Any) -> dict[str, Any]:
     elif semantic == "unknown":
         status = "Unknown"
         reason = "aggregation semantics are unknown and must not default to additive"
+    elif semantic == "additive" and _known_ratio_metric(payload.get("metric_name")):
+        status = "Blocked"
+        reason = (
+            "known ratio KPI name contradicts additive aggregation semantics; "
+            "direct summation of ratios is unsafe"
+        )
+        recommended_path = "resolve metric identity and recompute from compatible base components"
     elif relation == "overlapping":
         status = "Blocked"
         reason = "source rows overlap and cannot be treated as independent additive pools"
