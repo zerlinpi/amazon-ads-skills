@@ -39,6 +39,9 @@ Modes:
 
 ## Safety rules
 
+- A `Ready` holdout cannot treat `isolation_evidence[].verified: true` plus a whole-label `Unknown`/`Unsupported`/`Partial`/`Missing`/`Unavailable`/`Not Available`/`Not Supported`, blank or whitespace-padded `evidence` as verified isolation. When `source` or `verified_at` is explicitly supplied on a verified item, require a concrete unpadded source and timezone-aware timestamp; explicit null/invalid optional fields remain unresolved. Omitted optional fields preserve legacy Ready compatibility; Shadow/Hold/Redesign can retain unknowns. This is a read-only evidence-consistency check, not independent remote delivery authentication, Amazon-native entitlement, causal proof or write permission.
+
+
 - When a `Ready` holdout explicitly supplies `comparison.boundary_monitoring`, require `current_status = Clean` and a valid timezone-aware `latest_verified_at` even without material changes. Optional `launch_verified_at` must be valid and at or before the latest verification. Missing/unknown status, absent/invalid latest verification and impossible launch chronology cannot prove monitored isolation. Absent monitoring remains legacy-compatible; Shadow/Hold/Redesign may retain unresolved evidence. This is an internal read-only consistency gate, not continuous-control proof, external delivery authentication or Ads write permission.
 
 

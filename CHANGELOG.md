@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.79.0 — 2026-10-26
+
+### Resolve claimed Ready holdout isolation evidence (MINOR)
+
+- A `Ready` holdout can no longer use `verified: true` with whole-label unavailable/padded `isolation_evidence[].evidence` to claim a verified boundary. Explicit optional `source` and `verified_at` must be concrete and timezone-aware; absent optional fields, valid narrative evidence and exploratory Shadow/Hold/Redesign plans retain compatibility.
+- RED `4ae7cd51a0807bb2d42684a5e1a1e1a4acf2cc89` ([Actions #40294180163](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40294180163)): 1639 tests / 8 FAIL. GREEN `a28cc1c9e50f771b9defb6c35ebdd6f8fe3ab03f` ([Actions #40294279133](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40294279133)): 1639 PASS, 15 Skills, 55 eval fixtures. Twelve synthetic deterministic tests.
+- No new Skill, schema, dependency or live Ads write; internal consistency does not authenticate holdout delivery. Research: `docs/research/experiment-ready-isolation-evidence-integrity-2026-10.md`.
+
+
 ## v1.78.0 — 2026-10-26
 
 ### Complete optional Ready holdout monitoring evidence (MINOR)
