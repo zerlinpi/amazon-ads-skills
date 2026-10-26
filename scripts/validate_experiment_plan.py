@@ -13,6 +13,7 @@ import json
 import re
 import sys
 from datetime import datetime, timezone
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
@@ -82,7 +83,7 @@ def _is_conversion_metric(name: Any, semantics: Any) -> bool:
     ))
 
 
-def _parse_timestamp(value: Any, label: str, errors: list[str]) -> datetime | None:
+def _parse_timestamp(value: Any, label: str, errors: list[str]) -> tuple[datetime, Decimal] | None:
     if not _non_empty_string(value):
         errors.append(f"Ready holdout requires non-empty {label}")
         return None
@@ -91,13 +92,11 @@ def _parse_timestamp(value: Any, label: str, errors: list[str]) -> datetime | No
     # datetime.fromisoformat also accepts space separators, fractional timezone
     # offsets, and -00:00. These cannot establish the repository's required
     # known-offset RFC3339 verification instant.
-    if (
-        re.fullmatch(
-            r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)",
-            normalized,
-        ) is None
-        or normalized.endswith("-00:00")
-    ):
+    match = re.fullmatch(
+        r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.(?P<fraction>\d+))?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)",
+        normalized,
+    )
+    if match is None or normalized.endswith("-00:00"):
         errors.append(f"Ready holdout requires valid known-offset RFC3339 {label}")
         return None
     if normalized.endswith("Z"):
@@ -113,11 +112,14 @@ def _parse_timestamp(value: Any, label: str, errors: list[str]) -> datetime | No
         errors.append(f"Ready holdout requires timezone-aware {label}")
         return None
 
-    return parsed.astimezone(timezone.utc)
+    # datetime truncates digits beyond microseconds. Retain the original
+    # fractional second for exact UTC chronology instead of losing ordering.
+    return (parsed.astimezone(timezone.utc).replace(microsecond=0),
+            Decimal("0." + (match.group("fraction") or "0")))
 
 
 def _validate_ready_boundary_freshness(
-    comparison: dict[str, Any], verified_isolation_instants: list[tuple[int, datetime]]
+    comparison: dict[str, Any], verified_isolation_instants: list[tuple[int, tuple[datetime, Decimal]]]
 ) -> list[str]:
     errors: list[str] = []
     if "boundary_monitoring" not in comparison:
@@ -209,7 +211,7 @@ def _validate_ready_holdout(comparison: dict[str, Any]) -> list[str]:
         return errors
 
     has_verified_boundary = False
-    verified_isolation_instants: list[tuple[int, datetime]] = []
+    verified_isolation_instants: list[tuple[int, tuple[datetime, Decimal]]] = []
     for index, item in enumerate(isolation_evidence):
         if not isinstance(item, dict):
             continue
