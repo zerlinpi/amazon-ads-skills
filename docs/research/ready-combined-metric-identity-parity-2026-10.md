@@ -1,0 +1,22 @@
+# Ready combined-readout metric identity parity — 2026-10-27
+
+## Fresh baseline and nonduplicate gap
+
+Starting main `cc9ed38b48f642b0f2d36df2f3ca3a3d54bd33bb` (v1.88.0). Open PRs: none. Relevant historical aggregation and connector branches inspected; sampled branches were all behind main. Fifteen canonical Skills remain unchanged in number. The existing standalone direct-sum gate (v1.87.0) rejects explicitly unresolved `metric_name`, but the distinct Ready combined experiment path accepted an unresolved `primary_metric.name` or `guardrails[].metric` with declared additive/disjoint semantics. The v1.88.0 combined-readout flag guard did not check metric identity. This is a cross-entry decision consistency defect, not a new Amazon Ads platform rule.
+
+## Deterministic RED → GREEN
+
+- RED test commit `a574d0673370355b0e01a84cf03d983008342443`: initial fixture had two construction errors for non-string labels. Corrected synthetic fixture in `7bc237b9ddeaaeb763a26a88af967442436a789a` without touching production code. Actions #40380168947: **1795 tests, 15 FAIL, 0 ERROR**, five compatibility cases passed. The failures demonstrate old Ready combined readouts accepted placeholder metric identities.
+- GREEN production commit `38316fce2522ba4077d2a60f243d61955d47ae1a`: narrow `_unresolved_combined_metric_name` gate for primary and decision-driving guardrail names only when `status=Ready` and `requires_combined_readout=true`. Actions #40380281413: **1795 PASS**, Skill and Eval validators PASS.
+- No new Skill, schema, external runtime dependency, aggregation computation, live Ads write or executor behavior. Non-combined Ready, exploratory plans, concrete names containing placeholder words, and valid additive/ratio declarations retain compatibility.
+
+## Evidence, source/license boundary, adoption decision
+
+- Amazon Ads [campaign reporting and attribution](https://advertising.amazon.com/library/guides/intro-attribution-campaign-reporting) distinguishes CTR, ROAS, ACOS and reporting contexts; [ACOS guide](https://advertising.amazon.com/en-us/library/guides/acos-advertising-cost-of-sales) defines ratio components. [Unified reporting launch](https://advertising.amazon.com/en-gb/resources/whats-new/streamline-campaign-analysis-with-unified-reporting) (2026-06-08) documents cross-ad-product reporting with changing measurement semantics. These support retaining concrete metric identity before a combined decision, but do **not** define this repository's internal placeholder strings or prove source authenticity.
+- Amazon Marketing Stream [v2 FAQ](https://advertising.amazon.com/API/docs/en-us/guides/amazon-marketing-stream/v2/faq) explicitly distinguishes null from measured zero. It reinforces the no-imputation boundary; it is not a contract for this experiment-plan schema.
+- Fresh GitHub metadata sample: dbt-labs/metricflow (1,848 stars, Apache-2.0, non-fork, pushed 2026-10-13; sampled latest Action `action_required`); OpenLineage/OpenLineage (2,724 stars, Apache-2.0, non-fork, pushed 2026-10-25; sampled Actions SUCCESS); langchain-ai/openevals (1,232 stars, MIT, non-fork, pushed 2026-10-22; sampled Actions SUCCESS); KuudoAI/amazon_ads_mcp (74 stars, MIT, non-fork, pushed 2026-10-14; sampled Actions SUCCESS). Sampled recent open PRs and metadata, not a full security, CI, code, issue, fork-dependency or transitive license audit. These projects have been previously reviewed in SOURCES. **Reject imports**: the observed deterministic cross-entry gap needs no additional dependency. No external code, prompts, schemas, workflows or templates copied.
+- Public Amazon PPC Reddit posts discussing budget, ACOS, campaign routing and margins are operator hypotheses only; not Amazon policy, representative causal estimates or evidence for this exact internal bug.
+
+## Residual boundaries and next real gaps
+
+Internal metric-name validation does not authenticate the Amazon API response, establish source/metric/date/grain/attribution/currency, prove component denominator completeness or row disjointness, or establish continuous control isolation. Priority next: (P0) externally attestable source/metric lineage; (P1) full-window budget/bid/schedule rule history; (P2) cross-campaign interference and marginal contribution profit. No unsupported/missing/partial/unknown evidence is converted to zero. Default Suggest/Shadow; authorized external Executor retains all live write/retry/idempotency/reconciliation responsibility.

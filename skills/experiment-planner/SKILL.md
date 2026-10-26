@@ -9,6 +9,10 @@ Use this Skill when evidence is insufficient for a confident direct optimization
 
 Default mode: `Shadow` for design/simulation, otherwise `Suggest`. This Skill never executes live Amazon Ads mutations.
 
+## Ready combined-readout metric identity (v1.89.0)
+
+Before marking a combined readout `Ready`, confirm the primary metric and every decision-driving guardrail have concrete, unpadded metric names. Whole-label `Unknown`, `Partial`, `Missing`, `Unsupported`, `Unavailable`, `Not Available`, `Not Supported`, `Not Applicable`, `N/A`, blank or non-string names cannot be promoted to resolved identities by an `additive` or `ratio_or_derived` declaration. Concrete names containing these words as substrings are not placeholders. Non-combined Ready and exploratory plans retain their prior compatibility. Use `../../scripts/validate_experiment_plan.py` for the deterministic readiness gate. This does not prove reporting provenance, compatible base components, row disjointness, attribution, experiment isolation or permission to mutate Amazon Ads.
+
 ## Connector capability gate
 
 When a conclusion depends on live MCP/API/connector data, load `../../references/connector-capability.md` before interpreting missing or empty fields. If a machine-readable capability snapshot is available, identify the exact required capability IDs and run `../../scripts/evaluate_connector_capability_gate.py` **before metric interpretation**.

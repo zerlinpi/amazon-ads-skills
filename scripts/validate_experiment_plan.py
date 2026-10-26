@@ -296,6 +296,14 @@ def _known_ratio_metric(name: Any) -> bool:
     )
 
 
+def _unresolved_combined_metric_name(name: Any) -> bool:
+    """A Ready combined readout needs a concrete metric identity, not a label placeholder."""
+    if not _concrete_identity(name):
+        return True
+    normalized = re.sub(r"[\\s_-]+", " ", name.casefold())
+    return normalized in {"not applicable", "n/a"}
+
+
 def _validate_ready_combined_readout_semantics(
     primary_metric: Any,
     guardrails: Any,
@@ -314,6 +322,8 @@ def _validate_ready_combined_readout_semantics(
     if not isinstance(primary_metric, dict):
         errors.append("Ready combined readout requires a primary_metric object")
     else:
+        if _unresolved_combined_metric_name(primary_metric.get("name")):
+            errors.append("Ready combined readout primary metric requires concrete metric identity")
         semantics = primary_metric.get("metric_semantics")
         aggregation = semantics.get("aggregation_semantics") if isinstance(semantics, dict) else None
         if aggregation not in READY_RESOLVED_AGGREGATION_SEMANTICS:
@@ -329,6 +339,10 @@ def _validate_ready_combined_readout_semantics(
         for index, guardrail in enumerate(guardrails):
             if not isinstance(guardrail, dict):
                 continue
+            if _unresolved_combined_metric_name(guardrail.get("metric")):
+                errors.append(
+                    f"Ready combined readout guardrail #{index + 1} requires concrete metric identity"
+                )
             semantics = guardrail.get("metric_semantics")
             aggregation = semantics.get("aggregation_semantics") if isinstance(semantics, dict) else None
             if aggregation not in READY_RESOLVED_AGGREGATION_SEMANTICS:
