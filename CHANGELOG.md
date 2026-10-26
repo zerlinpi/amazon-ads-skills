@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.83.0 — 2026-10-26
+
+### Separate unambiguous retail/rank metrics from attributed conversion names (MINOR)
+
+- `Ready` experiment plans no longer force exact Total Retail Sales, Retail Sales, Organic Sales or Sales Rank into ad-attributed conversion semantics, or match "sale" inside unrelated Wholesale Traffic. Bare Sales, Total Sales, Ad-Attributed Sales, Purchases, and explicit conversion-family claims remain gated; applies to primary and guardrail metrics.
+- RED `958827676f9c9613f3c22c7b2681e93eea01cdcd` ([Actions #40327402552](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40327402552)): 1696 tests, 6 FAIL. GREEN `4251870e93e694e3acc8e846c14a1adf9fb9d6e7` ([Actions #40327563792](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40327563792)): 1696 PASS, Skill/Eval validators PASS. 14 deterministic synthetic tests.
+- No new Skill, schema, dependency, live Amazon Ads mutation or external Executor change. Research: `docs/research/experiment-retail-metric-name-boundary-2026-10.md`.
+
 ## v1.82.0 — 2026-10-26
 
 ### Fail closed on canonical ratio KPI aggregation in Ready combined readouts (MINOR)
