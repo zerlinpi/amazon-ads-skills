@@ -106,19 +106,32 @@ def _semantics(payload: dict[str, Any]) -> str:
 
 
 def _known_ratio_metric(name: Any) -> bool:
-    """Reject contradictory additive declarations for bounded, known ratio KPIs.
+    """Bounded name contradictions for canonical KPIs and official benchmark rates.
 
-    This is not a metric classifier or source authentication: callers still
-    provide their own aggregation semantics and all source/grain evidence.
+    Names only detect obvious additive contradictions. They never authenticate
+    source, attribution, compatible denominators, or actual report coverage.
     """
+    if not isinstance(name, str) or not name.strip():
+        return False
+    label = name.casefold()
     return bool(
-        isinstance(name, str)
-        and re.search(
+        re.search(
             r"(?<![a-z0-9])(?:acos|tacos|roas|cvr|ctr|cpc|cpa|cpm|vcpm|roi)(?![a-z0-9])",
-            name.casefold(),
+            label,
+        )
+        or re.search(
+            r"(?<![a-z0-9])(?:purchase|add[\\s_-]+to[\\s_-]+cart|detail[\\s_-]+page[\\s_-]+view|branded[\\s_-]+search)[\\s_-]+rate\\b",
+            label,
+        )
+        or re.search(
+            r"(?<![a-z0-9])cost[\\s_-]+per[\\s_-]+(?:purchase|detail[\\s_-]+page[\\s_-]+view)\\b",
+            label,
+        )
+        or re.search(
+            r"(?<![a-z0-9])percent[\\s_-]+of[\\s_-]+purchases[\\s_-]+new[\\s_-]+to[\\s_-]+brand\\b",
+            label,
         )
     )
-
 
 def _explicit_metric_name_unresolved(payload: dict[str, Any]) -> bool:
     """An explicitly supplied unknown identity is not an omitted legacy name."""
