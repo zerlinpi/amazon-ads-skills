@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.82.0 — 2026-10-26
+
+### Fail closed on canonical ratio KPI aggregation in Ready combined readouts (MINOR)
+
+- `Ready` experiments with `comparison.requires_combined_readout=true` reject `additive` or `non_additive_deduplicated` aggregation declarations for bounded ROAS/ACOS/TACOS/CVR/CTR/CPC names, in primary metrics and guardrails. Require `ratio_or_derived` instead; recompute from compatible, complete base components and check source/grain/attribution separately. This is an internal semantic consistency check, not an automatic recomputation or remote data authenticity proof.
+- RED `40227502f362a635d3e54a4d33332010ec2c8ac6` ([Actions #40317709806](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40317709806)): 1682 tests, 8 FAIL. GREEN `d714b9805a020ea21738e3e32e184b90c0d093e2` ([Actions #40317743385](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40317743385)): 1682 PASS, Skill and Eval validators PASS. 14 deterministic synthetic tests.
+- No new Skill, schema, dependency, Amazon Ads mutation, or external Executor change. Research: `docs/research/experiment-combined-ratio-aggregation-2026-10.md`.
+
+
 ## v1.81.0 — 2026-10-26
 
 ### Fail closed on additional Ready conversion metric aliases (MINOR)
