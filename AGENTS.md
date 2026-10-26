@@ -39,6 +39,8 @@ Modes:
 
 ## Safety rules
 
+- Feature-specific eligibility source independence covers capability-level `evidence[].reference` as well as binding IDs, surface IDs and binding-level probe references across **all** observed connector capabilities (including non-required/Unsupported). Reusing any of these normalized probe references cannot prove Eligible or Ineligible and degrades to Unknown. A distinct label is not external response authentication, advertiser entitlement, causality or write authority; 15 Skills and external Executor boundaries remain unchanged.
+
 - Feature eligibility source independence applies across **all** observed connector capabilities in the same snapshot, not only the current decision's required IDs. A feature-specific `source_reference` colliding with any binding ID, surface ID or supporting probe reference (including unrequired, Unverified or Unsupported capability probes) cannot prove either Eligible or Ineligible; degrade to Unknown. Required-capability access checks remain unchanged. Different references are only a narrow consistency check, not raw HTTP authentication, entitlement verification or write authority.
 
 - Feature eligibility source-reference independence must compare against **all** bindings on each required connector capability, including Unverified/Unknown/Unsupported probes, not only Verified read-side bindings. A reused binding ID, surface ID or supporting evidence reference is not independent entitlement proof even when another binding legitimately verifies connector access. Both Eligible and Ineligible self-references degrade to Unknown; distinct references remain only a narrow consistency check, not raw Amazon API authentication. This adds no write authority.
