@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.83.0`  
+> 当前版本：`v1.84.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Prevent ratio KPI summation in the standalone gate** — when an explicit `metric_name` identifies ROAS, ACOS, TACOS, CVR, CTR or CPC, `scripts/evaluate_metric_aggregation_gate.py` rejects a contradictory `additive` declaration even for supposedly disjoint rows. This is a narrow optional name/semantics consistency check; unnamed legacy calls remain compatible, and the gate does not authenticate source rows or recompute ratios.
 
 - **Keep retail outcomes separate from ad attribution** — a `Ready` experiment no longer mistakes exact Total Retail Sales, Retail Sales, Organic Sales or Sales Rank labels (or unrelated Wholesale Traffic) for ad-attributed conversions. Bare/attributed Sales, Purchases and explicit conversion-family claims retain strict attribution checks. This is a bounded name-classification correction, not proof of retail data provenance or incremental ad effects.
 
