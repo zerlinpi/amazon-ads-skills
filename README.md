@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.93.0`  
+> 当前版本：`v1.94.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Preserve nanosecond-scale Ready holdout chronology** — verified isolation, launch, latest boundary monitoring and material-change timestamps retain all RFC3339 fractional digits for UTC ordering instead of being truncated to Python microseconds. Valid high-precision timestamps, legacy omissions and exploratory plans remain compatible; this does not prove external control history or authorize Ads writes.
 
 - **Reject internally stale Ready holdout monitoring** — a supplied latest clean boundary check cannot predate any valid positively verified isolation proof. UTC/offset chronology, omitted legacy fields and exploratory plans remain compatible. This does not establish continuous control coverage or raw source authenticity.
 

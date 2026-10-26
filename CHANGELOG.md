@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.94.0 — 2026-10-27
+
+### Preserve exact fractional-second Ready holdout evidence chronology (MINOR)
+
+- Python `datetime.fromisoformat` truncates seventh and later fractional digits, previously allowing a later isolation proof, launch check or material change to compare equal to a claimed latest clean boundary verification. Use exact original RFC3339 fractional seconds with UTC whole seconds for chronology; preserve valid arbitrary-precision timestamps, offset equivalence, optional legacy omissions and exploratory plans. No new Skill/schema/dependency, continuous-control proof, or Ads write authority.
+- RED `22e46b287532b9a05a6cf5a55e72a791324277c3` ([Actions #40421697469](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40421697469)): 1868 tests / 6 FAIL; eight compatibility cases passed. GREEN `34bd6cbde493cf4e4dc6ad22f2ad62efae468458` ([Actions #40421775715](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40421775715)): 1868 PASS; Skill/Eval validators PASS. Fourteen deterministic tests. Research: `docs/research/ready-holdout-exact-fractional-chronology-2026-10.md`.
+
+
 ## v1.93.0 — 2026-10-27
 
 ### Guard Ready holdout latest monitoring chronology (MINOR)
