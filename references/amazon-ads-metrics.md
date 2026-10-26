@@ -4,7 +4,7 @@
 
 ## 独立汇总校验（2026-10-26）
 
-调用 `scripts/evaluate_metric_aggregation_gate.py` 判断是否可直接对多行求和时，若已知指标名称，应传入可选 `metric_name` 和独立确认的 `metric_semantics.aggregation_semantics`、`source_relation`。ROAS、ACOS、TACOS、CVR、CTR、CPC 属于比例/派生指标，即使声明为 `additive` 且行不重叠，直接求和也必须被阻止；应从来源、日期、粒度、归因、币种、分子和分母兼容且完整的基础指标重新计算。没有 `metric_name` 的旧调用仍沿用原有语义契约；不能将未验证的指标名称或数据来源当作认证。此脚本不实际汇总数据、不访问广告账户。
+调用 `scripts/evaluate_metric_aggregation_gate.py` 判断是否可直接对多行求和时，若已知指标名称，应传入可选 `metric_name` 和独立确认的 `metric_semantics.aggregation_semantics`、`source_relation`。ROAS、ACOS、TACOS、CVR、CTR、CPC、CPA、CPM、vCPM、ROI 属于比例/派生指标，即使声明为 `additive` 且行不重叠，直接求和也必须被阻止；应从来源、日期、粒度、归因、币种、分子和分母兼容且完整的基础指标重新计算。没有 `metric_name` 的旧调用仍沿用原有语义契约；不能将未验证的指标名称或数据来源当作认证。此脚本不实际汇总数据、不访问广告账户。
 
 ## 基础流量指标
 
@@ -15,6 +15,10 @@
 | CTR | 点击率 | `clicks / impressions` |
 | Spend | 广告花费 | 指定周期内广告支出 |
 | CPC | 平均点击成本 | `spend / clicks` |
+| CPM | 千次展示成本 | `spend / impressions × 1000`（需一致的计费口径） |
+| vCPM | 千次可见展示成本 | `spend / viewable_impressions × 1000`（需来源支持可见展示） |
+| CPA | 单次获客/转化成本 | `spend / qualified_acquisitions`（事件定义与归因必须明确） |
+| ROI | 投资回报率 | `(revenue - cost) / cost`（收入、成本口径必须明确） |
 
 ## 转化与销售指标
 
