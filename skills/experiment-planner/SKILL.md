@@ -13,6 +13,10 @@ Default mode: `Shadow` for design/simulation, otherwise `Suggest`. This Skill ne
 
 Before marking a combined readout `Ready`, confirm the primary metric and every decision-driving guardrail have concrete, unpadded metric names. Whole-label `Unknown`, `Partial`, `Missing`, `Unsupported`, `Unavailable`, `Not Available`, `Not Supported`, `Not Applicable`, `N/A`, blank or non-string names cannot be promoted to resolved identities by an `additive` or `ratio_or_derived` declaration. Concrete names containing these words as substrings are not placeholders. Non-combined Ready and exploratory plans retain their prior compatibility. Use `../../scripts/validate_experiment_plan.py` for the deterministic readiness gate. This does not prove reporting provenance, compatible base components, row disjointness, attribution, experiment isolation or permission to mutate Amazon Ads.
 
+## Official benchmark derived-rate readout safety (v1.90.0)
+
+For a `Ready` combined readout, Amazon Ads benchmark Purchase rate, Add to cart rate, Detail page view rate, Branded search rate, Cost per purchase, Cost per detail page view, and Percent of purchases new to brand are derived measures. Do not declare them `additive` or `non_additive_deduplicated`. The standalone sum gate also blocks their direct summation when the name is supplied. `ratio_or_derived` is necessary for these named metrics but not sufficient: require trustworthy, compatible source numerators, denominators, attribution, currency, date, grain, and overlap evidence before any actual recomputation. Keep missing/unknown distinct from zero; no live Amazon Ads mutation.
+
 ## Connector capability gate
 
 When a conclusion depends on live MCP/API/connector data, load `../../references/connector-capability.md` before interpreting missing or empty fields. If a machine-readable capability snapshot is available, identify the exact required capability IDs and run `../../scripts/evaluate_connector_capability_gate.py` **before metric interpretation**.

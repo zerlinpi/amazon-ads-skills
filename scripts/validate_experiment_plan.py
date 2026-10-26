@@ -286,15 +286,32 @@ def _validate_ready_guardrail_metric_semantics(guardrails: Any) -> list[str]:
 
 
 def _known_ratio_metric(name: Any) -> bool:
-    """Narrow guard for canonical ratio KPI names, not arbitrary metric aliases."""
+    """Bounded name contradictions for canonical KPIs and official benchmark rates.
+
+    Names only detect obvious additive contradictions. They never authenticate
+    source, attribution, compatible denominators, or actual report coverage.
+    """
+    if not isinstance(name, str) or not name.strip():
+        return False
+    label = name.casefold()
     return bool(
-        _non_empty_string(name)
-        and re.search(
+        re.search(
             r"(?<![a-z0-9])(?:acos|tacos|roas|cvr|ctr|cpc|cpa|cpm|vcpm|roi)(?![a-z0-9])",
-            name.casefold(),
+            label,
+        )
+        or re.search(
+            r"(?<![a-z0-9])(?:purchase|add[\s_-]+to[\s_-]+cart|detail[\s_-]+page[\s_-]+view|branded[\s_-]+search)[\s_-]+rate\b",
+            label,
+        )
+        or re.search(
+            r"(?<![a-z0-9])cost[\s_-]+per[\s_-]+(?:purchase|detail[\s_-]+page[\s_-]+view)\b",
+            label,
+        )
+        or re.search(
+            r"(?<![a-z0-9])percent[\s_-]+of[\s_-]+purchases[\s_-]+new[\s_-]+to[\s_-]+brand\b",
+            label,
         )
     )
-
 
 def _unresolved_combined_metric_name(name: Any) -> bool:
     """A Ready combined readout needs a concrete metric identity, not a label placeholder."""

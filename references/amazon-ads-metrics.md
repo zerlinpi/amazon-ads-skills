@@ -12,6 +12,10 @@
 
 明确提供的 `metric_name` 若为 null、空白、Unknown/Partial/Unsupported/Not Available/N/A 等完整占位标签或非字符串，即使声明为 additive 且行不重叠，独立汇总校验也返回 `Unknown`。完全省略可选名称的旧调用保持兼容；本规则不认证原始来源。
 
+## 官方 Benchmark 比例指标补充（2026-10-27）
+
+Amazon Ads 2026-10-06 更新的 [Benchmark reporting](https://advertising.amazon.com/help/GXRC3X4EEPXH8NVE) 明确将 Purchase rate、Add to cart rate、Detail page view rate、Branded search rate、Cost per purchase、Cost per detail page view、Percent of purchases new to brand 定义为分子/分母派生指标。带有 new-to-brand、promoted、combined 等后缀的变体也不能直接相加。跨 Campaign 或维度合并必须使用可比较且完整的基础数据重新计算，不能对这些比率求和；缺失分母不是零。独立汇总与 Ready combined 验证器仅拒绝明确的错误 `additive` 声明，不认证原始来源或自动计算。
+
 ## 基础流量指标
 
 | 指标 | 定义 | 公式/说明 |
