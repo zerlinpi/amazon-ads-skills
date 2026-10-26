@@ -267,6 +267,18 @@ def _validate_ready_guardrail_metric_semantics(guardrails: Any) -> list[str]:
 
 
 
+
+def _known_ratio_metric(name: Any) -> bool:
+    """Narrow guard for canonical ratio KPI names, not arbitrary metric aliases."""
+    return bool(
+        _non_empty_string(name)
+        and re.search(
+            r"(?<![a-z0-9])(?:acos|tacos|roas|cvr|ctr|cpc)(?![a-z0-9])",
+            name.casefold(),
+        )
+    )
+
+
 def _validate_ready_combined_readout_semantics(
     primary_metric: Any,
     guardrails: Any,
@@ -286,6 +298,10 @@ def _validate_ready_combined_readout_semantics(
             errors.append(
                 "Ready combined readout primary metric requires explicit metric semantics.aggregation_semantics"
             )
+        elif _known_ratio_metric(primary_metric.get("name")) and aggregation != "ratio_or_derived":
+            errors.append(
+                "Ready combined readout ratio primary metric requires metric semantics.aggregation_semantics = ratio_or_derived"
+            )
 
     if isinstance(guardrails, list):
         for index, guardrail in enumerate(guardrails):
@@ -296,6 +312,10 @@ def _validate_ready_combined_readout_semantics(
             if aggregation not in READY_RESOLVED_AGGREGATION_SEMANTICS:
                 errors.append(
                     f"Ready combined readout guardrail #{index + 1} requires explicit metric semantics.aggregation_semantics"
+                )
+            elif _known_ratio_metric(guardrail.get("metric")) and aggregation != "ratio_or_derived":
+                errors.append(
+                    f"Ready combined readout ratio guardrail #{index + 1} requires metric semantics.aggregation_semantics = ratio_or_derived"
                 )
 
     return errors
