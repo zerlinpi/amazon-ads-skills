@@ -120,15 +120,15 @@ def _known_ratio_metric(name: Any) -> bool:
             label,
         )
         or re.search(
-            r"(?<![a-z0-9])(?:purchase|add[\\s_-]+to[\\s_-]+cart|detail[\\s_-]+page[\\s_-]+view|branded[\\s_-]+search)[\\s_-]+rate\\b",
+            r"(?<![a-z0-9])(?:purchase|add[\s_-]+to[\s_-]+cart|detail[\s_-]+page[\s_-]+view|branded[\s_-]+search)[\s_-]+rate\b",
             label,
         )
         or re.search(
-            r"(?<![a-z0-9])cost[\\s_-]+per[\\s_-]+(?:purchase|detail[\\s_-]+page[\\s_-]+view)\\b",
+            r"(?<![a-z0-9])cost[\s_-]+per[\s_-]+(?:purchase|detail[\s_-]+page[\s_-]+view)\b",
             label,
         )
         or re.search(
-            r"(?<![a-z0-9])percent[\\s_-]+of[\\s_-]+purchases[\\s_-]+new[\\s_-]+to[\\s_-]+brand\\b",
+            r"(?<![a-z0-9])percent[\s_-]+of[\s_-]+purchases[\s_-]+new[\s_-]+to[\s_-]+brand\b",
             label,
         )
     )
