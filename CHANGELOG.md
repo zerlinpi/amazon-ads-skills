@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.74.0 — 2026-10-26
+
+### Feature eligibility capability-level source evidence guard (MINOR)
+
+- A feature-specific source reference cannot reuse any `capabilities[].evidence[].reference`, including from non-required or Unsupported capabilities. Prior binding-level collision protection remains; both Eligible and Ineligible collisions degrade to Unknown rather than Pass/unsupported exclusion. No source authenticity or Amazon Ads entitlement is inferred from distinct labels.
+- RED `47520eb3787d75c0d75a9e5435bb5c610c3f91f1` [Actions #40261027113](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40261027113): 1580 tests, 4 FAIL. GREEN `17b798291ba143d779c077eb4248e2a7293ad027` [Actions #40261080915](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40261080915): 1580 PASS, 15 Skills and 55 eval fixtures PASS. Seven deterministic synthetic tests.
+- Research: `docs/research/feature-eligibility-capability-evidence-reference-2026-10.md`. No additional Skill, schema, dependency, Amazon Ads account write, retry, idempotency or Executor behavior.
+
 ## v1.73.0 — 2026-10-26
 
 ### Feature eligibility cross-capability source-reference guard (MINOR)
