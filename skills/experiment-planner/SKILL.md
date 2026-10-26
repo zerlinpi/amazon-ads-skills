@@ -45,6 +45,8 @@ Load only the reference required by the experiment. Ordinary short, low-overlap 
 
 ## Experiment validity gates
 
+For `Ready` conversion metrics, the declared `metric_family` cannot override an obvious conversion name (Purchases, Sales, ROAS) to bypass attribution checks. Require `metric_family = conversion`, a concrete `attribution_family`, and a concrete `semantic_version` for the primary metric and conversion guardrails. Whole-label Unknown/Partial/Missing/Unsupported/Not Applicable values are unresolved even when non-empty; non-conversion and Shadow/Hold designs retain their distinct semantics. These checks do not independently authenticate Amazon reporting.
+
 Do not call an experiment decision-ready when any material issue remains unresolved:
 
 - marketplace/profile scope or the actual experiment entity identity is unresolved for a plan that would otherwise be marked `Ready`;

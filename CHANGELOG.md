@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.80.0 — 2026-10-26
+
+### Fail closed on contradictory Ready conversion metric identity (MINOR)
+
+- Ready Purchases/Sales/ROAS primary metrics and conversion guardrails cannot use a declared non-conversion or Unknown metric family to bypass the attribution gate. Whole-label placeholder attribution family or semantic version is unresolved; concrete, valid labels and non-conversion/exploratory plans retain compatibility.
+- RED `28abfc14c5af075973556045dd0dcb794911a6e7` ([Actions #40301701019](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40301701019)): 1652 tests / 7 FAIL. GREEN `2c156db5e53e46171ea8051f74eec888d00be9dd` ([Actions #40301895414](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40301895414)): 1653 PASS, 15 Skills, 55 eval fixtures. Fourteen deterministic synthetic tests.
+- No new Skill, schema, dependency, or Amazon Ads writes; semantic labels are not external provenance authentication. Research: `docs/research/experiment-ready-conversion-semantic-identity-2026-10.md`.
+
+
 ## v1.79.0 — 2026-10-26
 
 ### Resolve claimed Ready holdout isolation evidence (MINOR)
