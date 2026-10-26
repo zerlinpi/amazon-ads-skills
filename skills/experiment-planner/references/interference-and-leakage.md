@@ -1,5 +1,9 @@
 # Experiment interference and leakage reference
 
+## Explicit monitoring evidence is not optional once supplied (v1.86.0)
+
+A `Ready` holdout may omit `comparison.boundary_monitoring` for legacy compatibility. If the field is explicitly present, however, `null`, strings, booleans, numbers and arrays are **unresolved**, not equivalent to absence. Within a supplied monitoring object, explicit `launch_verified_at: null` cannot masquerade as an omitted optional instant, and `material_scope_changes` must be an array if present (an empty array is allowed). Shadow/Hold/Redesign remain exploratory. This only validates internal record consistency; it does not establish external delivery authenticity or continuous experiment isolation.
+
 ## Verified holdout proof is not a boolean-only claim (v1.79.0)
 
 For a `Ready` holdout, `comparison.isolation_evidence[].verified = true` cannot promote a whole-label `Unknown`, `Unsupported`, `Partial`, `Missing`, `Unavailable`, `Not Available` or `Not Supported` evidence string into a proven boundary. Explicit optional `source` and `verified_at` must be resolved, unpadded, and (for time) timezone-aware; omit them only when genuinely unavailable in legacy plans, not to fabricate authentication. Narrative evidence containing those words is not itself a placeholder. Shadow/Hold may preserve unresolved proof. These checks do not attest external Amazon Ads allocation or continuous control execution.
