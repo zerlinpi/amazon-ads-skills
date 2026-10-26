@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.75.0 — 2026-10-26
+
+### Stable identity-keyed SP rule member comparison (MINOR)
+
+- Registered Sponsored Products bid/budget control-state comparisons now ignore source enumeration order **only** for complete, validated `schedule_rules`, `event_rules` and `active_budget_rules` with unique concrete `rule_id`. Reordering alone no longer fabricates an additional competing material-control change; actual member additions/removals, modifier/activation changes, malformed/one-sided evidence and other material list order remain guarded. This does not prove continuous rule execution or advertiser eligibility.
+- RED `f51b605bbe0aaef47f9819a57aaf98ca2e9c2895` [Actions #40266042350](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40266042350): 1590 tests, 3 FAIL; seven compatibility/safety controls passed. GREEN `63c7976d5ea23e1e72e9b7c9368786d1b44c6b2a` [Actions #40266103247](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40266103247): 1590 PASS, 15 Skills and 55 eval fixtures PASS. Ten deterministic tests.
+- Research: `docs/research/sp-rule-member-order-invariance-2026-10.md`. No new Skill, schema, dependency, Amazon Ads account write, retry, idempotency or external Executor behavior.
+
+
 ## v1.74.0 — 2026-10-26
 
 ### Feature eligibility capability-level source evidence guard (MINOR)

@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.74.0`  
+> 当前版本：`v1.75.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Avoid false SP rule confounding from enumeration order**: normalized, complete schedule/event/active-budget rule lists are compared by stable unique `rule_id` for the registered bid/budget causal surfaces. Different row order alone no longer counts as another control change; changed values/status/identities remain material, and incomplete evidence remains Unknown. This does not establish continuous rule execution or grant Ads write access.
 
 - **Reject feature eligibility reuse of capability-level probes**: a feature-specific eligibility source reference cannot reuse a `capabilities[].evidence[].reference` from any observed connector capability, including non-required or Unsupported ones. This closes a separate provenance path from binding-level evidence. Eligible/Ineligible collisions degrade to Unknown; distinct references remain compatible but never authenticate external Amazon Ads responses or authorize writes.
 

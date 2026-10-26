@@ -1,5 +1,9 @@
 # Control-state comparability
 
+## Normalized Sponsored Products rule-member order (v1.75.0)
+
+In the registered Sponsored Products bid/budget causal comparator, `schedule_rules`, `event_rules`, and `active_budget_rules` are source-observed collections of unique concrete `rule_id` members. Once completeness and member validity are verified, an adapter's enumeration order does not itself represent a material control change. Compare those three lists as identity-keyed sets, preserving all member fields, activation status/effective timestamps, and added/removed identities. Do **not** apply this normalization to unrelated material lists or infer rule execution continuity, actual bid composition, feature entitlement or causal lift. An observed change in a rule's amount/status/time remains a competing control; malformed or incomplete evidence stays `Unknown`. See `docs/research/sp-rule-member-order-invariance-2026-10.md`.
+
 Load this shared reference when a baseline/post-change, period-over-period, experiment, placement, bid, or budget conclusion depends on causal interpretation rather than descriptive movement alone.
 
 Measurement comparability is necessary but not sufficient for causal comparability. Two windows can use the same source, reporting generation, metric definitions, attribution semantics, grain, and mature data while the active advertiser controls differ materially.
