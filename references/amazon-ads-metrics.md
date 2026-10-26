@@ -6,6 +6,8 @@
 
 调用 `scripts/evaluate_metric_aggregation_gate.py` 判断是否可直接对多行求和时，若已知指标名称，应传入可选 `metric_name` 和独立确认的 `metric_semantics.aggregation_semantics`、`source_relation`。ROAS、ACOS、TACOS、CVR、CTR、CPC、CPA、CPM、vCPM、ROI 属于比例/派生指标，即使声明为 `additive` 且行不重叠，直接求和也必须被阻止；应从来源、日期、粒度、归因、币种、分子和分母兼容且完整的基础指标重新计算。没有 `metric_name` 的旧调用仍沿用原有语义契约；不能将未验证的指标名称或数据来源当作认证。此脚本不实际汇总数据、不访问广告账户。
 
+明确提供的 `metric_name` 若为 null、空白、Unknown/Partial/Unsupported/Not Available/N/A 等完整占位标签或非字符串，即使声明为 additive 且行不重叠，独立汇总校验也返回 `Unknown`。完全省略可选名称的旧调用保持兼容；本规则不认证原始来源。
+
 ## 基础流量指标
 
 | 指标 | 定义 | 公式/说明 |
