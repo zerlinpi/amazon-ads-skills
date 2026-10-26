@@ -329,7 +329,7 @@ def _unresolved_combined_metric_name(name: Any) -> bool:
     """A Ready combined readout needs a concrete metric identity, not a label placeholder."""
     if not _concrete_identity(name):
         return True
-    normalized = re.sub(r"[\\s_-]+", " ", name.casefold())
+    normalized = re.sub(r"[\s_-]+", " ", name.casefold())
     return normalized in {"not applicable", "n/a"}
 
 
