@@ -9,9 +9,18 @@ from test_experiment_combined_ratio_aggregation import combined_metric
 
 
 def ready_combined(name, *, guardrail=False, aggregation="additive", status="Ready"):
-    return combined_metric(
-        name, aggregation=aggregation, guardrail=guardrail, status=status
+    # Build a valid synthetic plan before inserting malformed identities. The
+    # shared fixture helper intentionally expects string metric names.
+    seed = name if isinstance(name, str) else "Impressions"
+    plan = combined_metric(
+        seed, aggregation=aggregation, guardrail=guardrail, status=status
     )
+    if not isinstance(name, str):
+        if guardrail:
+            plan["guardrails"][0]["metric"] = name
+        else:
+            plan["primary_metric"]["name"] = name
+    return plan
 
 
 class ReadyCombinedMetricIdentityTests(unittest.TestCase):
