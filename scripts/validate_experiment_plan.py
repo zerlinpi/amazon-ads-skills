@@ -24,8 +24,9 @@ HOLDOUT_ISOLATION_MECHANISMS = {
     "verified_routing_partition",
     "verified_delivery_partition",
 }
-CONVERSION_METRIC_TOKENS = ("purchase", "sale", "roas", "conversion")
+CONVERSION_METRIC_TOKENS = ("purchase", "roas", "conversion")
 CONVERSION_METRIC_NAME_PATTERNS = (
+    r"\b(?:sales?|adsales?)\b",
     r"\bacos\b",
     r"\bcvr\b",
     r"\battributed[\s_-]+(?:orders?|units?)\b",
@@ -61,9 +62,19 @@ def _concrete_identity(value: Any) -> bool:
 def _is_conversion_metric(name: Any, semantics: Any) -> bool:
     # A caller-provided non-conversion family must not hide an obvious
     # conversion display name from the Ready attribution-identity gate.
-    name_indicates_conversion = _non_empty_string(name) and (
-        any(token in name.casefold() for token in CONVERSION_METRIC_TOKENS)
-        or any(re.search(pattern, name.casefold()) for pattern in CONVERSION_METRIC_NAME_PATTERNS)
+    normalized_name = name.casefold().strip() if _non_empty_string(name) else ""
+    # Retail/organic sales and sales rank are not ad-attributed conversion
+    # metrics. Only whole, unambiguous labels are exempt: "Attributed Retail
+    # Sales" and bare "Sales" remain subject to the conversion gate.
+    non_attributed_retail_name = bool(re.fullmatch(
+        r"(?:total[\s_-]+)?retail[\s_-]+sales|organic[\s_-]+sales|sales[\s_-]+rank",
+        normalized_name,
+    ))
+    name_indicates_conversion = bool(
+        normalized_name and not non_attributed_retail_name and (
+            any(token in normalized_name for token in CONVERSION_METRIC_TOKENS)
+            or any(re.search(pattern, normalized_name) for pattern in CONVERSION_METRIC_NAME_PATTERNS)
+        )
     )
     family = semantics.get("metric_family") if isinstance(semantics, dict) else None
     return bool(name_indicates_conversion or (

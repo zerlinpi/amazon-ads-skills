@@ -45,6 +45,8 @@ Load only the reference required by the experiment. Ordinary short, low-overlap 
 
 ## Experiment validity gates
 
+Do not conflate non-ad retail metrics with ad-attributed conversions: exact `Total Retail Sales`, `Retail Sales`, `Organic Sales`, and `Sales Rank` may use their own retail/rank semantic family; unrelated `Wholesale Traffic` must not trigger conversion checks because it contains "sale". This is a bounded name guard, not an automatic retail data-quality pass. Bare `Sales`/`Total Sales` remain ambiguous and fail closed as conversions unless fully identified; `Ad-Attributed Sales` and `Purchases` still require attribution identity. Explicit `metric_family=conversion` always requires a concrete attribution family and version. Preserve source, metric, date, grain, marketplace and profile identity before any causal claim.
+
 For `Ready` conversion metrics, the declared `metric_family` cannot override an obvious conversion name (Purchases, Sales, ROAS, ACOS, CVR, attributed orders/units, units sold) to bypass attribution checks. Match ACOS/CVR as whole metric tokens, not as substrings of TACOS or unrelated names; TACOS uses total retail sales and must not be silently treated as attributed ACOS. Require `metric_family = conversion`, a concrete `attribution_family`, and a concrete `semantic_version` for the primary metric and conversion guardrails. Whole-label Unknown/Partial/Missing/Unsupported/Not Applicable values are unresolved even when non-empty; non-conversion and Shadow/Hold designs retain their distinct semantics. These checks do not independently authenticate Amazon reporting.
 
 Do not call an experiment decision-ready when any material issue remains unresolved:
