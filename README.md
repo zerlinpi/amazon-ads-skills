@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.88.0`  
+> 当前版本：`v1.89.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Require concrete metric identities for Ready combined readouts** — unresolved primary or decision-driving guardrail names (whole-label Unknown/Partial/Missing/Unsupported/Unavailable/N/A, blanks, non-strings) cannot pass solely on an additive or derived aggregation declaration. The standalone gate already protects its separate entrypoint; this release closes the Ready experiment parity gap. Concrete labels, non-combined Ready and exploratory plans remain compatible. This does not authenticate Amazon Ads source data or permit live writes.
 
 - **Reject unresolved Ready combined-readout requirements** — an explicitly supplied `comparison.requires_combined_readout` must be a JSON boolean. Null, placeholder strings, numbers, lists and objects cannot silently bypass the combined ratio/derived KPI gate; omitted legacy fields and explicit false remain compatible. This is internal plan consistency, not proof of source comparability or Amazon Ads delivery.
 

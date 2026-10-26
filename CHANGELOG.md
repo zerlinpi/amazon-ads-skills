@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.89.0 — 2026-10-27
+
+### Reject unresolved Ready combined-readout metric identities (MINOR)
+
+- A `Ready` combined experiment now rejects whole-label unresolved, blank, padded and non-string primary or decision-driving guardrail metric names, including when aggregation is declared additive or ratio-derived. This aligns the Ready experiment entrypoint with the earlier standalone metric-identity safety gate; valid concrete names, non-combined Ready and exploratory plans remain compatible.
+- RED fixture commit `7bc237b9ddeaaeb763a26a88af967442436a789a` ([Actions #40380168947](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40380168947)): 1795 tests, 15 FAIL / 0 ERROR. GREEN `38316fce2522ba4077d2a60f243d61955d47ae1a` ([Actions #40380281413](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40380281413)): 1795 PASS; Skill/Eval validators PASS. Twenty synthetic deterministic tests.
+- No new Skill, schema, dependency, Amazon Ads write, or external source authentication. Research: `docs/research/ready-combined-metric-identity-parity-2026-10.md`.
+
+
 ## v1.88.0 — 2026-10-27
 
 ### Reject explicitly unresolved Ready combined-readout requirements (MINOR)
