@@ -67,7 +67,7 @@ def _is_conversion_metric(name: Any, semantics: Any) -> bool:
     # metrics. Only whole, unambiguous labels are exempt: "Attributed Retail
     # Sales" and bare "Sales" remain subject to the conversion gate.
     non_attributed_retail_name = bool(re.fullmatch(
-        r"(?:total[\\s_-]+)?retail[\\s_-]+sales|organic[\\s_-]+sales|sales[\\s_-]+rank",
+        r"(?:total[\s_-]+)?retail[\s_-]+sales|organic[\s_-]+sales|sales[\s_-]+rank",
         normalized_name,
     ))
     name_indicates_conversion = bool(
