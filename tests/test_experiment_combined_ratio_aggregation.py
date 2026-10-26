@@ -11,7 +11,7 @@ from test_validate_experiment_plan import base_plan
 def combined_metric(name, *, aggregation="additive", guardrail=False, status="Ready"):
     plan = base_plan(status=status)
     plan["comparison"]["requires_combined_readout"] = True
-    conversion = name.upper() in {"ROAS", "ACOS", "CVR"}
+    conversion = name.upper() in {"ROAS", "ACOS", "CVR", "SALES"}
     semantics = {
         "metric_family": "conversion" if conversion else "traffic",
         "attribution_family": "standard" if conversion else "not_applicable",
