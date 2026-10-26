@@ -221,6 +221,8 @@ Track this in the experiment-plan schema when available:
 - `comparison.boundary_monitoring.current_status` — current compact integrity state;
 - `comparison.boundary_monitoring.material_scope_changes` — dated scope changes, each with `reverified` when known; only boolean `true` establishes positive re-verification for a `Ready` holdout.
 
+For a `Ready` holdout, supplied `boundary_monitoring` requires an explicit `current_status: Clean` and a valid timezone-aware `latest_verified_at` even if `material_scope_changes` is empty or omitted. Optional `launch_verified_at` must be a valid instant at or before `latest_verified_at`. Missing/unknown state or timestamp is not verified clean monitoring. The monitoring object itself is optional for legacy Ready plans; internal checks do not prove full-window isolation or authenticate remote delivery.
+
 For a `Ready` holdout, a material change newer than `boundary_monitoring.latest_verified_at` means the boundary is stale. Every recorded material change must explicitly have boolean `reverified = true` for `Ready`; absent, null, false or non-boolean values are unresolved even if the latest boundary check is later. Do not treat a stale launch check as evidence that later routing, audience, budget, entity, retail, or automation conditions remained clean.
 
 If the latest trustworthy boundary check predates a material scope-changing event, do not claim the entire later window remained clean.
