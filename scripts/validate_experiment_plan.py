@@ -48,7 +48,7 @@ def _concrete_identity(value: Any) -> bool:
     """Reject evidence placeholders as Ready identities, not embedded ID text."""
     if not _non_empty_string(value) or value != value.strip():
         return False
-    normalized = re.sub(r"[\\s-]+", "_", value.casefold())
+    normalized = re.sub(r"[\s-]+", "_", value.casefold())
     return normalized not in UNAVAILABLE_IDENTITY_LABELS
 
 
