@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.72.0 — 2026-10-26
+
+### Feature eligibility unverified-binding self-reference guard (MINOR)
+
+- A required connector capability may have both a Verified binding and an Unverified probe. Feature eligibility cannot reuse the Unverified probe's binding ID, surface ID or evidence reference as independent feature-specific proof. Such Eligible/Ineligible claims become Unknown/Degraded rather than Pass or a purported verified exclusion. Existing valid distinct references, required capability validation, 15 Skills and external-only Executor boundary remain unchanged.
+- RED `438bfd3395c68bafc232b581aa206375443aa719` [Actions #40250988299](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40250988299): 1564 tests, 4 FAIL. GREEN `96ecd664f08a69bcfd238fc3e22ad4c0e6b40840` [Actions #40251036262](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40251036262): 1564 PASS, 15 Skills and 55 eval fixtures. Six deterministic tests.
+- Research: `docs/research/feature-eligibility-unverified-binding-reference-2026-10.md`. No new external dependency, raw HTTP authentication or live Amazon Ads write.
+
 ## v1.71.0 — 2026-10-26
 
 ### Concrete campaign identity for Sponsored Products causal reviews (MINOR)
