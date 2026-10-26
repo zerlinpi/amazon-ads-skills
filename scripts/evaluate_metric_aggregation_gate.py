@@ -120,6 +120,20 @@ def _known_ratio_metric(name: Any) -> bool:
     )
 
 
+def _explicit_metric_name_unresolved(payload: dict[str, Any]) -> bool:
+    """An explicitly supplied unknown identity is not an omitted legacy name."""
+    if "metric_name" not in payload:
+        return False
+    name = payload["metric_name"]
+    if not isinstance(name, str) or not name.strip():
+        return True
+    normalized = re.sub(r"[\s_-]+", " ", name.strip().casefold())
+    return normalized in {
+        "unknown", "partial", "missing", "unsupported", "unavailable",
+        "not available", "not supported", "not applicable", "n/a",
+    }
+
+
 def evaluate_metric_aggregation_gate(payload: Any) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError("input must be a JSON object")
@@ -158,6 +172,10 @@ def evaluate_metric_aggregation_gate(payload: Any) -> dict[str, Any]:
     elif semantic == "unknown":
         status = "Unknown"
         reason = "aggregation semantics are unknown and must not default to additive"
+    elif semantic == "additive" and _explicit_metric_name_unresolved(payload):
+        status = "Unknown"
+        reason = "explicit metric_name is unresolved; direct summation requires a concrete metric identity"
+        recommended_path = "resolve metric_name from a trustworthy source before evaluating aggregation"
     elif semantic == "additive" and _known_ratio_metric(payload.get("metric_name")):
         status = "Blocked"
         reason = (

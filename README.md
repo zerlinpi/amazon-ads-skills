@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.86.0`  
+> 当前版本：`v1.87.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Reject explicit unresolved metric names in standalone sums** — explicit null, blank, placeholder or non-string `metric_name` cannot authorize an additive direct sum; omitted legacy names remain compatible. This does not authenticate metric provenance.
 
 - **Distinguish absent from unresolved holdout monitoring** — when a `Ready` holdout explicitly supplies `boundary_monitoring`, a null/scalar/list cannot silently pass as if no monitoring were provided. Explicit null launch verification or malformed material-change collections are also unresolved. Omitted optional fields, exploratory plans and 15-Skill read-only boundaries remain compatible; this does not authenticate continuous delivery.
 
