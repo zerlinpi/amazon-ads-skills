@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.77.0`  
+> 当前版本：`v1.78.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Reject incomplete optional Ready holdout monitoring** — when a `Ready` holdout supplies `boundary_monitoring`, require `current_status: Clean` and a valid timezone-aware `latest_verified_at` even with no material changes. Optional `launch_verified_at` cannot be after the latest verification. Legacy absent-monitoring and exploratory plans remain compatible; no remote delivery authentication or Ads write authority.
 
 - **Reject unknown post-change holdout re-verification** — a `Ready` experiment cannot rely on a later `boundary_monitoring.latest_verified_at` alone when any recorded material scope change lacks explicit boolean `reverified: true`. Missing/null/false/non-boolean flags fail closed; positive evidence and chronology both matter. Shadow/Hold remain exploratory, and this does not authenticate delivery or grant Ads write access.
 

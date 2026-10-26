@@ -90,21 +90,36 @@ def _validate_ready_boundary_freshness(comparison: dict[str, Any]) -> list[str]:
     if not isinstance(monitoring, dict):
         return errors
 
-    current_status = monitoring.get("current_status")
-    if current_status is not None and current_status != "Clean":
+    # An optional monitoring record is not proof unless its claimed current
+    # boundary state and latest verification instant are both resolved.
+    if monitoring.get("current_status") != "Clean":
         errors.append(
             "Ready holdout boundary_monitoring.current_status must be Clean when boundary monitoring is present"
         )
-
-    material_changes = monitoring.get("material_scope_changes")
-    if not isinstance(material_changes, list) or not material_changes:
-        return errors
 
     latest_verified_at = _parse_timestamp(
         monitoring.get("latest_verified_at"),
         "comparison.boundary_monitoring.latest_verified_at",
         errors,
     )
+    if monitoring.get("launch_verified_at") is not None:
+        launch_verified_at = _parse_timestamp(
+            monitoring["launch_verified_at"],
+            "comparison.boundary_monitoring.launch_verified_at",
+            errors,
+        )
+        if (
+            launch_verified_at is not None
+            and latest_verified_at is not None
+            and launch_verified_at > latest_verified_at
+        ):
+            errors.append(
+                "Ready holdout boundary_monitoring.launch_verified_at cannot be after latest_verified_at"
+            )
+
+    material_changes = monitoring.get("material_scope_changes")
+    if not isinstance(material_changes, list) or not material_changes:
+        return errors
 
     for index, change in enumerate(material_changes):
         if not isinstance(change, dict):

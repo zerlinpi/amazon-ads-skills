@@ -39,6 +39,9 @@ Modes:
 
 ## Safety rules
 
+- When a `Ready` holdout explicitly supplies `comparison.boundary_monitoring`, require `current_status = Clean` and a valid timezone-aware `latest_verified_at` even without material changes. Optional `launch_verified_at` must be valid and at or before the latest verification. Missing/unknown status, absent/invalid latest verification and impossible launch chronology cannot prove monitored isolation. Absent monitoring remains legacy-compatible; Shadow/Hold/Redesign may retain unresolved evidence. This is an internal read-only consistency gate, not continuous-control proof, external delivery authentication or Ads write permission.
+
+
 - A `Ready` holdout with recorded `comparison.boundary_monitoring.material_scope_changes` requires each material change to have **explicit boolean `reverified: true`**, in addition to the existing latest-verification chronology and Clean boundary status. Missing, null, false, numeric or string claims are unresolved and must not be promoted to Ready merely because `latest_verified_at` is later. Exploratory `Shadow Only`/`Hold`/`Redesign` can retain incomplete records; this is a repository-owned evidence gate, not independent Amazon Ads delivery authentication or write permission.
 
 - A `Ready` experiment plan requires concrete, unpadded marketplace/profile/entity-type and treatment entity identities. Whole-label `Unknown`/`Unsupported`/`Partial`/`Missing`/`Unavailable`/`Not Available`/`Not Supported` are unresolved evidence, never valid scope. Reject duplicate treatment IDs and, when `comparison.control_entity_ids` is supplied, unresolved/duplicate control IDs or exact treatment/control overlap; valid opaque IDs containing these substrings remain valid. Unresolved exploratory `Shadow Only`/`Hold`/`Redesign` plans remain representable. This is repository-owned read-only readiness validation, not Amazon-native ID syntax, holdout delivery verification or live Ads write permission.
