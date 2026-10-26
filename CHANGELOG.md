@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.91.0 — 2026-10-27
+
+### Require known-offset RFC3339 Ready holdout evidence (MINOR)
+
+- Reject -00:00, space separators and second-resolution timezone offsets as Ready holdout verification; preserve valid RFC3339 offsets/fractions, chronology, omitted legacy fields and exploratory plans. No external attestation or Ads writes.
+- RED 9118fb40901f92a6b814efb092d8a2746668656d ([Actions #40398537707](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40398537707)): 1830 tests / 9 FAIL. GREEN 14a96bec12da27084d490273fee16e2f7fb5e6ac ([Actions #40398664913](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40398664913)): 1830 PASS; Skill/Eval validators PASS. Fourteen synthetic tests; research: docs/research/ready-holdout-rfc3339-known-offset-2026-10.md.
+
+
 ## v1.90.0 — 2026-10-27
 
 ### Reject additive official Amazon Ads benchmark rates (MINOR)

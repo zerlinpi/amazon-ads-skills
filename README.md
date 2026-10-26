@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.90.0`  
+> 当前版本：`v1.91.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Reject ambiguous Ready holdout verification times** — known-offset RFC3339 instants are required for supplied launch, monitoring, material-change and isolation evidence; -00:00, space separators and second-resolution offsets are not verification proof. Valid offsets, legacy omissions and exploratory plans remain compatible; no external source authentication or Ads writes.
 
 - **Block additive Amazon benchmark rates and cost-per metrics** — standalone direct sums and Ready combined readouts reject additive claims for official purchase/add-to-cart/detail-page-view/branded-search rates, cost per purchase/detail-page view, and percent of purchases new to brand. This prevents incorrect cross-row rate summation while keeping actual counts additive. Metric labels are not proof of raw report identity or compatible denominators; no live Ads writes.
 
