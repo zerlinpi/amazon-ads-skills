@@ -10,6 +10,7 @@ strict.
 from __future__ import annotations
 
 import json
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -35,6 +36,20 @@ READY_RESOLVED_AGGREGATION_SEMANTICS = AGGREGATION_SEMANTICS - {"unknown"}
 
 def _non_empty_string(value: Any) -> bool:
     return isinstance(value, str) and bool(value.strip())
+
+
+UNAVAILABLE_IDENTITY_LABELS = {
+    "unknown", "unsupported", "partial", "missing", "unavailable",
+    "not_available", "not_supported",
+}
+
+
+def _concrete_identity(value: Any) -> bool:
+    """Reject evidence placeholders as Ready identities, not embedded ID text."""
+    if not _non_empty_string(value) or value != value.strip():
+        return False
+    normalized = re.sub(r"[\s-]+", "_", value.casefold())
+    return normalized not in UNAVAILABLE_IDENTITY_LABELS
 
 
 def _is_conversion_metric(name: Any, semantics: Any) -> bool:
@@ -254,14 +269,27 @@ def validate_experiment_plan(plan: Any) -> list[str]:
 
     errors: list[str] = []
     for field in READY_SCOPE_FIELDS:
-        if not _non_empty_string(scope.get(field)):
-            errors.append(f"Ready experiment plan requires non-empty scope.{field}")
+        if not _concrete_identity(scope.get(field)):
+            errors.append(f"Ready experiment plan requires concrete scope.{field} identity")
 
     entity_ids = scope.get("entity_ids")
     if not isinstance(entity_ids, list) or not entity_ids:
         errors.append("Ready experiment plan requires non-empty scope.entity_ids")
-    elif any(not _non_empty_string(entity_id) for entity_id in entity_ids):
-        errors.append("Ready experiment plan scope.entity_ids must contain only non-empty strings")
+    elif any(not _concrete_identity(entity_id) for entity_id in entity_ids):
+        errors.append("Ready experiment plan scope.entity_ids must contain only concrete identities")
+    elif len(entity_ids) != len(set(entity_ids)):
+        errors.append("Ready experiment plan scope.entity_ids contains duplicate identities")
+
+    comparison = plan.get("comparison")
+    if isinstance(comparison, dict) and "control_entity_ids" in comparison:
+        control_ids = comparison["control_entity_ids"]
+        if not isinstance(control_ids, list) or any(not _concrete_identity(value) for value in control_ids):
+            errors.append("Ready experiment plan comparison.control_entity_ids must contain only concrete identities")
+        elif len(control_ids) != len(set(control_ids)):
+            errors.append("Ready experiment plan comparison.control_entity_ids contains duplicate identities")
+        elif isinstance(entity_ids, list) and all(_concrete_identity(value) for value in entity_ids):
+            if set(entity_ids) & set(control_ids):
+                errors.append("Ready experiment plan comparison.control_entity_ids overlaps treatment scope.entity_ids")
 
     errors.extend(_validate_ready_metric_semantics(plan.get("primary_metric")))
     errors.extend(_validate_ready_guardrail_metric_semantics(plan.get("guardrails")))

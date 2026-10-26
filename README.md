@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.75.0`  
+> 当前版本：`v1.76.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Reject false Ready experiment scope** — unresolved or padded marketplace/profile/entity identifiers, duplicate treatment/control IDs and explicit arm overlap cannot masquerade as a verified experiment boundary; Shadow/Hold designs retain unresolved evidence without inventing IDs.
 
 - **Avoid false SP rule confounding from enumeration order**: normalized, complete schedule/event/active-budget rule lists are compared by stable unique `rule_id` for the registered bid/budget causal surfaces. Different row order alone no longer counts as another control change; changed values/status/identities remain material, and incomplete evidence remains Unknown. This does not establish continuous rule execution or grant Ads write access.
 
