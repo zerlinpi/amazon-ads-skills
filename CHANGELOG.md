@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.85.0 — 2026-10-26
+
+### Block additive CPA/CPM/vCPM/ROI contradictions across both aggregation gates (MINOR)
+
+- The standalone direct-sum gate and `Ready` combined experiment validation now recognize bounded CPA, CPM, vCPM and ROI ratio KPI tokens in addition to ROAS/ACOS/TACOS/CVR/CTR/CPC. Reject contradictory `additive` semantics (and `non_additive_deduplicated` in Ready combined readouts); keep genuine additive Spend/Impressions, unknown semantics, legacy unnamed, Shadow and non-combined callers compatible.
+- RED test commit `28513208d2081202873f64c7fec3ecfd34d096b2` ([Actions #40343010591](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40343010591)): 1730 tests, 10 FAIL. GREEN commits `78ce6aa01cfae11516d5b139a40595f1e470b6b0`, `a0c638891937fa784e1a37a82de90bf3ededd752` ([Actions #40343137676](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40343137676)): 1730 PASS, Skill and Eval validators PASS. 19 synthetic deterministic tests.
+- No additional Skill, schema, dependency, Amazon Ads mutation or external Executor change. This does not authenticate denominators, attribution, currency, date, grain, source completeness or causal lift. Research: `docs/research/extended-cost-return-ratio-aggregation-2026-10.md`.
+
 ## v1.84.0 — 2026-10-26
 
 ### Block contradictory additive ratio KPIs in standalone direct-sum gate (MINOR)
