@@ -59,6 +59,9 @@ class ReadyConversionSemanticIdentityTests(unittest.TestCase):
     def test_primary_purchases_cannot_claim_not_supported_version(self):
         self.assert_rejected(conversion_primary(semantic_version="Not Supported"), "semantic_version")
 
+    def test_primary_purchases_cannot_claim_not_applicable_attribution(self):
+        self.assert_rejected(conversion_primary(attribution_family="not_applicable"), "attribution_family")
+
     def test_guardrail_roas_cannot_claim_traffic_family(self):
         self.assert_rejected(conversion_guardrail(metric_family="traffic"), "metric_family")
 
