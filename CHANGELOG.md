@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.78.0 — 2026-10-26
+
+### Complete optional Ready holdout monitoring evidence (MINOR)
+
+- Supplied `comparison.boundary_monitoring` for a `Ready` holdout must contain `current_status = Clean` and a valid timezone-aware `latest_verified_at` even without recorded scope changes. Optional `launch_verified_at` must be a valid instant no later than the latest verification. Previously the empty/no-change path skipped these checks.
+- RED `6983ef9dcc136206d89bcddc46ba50b78ca045b1` ([Actions #40281384600](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40281384600)): 1627 tests, 9 FAIL; GREEN `209584832e0dc89f92a076e29d3c43a92d428f52` ([Actions #40281435606](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40281435606)): 1627 PASS, 15 Skills and 55 eval fixtures PASS. Fourteen synthetic deterministic tests.
+- Monitoring remains optional for legacy Ready holdouts; Shadow/Hold/Redesign remain exploratory. No new Skill, schema, dependency, live Ads writes or Executor behavior. Internal evidence consistency is not remote delivery authentication. Research: `docs/research/experiment-ready-boundary-monitoring-completeness-2026-10.md`.
+
+
 ## v1.77.0 — 2026-10-26
 
 ### Positive re-verification for material holdout boundary changes (MINOR)
