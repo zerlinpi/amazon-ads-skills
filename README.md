@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.81.0`  
+> 当前版本：`v1.82.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Prevent ratio KPI roll-up misclassification** — a `Ready` experiment requiring a combined readout cannot declare canonical ROAS, ACOS, TACOS, CTR, CVR or CPC as `additive` or `non_additive_deduplicated`; these require `ratio_or_derived` and a separate source/grain/completeness-safe recomputation. Raw Sales/Impressions remain additive when supported. Shadow and non-combined plans retain their prior contract; no live Ads writes.
 
 - **Protect additional Ready conversion metric names** — ACOS, CVR, attributed orders/units and units sold cannot claim a traffic/Unknown family to bypass attribution/version evidence. Exact-name ACOS recognition does not conflate TACOS (total retail sales) with ad-attributed ACOS; genuine traffic and Shadow plans stay compatible. Internal checks do not authenticate external reports or execute Ads changes.
 
