@@ -161,6 +161,37 @@ def _rfc3339_instant(value: Any) -> tuple[datetime, Decimal] | None:
     )
 
 
+
+def _same_transition_provenance(before: Any, after: Any) -> bool:
+    """One readback cannot assert two incompatible transition histories.
+
+    Provenance is optional; absent/null on both sides is legacy-compatible.
+    When supplied, preserve exact actor/mode/status/reason evidence and compare
+    transition timestamps as UTC instants with full fractional precision.
+    """
+    if before is None or after is None:
+        return before is None and after is None
+    if not isinstance(before, dict) or not isinstance(after, dict):
+        return False
+    if before.keys() != after.keys():
+        return False
+    for field in before:
+        if field == "transition_observed_at":
+            left, right = before[field], after[field]
+            if left is None or right is None:
+                if left is not None or right is not None:
+                    return False
+            else:
+                left_instant = _rfc3339_instant(left)
+                right_instant = _rfc3339_instant(right)
+                if left_instant is None or right_instant is None or left_instant != right_instant:
+                    return False
+        elif not _json_state_equal(before[field], after[field]):
+            return False
+    return True
+
+
+
 def _control_map(snapshot: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return {item["control_type"]: item for item in snapshot.get("controls", [])}
 
@@ -768,6 +799,14 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
                 return {
                     "classification": "Unknown",
                     "reasons": [f"conflicting {control_type} evidence_status reuses the same source.readback_id observation"],
+                }
+            if not _same_transition_provenance(
+                before_control.get("transition_provenance"),
+                after_control.get("transition_provenance"),
+            ):
+                return {
+                    "classification": "Unknown",
+                    "reasons": [f"conflicting {control_type} transition_provenance reuses the same source.readback_id observation"],
                 }
 
     provenance_before = baseline["coverage"]["requirement_provenance"]

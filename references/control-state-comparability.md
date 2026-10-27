@@ -1,5 +1,10 @@
 # Control-state comparability
 
+## Transition provenance under one readback (v1.100.0)
+
+A reused concrete `source.readback_id` must not carry contradictory per-control `transition_provenance` (management mode, actor, actor-evidence status, reason, or transition-observed instant). One-sided provenance is unresolved. Compare supplied known-offset RFC3339 instants in exact UTC time, including nanoseconds. Return `Unknown`, not `Comparable`. Distinct readbacks, both-absent/null legacy provenance and offset-equivalent times remain compatible. This read-only consistency gate does not prove external actor identity, full-window rule execution, or authorize Ads writes.
+
+
 
 ## N/A and Not Applicable scope/source identity evidence (v1.99.0)
 

@@ -5,6 +5,11 @@ description: Evaluate whether an Amazon Ads optimization change was actually app
 
 # Amazon Ads Post-change Review
 
+## Reused readback transition provenance (v1.100.0)
+
+Run `../../scripts/compare_control_state.py` before causal review. A reused concrete `source.readback_id` must not carry contradictory per-control `transition_provenance` (management mode, actor, actor-evidence status, reason, or transition-observed instant). One-sided provenance is unresolved. Compare supplied known-offset RFC3339 instants in exact UTC time, including nanoseconds. Return `Unknown`, not `Comparable`. Distinct readbacks, both-absent/null legacy provenance and offset-equivalent times remain compatible. This read-only consistency gate does not prove external actor identity, full-window rule execution, or authorize Ads writes.
+
+
 
 ## Scope/source placeholder safety (v1.99.0)
 

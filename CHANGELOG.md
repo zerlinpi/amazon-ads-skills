@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.100.0 — 2026-10-27
+
+### Reject contradictory transition provenance under reused readback identity (MINOR)
+
+- Same concrete `source.readback_id` can no longer return `Comparable` with contradictory optional per-control transition actor, management mode, actor-evidence status, reason or transition timestamp. One-sided evidence is unresolved; exact UTC fractional seconds, distinct IDs and omitted legacy fields remain compatible. This is internal read-only consistency, not external actor authentication or continuous rule-history proof.
+- RED `bc3c7949fa53b463de96c6d6de1153193d8861a9` ([Actions #40457523558](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40457523558)): 1953 tests / 9 FAIL. GREEN `185a77312dee0a6e686ee2e5ea840b768bda8378` ([Actions #40457609259](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40457609259)): 1953 PASS, 15 Skills and 55 Evals PASS. Fifteen synthetic deterministic tests.
+- Research: `docs/research/control-readback-transition-provenance-integrity-2026-10.md`. VERSION, README and all three runtime manifests synchronized. No new Skill, schema, dependency or Ads writes.
+
+
 ## v1.99.0 — 2026-10-27
 
 ### Reject unresolved N/A and Not Applicable scope/source identities (MINOR)
