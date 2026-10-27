@@ -938,6 +938,25 @@ def _intervening_control_events_problem(
                 event_state_problem = _sp_intervening_state_problem(control_type, state, label, surface)
                 if event_state_problem:
                     return event_state_problem, set()
+                # Non-rule routing/audience event evidence cannot bypass the
+                # collection guards already required for endpoint snapshots.
+                # No event-side proof contract exists for these extra lists;
+                # even an empty descendant array remains unverified.
+                if control_type in {"targeting_or_routing", "audience_bid_adjustment"}:
+                    collection_control = {"state": state}
+                    if control_type == "targeting_or_routing" and isinstance(state, dict):
+                        for list_field, value in state.items():
+                            if isinstance(value, list):
+                                collection_problem = _nested_collection_problem(
+                                    collection_control, control_type, list_field, f"{label} {field}"
+                                )
+                                if collection_problem:
+                                    return collection_problem, set()
+                    collection_problem = _deep_extra_collection_problem(
+                        collection_control, control_type, f"{label} {field}"
+                    )
+                    if collection_problem:
+                        return collection_problem, set()
             # Rule members must be usable before identity-keyed comparison;
             # otherwise a reordered list or malformed ID could masquerade as
             # a control transition. This does not prove collection completeness.

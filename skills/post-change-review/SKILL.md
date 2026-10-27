@@ -5,6 +5,10 @@ description: Evaluate whether an Amazon Ads optimization change was actually app
 
 # Amazon Ads Post-change Review
 
+## Non-rule event array completeness (v1.114.0)
+
+The read-only comparator rejects unproven direct/deep routing arrays and nested audience-member arrays in positive mid-window SP `control_events` as `Unknown`, including empty lists. Flat audience and scalar routing changes remain compatible. An event cannot bypass endpoint collection completeness. This does not prove a complete event log or authorize Ads writes; default Read-only/Suggest/Shadow, external authorized Executor only.
+
 ## Optional nested rule-event JSON Pointer proof (v1.113.0)
 
 For observed SP schedule/event/budget `control_events` containing nested rule-member arrays, the comparator accepts `rule_descendant_collection_evidence` only when both before/after maps exactly cover all state-relative RFC 6901 descendant list pointers, with independently Complete enumeration, Complete pagination and Supported capability. Also require valid paired outer `rule_collection_evidence`. Missing, extra, partial, malformed or one-sided proof is `Unknown`; legacy unproven nested arrays remain `Unknown`, and flat rule events retain prior behavior. This cannot establish authenticated complete event history or continuous execution. Default Read-only/Suggest/Shadow; external authorized Executor alone owns live Ads writes.
