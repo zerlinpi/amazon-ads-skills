@@ -1,5 +1,9 @@
 # Control-state comparability
 
+## Intervening SP budget and routing state semantics (v1.104.0)
+
+Positive mid-window `control_events` must carry usable budget and routing states before a change can support `Confounded` or `Treatment Isolated`. For SP budget-change decisions, each event-side `budget_or_pacing` state requires finite nonnegative base/effective daily budgets, a source-supported active-budget-rule list and a concrete policy label. SP bid-change decisions preserve legacy partial budget state shapes but reject any explicitly invalid budget amount/policy. `targeting_or_routing` events require the existing normalized site restrictions (`ALL_ELIGIBLE` or `AMAZON_BUSINESS`); optional retailer scope must be `AMAZON_STORE` or `ACROSS_RETAILERS`, present on both sides when used, and must not contradict Business-exclusive routing. Non-scalar labels are unresolved, not parser exceptions. This does not independently prove Amazon API eligibility, event stream completeness, actor identity or causal incrementality.
+
 ## Intervening Sponsored Products event state values (v1.103.0)
 
 The optional post-owned `control_events` contract describes positively observed transitions, not arbitrary value changes. For registered Sponsored Products bid/budget causal surfaces, the comparator now checks event before/after base and video bid values for finite nonnegative numeric evidence, placement events for all three standard surfaces with usable modifiers (and usable Amazon Business modifier if present), audience events for stable unique IDs and nonnegative boosts, and bidding-strategy events for supported fixed/dynamic or rule-based guardrail states. Invalid event-only values return `Unknown` rather than manufacturing a `Confounded` or `Treatment Isolated` conclusion. Preserve valid decimal strings, zero, and rule-based strategy aliases. This does not prove source authenticity, continuous rule execution, complete event capture, or causal impact.

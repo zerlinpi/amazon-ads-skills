@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.104.0 — 2026-10-27
+
+### Reject invalid mid-window Sponsored Products budget and routing event states (MINOR)
+
+- Apply source-supported SP budget amount/policy and site/retailer routing semantics to explicit post-owned `control_events` before/after states. For budget-change reviews, event budget state must contain base/effective budget, active rules and policy; bid-change reviews preserve partial legacy budget shapes but reject invalid explicit values. Unmapped or contradictory routing and one-sided retailer scope return `Unknown`. Observed valid transitions remain `Confounded` or `Treatment Isolated` as appropriate.
+- RED `4076b1fe06d202437ec13483c5d1f3a1e2e0fc50` ([Actions #40482958315](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40482958315)): 2029 tests, 10 FAIL. First GREEN `0ef6014bd1c80ed55dc0d67c4b8063a705b2d7ee` ([Actions #40483041208](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40483041208)): 2029 PASS. Additional type-safety RED `96674486cf6dbcf84f5cbff990929eb8b4bd0e94` ([Actions #40483075939](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40483075939)): 2031 tests, 2 ERROR; GREEN `ca024abd07ebe448b87d032be8ae77441da021da` ([Actions #40483095636](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40483095636)): 2031 PASS, Skills/Evals PASS.
+- Sixteen deterministic synthetic tests; no new Skill, schema field, dependency or live Amazon Ads write. This is internal event-value consistency, **not** authenticated complete event history or eligibility proof. Research: `docs/research/intervening-sp-budget-routing-state-semantics-2026-10.md`; source and copyright boundary: `docs/SOURCES.md`.
+
 ## v1.103.0 — 2026-10-27
 
 ### Reject invalid observed Sponsored Products event-only control values (MINOR)

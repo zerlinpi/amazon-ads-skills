@@ -709,7 +709,7 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
 
 
 
-def _sp_intervening_state_problem(control_type: str, state: Any, label: str) -> str | None:
+def _sp_intervening_state_problem(control_type: str, state: Any, label: str, surface: str) -> str | None:
     """Apply the same basic SP value semantics to positive event evidence.
 
     An event can prove a confounder only when its observed before/after values
@@ -745,6 +745,41 @@ def _sp_intervening_state_problem(control_type: str, state: Any, label: str) -> 
                 return f"{label} bidding_strategy lacks usable rule-based guardrail evidence"
         else:
             return f"{label} bidding_strategy is unknown or unrecognized"
+    elif control_type == "budget_or_pacing":
+        # A positive mid-window budget event must not bypass the same
+        # observed amount/policy contract used at SP budget endpoints.
+        # Bid reviews retain legacy partial budget shape compatibility, but
+        # any explicitly supplied amount or policy must still be usable.
+        if not isinstance(state, dict) or not isinstance(state.get("active_budget_rules"), list):
+            return f"{label} budget_or_pacing lacks observed active_budget_rules"
+        if surface == "sponsored_products_budget_change":
+            required = {
+                "base_average_daily_budget", "effective_daily_budget",
+                "active_budget_rules", "average_daily_budget_policy",
+            }
+            if not required.issubset(state):
+                return f"{label} budget_or_pacing lacks required budget policy fields"
+        for field in ("base_average_daily_budget", "effective_daily_budget"):
+            if field in state and not _observed_budget_amount(state[field]):
+                return f"{label} budget_or_pacing has unknown or invalid {field}"
+        if "average_daily_budget_policy" in state:
+            policy = state["average_daily_budget_policy"]
+            if (not isinstance(policy, str) or policy != policy.strip()
+                    or _explicit_material_state_problem(policy)):
+                return f"{label} budget_or_pacing has unknown average_daily_budget_policy"
+    elif control_type == "targeting_or_routing":
+        # Site/retailer labels are repository-normalized read-side evidence,
+        # not native Amazon API enums or universal eligibility claims.
+        if (not isinstance(state, dict)
+                or not isinstance(state.get("site_restriction"), str)
+                or state["site_restriction"] not in {"ALL_ELIGIBLE", "AMAZON_BUSINESS"}):
+            return f"{label} targeting_or_routing lacks a verified site_restriction"
+        if "retailer_scope" in state:
+            retailer = state["retailer_scope"]
+            if not isinstance(retailer, str) or retailer not in {"AMAZON_STORE", "ACROSS_RETAILERS"}:
+                return f"{label} targeting_or_routing has unmapped retailer_scope"
+            if retailer == "ACROSS_RETAILERS" and state["site_restriction"] == "AMAZON_BUSINESS":
+                return f"{label} targeting_or_routing contradicts across-retailer site eligibility"
     return None
 
 
@@ -817,7 +852,7 @@ def _intervening_control_events_problem(
             # those semantics to manufacture a confounder or isolated action.
             surface = baseline["coverage"]["requirement_provenance"]["decision_surface"]
             if surface in {"sponsored_products_bid_change", "sponsored_products_budget_change"}:
-                event_state_problem = _sp_intervening_state_problem(control_type, state, label)
+                event_state_problem = _sp_intervening_state_problem(control_type, state, label, surface)
                 if event_state_problem:
                     return event_state_problem, set()
             # Rule members must be usable before identity-keyed comparison;
@@ -838,6 +873,11 @@ def _intervening_control_events_problem(
                         return f"{label} has incomplete or invalid {field}.{collection}", set()
 
         before_state, after_state = event["before_state"], event["after_state"]
+        if control_type == "targeting_or_routing":
+            # An optional retailer dimension appearing on only one side
+            # cannot establish the before/after routing transition.
+            if ("retailer_scope" in before_state) != ("retailer_scope" in after_state):
+                return f"{label} has one-sided retailer_scope evidence", set()
         same = (
             _sp_rule_state_equal(control_type, before_state, after_state)
             if control_type in {"schedule_or_event_rule", "budget_or_pacing"}

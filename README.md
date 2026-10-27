@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.103.0`  
+> 当前版本：`v1.104.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Reject invalid mid-window Sponsored Products budget/routing events** — observed event before/after budget amounts, daily-budget policy and site/retailer routing must be usable before a competing change can be classified. Unmapped or contradictory site/retailer states and missing required budget-change fields return `Unknown`; valid observed transitions remain compatible. Event logs remain optional, non-exhaustive and read-only.
 
 - **Validate intervening Sponsored Products event values** — positively observed mid-window bid, video, placement, audience and bidding-strategy transitions must carry usable, source-supported numeric/member/strategy states, not arbitrary strings, booleans, negative modifiers or incomplete placement surfaces. Invalid event values return `Unknown`, not a fabricated confounder or isolated treatment. This remains endpoint-only unless an authenticated, complete history is independently available; no live Ads writes.
 
