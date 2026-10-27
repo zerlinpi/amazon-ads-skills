@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.112.0 — 2026-10-28
+
+### Reject unproven descendant collections inside observed SP rule events (MINOR)
+
+- Reuse the existing deep nested-list completeness guard for positively observed mid-window Sponsored Products schedule/event/budget rule states. Top-level `rule_collection_evidence` does not cover nested arrays inside rule members. Without an event descendant-proof contract, classify even empty nested arrays as `Unknown`, not a certified `Confounded` transition. Valid flat members, top-level empty lists and legacy non-nested events remain compatible; no schema field, dependency, new Skill or live Ads write.
+- RED tests-only `dfbd5081e706f9e80c06518e2c3a4f3a9a71c497` ([Actions #40562520498](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40562520498)): 2107 tests, 4 FAIL. Production fix `38bc8e2c68150f0472954aa82d2f3cc345f6bd59` ([Actions #40562550569](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40562550569)). Eight synthetic deterministic tests; final CI outcome is independently checked on the PR head.
+- Research: `docs/research/intervening-sp-rule-descendant-completeness-2026-10.md`; source/license review: `docs/SOURCES.md`. External authorized Executor owns all Ads writes, retries, idempotency and reconciliation.
+
 ## v1.111.0 — 2026-10-28
 
 ### Optional paired completeness proof for observed mid-window SP rule collections (MINOR)
