@@ -39,6 +39,9 @@ Modes:
 
 ## Safety rules
 
+- **N/A material state and member evidence (v1.101.0):** A complete/observed material-control inventory cannot treat whole-label `N/A` or `Not Applicable` (including whitespace/hyphen/underscore variants) as a known control state, nested value, schedule/event/budget `rule_id`, or audience identity. Return `Unknown`, never `Treatment Isolated`/`Comparable`. Valid opaque strings containing these substrings, genuine zero/false and real confounders remain compatible. This read-only sentinel gate does not authenticate raw Amazon Ads API observations, prove continuous rule activation or permit live writes.
+
+
 - **Reused readback transition provenance (v1.100.0):** A reused concrete `source.readback_id` must not carry contradictory per-control `transition_provenance` (management mode, actor, actor-evidence status, reason, or transition-observed instant). One-sided provenance is unresolved. Compare supplied known-offset RFC3339 instants in exact UTC time, including nanoseconds. Return `Unknown`, not `Comparable`. Distinct readbacks, both-absent/null legacy provenance and offset-equivalent times remain compatible. This read-only consistency gate does not prove external actor identity, full-window rule execution, or authorize Ads writes.
 
 - **Scope/source N/A identity guard (v1.99.0):** A repeated whole-label `N/A` or `Not Applicable` (including whitespace, underscore or hyphen variants) cannot certify marketplace, profile, campaign, entity, account, source-system, acquisition-channel or connector identity. Return `Unknown` rather than `Treatment Isolated` or `Comparable`. Preserve valid opaque identifiers containing these substrings. This read-only check is not external source authentication, continuous control-history proof or Ads write permission.

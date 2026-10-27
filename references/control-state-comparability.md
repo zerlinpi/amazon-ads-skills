@@ -1,5 +1,10 @@
 # Control-state comparability
 
+## N/A material state and member identity (v1.101.0)
+
+A Complete, observed material-control snapshot still cannot certify a whole-label `N/A` or `Not Applicable` in a scalar, nested or list state. This includes normalized Sponsored Products `rule_id` and `audience_id` members: a repeated unavailable member label cannot prove stable competing controls. Return `Unknown` instead of `Comparable` or `Treatment Isolated`. Normalize whitespace, hyphen and underscore variants only for exact reserved labels; do not reject opaque IDs containing these substrings. Preserve genuine observed zero/false, valid control changes, and legacy optional fields. This is read-only internal consistency, not authenticated rule execution history or Ads write permission.
+
+
 ## Transition provenance under one readback (v1.100.0)
 
 A reused concrete `source.readback_id` must not carry contradictory per-control `transition_provenance` (management mode, actor, actor-evidence status, reason, or transition-observed instant). One-sided provenance is unresolved. Compare supplied known-offset RFC3339 instants in exact UTC time, including nanoseconds. Return `Unknown`, not `Comparable`. Distinct readbacks, both-absent/null legacy provenance and offset-equivalent times remain compatible. This read-only consistency gate does not prove external actor identity, full-window rule execution, or authorize Ads writes.
