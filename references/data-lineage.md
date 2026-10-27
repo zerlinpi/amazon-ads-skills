@@ -365,3 +365,7 @@ This reference governs evidence quality only. It does not authorize live Amazon 
 ## Deduplicated reach and frequency
 
 For deduplicated reach/frequency semantics, load `deduplicated-reach-frequency.md`. These metrics are **non-additive** across overlapping time grains or scopes; missing coverage is unknown, not zero.
+
+## Explicit Stream v2 dataset identity
+
+For a resolved Stream v2 source, an explicitly supplied `stream_dataset` must be a concrete unpadded label, not null/Unknown/Partial/Unsupported. The standalone aggregation gate returns `Unknown` for unresolved dataset identity despite Verified record-version flags. Omitted legacy metadata remains compatible but does not prove source scope. Separately verify account/subscription filters, date, grain, attribution, full delivery and raw source authenticity; unknown is never zero.

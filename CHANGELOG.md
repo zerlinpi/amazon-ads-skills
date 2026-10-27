@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.116.0 — 2026-10-28
+
+### Reject explicitly unresolved Stream v2 dataset identity (MINOR)
+
+- Explicit Stream v2 `stream_dataset` identity now fails closed when supplied as null, non-string, blank, padded, or whole-label Unknown/Partial/Missing/Unsupported/Unavailable/Not Applicable. Such claims return `Unknown` despite Verified record-key/version flags; omitted legacy metadata and concrete opaque dataset labels remain compatible. This is a narrow read-only metadata consistency check, not raw S3/SQS authentication or full-window completeness.
+- RED tests-only `008fecf36a59f39c3ea75be01e590b08e04571a3` ([Actions #40604217809](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40604217809)): 2149 tests, 7 FAIL. GREEN `92f9d56b18d8bb079ac779641a2eabfc464cecdd` ([Actions #40604282411](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40604282411)): 2149 PASS; Skill/Eval validators PASS. Ten deterministic tests. No new Skill, schema, dependency, live Ads write, retry or executor.
+- Research: `docs/research/stream-v2-explicit-dataset-identity-2026-10.md`; sources and licensing boundaries: `docs/SOURCES.md`.
+
 ## v1.115.0 — 2026-10-28
 
 ### Reject unproven extra direct arrays in observed SP rule events (MINOR)
