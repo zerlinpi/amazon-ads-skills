@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.97.0 — 2026-10-27
+
+### Guard explicit control readback provenance and exact observation identity (MINOR)
+
+- An explicitly supplied non-null `source.readback_id` can no longer be a placeholder, padded, blank or non-string identifier. Two snapshots reusing one valid ID must also agree on the exact UTC `observed_at` instant, including submicrosecond precision; identical ID with different times cannot prove `Comparable` or causal isolation. Omitted/null optional legacy IDs, distinct concrete IDs and offset-equivalent timestamps remain compatible. This is internal consistency, not authenticated full-window control history or Ads write authority.
+- RED `daa1b8b53f9a9b0d8c655a56dcf45971bdab1fdc` ([Actions #40440704449](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40440704449)): 1910 tests, 12 FAIL. GREEN `763cf684410688387cdde53d2647a978f277799e` ([Actions #40440800591](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40440800591)): 1910 PASS; Skill/Eval validators PASS. Nineteen deterministic tests; research: `docs/research/control-readback-provenance-integrity-2026-10.md`.
+
 ## v1.96.0 — 2026-10-27
 
 ### Fail closed on reused readback observation identities (MINOR)
