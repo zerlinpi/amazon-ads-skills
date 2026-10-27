@@ -876,9 +876,6 @@ def _intervening_control_events_problem(
         if surface in {"sponsored_products_bid_change", "sponsored_products_budget_change"}:
             # A field observed on only one side cannot establish a known
             # transition. Both-absent optional evidence remains compatible.
-            if control_type == "placement_adjustment":
-                if ("amazon_business" in before_state) != ("amazon_business" in after_state):
-                    return f"{label} has one-sided amazon_business placement evidence", set()
             if control_type == "budget_or_pacing":
                 for optional_field in (
                     "base_average_daily_budget", "effective_daily_budget",

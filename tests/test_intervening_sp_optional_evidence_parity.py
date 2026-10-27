@@ -24,7 +24,7 @@ class InterveningSPOptionalEvidenceParityTests(unittest.TestCase):
     def placement_one_sided(self, side):
         baseline, post, event = fixture("placement_adjustment")
         event[side + "_state"]["amazon_business"] = 0
-        self.check(baseline, post, "Unknown", "amazon_business")
+        self.check(baseline, post, "Confounded")
 
     def test_missing_before_base_budget_is_unknown(self):
         self.budget_one_sided("base_average_daily_budget", "before")
@@ -44,10 +44,10 @@ class InterveningSPOptionalEvidenceParityTests(unittest.TestCase):
     def test_missing_after_budget_policy_is_unknown(self):
         self.budget_one_sided("average_daily_budget_policy", "after")
 
-    def test_amazon_business_only_before_placement_is_unknown(self):
+    def test_amazon_business_only_before_placement_remains_confounder(self):
         self.placement_one_sided("before")
 
-    def test_amazon_business_only_after_placement_is_unknown(self):
+    def test_amazon_business_only_after_placement_remains_confounder(self):
         self.placement_one_sided("after")
 
     def test_bid_surface_both_absent_optional_base_budget_remains_compatible(self):
