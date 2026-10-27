@@ -968,6 +968,21 @@ def _intervening_control_events_problem(
                 )
                 if not isinstance(state, dict):
                     return f"{label} has unstructured {field} rule evidence", set()
+                # The paired rule_collection_evidence envelope certifies only
+                # registered rule lists. An extra direct array has no event-side
+                # completeness contract; even an empty list cannot be inferred
+                # complete from a different collection's proof.
+                known_rule_lists = {collection for collection, _ in rule_fields}
+                extra_direct_lists = sorted(
+                    name for name, value in state.items()
+                    if isinstance(value, list) and name not in known_rule_lists
+                )
+                if extra_direct_lists:
+                    return (
+                        f"{label} {field} has unproven direct rule collections: "
+                        + ", ".join(extra_direct_lists),
+                        set(),
+                    )
                 for collection, modifier in rule_fields:
                     if _rule_member_problem(
                         state.get(collection), collection, modifier, label, event["event_at"]
