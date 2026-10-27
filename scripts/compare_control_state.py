@@ -786,6 +786,20 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
     if reasons:
         return {"classification": "Unknown", "reasons": reasons, "changed_controls": changed}
 
+    # A readback_id identifies one observed snapshot, not a reusable account
+    # or connector. Contradictory material states cannot be independently
+    # observed under the exact same non-null readback identity.
+    before_readback = baseline["source"].get("readback_id")
+    after_readback = post["source"].get("readback_id")
+    if (changed and before_readback is not None
+            and type(before_readback) is type(after_readback)
+            and before_readback == after_readback):
+        return {
+            "classification": "Unknown",
+            "reasons": ["conflicting material states reuse the same source.readback_id observation"],
+            "changed_controls": changed,
+        }
+
     if intended_treatment:
         if intended_treatment not in required_before:
             return {"classification": "Unknown", "reasons": ["intended treatment is outside the evidenced material-control set"]}
