@@ -5,6 +5,10 @@ description: Evaluate whether an Amazon Ads optimization change was actually app
 
 # Amazon Ads Post-change Review
 
+## Optional nested rule-event JSON Pointer proof (v1.113.0)
+
+For observed SP schedule/event/budget `control_events` containing nested rule-member arrays, the comparator accepts `rule_descendant_collection_evidence` only when both before/after maps exactly cover all state-relative RFC 6901 descendant list pointers, with independently Complete enumeration, Complete pagination and Supported capability. Also require valid paired outer `rule_collection_evidence`. Missing, extra, partial, malformed or one-sided proof is `Unknown`; legacy unproven nested arrays remain `Unknown`, and flat rule events retain prior behavior. This cannot establish authenticated complete event history or continuous execution. Default Read-only/Suggest/Shadow; external authorized Executor alone owns live Ads writes.
+
 ## Unproven nested rule collections in mid-window SP events (v1.112.0)
 
 A positive Sponsored Products schedule/event/budget `control_events` transition cannot certify nested arrays inside rule members merely because its outer `schedule_rules`, `event_rules` or `active_budget_rules` list has a Complete declaration. Endpoint snapshots already require independent JSON-pointer evidence for nested arrays; the current event schema has no descendant-proof contract. Any descendant list (including an empty list) within an observed rule member returns `Unknown`, with or without optional outer proof. Flat scalar rule members, valid top-level empty collections and legacy non-nested events retain their existing classifications. This conservative repository-owned read-side rule does not authenticate Amazon Ads history or prove full-window coverage; only an authorized external Executor may write.

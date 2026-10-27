@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.113.0 — 2026-10-28
+
+### Optional paired JSON Pointer completeness proof for nested SP rule events (MINOR)
+
+- Add backward-compatible `rule_descendant_collection_evidence` to observed SP schedule/event/budget rule transitions. Each before/after phase independently proves every nested list with exact RFC 6901 pointers, Complete enumeration/pagination and Supported capability. Require valid outer `rule_collection_evidence`; reject incomplete, malformed, one-sided and extra/unmapped pointers as `Unknown`. Omitted proof still fails closed for nested arrays; valid flat rule events remain compatible. No new Skill, dependency or Amazon Ads write.
+- RED tests-only `e49a11ecf5d0ca9737d89abdf5a71159209e5e88` ([Actions #40572576136](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40572576136)): 2121 tests / 5 FAIL. GREEN production/schema `ea7916a699f767ff4eb5682e8c11d9209664bc90` ([Actions #40572696421](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40572696421)): 2121 PASS, 15 Skills and 55 Evals validators PASS. Fourteen synthetic deterministic tests.
+- Research: `docs/research/intervening-rule-descendant-pointer-proof-2026-10.md`; official/license review: `docs/SOURCES.md`. All live Ads mutations, retries, idempotency and reconciliation remain external authorized Executor responsibilities.
+
 ## v1.112.0 — 2026-10-28
 
 ### Reject unproven descendant collections inside observed SP rule events (MINOR)
