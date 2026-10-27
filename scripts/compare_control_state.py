@@ -426,7 +426,7 @@ def _explicit_material_state_problem(value: Any, pointer: str = "$") -> str | No
         normalized = re.sub(r"[\s-]+", "_", value.strip().casefold())
         if not normalized or normalized in {
             "unknown", "unsupported", "partial", "missing", "unavailable",
-            "not_available", "not_supported",
+            "not_available", "not_supported", "not_applicable", "n/a",
         }:
             return f"{pointer} contains an explicit unknown/unsupported placeholder"
     elif isinstance(value, (float, Decimal)):
