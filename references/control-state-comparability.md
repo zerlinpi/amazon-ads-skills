@@ -1,5 +1,10 @@
 # Control-state comparability
 
+
+## N/A and Not Applicable scope/source identity evidence (v1.99.0)
+
+Whole-label `N/A` and `Not Applicable` are not observed marketplace/profile/campaign/entity/account/source/acquisition/connector identifiers. Normalize whitespace, underscores and hyphens only to recognize these reserved placeholders; do not reject real opaque identifiers merely because they contain those substrings. Repeated placeholders on both sides remain `Unknown`, never proof of unchanged scope or isolated treatment. Existing Unknown/Missing/Partial/Unsupported guards and valid IDs remain intact. This is a repository-owned read-only identity contract, not an Amazon API enum or external response authentication.
+
 ## Reused readback control evidence integrity (v1.98.0)
 
 When baseline and post explicitly reuse the same concrete `source.readback_id`, require not only the same exact UTC `observed_at` and material state but also the same per-control `effective_at` instant and `evidence_status`. Compare effective times as known-offset RFC3339 UTC instants, preserving every fractional digit; a null/omitted effective time on only one side is unresolved. A changed effective time alone under **different** observation IDs does not prove a material state change. Legacy omitted/null readback IDs and equivalent timezone-offset representations retain compatibility. This is an internal consistency gate; no raw API authentication, full-window rule trace or live Ads write authority follows.

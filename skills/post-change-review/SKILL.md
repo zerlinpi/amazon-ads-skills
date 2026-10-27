@@ -5,6 +5,11 @@ description: Evaluate whether an Amazon Ads optimization change was actually app
 
 # Amazon Ads Post-change Review
 
+
+## Scope/source placeholder safety (v1.99.0)
+
+Before claiming `Comparable` or `Treatment Isolated`, run the read-only control-state comparator on concrete source and decision-scope identities. Repeated `N/A` / `Not Applicable` labels in marketplace, account, campaign, entity, source system, acquisition channel or connector fields are unresolved, even when both snapshots match; they return `Unknown`. Valid opaque IDs containing these words are not placeholders. This does not prove continuous rule execution or permit live Amazon Ads writes.
+
 ## Readback control-evidence consistency (v1.98.0)
 
 For post-change readback, the same concrete `source.readback_id` cannot justify different per-control `effective_at` or `evidence_status`, even if observed time and control state match. Use the read-only `scripts/compare_control_state.py` gate; contradictions return `Unknown`. Equivalent UTC instants, distinct IDs and legacy optional omissions remain compatible. This does not prove continuous control execution, authenticate source payloads or authorize Ads writes.

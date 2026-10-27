@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.99.0 — 2026-10-27
+
+### Reject unresolved N/A and Not Applicable scope/source identities (MINOR)
+
+- The read-only control comparator no longer treats repeated whole-label `N/A` or `Not Applicable` as concrete marketplace, profile, campaign, entity, account, source-system, acquisition-channel or connector evidence. Whitespace, underscore and hyphen variants fail closed to `Unknown`; valid opaque IDs containing those tokens and legacy optional readback omissions remain compatible. No new Skill, schema, dependency or Ads write capability.
+- RED tests-only `e9712f65c70c15521cf41c06d0c898f6474988ef` ([Actions #40451514757](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40451514757)): 1938 tests, 14 FAIL; GREEN minimal fix `98bcb0eb97a30616aef90c1ec53c0dd34467d1da` ([Actions #40451585223](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40451585223)): 1938 PASS, Skill/Eval validators PASS. Seventeen deterministic synthetic tests, three compatibility cases.
+- Research and source/licensing boundary: `docs/research/control-scope-source-not-applicable-identity-2026-10.md`. Version synced across VERSION, README and all three runtime manifests.
+
 ## v1.98.0 — 2026-10-27
 
 ### Guard reused readback control effective-time and evidence-status consistency (MINOR)
