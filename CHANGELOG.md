@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.115.0 — 2026-10-28
+
+### Reject unproven extra direct arrays in observed SP rule events (MINOR)
+
+- Close a reproducible read-side completeness gap: paired outer `rule_collection_evidence` only proves registered schedule/event/active-budget rule lists, but previously extra sibling arrays (even empty) could pass as verified `Confounded` evidence. Return `Unknown` for such arrays on either event phase. Valid registered lists, scalar metadata and flat legacy events remain compatible; no schema, dependency, new Skill or Ads write.
+- RED tests-only `38480f18c1e0e2a2e523ed8c96b4cb9f8f29552e` ([Actions #40597911676](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40597911676)): 2139 tests, 5 FAIL, 4 new compatibility tests passed. GREEN production `08730525aab90660f5a01dfee33e372fbd480616` ([Actions #40597993016](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40597993016)): 2139 PASS, 15 Skills PASS, 55 Evals PASS. Nine deterministic tests.
+- Research: `docs/research/intervening-sp-rule-extra-direct-list-2026-10.md`; source/licensing boundaries: `docs/SOURCES.md`. Full-window event coverage and external source authenticity remain unproven. Authorized external Executor alone owns all Ads writes, retries, idempotency and reconciliation.
+
 ## v1.114.0 — 2026-10-28
 
 ### Reject unproven non-rule SP event collections (MINOR)
