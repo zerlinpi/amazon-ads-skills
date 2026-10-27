@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.106.0`  
+> 当前版本：`v1.107.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Detect contradictory mid-window event observations** — a reused concrete event `source.readback_id` cannot denote different UTC event times, and two events for the same control at the same instant cannot disagree on the before/after transition. Return `Unknown` for conflicts, preserving multi-control same-time observations, distinct event identities, nanosecond precision and non-exhaustive event-log compatibility. This does **not** prove complete event capture or authorize live Ads writes.
 
 - **Reject nested null material-control evidence** — explicit JSON null inside an observed control-state object/list returns `Unknown`, not a fabricated isolated treatment or confounder. Measured zero/false, omitted optional dimensions and null provenance outside material state remain compatible; no live Ads writes.
 

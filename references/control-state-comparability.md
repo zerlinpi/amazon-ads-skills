@@ -1,3 +1,9 @@
+# Intervening event observation identity and same-instant transition consistency (v1.107.0)
+
+When an adapter supplies optional positively observed post-owned `control_events`, each concrete `source.readback_id` denotes one observation instant across those event rows. Reusing that ID for different `event_at` instants, including a one-nanosecond difference, is contradictory evidence and returns `Unknown`. Compare known-offset RFC3339 instants in exact UTC time; offset-equivalent representations are compatible.
+
+Within one decision scope, two rows with the same material `control_type` and exact `event_at` cannot assert different `before_state` or `after_state` transitions. For Sponsored Products rule/budget member lists, compare normalized identity-keyed members rather than row order. Conflicting simultaneous transitions return `Unknown`; identical duplicate rows with distinct event IDs and simultaneous transitions for *different* controls remain compatible. Do not require adjacent events to form a complete state chain: the event list is explicitly optional and non-exhaustive, so missing intermediate transitions cannot be inferred or ruled out. This is internal read-side consistency, not authenticated source history, continuous-control proof, an Amazon API event schema or live-write authority.
+
 # Explicit nested null material-control evidence (v1.106.0)
 
 A Complete/observed endpoint control or positively observed mid-window `control_events` cannot treat explicitly supplied JSON null inside a material-state object/list as a known value. Return `Unknown`, not `Treatment Isolated` or `Confounded`. Preserve measured zero/false, omitted optional dimensions, and optional null metadata outside `state`. This repository-owned conservative rule is not an Amazon API schema, full-window event capture proof, external authentication, or Ads write authority.

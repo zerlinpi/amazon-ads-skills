@@ -39,6 +39,8 @@ Modes:
 
 ## Safety rules
 
+- **Intervening event observation collision guard (v1.107.0):** A concrete event source `readback_id` cannot represent different exact UTC event instants (including nanoseconds). Two positively observed rows for the same material control at the same instant cannot assert incompatible before/after transitions; return `Unknown` instead of a fabricated `Confounded` or `Treatment Isolated`. Preserve multiple different controls in one readback, equivalent timezone offsets, distinct event readbacks, identical duplicate deliveries, and optional missing readback IDs. Do not demand a contiguous event-state chain from an explicitly non-exhaustive log or claim full-window capture. Read-only/Suggest/Shadow; external authorized Executor owns live Ads writes.
+
 - **Explicit nested null material-state evidence (v1.106.0):** Complete/observed endpoint controls and positively observed mid-window `control_events` cannot treat an explicit JSON null inside material `state` objects/lists as stable or changed evidence. Return `Unknown`; preserve real zero/false, omitted optional fields, and optional null metadata outside state. This is read-only internal evidence validation, not authenticated full-window control history or live Ads write authority.
 
 
