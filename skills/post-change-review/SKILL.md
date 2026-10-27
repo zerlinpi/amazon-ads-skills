@@ -5,6 +5,10 @@ description: Evaluate whether an Amazon Ads optimization change was actually app
 
 # Amazon Ads Post-change Review
 
+## Unmapped Sponsored Products placement evidence (v1.110.0)
+
+Before attributing a bid/budget result, use `../../scripts/compare_control_state.py` to reject extra unrecognized keys in the normalized Sponsored Products `placement_adjustment` state, both for endpoints and positive mid-window events. The three standard placement dimensions and optional Amazon Business modifier remain compatible; a new key requires verified adapter semantics, not a fabricated confounder. Return `Unknown` and retain missing/unsupported/partial as unknown, never zero. This does not prove full-window event completeness; Read-only/Suggest/Shadow default, live writes only through an external authorized Executor.
+
 ## Mid-window Sponsored Products rule activation parity (v1.109.0)
 
 When positive `control_events` contain schedule/event bid-rule or active-budget rule transitions, use `../../scripts/compare_control_state.py` to reject one-sided optional `activation_status` or `activation_effective_at` for a shared `rule_id` as `Unknown`. Both-absent optional evidence and real status/time transitions remain compatible; a new rule ID does not imply a fabricated prior inactive state. Do not claim complete history or continuous execution from optional event rows. Read-only/Suggest/Shadow; live Ads writes belong to an authorized external Executor.

@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.110.0 — 2026-10-27
+
+### Reject unmapped Sponsored Products placement dimensions (MINOR)
+
+- Fail closed on extra placement keys in SP endpoint snapshots and positive mid-window control events. Only `top_of_search`, `rest_of_search`, `product_pages` and optional `amazon_business` are recognized by the current normalized adapter contract. Unknown keys cannot manufacture `Confounded` or `Treatment Isolated`; valid standard/B2B placement evidence remains compatible. No new Skill, schema field, dependency or Ads write.
+- RED tests-only `94a19671d814f18a280e42ded7b401873fa12c29` ([Actions #40534057133](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40534057133)): 2086 tests / **5 FAIL**. Minimal GREEN `69a9413469b526ba0269669deef487ea9cac98bd` ([Actions #40534159070](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40534159070)): 2086 tests PASS; Skill and Eval validators PASS. Eight synthetic deterministic tests.
+- Research: `docs/research/sp-unmapped-placement-dimension-evidence-2026-10.md`; source/license review: `docs/SOURCES.md`. No full-window event coverage or external Amazon Ads response authentication; authorized external Executor owns all live writes/retries/idempotency/reconciliation.
+
 ## v1.109.0 — 2026-10-27
 
 ### Require paired activation evidence for observed mid-window SP rule transitions (MINOR)
