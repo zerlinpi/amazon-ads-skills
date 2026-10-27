@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.111.0 — 2026-10-28
+
+### Optional paired completeness proof for observed mid-window SP rule collections (MINOR)
+
+- Add backward-compatible optional `rule_collection_evidence` to normalized positive `control_events`, with independent before/after enumeration, pagination and capability declarations for SP schedule/event/budget rule lists. Explicit incomplete, one-sided or unmapped evidence is `Unknown`; complete proof preserves valid confounders. Omitted legacy evidence remains compatible but never proves continuous or exhaustive event capture. No Skill, dependency or live Ads write.
+- RED tests-only `fa2c5e5d034ff5858fc5dd4cf58e68feef702815` ([Actions #40553399677](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40553399677)): 2099 tests, 2 FAIL / 1 ERROR. GREEN `7e5842eadff32ed6c88b981d55f05cb7fd175b1a` ([Actions #40553566614](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40553566614)): 2099 PASS, 15 Skills PASS, 55 Evals PASS. Thirteen synthetic deterministic tests.
+- Research: `docs/research/intervening-rule-collection-proof-2026-10.md`; sources/licensing: `docs/SOURCES.md`. External authorized Executor retains all Ads writes/retries/idempotency/reconciliation.
+
 ## v1.110.0 — 2026-10-27
 
 ### Reject unmapped Sponsored Products placement dimensions (MINOR)
