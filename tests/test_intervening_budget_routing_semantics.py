@@ -75,6 +75,16 @@ class InterveningBudgetRoutingSemanticsTests(unittest.TestCase):
         e["after_state"]["retailer_scope"] = "MIXED"
         self.check(b, p, "Unknown")
 
+    def test_routing_structured_site_is_unknown(self):
+        b, p, e = routing_event()
+        e["after_state"]["site_restriction"] = {"site": "AMAZON_BUSINESS"}
+        self.check(b, p, "Unknown")
+
+    def test_routing_array_retailer_is_unknown(self):
+        b, p, e = routing_event()
+        e["after_state"]["retailer_scope"] = ["AMAZON_STORE"]
+        self.check(b, p, "Unknown")
+
     def test_across_retailers_business_exclusive_contradiction_is_unknown(self):
         b, p, e = routing_event()
         e["after_state"]["retailer_scope"] = "ACROSS_RETAILERS"
