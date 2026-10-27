@@ -1,5 +1,9 @@
 # Control-state comparability
 
+## Explicit readback identity and observation-time integrity (v1.97.0)
+
+A supplied non-null `source.readback_id` must be a concrete unpadded observation identifier. Whole-label Unknown/Partial/Missing/Unsupported/Unavailable/Not Available/Not Supported/Not Applicable/N/A, blanks and non-string values cannot certify a control readback. If two snapshots reuse the same concrete ID, their `observed_at` must denote the same exact UTC instant, including submicrosecond fractions; different offset spellings of the same instant are compatible. Distinct valid IDs, omitted/null legacy IDs and unchanged same-instant snapshots remain compatible. This check is not external API response authentication, continuous rule-history evidence or permission to write Amazon Ads.
+
 ## Conflicting material states cannot share one readback identity (v1.96.0)
 
 `source.readback_id` is an individual observation identifier, not a campaign, profile, connector or reporting-generation label. If baseline/post reuse one explicit non-null readback ID but report different material states, the comparator returns `Unknown` rather than claiming independent observations. Distinct IDs, omitted legacy IDs and unchanged states remain compatible. Different labels do not authenticate external source responses, time-window coverage or causal isolation.
