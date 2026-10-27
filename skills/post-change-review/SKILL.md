@@ -5,6 +5,10 @@ description: Evaluate whether an Amazon Ads optimization change was actually app
 
 # Amazon Ads Post-change Review
 
+## Unproven nested rule collections in mid-window SP events (v1.112.0)
+
+A positive Sponsored Products schedule/event/budget `control_events` transition cannot certify nested arrays inside rule members merely because its outer `schedule_rules`, `event_rules` or `active_budget_rules` list has a Complete declaration. Endpoint snapshots already require independent JSON-pointer evidence for nested arrays; the current event schema has no descendant-proof contract. Any descendant list (including an empty list) within an observed rule member returns `Unknown`, with or without optional outer proof. Flat scalar rule members, valid top-level empty collections and legacy non-nested events retain their existing classifications. This conservative repository-owned read-side rule does not authenticate Amazon Ads history or prove full-window coverage; only an authorized external Executor may write.
+
 ## Optional paired SP mid-window rule collection proof (v1.111.0)
 
 For a positively observed Sponsored Products `control_events` schedule/event/budget-rule transition, `../../scripts/compare_control_state.py` accepts optional `rule_collection_evidence` only with both `before` and `after` maps. Each phase must independently declare Complete enumeration, Complete pagination and Supported capability for every relevant rule list; partial/truncated/one-sided/unmapped evidence returns `Unknown`, not a fabricated confounder. Legacy events without this optional proof remain compatible, **not** certified complete. This read-side metadata cannot authenticate source history or prove no other changes occurred; default Suggest/Shadow, external authorized Executor for all Ads writes.

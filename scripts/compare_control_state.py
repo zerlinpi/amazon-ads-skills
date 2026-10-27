@@ -928,6 +928,16 @@ def _intervening_control_events_problem(
                         state.get(collection), collection, modifier, label, event["event_at"]
                     ):
                         return f"{label} has incomplete or invalid {field}.{collection}", set()
+                # A Complete declaration for the outer schedule/event/budget
+                # rule list cannot certify a nested list inside a rule member.
+                # Endpoint readbacks already require separate JSON-pointer
+                # evidence for such descendants. The event contract has no
+                # descendant-proof field, so fail closed even for empty lists.
+                descendant_problem = _deep_extra_collection_problem(
+                    {"state": state}, control_type, f"{label} {field}"
+                )
+                if descendant_problem:
+                    return descendant_problem, set()
 
         if "rule_collection_evidence" in event:
             if surface not in {"sponsored_products_bid_change", "sponsored_products_budget_change"}:
