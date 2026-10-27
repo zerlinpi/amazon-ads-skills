@@ -884,6 +884,17 @@ def _intervening_control_events_problem(
                         return f"{label} has incomplete or invalid {field}.{collection}", set()
 
         before_state, after_state = event["before_state"], event["after_state"]
+        if (surface in {"sponsored_products_bid_change", "sponsored_products_budget_change"}
+                and control_type in {"schedule_or_event_rule", "budget_or_pacing"}):
+            # Reuse endpoint identity-keyed parity: optional activation metadata
+            # on only one side is missing evidence, not a verified transition.
+            # New/removed rule IDs are not silently treated as inactive.
+            activation_problem = _rule_activation_presence_problem(
+                {control_type: {"state": before_state}},
+                {control_type: {"state": after_state}},
+            )
+            if activation_problem:
+                return f"{label} {activation_problem}", set()
         if surface in {"sponsored_products_bid_change", "sponsored_products_budget_change"}:
             # A field observed on only one side cannot establish a known
             # transition. Both-absent optional evidence remains compatible.
