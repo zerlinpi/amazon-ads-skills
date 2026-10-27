@@ -804,6 +804,7 @@ def _intervening_control_events_problem(
     events = post["control_events"]
     if not isinstance(events, list):
         return "post control_events must be an array of observed events", set()
+    surface = baseline["coverage"]["requirement_provenance"]["decision_surface"]
 
     seen: set[str] = set()
     changed: set[str] = set()
@@ -861,7 +862,6 @@ def _intervening_control_events_problem(
             # Endpoint validation already rejects malformed SP bid/placement/
             # audience/strategy values. Event-only evidence must not bypass
             # those semantics to manufacture a confounder or isolated action.
-            surface = baseline["coverage"]["requirement_provenance"]["decision_surface"]
             if surface in {"sponsored_products_bid_change", "sponsored_products_budget_change"}:
                 event_state_problem = _sp_intervening_state_problem(control_type, state, label, surface)
                 if event_state_problem:
