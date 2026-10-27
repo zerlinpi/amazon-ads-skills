@@ -19,10 +19,10 @@ class InterveningRuleDescendantCompletenessTests(unittest.TestCase):
             event[phase]["schedule_rules"][0]["targeting_conditions"] = ["example"]
         self.assertEqual(self.classify(before, post), "Unknown")
 
-    def test_event_rule_member_empty_nested_list_still_needs_proof(self):
+    def test_schedule_rule_member_empty_nested_list_still_needs_proof(self):
         before, post, event = proven_event()
         for phase in ("before_state", "after_state"):
-            event[phase]["event_rules"][0]["conditions"] = []
+            event[phase]["schedule_rules"][0]["conditions"] = []
         self.assertEqual(self.classify(before, post), "Unknown")
 
     def test_budget_rule_member_deep_nested_list_with_complete_outer_proof_is_unknown(self):
