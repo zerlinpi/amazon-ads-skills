@@ -735,8 +735,11 @@ def _sp_intervening_state_problem(control_type: str, state: Any, label: str) -> 
                     }):
                 return f"{label} bidding_strategy is unknown or unrecognized"
         elif isinstance(state, dict):
+            strategy = state.get("strategy")
             if (set(state) != {"strategy", "roas_guardrail"}
-                    or state.get("strategy") != "rule_based"
+                    or not isinstance(strategy, str)
+                    or strategy != strategy.strip()
+                    or strategy.lower().replace("-", "_") != "rule_based"
                     or not _observed_budget_amount(state.get("roas_guardrail"))
                     or Decimal(str(state["roas_guardrail"])) <= 0):
                 return f"{label} bidding_strategy lacks usable rule-based guardrail evidence"
