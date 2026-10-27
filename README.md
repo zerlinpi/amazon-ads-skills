@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.107.0`  
+> 当前版本：`v1.108.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Reject co-observed routing/placement contradictions** — two positive mid-window Sponsored Products control events bound to the same concrete source readback cannot simultaneously certify `ACROSS_RETAILERS` routing and an Amazon Business placement modifier in the same before/after phase. Return `Unknown`, not an invented confounder. Distinct or missing readbacks are not assumed simultaneous; compatible Amazon Store states remain valid. No full-window capture or Ads write authority follows.
 
 - **Detect contradictory mid-window event observations** — a reused concrete event `source.readback_id` cannot denote different UTC event times, and two events for the same control at the same instant cannot disagree on the before/after transition. Return `Unknown` for conflicts, preserving multi-control same-time observations, distinct event identities, nanosecond precision and non-exhaustive event-log compatibility. This does **not** prove complete event capture or authorize live Ads writes.
 

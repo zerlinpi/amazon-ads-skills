@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.108.0 — 2026-10-27
+
+### Reject incompatible co-observed Sponsored Products routing/placement events (MINOR)
+
+- When two positively observed mid-window SP control events share a concrete source readback, reject `ACROSS_RETAILERS` routing together with an Amazon Business placement modifier in either co-observed before/after phase as `Unknown`. Different/missing readbacks are not joined solely by timestamp. Valid Amazon Store and no-business-placement states remain compatible. No Skill, schema field, dependency or live Ads write added.
+- RED tests-only `ea99994252628a83800a341113dac2310846e166` ([Actions #40515556189](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40515556189)): 2066 tests, 1 FAIL. Initial fix `2821101d95f24551f458a48b649909e8cd346635` ([Actions #40515691037](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40515691037)) exposed an empty-event ERROR. Corrected `54d03a4035a4abbc299d8f2bff14c7b6d316ccc8` ([Actions #40515711043](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40515711043)): 2066 PASS, Skills/Evals PASS. Added pre-transition regression test `5c94bc61efa108ec468b4fcf65586b19a550fdeb` before final PR HEAD validation.
+- Research: `docs/research/intervening-sp-coobserved-routing-placement-2026-10.md`; source/licensing decisions: `docs/SOURCES.md`. No authenticated complete event-history proof; only external authorized Executor may write to Ads.
+
 ## v1.107.0 — 2026-10-27
 
 ### Reject contradictory intervening event observation identities (MINOR)
