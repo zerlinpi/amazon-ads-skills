@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.105.0 — 2026-10-27
+
+### Reject one-sided optional Sponsored Products mid-window budget evidence (MINOR)
+
+- For observed SP bid/budget `control_events`, reject one-sided base/effective daily budgets or average-daily-budget policy as `Unknown`. Both-absent optional bid-surface evidence and valid observed rule changes remain compatible. Preserve the existing Amazon Business placement addition/removal as a real observed confounder, not an unknown value. No schema, Skill, dependency or Ads write added.
+- RED tests-only `57fd389bf8fa90c5a344256237742611e8bcd8bd` ([Actions #40491508793](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40491508793)): 2043 tests, 8 FAIL. Initial fix `02aba1491c353665266283704e1ffae85c05b090` ([Actions #40491584220](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40491584220)) exposed one pre-existing compatibility regression (1 FAIL). Corrected `33b4be37d1e4be9095c81702510238c39b66d787` ([Actions #40491683393](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40491683393)): 2043 PASS, Skill/Eval validators PASS. Twelve synthetic deterministic tests.
+- Research: `docs/research/intervening-sp-optional-budget-evidence-parity-2026-10.md`. Source/licensing notes: `docs/SOURCES.md`. Missing/partial/unsupported/unknown never become zero; empty/omitted events never prove continuous control stability.
+
 ## v1.104.0 — 2026-10-27
 
 ### Reject invalid mid-window Sponsored Products budget and routing event states (MINOR)

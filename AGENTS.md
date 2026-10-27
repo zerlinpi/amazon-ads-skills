@@ -39,6 +39,8 @@ Modes:
 
 ## Safety rules
 
+- **Intervening SP optional budget evidence parity (v1.105.0):** For registered Sponsored Products bid/budget reviews, a positively observed mid-window `control_events` budget transition cannot compare an optional base/effective daily budget or average-daily-budget policy present on only one event side. Return `Unknown` rather than manufacturing a `Confounded` or `Treatment Isolated` judgment. On bid surfaces, both-absent optional fields remain legacy-compatible; budget-change surfaces still require the full budget state. Preserve the existing positively observed Amazon Business placement addition/removal as a confounder rather than misclassifying it as unknown. No full-window event coverage, API authentication or Ads write permission follows.
+
 - **Intervening SP budget/routing event-value gate (v1.104.0):** On registered Sponsored Products bid/budget causal surfaces, positively observed `control_events` must not bypass endpoint-supported budget amount/policy or site/retailer routing semantics. For a budget-change surface, require complete normalized base/effective daily budgets, active budget-rule list and policy in each event-side budget state. On a bid-change surface, retain legacy partial budget shape but reject any explicitly invalid amounts/policy. Reject unknown site restrictions, invalid retailer scopes, across-retailers plus Amazon Business exclusive routing, one-sided retailer-scope transition evidence and non-scalar labels as `Unknown`. Do not convert missing/partial/unsupported/unknown to zero. Valid event changes remain confounders or treatment evidence only under existing guards; no complete history/source authentication or Ads write authority follows.
 
 

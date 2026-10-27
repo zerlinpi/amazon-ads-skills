@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.104.0`  
+> 当前版本：`v1.105.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Fail closed on one-sided mid-window budget evidence** — optional observed base/effective daily budget and policy fields must have before/after parity in Sponsored Products `control_events`. Preserve both-absent legacy bid surfaces and genuine Amazon Business placement additions as observed confounders. This is a read-only evidence check, not complete event-history proof.
 
 - **Reject invalid mid-window Sponsored Products budget/routing events** — observed event before/after budget amounts, daily-budget policy and site/retailer routing must be usable before a competing change can be classified. Unmapped or contradictory site/retailer states and missing required budget-change fields return `Unknown`; valid observed transitions remain compatible. Event logs remain optional, non-exhaustive and read-only.
 
