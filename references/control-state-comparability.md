@@ -1,3 +1,9 @@
+# Unmapped Sponsored Products placement dimension evidence (v1.110.0)
+
+The repository-normalized SP placement state for a registered bid/budget causal review currently recognizes `top_of_search`, `rest_of_search`, `product_pages` and optional `amazon_business`. In both endpoint snapshots and positively observed mid-window `control_events`, an extra adapter field is not verified as a placement dimension, even when it repeats on both sides. Classify `Unknown`, not an observed confounder or isolated treatment. Preserve legitimate zero values, the optional Amazon Business boost and other material control types. This is a conservative repository-owned adapter contract, **not** a claim that Amazon can never introduce a new placement. Add dated source/adapter validation before extending the recognized set.
+
+The check cannot authenticate the underlying Ads API response, certify a complete event history, prove continuous control stability or authorize writes. Keep source, metric, date, grain, identity, connector capability, competing controls and marginal economics distinct; only an external authorized Executor may mutate Ads accounts.
+
 # Mid-window Sponsored Products rule activation evidence parity (v1.109.0)
 
 A positive post-owned `control_events` transition can only compare optional rule activation metadata when the same `rule_id` is present in both its `before_state` and `after_state`. For `schedule_rules`, `event_rules` and `active_budget_rules`, require symmetric presence of `activation_status` and `activation_effective_at` on common rule IDs. A field present on only one side is unresolved evidence (`Unknown`), not proof of an activation transition or inactive/zero state. Reuse the endpoint parity helper; both-absent optional metadata, observed status/time changes and added/removed rule identities remain compatible. The latter do not by themselves establish full collection capture.

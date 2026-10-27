@@ -604,6 +604,11 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
         missing_placements = sorted(required_placements - set(placement_state))
         if missing_placements:
             return f"{side} Sponsored Products placement state is missing: " + ", ".join(missing_placements)
+        # Unknown adapter keys are not verified placement surfaces. Treat
+        # them as unresolved evidence, even if repeated on both readbacks.
+        unknown_placements = sorted(set(placement_state) - required_placements - {"amazon_business"})
+        if unknown_placements:
+            return f"{side} Sponsored Products placement state has unmapped dimensions: " + ", ".join(unknown_placements)
         for field in sorted(required_placements):
             # Presence is not numeric evidence: Unknown, Unsupported, booleans,
             # non-finite and negative modifiers cannot establish stability.
@@ -724,6 +729,9 @@ def _sp_intervening_state_problem(control_type: str, state: Any, label: str, sur
         required = {"top_of_search", "rest_of_search", "product_pages"}
         if not isinstance(state, dict) or not required.issubset(state):
             return f"{label} placement_adjustment lacks the required placement surfaces"
+        unknown_placements = sorted(set(state) - required - {"amazon_business"})
+        if unknown_placements:
+            return f"{label} placement_adjustment has unmapped dimensions: " + ", ".join(unknown_placements)
         for field in sorted(required | ({"amazon_business"} if "amazon_business" in state else set())):
             if not _observed_budget_amount(state[field]):
                 return f"{label} placement_adjustment has unknown or invalid {field}"
