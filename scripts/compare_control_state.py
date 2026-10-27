@@ -771,11 +771,12 @@ def _sp_intervening_state_problem(control_type: str, state: Any, label: str, sur
         # Site/retailer labels are repository-normalized read-side evidence,
         # not native Amazon API enums or universal eligibility claims.
         if (not isinstance(state, dict)
-                or state.get("site_restriction") not in {"ALL_ELIGIBLE", "AMAZON_BUSINESS"}):
+                or not isinstance(state.get("site_restriction"), str)
+                or state["site_restriction"] not in {"ALL_ELIGIBLE", "AMAZON_BUSINESS"}):
             return f"{label} targeting_or_routing lacks a verified site_restriction"
         if "retailer_scope" in state:
             retailer = state["retailer_scope"]
-            if retailer not in {"AMAZON_STORE", "ACROSS_RETAILERS"}:
+            if not isinstance(retailer, str) or retailer not in {"AMAZON_STORE", "ACROSS_RETAILERS"}:
                 return f"{label} targeting_or_routing has unmapped retailer_scope"
             if retailer == "ACROSS_RETAILERS" and state["site_restriction"] == "AMAZON_BUSINESS":
                 return f"{label} targeting_or_routing contradicts across-retailer site eligibility"
