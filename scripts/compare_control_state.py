@@ -708,6 +708,46 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
     return None
 
 
+
+def _sp_intervening_state_problem(control_type: str, state: Any, label: str) -> str | None:
+    """Apply the same basic SP value semantics to positive event evidence.
+
+    An event can prove a confounder only when its observed before/after values
+    are usable. This does not prove event-log completeness or raw API origin.
+    """
+    if control_type in {"base_bid", "video_bid_adjustment"}:
+        if not _observed_budget_amount(state):
+            return f"{label} {control_type} has unknown or invalid numeric evidence"
+    elif control_type == "placement_adjustment":
+        required = {"top_of_search", "rest_of_search", "product_pages"}
+        if not isinstance(state, dict) or not required.issubset(state):
+            return f"{label} placement_adjustment lacks the required placement surfaces"
+        for field in sorted(required | ({"amazon_business"} if "amazon_business" in state else set())):
+            if not _observed_budget_amount(state[field]):
+                return f"{label} placement_adjustment has unknown or invalid {field}"
+    elif control_type == "audience_bid_adjustment":
+        return _audience_member_problem({"state": state}, label)
+    elif control_type == "bidding_strategy":
+        if isinstance(state, str):
+            if (state != state.strip()
+                    or state.lower().replace("-", "_") not in {
+                        "dynamic_down_only", "dynamic_up_and_down", "fixed"
+                    }):
+                return f"{label} bidding_strategy is unknown or unrecognized"
+        elif isinstance(state, dict):
+            strategy = state.get("strategy")
+            if (set(state) != {"strategy", "roas_guardrail"}
+                    or not isinstance(strategy, str)
+                    or strategy != strategy.strip()
+                    or strategy.lower().replace("-", "_") != "rule_based"
+                    or not _observed_budget_amount(state.get("roas_guardrail"))
+                    or Decimal(str(state["roas_guardrail"])) <= 0):
+                return f"{label} bidding_strategy lacks usable rule-based guardrail evidence"
+        else:
+            return f"{label} bidding_strategy is unknown or unrecognized"
+    return None
+
+
 def _intervening_control_events_problem(
     baseline: dict[str, Any],
     post: dict[str, Any],
@@ -772,6 +812,14 @@ def _intervening_control_events_problem(
             state = event[field]
             if state is None or _explicit_material_state_problem(state):
                 return f"{label} has missing or unresolved {field}", set()
+            # Endpoint validation already rejects malformed SP bid/placement/
+            # audience/strategy values. Event-only evidence must not bypass
+            # those semantics to manufacture a confounder or isolated action.
+            surface = baseline["coverage"]["requirement_provenance"]["decision_surface"]
+            if surface in {"sponsored_products_bid_change", "sponsored_products_budget_change"}:
+                event_state_problem = _sp_intervening_state_problem(control_type, state, label)
+                if event_state_problem:
+                    return event_state_problem, set()
             # Rule members must be usable before identity-keyed comparison;
             # otherwise a reordered list or malformed ID could masquerade as
             # a control transition. This does not prove collection completeness.
