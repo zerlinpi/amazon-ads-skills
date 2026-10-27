@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.98.0 — 2026-10-27
+
+### Guard reused readback control effective-time and evidence-status consistency (MINOR)
+
+- A reused concrete `source.readback_id` cannot describe conflicting material-control `effective_at` or `evidence_status` even when state and observation time match. The read-only comparator returns `Unknown` for these contradictions; equivalent UTC instants including nanosecond fractions, distinct IDs, and legacy omitted/null IDs remain compatible. No source authentication, full-window control proof or live Ads write capability is implied.
+- RED tests-only `077767d6dcd9db6109d7d9e21e4013652442d52d` ([Actions #40445576097](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40445576097)): 1921 tests / 5 FAIL. GREEN fix `0bb42f303c9a8b00654fa008600403672f53ea1d` ([Actions #40445622542](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40445622542)): 1921 PASS; Skill/Eval validators PASS. Eleven deterministic synthetic tests. See `docs/research/control-readback-effective-evidence-integrity-2026-10.md`.
+- Version synced to 1.98.0 in VERSION, README, Codex/Claude Code/WorkBuddy manifests. Skills remain 15; no schema change, dependency, third-party code reuse or Amazon Ads write.
+
 ## v1.97.0 — 2026-10-27
 
 ### Guard explicit control readback provenance and exact observation identity (MINOR)
