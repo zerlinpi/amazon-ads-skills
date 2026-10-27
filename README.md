@@ -8,6 +8,8 @@ A portable **Amazon Ads decision library for AI agents**. It packages 15 focused
 
 ## What you can do
 
+- **Reject conflicting control states under a reused readback ID** — when before/after snapshots claim the same explicit non-null `source.readback_id` but material states differ, the read-only comparator returns `Unknown`. Distinct observation IDs and legacy omissions remain compatible; a distinct label is not raw source authentication or full-window control proof.
+
 - **Reject contradictory material-change re-verification evidence** — a Ready holdout cannot treat explicitly supplied null/Unknown or chronologically impossible `material_scope_changes[].reverified_at` as proof of a reverified boundary. Known-offset RFC3339 and exact UTC ordering require change ≤ re-verification ≤ latest clean check. Omitted legacy fields and exploratory plans remain compatible; this does not establish full-window external control stability or permit Ads writes.
 
 - **Preserve nanosecond-scale Ready holdout chronology** — verified isolation, launch, latest boundary monitoring and material-change timestamps retain all RFC3339 fractional digits for UTC ordering instead of being truncated to Python microseconds. Valid high-precision timestamps, legacy omissions and exploratory plans remain compatible; this does not prove external control history or authorize Ads writes.

@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.96.0 — 2026-10-27
+
+### Fail closed on reused readback observation identities (MINOR)
+
+- Before/after control snapshots previously could reuse the same explicit non-null `source.readback_id` while claiming different bid/budget/rule/placement states, producing a misleading isolated/confounded/directional classification. Now return `Unknown` for the contradiction; distinct IDs, legacy omissions, one-sided IDs and unchanged states remain compatible. No new Skill, schema, dependency or Ads write authority.
+- RED `a45f2530f23fd0de54157a79b527e4bf345f977e` ([Actions #40434390981](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40434390981)): 1891 tests / 4 FAIL. GREEN `1e68bda948ddbc6a4b960b187e9153c67fc5b455` ([Actions #40434481521](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40434481521)): 1891 PASS; Skills/Evals PASS. Nine deterministic tests. Research: `docs/research/control-readback-identity-reuse-2026-10.md`.
+
 ## v1.95.0 — 2026-10-27
 
 ### Validate explicitly supplied material-change re-verification instants (MINOR)
