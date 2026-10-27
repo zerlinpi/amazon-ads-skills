@@ -746,6 +746,30 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
     if required_before != required_after:
         return {"classification": "Unknown", "reasons": ["material-control requirement set changed between snapshots"]}
 
+    # One readback observation cannot assert contradictory effective times or
+    # evidence statuses for the same control, even if its state is unchanged.
+    # Compare UTC instants rather than timestamp spellings, preserving the
+    # original fractional precision. Null/omitted legacy readback IDs remain
+    # compatible; a changed effective_at under a distinct ID is not itself
+    # proof that the material control value changed.
+    if before_readback is not None and before_readback == after_readback:
+        for control_type in sorted(set(bmap) & set(pmap)):
+            before_control, after_control = bmap[control_type], pmap[control_type]
+            before_effective = before_control.get("effective_at")
+            after_effective = after_control.get("effective_at")
+            if ((before_effective is None) != (after_effective is None)
+                    or (before_effective is not None
+                        and _rfc3339_instant(before_effective) != _rfc3339_instant(after_effective))):
+                return {
+                    "classification": "Unknown",
+                    "reasons": [f"conflicting {control_type} effective_at reuses the same source.readback_id observation"],
+                }
+            if before_control.get("evidence_status") != after_control.get("evidence_status"):
+                return {
+                    "classification": "Unknown",
+                    "reasons": [f"conflicting {control_type} evidence_status reuses the same source.readback_id observation"],
+                }
+
     provenance_before = baseline["coverage"]["requirement_provenance"]
     provenance_after = post["coverage"]["requirement_provenance"]
     if provenance_before.get("decision_surface") != provenance_after.get("decision_surface"):
