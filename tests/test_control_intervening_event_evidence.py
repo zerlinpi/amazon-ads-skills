@@ -139,6 +139,18 @@ class InterveningControlEventEvidenceTests(unittest.TestCase):
         b["control_events"] = p.pop("control_events")
         self.check(b, p, "Unknown")
 
+    def test_competing_event_cannot_invent_unobserved_intended_treatment(self):
+        b, p, _ = fixture()
+        next(c for c in p["controls"] if c["control_type"] == "base_bid")["state"] = 1.0
+        self.check(b, p, "Unknown")
+
+    def test_event_readback_cannot_reuse_endpoint_observation(self):
+        b, p, e = fixture()
+        b["source"]["readback_id"] = "readback-baseline"
+        p["source"]["readback_id"] = "readback-post"
+        e["source"]["readback_id"] = "readback-baseline"
+        self.check(b, p, "Unknown")
+
     def test_schema_exposes_optional_post_observation_events(self):
         schema = json.loads((ROOT / "schemas/control-state-snapshot.json").read_text(encoding="utf-8"))
         self.assertIn("control_events", schema["properties"])
