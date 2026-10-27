@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.110.0`  
+> 当前版本：`v1.111.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Accept paired SP event rule-collection completeness evidence** — optional `rule_collection_evidence` can now carry independent before/after Complete enumeration, Complete pagination and Supported capability declarations for observed schedule/event/budget rule transitions. Explicit partial, truncated, malformed or one-sided proof returns `Unknown`; both-absent legacy evidence remains compatible but **never** proves full-window capture. Read-only; no Ads writes.
 
 - **Reject unmapped Sponsored Products placement dimensions** — normalized endpoint snapshots and positive mid-window placement events now fail closed as `Unknown` when an adapter supplies unknown placement keys, even if repeated. The three standard placement controls and optional Amazon Business modifier remain supported. This is a read-only evidence contract, not proof of complete event capture or live Ads write authority.
 

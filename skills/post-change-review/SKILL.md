@@ -5,6 +5,10 @@ description: Evaluate whether an Amazon Ads optimization change was actually app
 
 # Amazon Ads Post-change Review
 
+## Optional paired SP mid-window rule collection proof (v1.111.0)
+
+For a positively observed Sponsored Products `control_events` schedule/event/budget-rule transition, `../../scripts/compare_control_state.py` accepts optional `rule_collection_evidence` only with both `before` and `after` maps. Each phase must independently declare Complete enumeration, Complete pagination and Supported capability for every relevant rule list; partial/truncated/one-sided/unmapped evidence returns `Unknown`, not a fabricated confounder. Legacy events without this optional proof remain compatible, **not** certified complete. This read-side metadata cannot authenticate source history or prove no other changes occurred; default Suggest/Shadow, external authorized Executor for all Ads writes.
+
 ## Unmapped Sponsored Products placement evidence (v1.110.0)
 
 Before attributing a bid/budget result, use `../../scripts/compare_control_state.py` to reject extra unrecognized keys in the normalized Sponsored Products `placement_adjustment` state, both for endpoints and positive mid-window events. The three standard placement dimensions and optional Amazon Business modifier remain compatible; a new key requires verified adapter semantics, not a fabricated confounder. Return `Unknown` and retain missing/unsupported/partial as unknown, never zero. This does not prove full-window event completeness; Read-only/Suggest/Shadow default, live writes only through an external authorized Executor.
