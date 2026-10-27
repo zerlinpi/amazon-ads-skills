@@ -118,6 +118,17 @@ def _source_lineage_problem(bsource: Any, psource: Any) -> str | None:
             or before != after
         ):
             return f"control-state source provenance missing or changed for {field}"
+    # A supplied readback ID must identify a concrete observation. An
+    # unavailable label is not independent provenance, even when the two
+    # snapshots otherwise have complete material-control inventories.
+    # Null/omitted IDs remain compatible with legacy optional evidence.
+    for side, source in (("baseline", bsource), ("post", psource)):
+        readback = source.get("readback_id")
+        if readback is not None and (
+            _unusable_identity_label(readback)
+            or re.sub(r"[\\s-]+", "_", readback.casefold()) in {"not_applicable", "n/a"}
+        ):
+            return f"{side} control-state source readback_id is missing or unknown"
     before_connector, after_connector = bsource.get("connector_id"), psource.get("connector_id")
     if before_connector is None and after_connector is None:
         return None
@@ -708,6 +719,18 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
 
     if observed_instants[1] < observed_instants[0]:
         return {"classification": "Unknown", "reasons": ["post observed_at precedes baseline observed_at"]}
+
+    # One readback observation cannot carry two distinct observation times.
+    # Compare exact UTC instants, including submicrosecond fractional digits.
+    # Equivalent timezone-offset spellings of the same instant remain valid.
+    before_readback = baseline["source"].get("readback_id")
+    after_readback = post["source"].get("readback_id")
+    if (before_readback is not None and before_readback == after_readback
+            and observed_instants[0] != observed_instants[1]):
+        return {
+            "classification": "Unknown",
+            "reasons": ["conflicting observed_at instants reuse the same source.readback_id observation"],
+        }
 
     bmap, pmap = _control_map(baseline), _control_map(post)
     for snapshot, control_map, side in ((baseline, bmap, "baseline"), (post, pmap, "post")):
