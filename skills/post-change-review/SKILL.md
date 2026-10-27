@@ -5,6 +5,11 @@ description: Evaluate whether an Amazon Ads optimization change was actually app
 
 # Amazon Ads Post-change Review
 
+## Intervening material-control event evidence (v1.102.0)
+
+When the connector exposes observed mid-window campaign control transitions, attach source/scope/time-bound `control_events` to the post snapshot before calling `../../scripts/compare_control_state.py`. A schedule/event/budget/placement change can confound a bid test even if it reverted and both endpoint readbacks match. Malformed or unverified event evidence is `Unknown`, not zero or unchanged; a competing observed event is `Confounded`. Omitted/empty event lists are **not** continuous-history proof. Keep causal confounders and incremental economics separate; external authorized Executor owns all writes.
+
+
 ## Material-control N/A evidence (v1.101.0)
 
 Before causal isolation, use `../../scripts/compare_control_state.py` to reject whole-label `N/A` / `Not Applicable` in material control state, nested values, Sponsored Products schedule/event/budget rule IDs and audience IDs. A Complete inventory and `observed` status cannot turn a placeholder into a known stable competing control; return `Unknown`. Concrete opaque IDs containing these substrings, observed zero/false and real confounders remain valid. This is not continuous rule-history authentication or live Ads write authority.

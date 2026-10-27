@@ -61,7 +61,8 @@
           "evidence_note": {"type": ["string", "null"]}
         }
       }
-    }
+    },
+    "control_events": {"type":"array","description":"Optional post-owned positive event evidence observed strictly between baseline and post timestamps. No/empty events do not prove complete event capture or continuous stability. Event identity and source are adapter-normalized, not Amazon API fields.","items":{"type":"object","additionalProperties":false,"required":["event_id","event_at","scope","source","control_type","before_state","after_state","evidence_status"],"properties":{"event_id":{"type":"string","minLength":1,"description":"Concrete unique event observation identity; not a reused endpoint readback ID."},"event_at":{"type":"string","format":"date-time"},"scope":{"$ref":"#/properties/scope"},"source":{"$ref":"#/properties/source"},"control_type":{"$ref":"#/$defs/controlType"},"before_state":{"type":["object","array","string","number","boolean","null"],"description":"Observed material state immediately before this transition; never synthesize missing as zero."},"after_state":{"type":["object","array","string","number","boolean","null"],"description":"Observed material state immediately after this transition; never synthesize missing as zero."},"evidence_status":{"type":"string","enum":["observed","derived","unknown","partial","unsupported"],"description":"Only positively observed events can establish an intervening transition; others are unresolved."}}}}
   },
   "$defs": {
     "controlType": {"type": "string", "enum": ["base_bid", "bidding_strategy", "placement_adjustment", "audience_bid_adjustment", "video_bid_adjustment", "schedule_or_event_rule", "budget_or_pacing", "targeting_or_routing", "experiment_assignment", "other_material_control"]},

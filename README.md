@@ -2,11 +2,14 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.101.0`  
+> 当前版本：`v1.102.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Detect observed mid-window control confounders** — optional post-readback `control_events` records reveal positively observed schedule/event/budget/placement changes that revert before the final snapshot. A competing transition blocks `Treatment Isolated` as `Confounded`; missing, mismatched or contradictory event evidence is `Unknown`. Empty or omitted event lists do not prove complete event history or continuous rule execution. No Ads writes.
+
 
 - **Reject N/A material-control evidence** — a repeated whole-label `N/A` or `Not Applicable` in a material state, nested state, rule ID or audience ID cannot certify stable competing controls even when collection coverage is Complete. Return `Unknown`; preserve real opaque IDs, zero/false, and actual confounders. No continuous rule-history proof or live Ads write authority is implied.
 

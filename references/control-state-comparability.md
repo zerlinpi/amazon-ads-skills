@@ -1,5 +1,10 @@
 # Control-state comparability
 
+## Observed intervening control events (v1.102.0)
+
+Use optional post-owned `control_events` in `schemas/control-state-snapshot.json` only when the adapter has positively observed a material transition between the baseline and post readbacks. Each record must bind the same concrete campaign/account scope and source lineage, unique event identity, exact known-offset RFC3339 event time, registered material control type, and distinct source-supported before/after states. For registered SP rule controls, rule-member identity and modifiers must be usable. An observed competing event is `Confounded` even when it reverted before the post snapshot; unresolved evidence is `Unknown`. An event involving only the intended treatment does not substitute for an observed endpoint treatment change. An omitted or empty event list remains endpoint-only compatibility, **never** evidence of exhaustive capture or uninterrupted budget/rule/placement activation. The connector must independently authenticate its raw event stream, deduplicate/reconcile restatements and establish coverage before anyone claims full-window stability. No live Ads writes.
+
+
 ## N/A material state and member identity (v1.101.0)
 
 A Complete, observed material-control snapshot still cannot certify a whole-label `N/A` or `Not Applicable` in a scalar, nested or list state. This includes normalized Sponsored Products `rule_id` and `audience_id` members: a repeated unavailable member label cannot prove stable competing controls. Return `Unknown` instead of `Comparable` or `Treatment Isolated`. Normalize whitespace, hyphen and underscore variants only for exact reserved labels; do not reject opaque IDs containing these substrings. Preserve genuine observed zero/false, valid control changes, and legacy optional fields. This is read-only internal consistency, not authenticated rule execution history or Ads write permission.

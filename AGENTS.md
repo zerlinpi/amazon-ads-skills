@@ -39,6 +39,9 @@ Modes:
 
 ## Safety rules
 
+- **Observed intervening material-control events (v1.102.0):** Two complete endpoint readbacks cannot establish continuous rule/budget/placement stability. When a post readback explicitly supplies `control_events`, require each event to have concrete unique identity, the same account/campaign/source scope, a known-offset RFC3339 instant strictly inside the baseline/post window, positively `observed` evidence, registered material control type and usable different before/after states. A positively observed competing mid-window transition is `Confounded` even if the control later reverted; malformed, source-mismatched, reused readback, out-of-window or unsupported events are `Unknown`. Omitted/empty optional events retain endpoint-only compatibility but are **never** proof of exhaustive event capture or uninterrupted control execution. This is normalized read-side evidence, not an Amazon API event schema, source authentication, attribution proof or live Ads write permission.
+
+
 - **N/A material state and member evidence (v1.101.0):** A complete/observed material-control inventory cannot treat whole-label `N/A` or `Not Applicable` (including whitespace/hyphen/underscore variants) as a known control state, nested value, schedule/event/budget `rule_id`, or audience identity. Return `Unknown`, never `Treatment Isolated`/`Comparable`. Valid opaque strings containing these substrings, genuine zero/false and real confounders remain compatible. This read-only sentinel gate does not authenticate raw Amazon Ads API observations, prove continuous rule activation or permit live writes.
 
 

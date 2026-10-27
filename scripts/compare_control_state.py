@@ -708,6 +708,99 @@ def _surface_specific_state_problem(snapshot: dict[str, Any], control_map: dict[
     return None
 
 
+def _intervening_control_events_problem(
+    baseline: dict[str, Any],
+    post: dict[str, Any],
+    required: set[str],
+    observed_instants: list[tuple[datetime, Decimal]],
+) -> tuple[str | None, set[str]]:
+    """Check explicit *positive* mid-window transition evidence, never infer no events.
+
+    Optional post-owned event records can expose a change-and-revert that two
+    endpoint readbacks miss. Empty/omitted records do not prove continuous
+    execution, exhaustive event capture or absence of other transitions.
+    """
+    if "control_events" in baseline:
+        return "intervening control_events must be attached to the post readback", set()
+    if "control_events" not in post:
+        return None, set()
+    events = post["control_events"]
+    if not isinstance(events, list):
+        return "post control_events must be an array of observed events", set()
+
+    seen: set[str] = set()
+    changed: set[str] = set()
+    for index, event in enumerate(events):
+        label = f"post control_events[{index}]"
+        if not isinstance(event, dict):
+            return f"{label} must be an object", set()
+        fields = {
+            "event_id", "event_at", "scope", "source", "control_type",
+            "before_state", "after_state", "evidence_status",
+        }
+        if not fields.issubset(event) or set(event) != fields:
+            return f"{label} has missing or unrecognized evidence fields", set()
+        event_id = event["event_id"]
+        if _unusable_identity_label(event_id) or event_id in seen:
+            return f"{label} has missing, unknown or duplicate event_id", set()
+        seen.add(event_id)
+        if event_id in {
+            baseline["source"].get("readback_id"), post["source"].get("readback_id")
+        }:
+            return f"{label} reuses an endpoint readback observation identity", set()
+        if event["scope"] != baseline["scope"] or event["scope"] != post["scope"]:
+            return f"{label} decision scope does not match both endpoint observations", set()
+        if _source_lineage_problem(baseline["source"], event["source"]) or _source_lineage_problem(
+            post["source"], event["source"]
+        ):
+            return f"{label} source lineage is missing or inconsistent", set()
+        event_readback = event["source"].get("readback_id")
+        if event_readback is not None and event_readback in {
+            baseline["source"].get("readback_id"), post["source"].get("readback_id")
+        }:
+            return f"{label} source reuses an endpoint readback observation", set()
+        if event["evidence_status"] != "observed":
+            return f"{label} is not a positively observed control transition", set()
+        control_type = event["control_type"]
+        if not isinstance(control_type, str) or control_type not in required:
+            return f"{label} control_type is outside the registered material set", set()
+        instant = _rfc3339_instant(event["event_at"])
+        if instant is None or not (observed_instants[0] < instant < observed_instants[1]):
+            return f"{label} has invalid or out-of-window event_at", set()
+
+        for field in ("before_state", "after_state"):
+            state = event[field]
+            if state is None or _explicit_material_state_problem(state):
+                return f"{label} has missing or unresolved {field}", set()
+            # Rule members must be usable before identity-keyed comparison;
+            # otherwise a reordered list or malformed ID could masquerade as
+            # a control transition. This does not prove collection completeness.
+            if control_type in {"schedule_or_event_rule", "budget_or_pacing"}:
+                rule_fields = (
+                    (("schedule_rules", "bid_increase"), ("event_rules", "bid_increase"))
+                    if control_type == "schedule_or_event_rule"
+                    else (("active_budget_rules", "increase_percent"),)
+                )
+                if not isinstance(state, dict):
+                    return f"{label} has unstructured {field} rule evidence", set()
+                for collection, modifier in rule_fields:
+                    if _rule_member_problem(
+                        state.get(collection), collection, modifier, label, event["event_at"]
+                    ):
+                        return f"{label} has incomplete or invalid {field}.{collection}", set()
+
+        before_state, after_state = event["before_state"], event["after_state"]
+        same = (
+            _sp_rule_state_equal(control_type, before_state, after_state)
+            if control_type in {"schedule_or_event_rule", "budget_or_pacing"}
+            else _json_state_equal(before_state, after_state)
+        )
+        if same:
+            return f"{label} does not contain an observed material state change", set()
+        changed.add(control_type)
+    return None, changed
+
+
 def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intended_treatment: str | None = None) -> dict[str, Any]:
     """Return a fail-closed comparability classification and evidence reasons."""
     reasons: list[str] = []
@@ -885,6 +978,38 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
             "reasons": ["conflicting material states reuse the same source.readback_id observation"],
             "changed_controls": changed,
         }
+
+    event_problem, intervening_changes = _intervening_control_events_problem(
+        baseline, post, required_before, observed_instants
+    )
+    if event_problem:
+        return {"classification": "Unknown", "reasons": [event_problem], "changed_controls": changed}
+    # A positively observed intervening competing change is a confounder
+    # even if the control later reverted to its original endpoint state.
+    # The absence of events never certifies continuous control stability.
+    if intervening_changes:
+        if intended_treatment and (
+            intended_treatment not in required_before or intended_treatment not in changed
+        ):
+            return {
+                "classification": "Unknown",
+                "reasons": ["intended treatment has no verified endpoint state change"],
+                "changed_controls": changed,
+            }
+        all_evidenced_changes = sorted(set(changed) | intervening_changes)
+        if intended_treatment and intervening_changes - {intended_treatment}:
+            return {
+                "classification": "Confounded",
+                "reasons": ["observed intervening competing control changes: " +
+                            ", ".join(sorted(intervening_changes - {intended_treatment}))],
+                "changed_controls": all_evidenced_changes,
+            }
+        if not intended_treatment:
+            return {
+                "classification": "Directional",
+                "reasons": ["observed intervening material control changes without an identified treatment"],
+                "changed_controls": all_evidenced_changes,
+            }
 
     if intended_treatment:
         if intended_treatment not in required_before:
