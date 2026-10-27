@@ -5,6 +5,10 @@ description: Evaluate whether an Amazon Ads optimization change was actually app
 
 # Amazon Ads Post-change Review
 
+## Mid-window Sponsored Products rule activation parity (v1.109.0)
+
+When positive `control_events` contain schedule/event bid-rule or active-budget rule transitions, use `../../scripts/compare_control_state.py` to reject one-sided optional `activation_status` or `activation_effective_at` for a shared `rule_id` as `Unknown`. Both-absent optional evidence and real status/time transitions remain compatible; a new rule ID does not imply a fabricated prior inactive state. Do not claim complete history or continuous execution from optional event rows. Read-only/Suggest/Shadow; live Ads writes belong to an authorized external Executor.
+
 ## Co-observed Sponsored Products routing/placement evidence (v1.108.0)
 
 Use `../../scripts/compare_control_state.py` to reject contradictory `ACROSS_RETAILERS` routing and Amazon Business placement modifier states when both positive mid-window events are bound to the same concrete event readback. Evaluate before and after phases independently; an equal event timestamp without a shared readback is not proof of co-observation. Return `Unknown` rather than manufacturing a confounder; preserve valid Amazon Store combinations and absent event history as unresolved coverage. Remain Read-only/Suggest/Shadow; only an authorized external Executor may write to Ads.

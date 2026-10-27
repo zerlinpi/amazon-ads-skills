@@ -1,3 +1,9 @@
+# Mid-window Sponsored Products rule activation evidence parity (v1.109.0)
+
+A positive post-owned `control_events` transition can only compare optional rule activation metadata when the same `rule_id` is present in both its `before_state` and `after_state`. For `schedule_rules`, `event_rules` and `active_budget_rules`, require symmetric presence of `activation_status` and `activation_effective_at` on common rule IDs. A field present on only one side is unresolved evidence (`Unknown`), not proof of an activation transition or inactive/zero state. Reuse the endpoint parity helper; both-absent optional metadata, observed status/time changes and added/removed rule identities remain compatible. The latter do not by themselves establish full collection capture.
+
+These are repository-normalized read-only fields, not Amazon API-native enums or an authenticated continuous event history. A positive event can expose a confounder, but empty/omitted event lists cannot prove that no competing control changed. Preserve source, metric, date, grain, identity, connector capability, causal confounders and marginal economics; only an external authorized Executor may write to Ads.
+
 # Intervening event observation identity and same-instant transition consistency (v1.107.0)
 
 When an adapter supplies optional positively observed post-owned `control_events`, each concrete `source.readback_id` denotes one observation instant across those event rows. Reusing that ID for different `event_at` instants, including a one-nanosecond difference, is contradictory evidence and returns `Unknown`. Compare known-offset RFC3339 instants in exact UTC time; offset-equivalent representations are compatible.

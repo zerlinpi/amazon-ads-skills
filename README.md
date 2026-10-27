@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.108.0`  
+> 当前版本：`v1.109.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Reject one-sided activation metadata in mid-window SP rule events** — for a shared schedule/event/active-budget `rule_id`, optional `activation_status` and `activation_effective_at` must be present on both sides of a positively observed transition or neither. Missing-before/after metadata returns `Unknown`, not a fabricated confounder; valid activation changes and new rule identities remain compatible. This does not certify continuous execution, event-log completeness, or authorize Ads writes.
 
 - **Reject co-observed routing/placement contradictions** — two positive mid-window Sponsored Products control events bound to the same concrete source readback cannot simultaneously certify `ACROSS_RETAILERS` routing and an Amazon Business placement modifier in the same before/after phase. Return `Unknown`, not an invented confounder. Distinct or missing readbacks are not assumed simultaneous; compatible Amazon Store states remain valid. No full-window capture or Ads write authority follows.
 

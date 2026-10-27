@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.109.0 — 2026-10-27
+
+### Require paired activation evidence for observed mid-window SP rule transitions (MINOR)
+
+- Reuse the endpoint identity-keyed activation evidence parity check for positively observed `control_events` on registered SP bid/budget surfaces. For common schedule/event/active-budget rule IDs, reject one-sided optional `activation_status` or `activation_effective_at` as `Unknown`. Preserve both-absent metadata, real observed activation changes and added/removed rule IDs. No new Skill, schema field, dependency or live Ads write.
+- RED tests-only `5690d1fe5720f5302328cbab65e6e7ccb3af3295` ([Actions #40523992555](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40523992555)): 2078 tests, 6 FAIL. GREEN `b092b4481cdc703197e2b17007f917d2bebeac09` ([Actions #40524098654](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40524098654)): 2078/2078 PASS, 15 Skills and 55 Eval fixtures PASS. Eleven deterministic synthetic tests.
+- Research: `docs/research/intervening-sp-rule-activation-parity-2026-10.md`; source/license review: `docs/SOURCES.md`. Positive events remain non-exhaustive and unauthenticated; authorized external Executor alone owns Ads writes/retries/idempotency/reconciliation.
+
 ## v1.108.0 — 2026-10-27
 
 ### Reject incompatible co-observed Sponsored Products routing/placement events (MINOR)
