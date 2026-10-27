@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.103.0 — 2026-10-27
+
+### Reject invalid observed Sponsored Products event-only control values (MINOR)
+
+- Reuse existing source-supported value semantics for optional intervening `control_events` in Sponsored Products causal comparisons. Invalid base/video bid, placement, audience or bidding-strategy before/after evidence is `Unknown`, not a manufactured competing transition or isolated treatment. Valid decimal strings, zero, actual observed confounders and supported bidding aliases remain compatible.
+- RED `a3ed449a99b36228cd6c8cb6d708e22bf3248a25` ([Actions #40475574154](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40475574154)): 2012 tests, 14 FAIL. GREEN `5761b7760e851bfaa8ca2f56560a9ea37e0bf2d3` ([Actions #40475654662](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40475654662)): 2012 PASS, Skills/Evals PASS. Further alias compatibility tests and final PR validation are tracked in PR #216.
+- No new Skill, schema field, dependency or Ads mutation. See `docs/research/intervening-sp-event-state-semantics-2026-10.md` and `docs/SOURCES.md`. Missing/unsupported/partial/unknown never become zero; external authorized Executor remains responsible for any live write.
+
 ## v1.102.0 — 2026-10-27
 
 ### Detect observed intervening material-control changes missed by endpoint-only readbacks (MINOR)

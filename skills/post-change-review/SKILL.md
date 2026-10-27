@@ -5,6 +5,10 @@ description: Evaluate whether an Amazon Ads optimization change was actually app
 
 # Amazon Ads Post-change Review
 
+## Intervening Sponsored Products event value integrity (v1.103.0)
+
+When using optional post-owned `control_events` for a Sponsored Products bid/budget causal review, apply `../../scripts/compare_control_state.py` before classifying a confounder. A claimed observed transition with an invalid base/video bid, incomplete or nonnumeric placement, unusable audience member, or unsupported bidding-strategy state is `Unknown`, not an observed competing change. Valid positive observed transitions remain usable. This is a read-only normalized evidence guard; missing events do not become zero, event capture is not certified exhaustive, and only an external authorized Executor may write to Ads.
+
 ## Intervening material-control event evidence (v1.102.0)
 
 When the connector exposes observed mid-window campaign control transitions, attach source/scope/time-bound `control_events` to the post snapshot before calling `../../scripts/compare_control_state.py`. A schedule/event/budget/placement change can confound a bid test even if it reverted and both endpoint readbacks match. Malformed or unverified event evidence is `Unknown`, not zero or unchanged; a competing observed event is `Confounded`. Omitted/empty event lists are **not** continuous-history proof. Keep causal confounders and incremental economics separate; external authorized Executor owns all writes.
