@@ -8,6 +8,8 @@ A portable **Amazon Ads decision library for AI agents**. It packages 15 focused
 
 ## What you can do
 
+- **Detect contradictory mid-window event observations** — a reused concrete event `source.readback_id` cannot denote different UTC event times, and two events for the same control at the same instant cannot disagree on the before/after transition. Return `Unknown` for conflicts, preserving multi-control same-time observations, distinct event identities, nanosecond precision and non-exhaustive event-log compatibility. This does **not** prove complete event capture or authorize live Ads writes.
+
 - **Reject nested null material-control evidence** — explicit JSON null inside an observed control-state object/list returns `Unknown`, not a fabricated isolated treatment or confounder. Measured zero/false, omitted optional dimensions and null provenance outside material state remain compatible; no live Ads writes.
 
 - **Fail closed on one-sided mid-window budget evidence** — optional observed base/effective daily budget and policy fields must have before/after parity in Sponsored Products `control_events`. Preserve both-absent legacy bid surfaces and genuine Amazon Business placement additions as observed confounders. This is a read-only evidence check, not complete event-history proof.

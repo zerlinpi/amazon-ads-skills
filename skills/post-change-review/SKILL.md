@@ -5,6 +5,10 @@ description: Evaluate whether an Amazon Ads optimization change was actually app
 
 # Amazon Ads Post-change Review
 
+## Intervening event observation collisions (v1.107.0)
+
+Use `../../scripts/compare_control_state.py` to reject reused concrete event readback IDs at conflicting UTC instants and incompatible same-control transitions at the exact same instant as `Unknown`. Multiple controls can legitimately share one readback/time; identical duplicate transitions and omitted optional event readback IDs remain compatible. Do not infer a contiguous event chain or full-window completeness from optional `control_events`. Remain Read-only/Suggest/Shadow; live Ads mutations belong to an external authorized Executor.
+
 ## Nested null material-state evidence (v1.106.0)
 
 Use `../../scripts/compare_control_state.py` to reject explicit JSON null in any nested observed material-control state, including positive intervening events. Such unknown evidence cannot establish a stable competing control, isolated treatment or genuine confounder. Keep real zero/false and absent optional fields distinct; null metadata outside `state` remains optional. Read-only/Suggest/Shadow; no full-window coverage or live Ads write authority.

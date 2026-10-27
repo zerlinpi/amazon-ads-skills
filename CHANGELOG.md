@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.107.0 — 2026-10-27
+
+### Reject contradictory intervening event observation identities (MINOR)
+
+- For positively observed mid-window `control_events`, reject a concrete `source.readback_id` reused across distinct exact UTC event instants and conflicting same-control transitions asserted at one instant. Preserve valid same-instant multi-control observations, equivalent offsets, identical duplicate transitions, distinct readbacks and non-exhaustive logs. No new Skill, schema field, dependency or Ads write.
+- RED tests-only `f2002b28626e99194e2b333d7932c57bf0eb7fab` ([Actions #40506427213](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40506427213)): 2061 tests, 4 FAIL. GREEN `d0ee5795c0aab844a7dcfc090519b20918227106` ([Actions #40506525853](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40506525853)): 2061 PASS, Skill/Eval validators PASS. Eleven synthetic deterministic tests.
+- Research: `docs/research/intervening-event-observation-collision-2026-10.md`. The event list remains optional and non-exhaustive; the external authorized Executor alone owns writes/retries/idempotency/reconciliation.
+
 ## v1.106.0 — 2026-10-27
 
 ### Reject explicit nested null material-state evidence (MINOR)
