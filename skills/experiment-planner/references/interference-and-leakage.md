@@ -1,5 +1,9 @@
 # Experiment interference and leakage reference
 
+## Explicit material-change re-verification time (v1.95.0)
+
+A claimed positive `reverified` boolean is not a license to ignore contradictory timestamp evidence. If `material_scope_changes[].reverified_at` is supplied in a Ready holdout, validate known-offset RFC3339 and `change.timestamp <= reverified_at <= latest_verified_at` with full UTC fractional precision. Reject explicit null/Unknown, pre-change or post-latest timestamps. Do not require a timestamp that legacy records genuinely omit; do not infer full-window Schedule/Event/Budget/Placement control continuity from these isolated checks. External source authentication remains separate.
+
 ## Exact fractional verification chronology (v1.94.0)
 
 When comparing Ready holdout latest boundary monitoring with verified isolation, launch checks and material scope changes, retain all fractional digits in valid RFC3339 timestamps. Python microsecond truncation can collapse a 10:00:00.0000001Z event into 10:00:00Z, falsely clearing a later change or verification. Compare UTC whole seconds and the original fractional part exactly; do not discard high-precision evidence or invent an interval-complete control history. The validator remains read-only, optional legacy evidence stays optional and Shadow/Hold/Redesign remain exploratory.
