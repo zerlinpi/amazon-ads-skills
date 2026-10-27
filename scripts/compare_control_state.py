@@ -754,6 +754,11 @@ def _intervening_control_events_problem(
             post["source"], event["source"]
         ):
             return f"{label} source lineage is missing or inconsistent", set()
+        event_readback = event["source"].get("readback_id")
+        if event_readback is not None and event_readback in {
+            baseline["source"].get("readback_id"), post["source"].get("readback_id")
+        }:
+            return f"{label} source reuses an endpoint readback observation", set()
         if event["evidence_status"] != "observed":
             return f"{label} is not a positively observed control transition", set()
         control_type = event["control_type"]
@@ -983,6 +988,14 @@ def compare_control_state(baseline: dict[str, Any], post: dict[str, Any], intend
     # even if the control later reverted to its original endpoint state.
     # The absence of events never certifies continuous control stability.
     if intervening_changes:
+        if intended_treatment and (
+            intended_treatment not in required_before or intended_treatment not in changed
+        ):
+            return {
+                "classification": "Unknown",
+                "reasons": ["intended treatment has no verified endpoint state change"],
+                "changed_controls": changed,
+            }
         all_evidenced_changes = sorted(set(changed) | intervening_changes)
         if intended_treatment and intervening_changes - {intended_treatment}:
             return {
