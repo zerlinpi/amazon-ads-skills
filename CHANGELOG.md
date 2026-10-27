@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.95.0 — 2026-10-27
+
+### Validate explicitly supplied material-change re-verification instants (MINOR)
+
+- A Ready holdout previously ignored an explicit `material_scope_changes[].reverified_at` even when null, Unknown, earlier than the change or later than the latest clean check. The optional field now requires known-offset RFC3339 and exact UTC ordering `change.timestamp <= reverified_at <= latest_verified_at`. Omitted legacy timestamps, valid equal/offset instants and exploratory plans remain compatible. No claim of authenticated or continuous Amazon Ads control history.
+- RED `5bbbfed737c56b4a391cbb098f1afc44fd5385d7` ([Actions #40428169436](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40428169436)): 1882 tests / 8 FAIL. GREEN `d41bb195eb1c2d8377e3ee781a4e58342db9644a` ([Actions #40428221122](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40428221122)): 1882 PASS, Skill/Eval validators PASS. 15 Skills unchanged; no Ads writes.
+
 ## v1.94.0 — 2026-10-27
 
 ### Preserve exact fractional-second Ready holdout evidence chronology (MINOR)

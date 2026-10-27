@@ -137,7 +137,8 @@
                   "timestamp": {"type": ["string", "null"], "format": "date-time"},
                   "type": {"type": ["string", "null"]},
                   "description": {"type": ["string", "null"]},
-                  "reverified": {"type": ["boolean", "null"]}
+                  "reverified": {"type": ["boolean", "null"]},
+                  "reverified_at": {"type": ["string", "null"], "format": "date-time", "description": "Optional asserted verification instant; Ready plans reject explicit unresolved or chronologically inconsistent values."}
                 },
                 "additionalProperties": true
               }

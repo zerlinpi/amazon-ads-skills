@@ -9,6 +9,10 @@ Use this Skill when evidence is insufficient for a confident direct optimization
 
 Default mode: `Shadow` for design/simulation, otherwise `Suggest`. This Skill never executes live Amazon Ads mutations.
 
+## Explicit material-change re-verification chronology (v1.95.0)
+
+For a Ready holdout, `boundary_monitoring.material_scope_changes[].reverified` must still be positively true. When an optional `reverified_at` is explicitly supplied, it must be a known-offset RFC3339 instant at or after the material change and at or before `latest_verified_at`, compared in UTC with exact fractional precision. Do not silently treat null/Unknown or contradictory time as omitted evidence. Omitted legacy timestamps, valid equal/offset times and Shadow/Hold/Redesign remain compatible. This is internal consistency, not source authentication or continuous rule-history proof; no live Ads writes.
+
 ## Exact fractional-second Ready holdout chronology (v1.94.0)
 
 When a Ready holdout supplies known-offset RFC3339 verification timestamps, compare UTC instants at their **full supplied fractional precision**, including seven or more digits. Python `datetime.fromisoformat` truncates past microseconds; a later isolation verification, launch verification or material scope change cannot be hidden by that truncation. Preserve valid high-precision timestamps, offsets, omitted optional legacy evidence and exploratory statuses. Validate with `../../scripts/validate_experiment_plan.py`. This is internal consistency, not continuous-control proof, source authentication or live Ads write permission.
