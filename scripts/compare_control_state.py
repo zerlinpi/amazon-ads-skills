@@ -793,6 +793,43 @@ def _sp_intervening_state_problem(control_type: str, state: Any, label: str, sur
     return None
 
 
+
+def _event_rule_collection_evidence_problem(event: dict[str, Any], label: str) -> str | None:
+    """Validate opt-in *paired* SP rule-list proof without claiming event-log coverage.
+
+    Legacy events without this optional envelope remain compatible but do not
+    establish completeness. An explicit partial, malformed or one-sided proof
+    must not be promoted into an observed control transition.
+    """
+    if "rule_collection_evidence" not in event:
+        return None
+    collections = {
+        "schedule_or_event_rule": {"schedule_rules", "event_rules"},
+        "budget_or_pacing": {"active_budget_rules"},
+    }.get(event["control_type"])
+    if collections is None:
+        return f"{label} rule_collection_evidence is not applicable to this control"
+    evidence = event["rule_collection_evidence"]
+    if not isinstance(evidence, dict) or set(evidence) != {"before", "after"}:
+        return f"{label} rule collection proof requires before and after phases"
+    expected = {
+        "enumeration_status": "Complete",
+        "pagination_status": "Complete",
+        "capability_status": "Supported",
+    }
+    for phase in ("before", "after"):
+        phase_evidence = evidence[phase]
+        if not isinstance(phase_evidence, dict) or set(phase_evidence) != collections:
+            return f"{label} {phase} rule collection proof lacks exact collection coverage"
+        for collection in sorted(collections):
+            proof = phase_evidence[collection]
+            if not isinstance(proof, dict) or set(proof) != set(expected):
+                return f"{label} {phase}.{collection} collection completeness proof is malformed"
+            if any(proof[field] != required for field, required in expected.items()):
+                return f"{label} {phase}.{collection} collection completeness is unproven"
+    return None
+
+
 def _intervening_control_events_problem(
     baseline: dict[str, Any],
     post: dict[str, Any],
@@ -833,7 +870,8 @@ def _intervening_control_events_problem(
             "event_id", "event_at", "scope", "source", "control_type",
             "before_state", "after_state", "evidence_status",
         }
-        if not fields.issubset(event) or set(event) != fields:
+        optional_fields = {"rule_collection_evidence"}
+        if not fields.issubset(event) or not set(event).issubset(fields | optional_fields):
             return f"{label} has missing or unrecognized evidence fields", set()
         event_id = event["event_id"]
         if _unusable_identity_label(event_id) or event_id in seen:
@@ -891,6 +929,12 @@ def _intervening_control_events_problem(
                     ):
                         return f"{label} has incomplete or invalid {field}.{collection}", set()
 
+        if "rule_collection_evidence" in event:
+            if surface not in {"sponsored_products_bid_change", "sponsored_products_budget_change"}:
+                return f"{label} rule collection proof has no registered SP contract", set()
+            proof_problem = _event_rule_collection_evidence_problem(event, label)
+            if proof_problem:
+                return proof_problem, set()
         before_state, after_state = event["before_state"], event["after_state"]
         if (surface in {"sponsored_products_bid_change", "sponsored_products_budget_change"}
                 and control_type in {"schedule_or_event_rule", "budget_or_pacing"}):
