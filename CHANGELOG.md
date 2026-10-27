@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.106.0 — 2026-10-27
+
+### Reject explicit nested null material-state evidence (MINOR)
+
+- Fail closed on nested null in Complete observed endpoint controls or positive mid-window events, while preserving measured zero/false, omitted optional dimensions and null provenance outside state. No schema, Skill, dependency or Ads write added.
+- RED `f15065538febbac1293774bc629fd6b413493fdf` ([Actions #40499231832](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40499231832)): 2050 tests, 4 FAIL. GREEN `da257cb33ef0a5b42732a9f74b0d709b6c2fb8e9` ([Actions #40499291654](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40499291654)): 2050 PASS, Skill/Eval validators PASS. Seven synthetic deterministic tests.
+- Research: `docs/research/nested-null-material-state-evidence-2026-10.md`.
+
+
 ## v1.105.0 — 2026-10-27
 
 ### Reject one-sided optional Sponsored Products mid-window budget evidence (MINOR)

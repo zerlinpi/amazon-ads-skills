@@ -5,6 +5,10 @@ description: Evaluate whether an Amazon Ads optimization change was actually app
 
 # Amazon Ads Post-change Review
 
+## Nested null material-state evidence (v1.106.0)
+
+Use `../../scripts/compare_control_state.py` to reject explicit JSON null in any nested observed material-control state, including positive intervening events. Such unknown evidence cannot establish a stable competing control, isolated treatment or genuine confounder. Keep real zero/false and absent optional fields distinct; null metadata outside `state` remains optional. Read-only/Suggest/Shadow; no full-window coverage or live Ads write authority.
+
 ## Intervening SP optional budget evidence parity (v1.105.0)
 
 For observed post-owned `control_events` on SP bid/budget causal reviews, use `../../scripts/compare_control_state.py` to reject a one-sided optional base/effective daily budget or average-daily-budget policy as `Unknown`. Both-absent optional bid-surface evidence stays compatible; a real Amazon Business placement addition remains a competing observed transition. Do not equate omitted fields with zero or claim full-window event coverage. Read-only/Suggest/Shadow; external authorized Executor for writes.
