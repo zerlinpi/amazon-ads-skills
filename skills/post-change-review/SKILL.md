@@ -5,6 +5,10 @@ description: Evaluate whether an Amazon Ads optimization change was actually app
 
 # Amazon Ads Post-change Review
 
+## Intervening Sponsored Products budget and routing state integrity (v1.104.0)
+
+For optional post-owned `control_events` on SP bid/budget causal reviews, use `../../scripts/compare_control_state.py` to reject invalid explicit budget amounts/policy and unmapped or contradictory site/retailer routing. A budget-change event requires base/effective daily budgets, active rules and policy; bid-change events preserve partial budget-shape compatibility but cannot accept invalid supplied values. One-sided retailer scope is not a verified routing transition. Return `Unknown` rather than manufacturing a confounder or isolated treatment. These are repository-normalized read-side labels, not universal Amazon API enums or a complete history certificate. No live Ads writes.
+
 ## Intervening Sponsored Products event value integrity (v1.103.0)
 
 When using optional post-owned `control_events` for a Sponsored Products bid/budget causal review, apply `../../scripts/compare_control_state.py` before classifying a confounder. A claimed observed transition with an invalid base/video bid, incomplete or nonnumeric placement, unusable audience member, or unsupported bidding-strategy state is `Unknown`, not an observed competing change. Valid positive observed transitions remain usable. This is a read-only normalized evidence guard; missing events do not become zero, event capture is not certified exhaustive, and only an external authorized Executor may write to Ads.
