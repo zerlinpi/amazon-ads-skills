@@ -219,3 +219,7 @@ Return:
 Default mode is `Suggest`.
 
 `Rollback Candidate` means evidence supports preparing a rollback proposal, not performing it. Any real account mutation requires explicit authorization plus an external Connector / Executor.
+
+## Observed SP rule-event extra direct arrays (v1.115.0)
+
+For mid-window Sponsored Products schedule/event/budget rule `control_events`, the paired `rule_collection_evidence` only proves the registered rule-list fields. Any additional direct array on either event side (even empty or unchanged) is unproven and the comparator returns `Unknown`. Do not interpret that result as zero, an isolated treatment or a verified competing control. Valid flat/scalar evidence stays compatible; source authenticity and full-window coverage remain separate. This is read-only; external authorized Executor owns all live changes.
