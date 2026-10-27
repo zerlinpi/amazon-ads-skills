@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.113.0`  
+> 当前版本：`v1.114.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Reject unproven non-rule SP event collections** — routing events with direct or deep arrays, and audience events with nested member arrays, now return `Unknown` without independent collection evidence, even for empty lists. Valid scalar routing and flat audience events remain compatible. No new schema, Skill, dependency or Ads write.
 
 - **Opt in to independent nested SP rule-event collection proof** — observed mid-window schedule/event/budget rule transitions may now include paired `rule_descendant_collection_evidence` with exact RFC 6901 state-relative pointers, Complete enumeration/pagination and Supported capability for every nested list. Requires independent outer `rule_collection_evidence`; missing, partial, extra or malformed pointers remain `Unknown`. Legacy unproven nested arrays remain `Unknown`; valid flat events remain compatible. This is an internal read-side evidence contract, not authenticated Amazon Ads event history or write authority.
 

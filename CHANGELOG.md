@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.114.0 — 2026-10-28
+
+### Reject unproven non-rule SP event collections (MINOR)
+
+- Reuse endpoint completeness guards for positively observed mid-window routing/audience event arrays. Direct routing lists and deep routing/audience member lists (including empty arrays) now return `Unknown` instead of a fabricated confounder. Flat legacy events remain compatible; no new schema, Skill, dependency or live Ads write.
+- RED tests-only `d2193043bcf823fba91bb2e3b7ce3027d8316f79` ([Actions #40589410469](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40589410469)): 2130 tests / 5 FAIL. GREEN code `4c8ac7ee0fd88dcc0c2f74d19e712c61a28ba66d` ([Actions #40589486007](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40589486007)): 2130 PASS, 15 Skills PASS, 55 Evals PASS. Nine deterministic tests (5 negative, 4 compatibility).
+- Research: `docs/research/intervening-nonrule-sp-collection-evidence-2026-10.md`; sources/license review: `docs/SOURCES.md`. External authorized Executor exclusively owns Ads writes, retries, idempotency and reconciliation.
+
 ## v1.113.0 — 2026-10-28
 
 ### Optional paired JSON Pointer completeness proof for nested SP rule events (MINOR)
