@@ -27,7 +27,7 @@ ACCOUNT_ID_FIELDS = (
 ACCOUNT_CONTEXT_FIELDS = ("manager_account_id", "country_code")
 UNUSABLE_IDENTITY_LABELS = {
     "unknown", "unsupported", "partial", "missing", "unavailable",
-    "not_available", "not_supported",
+    "not_available", "not_supported", "not_applicable", "n/a",
 }
 
 
