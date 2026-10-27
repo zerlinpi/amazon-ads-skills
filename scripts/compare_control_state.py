@@ -873,6 +873,19 @@ def _intervening_control_events_problem(
                         return f"{label} has incomplete or invalid {field}.{collection}", set()
 
         before_state, after_state = event["before_state"], event["after_state"]
+        if surface in {"sponsored_products_bid_change", "sponsored_products_budget_change"}:
+            # A field observed on only one side cannot establish a known
+            # transition. Both-absent optional evidence remains compatible.
+            if control_type == "placement_adjustment":
+                if ("amazon_business" in before_state) != ("amazon_business" in after_state):
+                    return f"{label} has one-sided amazon_business placement evidence", set()
+            if control_type == "budget_or_pacing":
+                for optional_field in (
+                    "base_average_daily_budget", "effective_daily_budget",
+                    "average_daily_budget_policy",
+                ):
+                    if (optional_field in before_state) != (optional_field in after_state):
+                        return f"{label} has one-sided {optional_field} evidence", set()
         if control_type == "targeting_or_routing":
             # An optional retailer dimension appearing on only one side
             # cannot establish the before/after routing transition.
