@@ -190,6 +190,28 @@ def _validate_ready_boundary_freshness(
             f"comparison.boundary_monitoring.material_scope_changes[{index}].timestamp",
             errors,
         )
+        # Optional explicit re-verification is evidence, not a decoration.
+        # Preserve legacy omissions, but do not accept an impossible supplied
+        # instant before the change or after the claimed latest clean check.
+        if "reverified_at" in change:
+            reverified_at = _parse_timestamp(
+                change["reverified_at"],
+                f"comparison.boundary_monitoring.material_scope_changes[{index}].reverified_at",
+                errors,
+            )
+            if reverified_at is not None and change_timestamp is not None:
+                if reverified_at < change_timestamp:
+                    errors.append(
+                        f"Ready holdout material_scope_changes[{index}].reverified_at "
+                        "cannot predate its material scope change"
+                    )
+            if reverified_at is not None and latest_verified_at is not None:
+                if reverified_at > latest_verified_at:
+                    errors.append(
+                        f"Ready holdout material_scope_changes[{index}].reverified_at "
+                        "cannot be after latest_verified_at"
+                    )
+
         if latest_verified_at is not None and change_timestamp is not None:
             if change_timestamp > latest_verified_at:
                 errors.append(
