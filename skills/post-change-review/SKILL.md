@@ -5,6 +5,10 @@ description: Evaluate whether an Amazon Ads optimization change was actually app
 
 # Amazon Ads Post-change Review
 
+## Readback control-evidence consistency (v1.98.0)
+
+For post-change readback, the same concrete `source.readback_id` cannot justify different per-control `effective_at` or `evidence_status`, even if observed time and control state match. Use the read-only `scripts/compare_control_state.py` gate; contradictions return `Unknown`. Equivalent UTC instants, distinct IDs and legacy optional omissions remain compatible. This does not prove continuous control execution, authenticate source payloads or authorize Ads writes.
+
 Use this Skill after a proposed or externally executed optimization action. It closes the loop between `action -> observe -> evaluate -> rollback/keep`.
 
 ## Connector capability gate

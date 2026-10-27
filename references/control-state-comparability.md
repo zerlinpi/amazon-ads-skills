@@ -1,5 +1,9 @@
 # Control-state comparability
 
+## Reused readback control evidence integrity (v1.98.0)
+
+When baseline and post explicitly reuse the same concrete `source.readback_id`, require not only the same exact UTC `observed_at` and material state but also the same per-control `effective_at` instant and `evidence_status`. Compare effective times as known-offset RFC3339 UTC instants, preserving every fractional digit; a null/omitted effective time on only one side is unresolved. A changed effective time alone under **different** observation IDs does not prove a material state change. Legacy omitted/null readback IDs and equivalent timezone-offset representations retain compatibility. This is an internal consistency gate; no raw API authentication, full-window rule trace or live Ads write authority follows.
+
 ## Explicit readback identity and observation-time integrity (v1.97.0)
 
 A supplied non-null `source.readback_id` must be a concrete unpadded observation identifier. Whole-label Unknown/Partial/Missing/Unsupported/Unavailable/Not Available/Not Supported/Not Applicable/N/A, blanks and non-string values cannot certify a control readback. If two snapshots reuse the same concrete ID, their `observed_at` must denote the same exact UTC instant, including submicrosecond fractions; different offset spellings of the same instant are compatible. Distinct valid IDs, omitted/null legacy IDs and unchanged same-instant snapshots remain compatible. This check is not external API response authentication, continuous rule-history evidence or permission to write Amazon Ads.

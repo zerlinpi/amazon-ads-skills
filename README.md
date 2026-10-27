@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.97.0`  
+> 当前版本：`v1.98.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Reject contradictory control evidence within one readback** — identical concrete `source.readback_id` cannot certify different control `effective_at` instants or `evidence_status` values, even when `observed_at` and material state match. Exact UTC fractional timestamps are compared; omitted/null legacy IDs, distinct IDs and equivalent timezone spellings remain compatible. This does not authenticate external observations or prove full-window rule execution.
 
 - **Reject unresolved or temporally contradictory control readback identities** — explicitly supplied non-null `source.readback_id` placeholders, blanks, padded or non-string values cannot prove independent observations. The same concrete ID cannot describe different `observed_at` instants, even when control values match. Omitted/null legacy IDs, valid distinct IDs and UTC-equivalent timestamps remain compatible. This is internal provenance consistency, not external API authentication or full-window control proof.
 
