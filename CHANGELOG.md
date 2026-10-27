@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.102.0 — 2026-10-27
+
+### Detect observed intervening material-control changes missed by endpoint-only readbacks (MINOR)
+
+- Added optional post-owned `control_events` to the read-only control snapshot contract. A positively observed, scope/source-bound mid-window competing change is `Confounded` even when endpoint states match after a reversion. Invalid/partial/derived, out-of-window, duplicate, mismatched or endpoint-readback-colliding events are `Unknown`. The intended treatment still needs its own verified endpoint change.
+- RED tests-only `02d082dcb7f9bce5f4961352443e0e661cf05dfc` ([Actions #40469314324](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40469314324)): 1990 tests, 17 FAIL. Initial GREEN `a2cb16ff682c5ebf15ab2c0631e1362a55fb8044` ([Actions #40469412526](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40469412526)): 1990 PASS. Two additional regression tests and provenance/treatment guard were added before final CI.
+- Synthetic deterministic tests only; no API writes. Empty/omitted event arrays preserve legacy endpoint behavior and **do not** certify full-window history. Research: `docs/research/intervening-control-events-2026-10.md`; source/licensing review: `docs/SOURCES.md`. 15 Skills preserved; VERSION, README and all three runtime manifests synchronized.
+
+
 ## v1.101.0 — 2026-10-27
 
 ### Reject N/A and Not Applicable material-control evidence (MINOR)
