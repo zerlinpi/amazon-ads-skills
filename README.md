@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.99.0`  
+> 当前版本：`v1.100.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Reject conflicting transition provenance under one readback** — matching `source.readback_id` cannot certify contradictory transition actor, management mode, evidence status, reason or transition time. One-sided provenance returns `Unknown`; exact UTC timestamps preserve nanosecond differences and equivalent offsets. No source authentication, continuous control proof or live Ads write authority is implied.
 
 - **Reject N/A scope/source identity placeholders** — repeated whole-label `N/A` or `Not Applicable` cannot certify marketplace, profile, campaign, entity, account, acquisition channel, source system or connector identity. Whitespace/hyphen/underscore variants return `Unknown` rather than false causal isolation. Concrete opaque IDs containing these words remain valid. No external source authentication, full-window control attestation or live Amazon Ads write is implied.
 
