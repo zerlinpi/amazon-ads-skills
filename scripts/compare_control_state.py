@@ -804,6 +804,7 @@ def _intervening_control_events_problem(
     events = post["control_events"]
     if not isinstance(events, list):
         return "post control_events must be an array of observed events", set()
+    surface = baseline["coverage"]["requirement_provenance"]["decision_surface"]
 
     seen: set[str] = set()
     changed: set[str] = set()
@@ -813,6 +814,9 @@ def _intervening_control_events_problem(
     # Two event rows for the same control and instant cannot assert
     # incompatible transitions. Distinct controls at one instant are valid.
     same_instant_transitions: dict[tuple[str, tuple[datetime, Decimal]], tuple[Any, Any]] = {}
+    # Only a shared concrete source readback can bind different control
+    # surfaces into one co-observed state. Equal timestamps alone cannot.
+    co_observed_states: dict[str, dict[str, tuple[Any, Any]]] = {}
     for index, event in enumerate(events):
         label = f"post control_events[{index}]"
         if not isinstance(event, dict):
@@ -858,7 +862,6 @@ def _intervening_control_events_problem(
             # Endpoint validation already rejects malformed SP bid/placement/
             # audience/strategy values. Event-only evidence must not bypass
             # those semantics to manufacture a confounder or isolated action.
-            surface = baseline["coverage"]["requirement_provenance"]["decision_surface"]
             if surface in {"sponsored_products_bid_change", "sponsored_products_budget_change"}:
                 event_state_problem = _sp_intervening_state_problem(control_type, state, label, surface)
                 if event_state_problem:
@@ -922,7 +925,31 @@ def _intervening_control_events_problem(
                 return f"{label} contradicts another observed transition for the same control and event_at", set()
         else:
             same_instant_transitions[transition_key] = (before_state, after_state)
+        if event_readback is not None:
+            co_observed_states.setdefault(event_readback, {})[control_type] = (
+                before_state, after_state
+            )
         changed.add(control_type)
+
+    # The SP endpoint contract already rejects an across-retailer routing
+    # state combined with an Amazon Business placement modifier. Do not
+    # let two event rows from the *same* readback bypass that invariant.
+    # Separate/missing readbacks are not proof of a simultaneous snapshot.
+    if surface in {"sponsored_products_bid_change", "sponsored_products_budget_change"}:
+        for readback, controls in co_observed_states.items():
+            if not {"targeting_or_routing", "placement_adjustment"}.issubset(controls):
+                continue
+            for phase in (0, 1):
+                routing = controls["targeting_or_routing"][phase]
+                placement = controls["placement_adjustment"][phase]
+                if (isinstance(routing, dict) and isinstance(placement, dict)
+                        and routing.get("retailer_scope") == "ACROSS_RETAILERS"
+                        and "amazon_business" in placement):
+                    return (
+                        f"event readback {readback} contradicts co-observed "
+                        "across-retailer routing and Amazon Business placement",
+                        set(),
+                    )
     return None, changed
 
 
