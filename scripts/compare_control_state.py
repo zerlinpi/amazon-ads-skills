@@ -126,7 +126,7 @@ def _source_lineage_problem(bsource: Any, psource: Any) -> str | None:
         readback = source.get("readback_id")
         if readback is not None and (
             _unusable_identity_label(readback)
-            or re.sub(r"[\\s-]+", "_", readback.casefold()) in {"not_applicable", "n/a"}
+            or re.sub(r"[\s-]+", "_", readback.casefold()) in {"not_applicable", "n/a"}
         ):
             return f"{side} control-state source readback_id is missing or unknown"
     before_connector, after_connector = bsource.get("connector_id"), psource.get("connector_id")
