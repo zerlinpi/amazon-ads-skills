@@ -103,6 +103,20 @@ class InterveningSPEventStateValuesTests(unittest.TestCase):
     def test_valid_video_event_remains_confounder(self):
         self.assert_class("video_bid_adjustment", 0, 10, "Confounded")
 
+    def test_rule_based_strategy_alias_remains_compatible(self):
+        self.assert_class("bidding_strategy", "dynamic_down_only",
+            {"strategy": "rule-based", "roas_guardrail": 3}, "Confounded")
+
+    def test_rule_based_strategy_case_remains_compatible(self):
+        self.assert_class("bidding_strategy", "dynamic_down_only",
+            {"strategy": "RULE_BASED", "roas_guardrail": "3.0"}, "Confounded")
+
+    def test_valid_amazon_business_placement_remains_confounder(self):
+        self.assert_class("placement_adjustment",
+            {"top_of_search": 0, "rest_of_search": 0, "product_pages": 0},
+            {"top_of_search": 20, "rest_of_search": 0, "product_pages": 0,
+             "amazon_business": 10}, "Confounded")
+
 
 if __name__ == "__main__":
     unittest.main()
