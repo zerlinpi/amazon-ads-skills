@@ -49,6 +49,16 @@ class InterveningBatchRoutingPlacementCoherenceTests(unittest.TestCase):
     def test_same_readback_across_retailers_with_business_placement_is_unknown(self):
         self.assertEqual(self.classify(), "Unknown")
 
+    def test_same_readback_conflicting_before_states_are_unknown(self):
+        baseline, post = paired_events(retailer="AMAZON_STORE")
+        routing = post["control_events"][1]
+        routing["before_state"]["site_restriction"] = "ALL_ELIGIBLE"
+        routing["before_state"]["retailer_scope"] = "ACROSS_RETAILERS"
+        self.assertEqual(
+            compare_control_state(baseline, post, "base_bid")["classification"],
+            "Unknown",
+        )
+
     def test_distinct_readbacks_do_not_infer_simultaneous_cross_control_state(self):
         self.assertEqual(self.classify(same_readback=False), "Confounded")
 
