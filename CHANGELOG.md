@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.101.0 — 2026-10-27
+
+### Reject N/A and Not Applicable material-control evidence (MINOR)
+
+- Complete observed control inventories no longer launder whole-label N/A/Not Applicable in scalar, nested or list state, or Sponsored Products schedule/event/budget rule and audience identities, into isolated or comparable decisions. Whitespace/hyphen/underscore variants are unresolved; real opaque identifiers, observed zero/false and competing control changes remain compatible.
+- RED tests-only `7b66c043256d95376c3d3c0f9e00f3e1eeb887eb` (Actions #40463277508): 1970 tests, 12 FAIL. GREEN minimal fix `d0ccfd996b1d3c28d252b7add1fdcd9b6cd4682b` (Actions #40463362413): 1970 PASS, Skill/Eval validators PASS. Seventeen synthetic deterministic tests; no live Ads calls or writes.
+- Research: `docs/research/material-state-na-rule-member-evidence-2026-10.md`; source/licensing notes in `docs/SOURCES.md`. VERSION, README and three runtime manifests synchronized. No new Skill, schema or dependency.
+
+
 ## v1.100.0 — 2026-10-27
 
 ### Reject contradictory transition provenance under reused readback identity (MINOR)
