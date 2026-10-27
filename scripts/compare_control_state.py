@@ -308,7 +308,9 @@ def _nested_collection_problem(control: dict[str, Any], control_type: str, field
     return None
 
 
-def _deep_extra_collection_problem(control: dict[str, Any], control_type: str, side: str) -> str | None:
+def _deep_extra_collection_problem(
+    control: dict[str, Any], control_type: str, side: str, *, strict_evidence: bool = False
+) -> str | None:
     """Require independent evidence for lists below the first state-object level.
 
     Direct state fields retain legacy nested_collection_evidence keys; deeper
@@ -316,6 +318,7 @@ def _deep_extra_collection_problem(control: dict[str, Any], control_type: str, s
     """
     evidence_map = control.get("nested_collection_evidence")
     expected = {"enumeration_status": "Complete", "pagination_status": "Complete", "capability_status": "Supported"}
+    proven_paths: set[str] = set()
 
     # Root-list completeness is checked by _collection_problem. Descendant
     # lists still require independent evidence, including list-in-list values.
@@ -324,9 +327,12 @@ def _deep_extra_collection_problem(control: dict[str, Any], control_type: str, s
     def walk(value: Any, pointer: str, depth: int) -> str | None:
         if isinstance(value, list):
             if depth > descendant_depth:
+                proven_paths.add(pointer)
                 evidence = evidence_map.get(pointer) if isinstance(evidence_map, dict) else None
                 if not isinstance(evidence, dict):
                     return f"{side} {control_type}{pointer} collection lacks completeness evidence"
+                if strict_evidence and set(evidence) != set(expected):
+                    return f"{side} {control_type}{pointer} collection proof has unrecognized fields"
                 incomplete = [key for key, required in expected.items() if evidence.get(key) != required]
                 if incomplete:
                     return f"{side} {control_type}{pointer} collection completeness is unproven: " + ", ".join(incomplete)
@@ -342,7 +348,16 @@ def _deep_extra_collection_problem(control: dict[str, Any], control_type: str, s
                     return problem
         return None
 
-    return walk(control.get("state"), "", 0)
+    problem = walk(control.get("state"), "", 0)
+    if problem:
+        return problem
+    if strict_evidence:
+        if not isinstance(evidence_map, dict):
+            return f"{side} {control_type} descendant collection proof must be an object"
+        extra_paths = set(evidence_map) - proven_paths
+        if extra_paths:
+            return f"{side} {control_type} descendant collection proof has unmapped pointers: " + ", ".join(sorted(extra_paths))
+    return None
 
 
 def _coverage_problem(snapshot: dict[str, Any], control_map: dict[str, dict[str, Any]], side: str) -> str | None:
@@ -870,7 +885,7 @@ def _intervening_control_events_problem(
             "event_id", "event_at", "scope", "source", "control_type",
             "before_state", "after_state", "evidence_status",
         }
-        optional_fields = {"rule_collection_evidence"}
+        optional_fields = {"rule_collection_evidence", "rule_descendant_collection_evidence"}
         if not fields.issubset(event) or not set(event).issubset(fields | optional_fields):
             return f"{label} has missing or unrecognized evidence fields", set()
         event_id = event["event_id"]
@@ -900,6 +915,17 @@ def _intervening_control_events_problem(
         instant = _rfc3339_instant(event["event_at"])
         if instant is None or not (observed_instants[0] < instant < observed_instants[1]):
             return f"{label} has invalid or out-of-window event_at", set()
+
+        descendant_proof = event.get("rule_descendant_collection_evidence")
+        if "rule_descendant_collection_evidence" in event:
+            if (surface not in {"sponsored_products_bid_change", "sponsored_products_budget_change"}
+                    or control_type not in {"schedule_or_event_rule", "budget_or_pacing"}
+                    or "rule_collection_evidence" not in event):
+                return f"{label} descendant rule proof requires an applicable SP rule event and outer proof", set()
+            if (not isinstance(descendant_proof, dict)
+                    or set(descendant_proof) != {"before", "after"}
+                    or any(not isinstance(descendant_proof[phase], dict) for phase in ("before", "after"))):
+                return f"{label} descendant rule proof requires before and after pointer maps", set()
 
         for field in ("before_state", "after_state"):
             state = event[field]
@@ -933,8 +959,13 @@ def _intervening_control_events_problem(
                 # Endpoint readbacks already require separate JSON-pointer
                 # evidence for such descendants. The event contract has no
                 # descendant-proof field, so fail closed even for empty lists.
+                phase = "before" if field == "before_state" else "after"
+                descendant_control = {"state": state}
+                if descendant_proof is not None:
+                    descendant_control["nested_collection_evidence"] = descendant_proof[phase]
                 descendant_problem = _deep_extra_collection_problem(
-                    {"state": state}, control_type, f"{label} {field}"
+                    descendant_control, control_type, f"{label} {field}",
+                    strict_evidence=descendant_proof is not None,
                 )
                 if descendant_problem:
                     return descendant_problem, set()
