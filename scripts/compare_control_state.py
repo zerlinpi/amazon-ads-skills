@@ -422,6 +422,8 @@ def _explicit_material_state_problem(value: Any, pointer: str = "$") -> str | No
     values. It rejects only reserved evidence placeholders, blank scalar
     strings and non-finite numeric leaves, including in nested structures.
     """
+    if value is None:
+        return f"{pointer} contains an explicit null/unknown observation"
     if isinstance(value, str):
         normalized = re.sub(r"[\s-]+", "_", value.strip().casefold())
         if not normalized or normalized in {

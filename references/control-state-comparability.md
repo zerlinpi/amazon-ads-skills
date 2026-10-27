@@ -1,3 +1,7 @@
+# Explicit nested null material-control evidence (v1.106.0)
+
+A Complete/observed endpoint control or positively observed mid-window `control_events` cannot treat explicitly supplied JSON null inside a material-state object/list as a known value. Return `Unknown`, not `Treatment Isolated` or `Confounded`. Preserve measured zero/false, omitted optional dimensions, and optional null metadata outside `state`. This repository-owned conservative rule is not an Amazon API schema, full-window event capture proof, external authentication, or Ads write authority.
+
 # Control-state comparability
 
 ## One-sided optional SP intervening budget evidence (v1.105.0)

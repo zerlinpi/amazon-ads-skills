@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.105.0`  
+> 当前版本：`v1.106.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Reject nested null material-control evidence** — explicit JSON null inside an observed control-state object/list returns `Unknown`, not a fabricated isolated treatment or confounder. Measured zero/false, omitted optional dimensions and null provenance outside material state remain compatible; no live Ads writes.
 
 - **Fail closed on one-sided mid-window budget evidence** — optional observed base/effective daily budget and policy fields must have before/after parity in Sponsored Products `control_events`. Preserve both-absent legacy bid surfaces and genuine Amazon Business placement additions as observed confounders. This is a read-only evidence check, not complete event-history proof.
 
