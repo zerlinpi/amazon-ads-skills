@@ -807,6 +807,12 @@ def _intervening_control_events_problem(
 
     seen: set[str] = set()
     changed: set[str] = set()
+    # A concrete source readback ID denotes one observation instant, even
+    # when several control events were observed in that same readback.
+    event_readback_instants: dict[str, tuple[datetime, Decimal]] = {}
+    # Two event rows for the same control and instant cannot assert
+    # incompatible transitions. Distinct controls at one instant are valid.
+    same_instant_transitions: dict[tuple[str, tuple[datetime, Decimal]], tuple[Any, Any]] = {}
     for index, event in enumerate(events):
         label = f"post control_events[{index}]"
         if not isinstance(event, dict):
@@ -897,6 +903,25 @@ def _intervening_control_events_problem(
         )
         if same:
             return f"{label} does not contain an observed material state change", set()
+        if event_readback is not None:
+            prior_instant = event_readback_instants.get(event_readback)
+            if prior_instant is not None and prior_instant != instant:
+                return f"{label} reuses source.readback_id for a different event_at instant", set()
+            event_readback_instants[event_readback] = instant
+        transition_key = (control_type, instant)
+        prior_transition = same_instant_transitions.get(transition_key)
+        if prior_transition is not None:
+            previous_before, previous_after = prior_transition
+            state_equal = (
+                lambda left, right: _sp_rule_state_equal(control_type, left, right)
+                if control_type in {"schedule_or_event_rule", "budget_or_pacing"}
+                else _json_state_equal(left, right)
+            )
+            if not (state_equal(previous_before, before_state)
+                    and state_equal(previous_after, after_state)):
+                return f"{label} contradicts another observed transition for the same control and event_at", set()
+        else:
+            same_instant_transitions[transition_key] = (before_state, after_state)
         changed.add(control_type)
     return None, changed
 
