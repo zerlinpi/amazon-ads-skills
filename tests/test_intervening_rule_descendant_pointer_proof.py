@@ -100,6 +100,7 @@ class InterveningRuleDescendantProofTests(unittest.TestCase):
         schema = json.loads((Path(__file__).resolve().parents[1] / "schemas/control-state-snapshot.json").read_text(encoding="utf-8"))
         event = schema["properties"]["control_events"]["items"]
         self.assertNotIn("rule_descendant_collection_evidence", event["required"])
+        self.assertIn("rule_descendant_collection_evidence", event["properties"])
         proof = event["properties"]["rule_descendant_collection_evidence"]
         self.assertEqual(set(proof["required"]), {"before", "after"})
         for phase in ("before", "after"):
