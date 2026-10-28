@@ -1,3 +1,8 @@
+## v2.8.0
+
+- Reject unresolved/padded measurement scope placeholders in the read-only measurement-history projector.
+- Add four deterministic RED→GREEN tests; no new Skill/schema/dependency or Ads write capability.
+
 ## v2.7.0
 
 - Expose explicit Skill-eval trigger observation coverage and status (`complete`, `partial`, `unmeasured`) alongside the observed denominator.
