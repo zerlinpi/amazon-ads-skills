@@ -80,7 +80,7 @@ def _stream_reconciliation_status(payload: dict[str, Any]) -> str:
         dataset = payload["stream_dataset"]
         if (not isinstance(dataset, str) or not dataset.strip()
                 or dataset != dataset.strip()
-                or re.sub(r"[\\s_-]+", " ", dataset.casefold()) in {
+                or re.sub(r"[\s_-]+", " ", dataset.casefold()) in {
                     "unknown", "partial", "missing", "unsupported",
                     "unavailable", "not available", "not supported",
                     "not applicable", "n/a",
