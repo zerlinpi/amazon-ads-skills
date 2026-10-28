@@ -1,5 +1,7 @@
 # Amazon Ads Skills
 
+- **Reject unresolved account identity placeholders (v2.9.0)** — account identity fields now reject whole-label unresolved values and padded values in measurement and realization projections; concrete opaque IDs containing placeholder substrings remain valid. Read-only lineage guard only; no Skill or Ads write.
+
 - **Reject unresolved observed scope without expected scope (v2.9.0)** — when an event contains a scope object, every scope value is now validated even if no expected_scope was supplied. Whole-label unresolved placeholders and padded values are rejected; missing scope remains allowed when no scope is provided. Concrete opaque IDs remain compatible. Read-only lineage guard only; no Skill, schema, dependency or Ads write.
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
@@ -10,7 +12,7 @@ A portable **Amazon Ads decision library for AI agents**. It packages 15 focused
 
 ## What you can do
 
-- **Reject unresolved measurement scope placeholders (v2.8.0)** — the read-only measurement-history projector now rejects whole-label `Unknown`/`Partial`/`Missing`/`Unsupported`/`Unavailable`/`N/A` and padded scope identities in expected or observed event scope. Concrete opaque IDs containing those words remain valid; missing/unknown scope is not promoted to a usable identity. No schema, Skill, dependency or Ads write.
+- **Reject unresolved measurement scope placeholders (v2.9.0)** — the read-only measurement-history projector now rejects whole-label `Unknown`/`Partial`/`Missing`/`Unsupported`/`Unavailable`/`N/A` and padded scope identities in expected or observed event scope. Concrete opaque IDs containing those words remain valid; missing/unknown scope is not promoted to a usable identity. No schema, Skill, dependency or Ads write.
 
 - **Validate Skill-eval trigger observations and expose the rate denominator (v2.6.0)** — supplied non-null `triggered` values must be booleans, including on excluded trials; malformed strings/numbers/arrays/objects fail rather than silently disappearing. Missing/null remain unmeasured, not false/zero. Each comparable arm reports `trigger_observed_count`, `trigger_observation_coverage`, and `trigger_observation_status` beside `trigger_rate`; partial or unmeasured trigger coverage is explicit rather than inferred from the rate. Read-only synthetic verification; no harness authenticity or Ads write claim.
 
