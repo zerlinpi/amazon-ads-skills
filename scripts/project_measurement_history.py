@@ -129,6 +129,15 @@ def _validate_scope(event: dict[str, Any], expected: tuple[str, str, str, str] |
         raise ValueError("measurement event scope does not match expected_scope")
 
 
+def _require_concrete_account_identity(value: Any, field: str) -> str:
+    if not isinstance(value, str) or not value or value != value.strip():
+        raise ValueError(f"{field} must be a concrete unpadded string")
+    normalized = " ".join(value.casefold().replace("_", " ").replace("-", " ").split())
+    if normalized in UNRESOLVED_SCOPE_LABELS:
+        raise ValueError(f"{field} must not be an unresolved account identity placeholder")
+    return value
+
+
 def _event_account_identity(event: dict[str, Any]) -> dict[str, Any] | None:
     value = event.get("account_identity")
     if value is None:
@@ -141,9 +150,9 @@ def _event_account_identity(event: dict[str, Any]) -> dict[str, Any] | None:
         item = value.get(field)
         if item is None:
             continue
-        if not isinstance(item, str) or not item:
-            raise ValueError(f"account identity {field} must be a non-empty string or null")
-        normalized[field] = item
+        normalized[field] = _require_concrete_account_identity(
+            item, f"account identity {field}"
+        )
 
     if not any(field in normalized for field in STRONG_ACCOUNT_IDENTITY_FIELDS):
         return None
@@ -170,11 +179,9 @@ def _normalize_expected_account_identity(value: Any) -> dict[str, str] | None:
         item = account_identity.get(field)
         if item is None:
             continue
-        if not isinstance(item, str) or not item:
-            raise ValueError(
-                f"expected_scope account identity {field} must be a non-empty string or null"
-            )
-        normalized[field] = item
+        normalized[field] = _require_concrete_account_identity(
+            item, f"expected_scope account identity {field}"
+        )
 
     if not any(field in normalized for field in STRONG_ACCOUNT_IDENTITY_FIELDS):
         raise ValueError(
