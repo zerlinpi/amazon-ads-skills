@@ -21,6 +21,10 @@ MATERIAL_DIMENSIONS = (
 )
 BOUNDED_COVERAGE = {"Complete", "Partial"}
 OBSERVABILITY_STATUSES = {"Complete", "Partial", "Unavailable", "Unknown"}
+UNRESOLVED_SCOPE_LABELS = {
+    "unknown", "partial", "missing", "unsupported", "unavailable",
+    "not available", "not supported", "not applicable", "n/a",
+}
 SCOPE_FIELDS = ("marketplace", "profile_scope", "entity_type", "entity_id")
 ACCOUNT_IDENTITY_FIELDS = (
     "manager_account_id",
