@@ -362,3 +362,7 @@ Add a playbook instead of a new Skill when the new material is primarily a recur
 Shared memory/history features should prefer append-first events plus derived compact summaries rather than mutable prose logs.
 
 When a change materially affects source comparability, negatives, bid/budget reversals or sizing, retail causality, Mixed-ASIN safety, growth qualification, experiments, readback, or rollback decisions, add or update a replay fixture when practical.
+
+## Account identity validation
+
+Account identity fields in read-only measurement/realization projections must be concrete, unpadded strings. Whole-label unresolved values such as Unknown, Partial, Missing, Unsupported, Unavailable, Not Applicable and N/A are invalid provenance. Missing account identity remains missing; concrete opaque IDs containing these words as a substring remain valid. Do not convert unresolved or missing account identity to zero, false, or a usable join key.
