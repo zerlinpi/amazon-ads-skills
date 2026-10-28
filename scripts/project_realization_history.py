@@ -111,15 +111,26 @@ def _normalize_expected_scope(value: Any) -> tuple[str, str, str, str] | None:
     return tuple(normalized)  # type: ignore[return-value]
 
 
+def _require_concrete_scope_value(value: Any, field: str) -> str:
+    if not isinstance(value, str) or not value or value != value.strip():
+        raise ValueError(f"{field} must be a concrete unpadded string")
+    normalized = " ".join(value.casefold().replace("_", " ").replace("-", " ").split())
+    if normalized in UNRESOLVED_SCOPE_LABELS:
+        raise ValueError(f"{field} must not be an unresolved scope placeholder")
+    return value
+
+
 def _validate_scope(
     event_scope: tuple[Any, Any, Any, Any] | None,
     expected_scope: tuple[str, str, str, str] | None,
 ) -> tuple[Any, Any, Any, Any] | None:
-    if expected_scope is None:
-        return event_scope
-    if event_scope is None or any(not isinstance(item, str) or not item for item in event_scope):
-        raise ValueError("realization event scope is incomplete for the requested expected scope")
-    if event_scope != expected_scope:
+    if event_scope is None:
+        if expected_scope is not None:
+            raise ValueError("realization event scope is incomplete for the requested expected scope")
+        return None
+    for field, item in zip(SCOPE_FIELDS, event_scope):
+        _require_concrete_scope_value(item, f"realization event scope.{field}")
+    if expected_scope is not None and event_scope != expected_scope:
         raise ValueError("realization event scope does not match the requested expected scope")
     return event_scope
 
