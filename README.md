@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v2.4.0`  
+> 当前版本：`v2.5.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Reject unresolved single-run Skill-eval identities (v2.5.0)** — the paired read-only summarizer now rejects missing, malformed, padded or placeholder benchmark/fixture/model/runtime/evaluator identities and invalid evaluation modes before reporting `Measured`. Optional omitted/null hashes and explicit null rubric remain compatible; this does not authenticate real model runs, prove significance or authorize Ads writes.
 
 - **Reject malformed Skill-evaluation token/latency measurements (v2.4.0)** — the paired read-only summarizer now rejects negative, non-finite or wrong-type resource values rather than averaging them or silently dropping supplied invalid values. Optional missing/null metrics remain unmeasured (not zero); valid zero tokens and fractional latency remain supported. Synthetic RED→GREEN regression coverage; no new Skill, schema, dependency, statistical-lift claim or Ads write.
 
