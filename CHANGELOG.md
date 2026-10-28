@@ -1,3 +1,8 @@
+## 2026-10-29 — Realization expected-scope placeholder integrity (v2.11.0)
+
+- **RED→GREEN:** Added deterministic tests proving the realization projector rejected unresolved and padded `expected_scope` values before projection. The minimal fix reuses the existing concrete scope validator; no new Skill, schema, dependency, or live Ads capability.
+- **Boundary:** This is a repository-local provenance contract. Amazon Ads official materials inform account/profile/scope identity concepts but do not define this internal validator. Missing/unknown/partial/unsupported remain non-zero, non-usable evidence.
+
 ## v2.10.0
 
 - Validate supplied realization event scope even without `expected_scope`; reject unresolved or padded marketplace/profile/entity identity while preserving legacy entity-only events as missing scope.
