@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.3.0 — 2026-10-28
+
+### Reject reused Skill-effectiveness trial execution IDs (MINOR)
+
+- The paired read-only summarizer grouped by pair and variant but did not enforce global `trial_id` uniqueness. A reused execution could be counted as an independent second sample across different pairs, including error/insufficient-evidence trials. It now rejects duplicates with a clear `ValueError` rather than inflating evidence.
+- RED test-only `7f72057ef040c15e10515c50ae3e1c6197b5e394` ([Actions #40628820306](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40628820306)): 2202 tests / 7 expected FAIL; three new compatibility tests passed. Minimal fix `68938647643cb074ef475029cc1e8c7bba27604f` ([Actions #40628897528](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40628897528)): verify final GREEN and validators before merge.
+- Ten deterministic synthetic tests. No Schema change, dependency, new Skill, actual harness execution or live Amazon Ads write. This validates declared IDs, not their external authenticity or statistical independence.
+
 ## v2.2.0 — 2026-10-28
 
 ### Reject unresolved longitudinal Skill-effectiveness identities (MINOR)
