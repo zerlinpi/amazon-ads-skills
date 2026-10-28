@@ -25,7 +25,7 @@ class ObservedScopeIntegrityTests(unittest.TestCase):
             "entity": {"type": "campaign", "id": "campaign-1"},
             "evidence_snapshot": snapshot(),
         }
-        with self.assertRaisesRegex(ValueError, "measurement event scope\.marketplace"):
+        with self.assertRaisesRegex(ValueError, r"measurement event scope\.marketplace"):
             MODULE.project_measurement_history([event])
 
     def test_padded_observed_scope_is_rejected_without_expected_scope(self):
@@ -37,6 +37,15 @@ class ObservedScopeIntegrityTests(unittest.TestCase):
         }
         with self.assertRaisesRegex(ValueError, "measurement event scope\.marketplace"):
             MODULE.project_measurement_history([event])
+
+
+    def test_legacy_entity_only_event_remains_accepted_without_scope(self):
+        event = {
+            "entity": {"type": "campaign", "id": "campaign-legacy"},
+            "evidence_snapshot": snapshot(),
+        }
+        result = MODULE.project_measurement_history([event])
+        self.assertEqual(result["latest_measurement_state"]["evidence_snapshot_id"], "snap-1")
 
     def test_concrete_observed_scope_remains_accepted_without_expected_scope(self):
         event = {
