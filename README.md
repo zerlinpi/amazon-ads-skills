@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v2.7.0`  
+> 当前版本：`v2.8.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Reject unresolved measurement scope placeholders (v2.8.0)** — the read-only measurement-history projector now rejects whole-label `Unknown`/`Partial`/`Missing`/`Unsupported`/`Unavailable`/`N/A` and padded scope identities in expected or observed event scope. Concrete opaque IDs containing those words remain valid; missing/unknown scope is not promoted to a usable identity. No schema, Skill, dependency or Ads write.
 
 - **Validate Skill-eval trigger observations and expose the rate denominator (v2.6.0)** — supplied non-null `triggered` values must be booleans, including on excluded trials; malformed strings/numbers/arrays/objects fail rather than silently disappearing. Missing/null remain unmeasured, not false/zero. Each comparable arm reports `trigger_observed_count`, `trigger_observation_coverage`, and `trigger_observation_status` beside `trigger_rate`; partial or unmeasured trigger coverage is explicit rather than inferred from the rate. Read-only synthetic verification; no harness authenticity or Ads write claim.
 
