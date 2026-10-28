@@ -147,7 +147,8 @@ def _require_concrete_identity(value: Any, field: str) -> str:
 def _validate_measurement_identity(payload: dict[str, Any]) -> None:
     for field in ("benchmark_id", "skill", "fixture_id", "fixture_version"):
         _require_concrete_identity(payload.get(field), field)
-    if payload.get("mode") not in VALID_MODES:
+    mode = payload.get("mode")
+    if not isinstance(mode, str) or mode not in VALID_MODES:
         raise ValueError("mode must be a supported Skill-effectiveness evaluation mode")
 
     harness = payload.get("harness")
