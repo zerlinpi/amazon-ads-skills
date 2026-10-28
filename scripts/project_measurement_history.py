@@ -109,6 +109,11 @@ def _event_scope(event: dict[str, Any]) -> tuple[Any, Any, Any, Any] | None:
     entity = event.get("entity")
     if not isinstance(entity, dict):
         return None
+    # Preserve legacy events that only identify an entity. A scope object is
+    # considered supplied when marketplace/profile_scope is present; partial
+    # supplied scope remains invalid and is validated below.
+    if "marketplace" not in event and "profile_scope" not in event:
+        return None
     return (
         event.get("marketplace"),
         event.get("profile_scope"),
