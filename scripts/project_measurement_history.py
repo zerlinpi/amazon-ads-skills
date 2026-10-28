@@ -118,14 +118,14 @@ def _event_scope(event: dict[str, Any]) -> tuple[Any, Any, Any, Any] | None:
 
 
 def _validate_scope(event: dict[str, Any], expected: tuple[str, str, str, str] | None) -> None:
-    if expected is None:
-        return
     actual = _event_scope(event)
     if actual is None:
-        raise ValueError("measurement event scope is incomplete for expected_scope")
+        if expected is not None:
+            raise ValueError("measurement event scope is incomplete for expected_scope")
+        return
     for field, item in zip(SCOPE_FIELDS, actual):
         _require_concrete_scope_value(item, f"measurement event scope.{field}")
-    if actual != expected:
+    if expected is not None and actual != expected:
         raise ValueError("measurement event scope does not match expected_scope")
 
 
