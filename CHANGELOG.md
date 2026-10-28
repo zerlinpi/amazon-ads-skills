@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.0.0 — 2026-10-28
+
+### Require Stream v1 delta idempotency and delivery-window proof (MAJOR)
+
+- **Breaking decision/output behavior:** Marketing Stream v1 previously returned `Allowed` for additive/disjoint rows without verified delta deduplication. It now requires `stream_delta_reconciliation` with exactly `idempotency_id_coverage`, `idempotency_id_deduplication`, and `delivery_window_coverage`, all `Verified`. Missing/Partial/Unknown/malformed evidence returns `Unknown`, never zero. V1 `stream_reconciliation_status` changes from `Not Applicable` to `Unknown` or `Verified`. V2 retains independent record-key/highest-version reconciliation.
+- **Migration:** downstream v1 callers must have their authorized external ingestion/warehouse verify the three properties for the exact dataset/account/time window and pass the evidence envelope. The repository does not deduplicate messages, perform retries, authenticate the source or write to Amazon Ads.
+- **RED→GREEN:** tests-only `5a33aa85cf390d5f4e3f7999bbf7a547e41c383d` ([RED Actions #40611132056](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40611132056)): 2163 tests, 10 expected FAIL. Production `f8846a21c1565c746e0cef917c06781c25d69e89`, legacy expectation adjustments `0e8fb144390e4534be82bd321c5766a2c0dd16c7` and `948e7e33571e72ab367b2c8d955818d66e0c8e41` ([GREEN Actions #40611237705](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40611237705)): 2163 PASS, 15 Skills and 55 Evals PASS.
+- Research: `docs/research/stream-v1-delta-idempotency-2026-10.md`; sources/IP: `docs/SOURCES.md`.
+
+
 ## v1.116.0 — 2026-10-28
 
 ### Reject explicitly unresolved Stream v2 dataset identity (MINOR)
