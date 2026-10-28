@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.4.0 — 2026-10-28
+
+### Validate optional paired Skill-eval resource measurements (MINOR)
+
+- `scripts/summarize_skill_effectiveness.py` previously averaged negative/fractional/boolean/non-finite token or latency values, or silently omitted supplied strings, despite the existing benchmark schema requiring non-negative integer tokens and non-negative numeric latency. A NaN/Infinity mean can leak non-standard JSON and negative means misstate resource cost. Present invalid values now raise `ValueError`, including on excluded scorer/harness arms; missing and explicit null remain unmeasured, never zero.
+- RED test-only `36ab94d2be4fe8156f1150413c59159cac91f8f8` ([Actions #40634376428](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40634376428)): 2219 tests, 14 expected FAIL, 3 new compatibility PASS. Minimal fix `42bef5d18faaae4a5b2c19dcf3faf09994588681` ([Actions #40634431673](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40634431673)): 2219 PASS, Skill and eval validators PASS.
+- Seventeen synthetic deterministic tests; no Schema, Skill, dependency, model execution or live Amazon Ads write. Internal resource measurement integrity does not authenticate external harness runs or establish statistical significance. Research and source/license boundary recorded separately.
+
 ## v2.3.0 — 2026-10-28
 
 ### Reject reused Skill-effectiveness trial execution IDs (MINOR)
