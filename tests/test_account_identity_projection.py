@@ -198,6 +198,28 @@ class AccountIdentityProjectionTests(unittest.TestCase):
         self.assertEqual(realization.returncode, 2)
         self.assertIn("account identity", realization.stderr.lower())
 
+    def test_measurement_rejects_unresolved_account_identity_placeholder(self):
+        event = base_event("e1", {"global_advertiser_account_id": "Unknown", "country_code": "US"}, timestamp="2026-09-17T13:00:00Z")
+        event["evidence_snapshot"] = {"snapshot_id": "m1", "captured_at": "2026-09-17T13:00:00Z"}
+        result = invoke(MEASUREMENT_SCRIPT, [event])
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("account identity", result.stderr.lower())
+
+    def test_realization_rejects_padded_account_identity_placeholder(self):
+        event = base_event("e1", {"global_advertiser_account_id": " global-a ", "country_code": "US"}, timestamp="2026-09-17T14:00:00Z")
+        event["realization_snapshot"] = {"snapshot_id": "r1", "captured_at": "2026-09-17T14:00:00Z", "realized_surfaces": ["shopping_results"], "coverage_status": "Complete"}
+        result = invoke(REALIZATION_SCRIPT, [event])
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("account identity", result.stderr.lower())
+
+    def test_concrete_account_identity_containing_placeholder_substring_remains_valid(self):
+        account = {"global_advertiser_account_id": "US-UNKNOWN-TEST", "country_code": "US"}
+        event = base_event("e1", account, timestamp="2026-09-17T15:00:00Z")
+        event["evidence_snapshot"] = {"snapshot_id": "m1", "captured_at": "2026-09-17T15:00:00Z"}
+        result = invoke(MEASUREMENT_SCRIPT, [event])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout)["account_identity"], account)
+
     def test_matching_expected_account_identity_is_accepted(self):
         account = identity("global-a", regional_id="regional-na-a")
         measurement_event = base_event("e1", account, timestamp="2026-09-17T12:00:00Z")
