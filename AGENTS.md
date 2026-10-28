@@ -309,6 +309,8 @@ Use semantic versioning for release-worthy changes:
 - **MINOR** — backward-compatible new capability, materially stronger decision/safety/data/runtime behavior, new optional schema surface, or another substantial improvement users should be able to identify as a new release.
 - **MAJOR** — breaking changes to public schemas, CLI/output contracts, canonical Skill/capability identity, runtime integration contracts, or changes that require downstream migration.
 
+Trigger/discovery summaries must expose both the observed boolean denominator and explicit coverage status (`complete`, `partial`, or `unmeasured`). A rate without coverage status must not be interpreted as full-population coverage; missing/null remains unmeasured, never false or zero.
+
 A material MINOR/MAJOR change must not merge while the repository continues to advertise the previous release indefinitely. Classify version impact in the pull request; when a bump is required, update `VERSION`, README, all runtime manifests, and `CHANGELOG.md` in the same PR. Do not add repository release versions to individual `SKILL.md` top-level frontmatter.
 
 ## Deterministic repository validation

@@ -127,6 +127,16 @@ def _summarize_variant(trials: list[dict[str, Any]]) -> dict[str, Any]:
         "required_observations_rate": _rate(observations),
         "trigger_rate": _rate(trigger_values) if trigger_values else None,
         "trigger_observed_count": len(trigger_values),
+        "trigger_observation_coverage": (
+            len(trigger_values) / len(trials) if trials else 0.0
+        ),
+        "trigger_observation_status": (
+            "complete"
+            if len(trigger_values) == len(trials)
+            else "partial"
+            if trigger_values
+            else "unmeasured"
+        ),
         "mean_tokens": _mean_optional(trials, "tokens"),
         "mean_latency_ms": _mean_optional(trials, "latency_ms"),
     }

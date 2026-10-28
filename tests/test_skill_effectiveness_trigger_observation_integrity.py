@@ -130,6 +130,22 @@ class TriggerObservationIntegrityTests(unittest.TestCase):
         self.assertEqual(result["with_skill"]["trigger_rate"], 1.0)
         self.assertEqual(result["with_skill"]["trial_count"], 1)
 
+    def test_complete_trigger_coverage_is_explicit(self):
+        result = summarize(benchmark())
+        self.assertEqual(result["with_skill"]["trigger_observation_status"], "complete")
+        self.assertEqual(result["with_skill"]["trigger_observation_coverage"], 1.0)
+
+    def test_partial_and_unmeasured_trigger_coverage_are_explicit(self):
+        payload = benchmark()
+        payload["trials"][2]["triggered"] = None
+        result = summarize(payload)
+        self.assertEqual(result["with_skill"]["trigger_observation_status"], "partial")
+        self.assertEqual(result["with_skill"]["trigger_observation_coverage"], 0.5)
+        payload["trials"][0].pop("triggered")
+        result = summarize(payload)
+        self.assertEqual(result["with_skill"]["trigger_observation_status"], "unmeasured")
+        self.assertEqual(result["with_skill"]["trigger_observation_coverage"], 0.0)
+
 
 if __name__ == "__main__":
     unittest.main()
