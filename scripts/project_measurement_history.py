@@ -13,6 +13,19 @@ from datetime import datetime
 from typing import Any
 
 SCOPE_FIELDS = ("marketplace", "profile_scope", "entity_type", "entity_id")
+UNRESOLVED_SCOPE_LABELS = {
+    "unknown", "partial", "missing", "unsupported", "unavailable",
+    "not available", "not supported", "not applicable", "n/a",
+}
+
+
+def _require_concrete_scope_value(value: Any, field: str) -> str:
+    if not isinstance(value, str) or not value or value != value.strip():
+        raise ValueError(f"{field} must be a concrete unpadded string")
+    normalized = " ".join(value.casefold().replace("_", " ").replace("-", " ").split())
+    if normalized in UNRESOLVED_SCOPE_LABELS:
+        raise ValueError(f"{field} must not be an unresolved scope placeholder")
+    return value
 ACCOUNT_IDENTITY_FIELDS = (
     "manager_account_id",
     "global_advertiser_account_id",
@@ -88,9 +101,7 @@ def _normalize_expected_scope(value: Any) -> tuple[str, str, str, str] | None:
     result: list[str] = []
     for field in SCOPE_FIELDS:
         item = value.get(field)
-        if not isinstance(item, str) or not item:
-            raise ValueError(f"expected_scope.{field} must be a non-empty string")
-        result.append(item)
+        result.append(_require_concrete_scope_value(item, f"expected_scope.{field}"))
     return tuple(result)  # type: ignore[return-value]
 
 
@@ -110,8 +121,10 @@ def _validate_scope(event: dict[str, Any], expected: tuple[str, str, str, str] |
     if expected is None:
         return
     actual = _event_scope(event)
-    if actual is None or any(not isinstance(item, str) or not item for item in actual):
+    if actual is None:
         raise ValueError("measurement event scope is incomplete for expected_scope")
+    for field, item in zip(SCOPE_FIELDS, actual):
+        _require_concrete_scope_value(item, f"measurement event scope.{field}")
     if actual != expected:
         raise ValueError("measurement event scope does not match expected_scope")
 
