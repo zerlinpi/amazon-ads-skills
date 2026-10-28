@@ -1,5 +1,14 @@
 # Changelog
 
+## v2.2.0 — 2026-10-28
+
+### Reject unresolved longitudinal Skill-effectiveness identities (MINOR)
+
+- A pair of benchmark records previously returned `Comparable` when both repeated the same whole-label `Unknown`/`Partial`/`Missing`/`Unsupported` identity, a padded string or malformed non-string field. The read-only comparator now returns `Unknown` for unresolved fixture, model, runtime, tool, evidence, config and evaluator/rubric identities; concrete mismatches remain `Not Comparable`. Explicit null rubric version remains a valid no-rubric declaration.
+- RED test-only `2922986394c2450fbce96e9b850f7fa0e1dfaf83` ([Actions #40623018203](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40623018203)): 2192 tests / 12 expected FAIL, 4 compatibility PASS. Minimal GREEN `b0e0012dd8e408f8eeb51c388981b055a6fbf149` ([Actions #40623079319](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40623079319)): 2192 PASS, 15 Skills PASS, 55 Eval fixtures PASS. Sixteen deterministic synthetic tests; no schema, dependency, new Skill or Ads write.
+- Research: `docs/research/skill-effectiveness-unresolved-identity-2026-10.md`; source and copyright decisions: `docs/SOURCES.md`. The comparator checks declared identity consistency only, not agent lift or real Amazon Ads evidence.
+
+
 ## v2.1.0 — 2026-10-28
 
 ### Stream v1/v2 explicit dataset identity parity (MINOR)

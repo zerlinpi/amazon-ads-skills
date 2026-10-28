@@ -153,7 +153,7 @@ For a with-skill / without-skill comparison, hold constant as much as possible. 
 - evaluator/verifier ID and version;
 - rubric version, or explicit null when no semantic rubric is used (null means not applicable, not unknown).
 
-Record unavoidable differences. Before comparing benchmark records longitudinally, use `../scripts/evaluate_skill_effectiveness_comparability.py` when available. A mismatch is `Not Comparable`; missing config/tool/evidence identity is `Unknown`, never silently comparable. If the runtime automatically changes context/tool behavior when Skills are installed, treat that as part of the tested system but disclose it.
+Record unavoidable differences. Before comparing benchmark records longitudinally, use `../scripts/evaluate_skill_effectiveness_comparability.py` when available. A concrete mismatch is `Not Comparable`; missing, explicitly unresolved (whole-label Unknown/Partial/Missing/Unsupported/Not Applicable/N/A), padded, or malformed non-string fixture/model/harness/tool/evidence/evaluator identity is `Unknown`, never silently comparable. Explicit null `rubric_version` remains the valid no-rubric declaration; a string placeholder is not equivalent to null. If the runtime automatically changes context/tool behavior when Skills are installed, treat that as part of the tested system but disclose it.
 
 ## 8. Scratch and execution safety
 
