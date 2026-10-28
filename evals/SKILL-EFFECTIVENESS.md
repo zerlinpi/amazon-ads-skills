@@ -71,7 +71,7 @@ Do not claim the Skill caused the delta if model/version, tools, prompt, fixture
 
 One successful run is weak evidence for an LLM-based Skill.
 
-A harness/scorer failure is not a failed business decision. Record whether each trial was actually measured; scorer errors, harness errors, and insufficient-evidence trials must not be coerced into boolean quality outcomes or zero scores. For paired with-Skill/without-Skill deltas, exclude the entire pair when either arm is not measured so denominators remain comparable.
+A harness/scorer failure is not a failed business decision. Record whether each trial was actually measured; scorer errors, harness errors, and insufficient-evidence trials must not be coerced into boolean quality outcomes or zero scores. For paired with-Skill/without-Skill deltas, exclude the entire pair when either arm is not measured so denominators remain comparable. Assign a unique `trial_id` to every actual execution across the entire benchmark, not merely within a pair: reusing a run in another pair or variant must be rejected, including scorer/harness-error arms. A distinct declared ID is necessary but does not independently prove a distinct model execution.
 
 After the task and verifier are stable, run repeated trials when the runtime is stochastic and record the actual number of trials `k`. Do not impose one repository-wide fixed `k`; choose enough repetitions for the decision being made and report the count transparently.
 
