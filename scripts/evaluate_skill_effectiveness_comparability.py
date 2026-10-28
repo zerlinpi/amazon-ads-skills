@@ -28,6 +28,12 @@ COMPARABILITY_FIELDS = (
     "harness.measurement_contract.rubric_version",
 )
 NULL_IS_EXPLICIT = {"harness.measurement_contract.rubric_version"}
+# Whole-label evidence placeholders cannot establish a versioned measurement
+# identity even when both benchmark records repeat the same placeholder.
+UNRESOLVED_IDENTITIES = {
+    "unknown", "partial", "missing", "unsupported", "unavailable",
+    "not available", "not supported", "not applicable", "n/a",
+}
 
 
 def _get_path(payload: dict[str, Any], path: str) -> Any:
@@ -44,7 +50,13 @@ def _unknown(path: str, value: Any) -> bool:
         return True
     if value is None:
         return path not in NULL_IS_EXPLICIT
-    return isinstance(value, str) and not value.strip()
+    # All compared non-null identities are strings in the benchmark schema.
+    # Reject malformed values and padded labels rather than treating two
+    # identical malformed claims as a verified match.
+    if not isinstance(value, str) or not value.strip() or value != value.strip():
+        return True
+    normalized = " ".join(value.casefold().replace("_", " ").replace("-", " ").split())
+    return normalized in UNRESOLVED_IDENTITIES
 
 
 def evaluate(payload: Any) -> dict[str, Any]:
