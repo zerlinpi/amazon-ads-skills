@@ -34,6 +34,7 @@ def _stream_generation(payload: dict[str, Any]) -> str:
         generation is not None
         or payload.get("stream_record_reconciliation") is not None
         or payload.get("stream_dataset") is not None
+        or "stream_delta_reconciliation" in payload
     )
     if channel is None:
         return "unknown" if has_stream_evidence else "not_stream"
@@ -50,7 +51,9 @@ def _stream_generation(payload: dict[str, Any]) -> str:
         "amazon_marketing_stream_v2": "v2",
     }.get(normalized)
     if explicit is not None:
-        if explicit == "v1" and payload.get("stream_record_reconciliation") is not None:
+        if explicit == "v1" and "stream_record_reconciliation" in payload:
+            return "unknown"
+        if explicit == "v2" and "stream_delta_reconciliation" in payload:
             return "unknown"
         return explicit if generation is None or generation == explicit else "unknown"
     if normalized == "amazon_marketing_stream":
@@ -67,9 +70,25 @@ def _stream_generation(payload: dict[str, Any]) -> str:
 def _stream_reconciliation_status(payload: dict[str, Any]) -> str:
     """Require highest-version record evidence for resolved Stream v2 sources."""
     generation = _stream_generation(payload)
-    if generation in {"not_stream", "v1"}:
+    if generation == "not_stream":
         return "Not Applicable"
-    if generation != "v2":
+    if generation == "v1":
+        # V1 values are deltas. Disjoint metric rows do not establish that
+        # retried deliveries were deduplicated or that the requested window
+        # was fully captured. The external connector must verify these facts.
+        if "stream_record_reconciliation" in payload:
+            return "Unknown"
+        proof = payload.get("stream_delta_reconciliation")
+        required = {
+            "idempotency_id_coverage",
+            "idempotency_id_deduplication",
+            "delivery_window_coverage",
+        }
+        if not isinstance(proof, dict) or set(proof) != required:
+            return "Unknown"
+        return ("Verified" if all(proof[key] == "Verified" for key in required)
+                else "Unknown")
+    if generation != "v2" or "stream_delta_reconciliation" in payload:
         return "Unknown"
     # A declared Stream v2 dataset is source identity, not a free-form
     # placeholder. Keep omitted legacy dataset compatible; do not let an
@@ -219,15 +238,26 @@ def evaluate_metric_aggregation_gate(payload: Any) -> dict[str, Any]:
         reason = "row overlap/disjointness is unknown"
     elif stream_reconciliation_status == "Unknown":
         status = "Unknown"
-        reason = (
-            "Amazon Marketing Stream v2 delivers total values per time window; "
-            "direct summation requires source-supported complete record keys and "
-            "highest streamBatch.version selected per record before reducing grain"
-        )
-        recommended_path = (
-            "reconcile Stream v2 total records by full dataset record identity and "
-            "highest version; preserve unknown or partial evidence rather than summing"
-        )
+        if _stream_generation(payload) == "v1":
+            reason = (
+                "Amazon Marketing Stream v1 delivers incremental deltas; direct summation "
+                "requires verified idempotency_id coverage, deduplication and complete "
+                "delivery for the requested window"
+            )
+            recommended_path = (
+                "have the external connector verify v1 delta identities, deduplication "
+                "and delivery-window coverage before aggregating"
+            )
+        else:
+            reason = (
+                "Amazon Marketing Stream v2 delivers total values per time window; "
+                "direct summation requires source-supported complete record keys and "
+                "highest streamBatch.version selected per record before reducing grain"
+            )
+            recommended_path = (
+                "reconcile Stream v2 total records by full dataset record identity and "
+                "highest version; preserve unknown or partial evidence rather than summing"
+            )
     else:
         status = "Allowed"
         allowed = True
