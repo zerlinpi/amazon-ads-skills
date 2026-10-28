@@ -167,6 +167,7 @@ def summarize(payload: dict[str, Any]) -> dict[str, Any]:
 
     pairs: dict[str, dict[str, dict[str, Any]]] = defaultdict(dict)
     measurement_status_counts = {status: 0 for status in MEASUREMENT_STATUSES}
+    seen_trial_ids: set[str] = set()
 
     for trial in trials:
         if not isinstance(trial, dict):
@@ -178,6 +179,11 @@ def summarize(payload: dict[str, Any]) -> dict[str, Any]:
             raise ValueError("each trial must have a non-empty pair_id")
         if not isinstance(trial_id, str) or not trial_id:
             raise ValueError("each trial must have a non-empty trial_id")
+        # One execution cannot contribute multiple independent observations,
+        # even when another pair/variant later excludes its measured result.
+        if trial_id in seen_trial_ids:
+            raise ValueError(f"duplicate trial_id across benchmark trials: {trial_id}")
+        seen_trial_ids.add(trial_id)
         if variant not in VARIANTS:
             raise ValueError("trial.variant must be with_skill or without_skill")
         status = _validate_measurement(trial)
