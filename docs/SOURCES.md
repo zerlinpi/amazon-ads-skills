@@ -1703,3 +1703,6 @@ New candidate review: WaytoAIC/waytoaic-amazon-ads-skills is a small public Skil
 - Internal gap: realization-history projection accepted supplied marketplace/profile/entity scope without validating it when expected_scope was omitted, and legacy entity-only events were not distinguished from supplied partial scope.
 - RED/GREEN: deterministic tests first reject unresolved/padded observed realization scope and preserve legacy entity-only compatibility; production validation then applies to any supplied scope. No live Ads call/write, retry, idempotency or reconciliation.
 - External context: Amazon Ads profile/reporting documentation and previously reviewed lineage/eval/MCP projects were used only for abstract identity/provenance principles. No third-party code, prompt, schema, workflow or template copied; no-license/NOASSERTION sources were not reused.
+
+
+- 2026-10-29: Internal provenance change v2.11.0. Existing Amazon Ads official scope/profile materials were used only as abstract context; no external code, prompt, schema, workflow, or template copied. The repository-owned deterministic contract is the direct normative source.
