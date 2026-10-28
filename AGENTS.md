@@ -375,3 +375,8 @@ When a realization event supplies marketplace or profile scope, validate all sco
 ## Account identity validation
 
 Account identity fields in read-only measurement/realization projections must be concrete, unpadded strings. Whole-label unresolved values such as Unknown, Partial, Missing, Unsupported, Unavailable, Not Applicable and N/A are invalid provenance. Missing account identity remains missing; concrete opaque IDs containing these words as a substring remain valid. Do not convert unresolved or missing account identity to zero, false, or a usable join key.
+
+
+### v2.11.0 scope-integrity note
+
+Realization projector callers must provide concrete, unpadded expected scope values. Unresolved placeholders are rejected before any projection; missing scope remains missing.
