@@ -1688,3 +1688,11 @@ New candidate review: WaytoAIC/waytoaic-amazon-ads-skills is a small public Skil
 - Internal gap: the read-only measurement-history projector accepted explicit whole-label scope placeholders or padded scope identities as if they were usable marketplace/profile/entity provenance. This could let requested and observed placeholders agree and still project a latest measurement state.
 - Fix: reject unresolved/padded expected and observed scope identities while preserving concrete opaque identifiers containing placeholder substrings. No Amazon Ads source authentication or continuous-history claim is added.
 - Source/reuse boundary: Amazon Ads official lineage/reporting material and public lineage/eval projects were used only for abstract provenance/uncertainty principles. No third-party code, prompt, schema, workflow or template copied. External authorized Executor remains responsible for live writes, retries, idempotency and reconciliation.
+
+
+## 2026-10-28 — Account identity placeholder integrity (v2.9.0)
+
+- Internal reproducible gap: measurement and realization projectors accepted explicit account identity strings such as Unknown, N/A, or padded values as usable join provenance. This could allow unresolved account identity to be merged or projected as if it were concrete.
+- Fix: reject whole-label unresolved and padded account identity fields while preserving missing identity as missing and allowing concrete opaque IDs containing placeholder substrings.
+- RED to GREEN: deterministic tests added before the production change; no live Ads calls, writes, retries, idempotency or reconciliation.
+- Source/reuse boundary: cross-account identity guidance and Amazon Ads reporting material support the abstract principle that account identity is a join boundary. No third-party code, prompt, schema, workflow or template was copied. External authorized Executor responsibilities are unchanged.
