@@ -1424,3 +1424,9 @@ This file records user-visible repository releases. The canonical current versio
 ## v1.0.0
 
 Initial public v1 release of the 15-Skill Amazon Ads decision library.
+
+
+## v2.9.0
+
+- Reject unresolved or padded account identity values in measurement and realization history projections.
+- Preserve missing account identity as missing; concrete opaque identifiers remain compatible.
