@@ -130,14 +130,16 @@ class MetricAggregationGateTests(unittest.TestCase):
         self.assertEqual(result["aggregation_status"], "Unknown")
         self.assertFalse(result["direct_sum_allowed"])
 
-    def test_stream_v1_keeps_separate_delta_evidence_boundary(self):
+    def test_stream_v1_without_deduplicated_delta_evidence_is_unknown(self):
         proc = run_gate({
             "metric_semantics": {"aggregation_semantics": "additive"},
             "source_relation": "disjoint",
             "acquisition_channel": "amazon_marketing_stream_v1",
         })
         self.assertEqual(proc.returncode, 0, proc.stderr)
-        self.assertTrue(json.loads(proc.stdout)["direct_sum_allowed"])
+        result = json.loads(proc.stdout)
+        self.assertEqual(result["aggregation_status"], "Unknown")
+        self.assertFalse(result["direct_sum_allowed"])
 
     def test_missing_metric_semantics_is_unknown_not_additive(self):
         proc = run_gate({
