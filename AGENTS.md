@@ -362,3 +362,7 @@ Add a playbook instead of a new Skill when the new material is primarily a recur
 Shared memory/history features should prefer append-first events plus derived compact summaries rather than mutable prose logs.
 
 When a change materially affects source comparability, negatives, bid/budget reversals or sizing, retail causality, Mixed-ASIN safety, growth qualification, experiments, readback, or rollback decisions, add or update a replay fixture when practical.
+
+## Measurement scope validation
+
+When an event contains an observed scope object, validate all scope fields even if expected_scope is omitted. Unresolved placeholders and padded values are invalid provenance; absence of a scope object remains distinct from an unresolved supplied scope. Do not convert unresolved or missing scope to zero, false, or a usable identity.

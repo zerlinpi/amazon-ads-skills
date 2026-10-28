@@ -109,6 +109,11 @@ def _event_scope(event: dict[str, Any]) -> tuple[Any, Any, Any, Any] | None:
     entity = event.get("entity")
     if not isinstance(entity, dict):
         return None
+    # Preserve legacy events that only identify an entity. A scope object is
+    # considered supplied when marketplace/profile_scope is present; partial
+    # supplied scope remains invalid and is validated below.
+    if "marketplace" not in event and "profile_scope" not in event:
+        return None
     return (
         event.get("marketplace"),
         event.get("profile_scope"),
@@ -118,14 +123,14 @@ def _event_scope(event: dict[str, Any]) -> tuple[Any, Any, Any, Any] | None:
 
 
 def _validate_scope(event: dict[str, Any], expected: tuple[str, str, str, str] | None) -> None:
-    if expected is None:
-        return
     actual = _event_scope(event)
     if actual is None:
-        raise ValueError("measurement event scope is incomplete for expected_scope")
+        if expected is not None:
+            raise ValueError("measurement event scope is incomplete for expected_scope")
+        return
     for field, item in zip(SCOPE_FIELDS, actual):
         _require_concrete_scope_value(item, f"measurement event scope.{field}")
-    if actual != expected:
+    if expected is not None and actual != expected:
         raise ValueError("measurement event scope does not match expected_scope")
 
 
