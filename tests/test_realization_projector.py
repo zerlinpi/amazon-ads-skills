@@ -201,6 +201,67 @@ class RealizationProjectorTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertIn("scope", result.stderr.lower())
 
+    def test_observed_scope_rejects_unresolved_marketplace_without_expected_scope(self):
+        result = self.invoke_projector(
+            [
+                {
+                    "event_id": "e1",
+                    "timestamp": "2026-09-14T08:00:00Z",
+                    "marketplace": "Unknown",
+                    "profile_scope": "profile-a",
+                    "entity": {"type": "campaign", "id": "campaign-1"},
+                    "realization_snapshot": {
+                        "captured_at": "2026-09-14T08:00:00Z",
+                        "realized_surfaces": ["shopping_results"],
+                        "coverage_status": "Complete",
+                    },
+                }
+            ]
+        )
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("scope", result.stderr.lower())
+
+    def test_observed_scope_rejects_padded_profile_without_expected_scope(self):
+        result = self.invoke_projector(
+            [
+                {
+                    "event_id": "e1",
+                    "timestamp": "2026-09-14T08:00:00Z",
+                    "marketplace": "US",
+                    "profile_scope": " profile-a ",
+                    "entity": {"type": "campaign", "id": "campaign-1"},
+                    "realization_snapshot": {
+                        "captured_at": "2026-09-14T08:00:00Z",
+                        "realized_surfaces": ["shopping_results"],
+                        "coverage_status": "Complete",
+                    },
+                }
+            ]
+        )
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("scope", result.stderr.lower())
+
+    def test_legacy_entity_only_event_remains_compatible_without_expected_scope(self):
+        projected = self.run_projector(
+            [
+                {
+                    "event_id": "e1",
+                    "timestamp": "2026-09-14T08:00:00Z",
+                    "entity": {"type": "campaign", "id": "campaign-1"},
+                    "realization_snapshot": {
+                        "snapshot_id": "r1",
+                        "captured_at": "2026-09-14T08:00:00Z",
+                        "realized_surfaces": ["shopping_results"],
+                        "coverage_status": "Complete",
+                    },
+                }
+            ]
+        )
+
+        self.assertEqual(projected["last_observed_realization"]["snapshot_id"], "r1")
+
     def test_expected_scope_accepts_complete_matching_identity(self):
         projected = self.run_projector(
             [
