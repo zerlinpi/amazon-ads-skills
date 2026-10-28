@@ -2,11 +2,13 @@
 
 - **Reject unresolved account identity placeholders (v2.9.0)** — account identity fields now reject whole-label unresolved values and padded values in measurement and realization projections; concrete opaque IDs containing placeholder substrings remain valid. Read-only lineage guard only; no Skill or Ads write.
 
+- **Reject unresolved observed realization scope without expected scope (v2.10.0)** — realization projections now validate any supplied marketplace/profile/entity scope even when expected_scope is omitted; legacy entity-only events remain distinct from supplied partial/unresolved scope.
+
 - **Reject unresolved observed scope without expected scope (v2.9.0)** — when an event contains a scope object, every scope value is now validated even if no expected_scope was supplied. Whole-label unresolved placeholders and padded values are rejected; missing scope remains allowed when no scope is provided. Concrete opaque IDs remain compatible. Read-only lineage guard only; no Skill, schema, dependency or Ads write.
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v2.9.0`  
+> 当前版本：`v2.10.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 

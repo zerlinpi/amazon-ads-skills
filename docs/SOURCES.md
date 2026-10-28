@@ -1696,3 +1696,10 @@ New candidate review: WaytoAIC/waytoaic-amazon-ads-skills is a small public Skil
 - Fix: reject whole-label unresolved and padded account identity fields while preserving missing identity as missing and allowing concrete opaque IDs containing placeholder substrings.
 - RED to GREEN: deterministic tests were committed before the production changes; no live Ads calls, writes, retries, idempotency or reconciliation.
 - Source/reuse boundary: cross-account identity guidance and Amazon Ads reporting material support the abstract principle that account identity is a join boundary. No third-party code, prompt, schema, workflow or template was copied. External authorized Executor responsibilities are unchanged.
+
+
+## 2026-10-29 — Realization observed-scope parity (v2.10.0)
+
+- Internal gap: realization-history projection accepted supplied marketplace/profile/entity scope without validating it when expected_scope was omitted, and legacy entity-only events were not distinguished from supplied partial scope.
+- RED/GREEN: deterministic tests first reject unresolved/padded observed realization scope and preserve legacy entity-only compatibility; production validation then applies to any supplied scope. No live Ads call/write, retry, idempotency or reconciliation.
+- External context: Amazon Ads profile/reporting documentation and previously reviewed lineage/eval/MCP projects were used only for abstract identity/provenance principles. No third-party code, prompt, schema, workflow or template copied; no-license/NOASSERTION sources were not reused.
