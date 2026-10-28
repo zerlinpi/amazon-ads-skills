@@ -79,6 +79,15 @@ def _has_bounded_identity(snapshot: dict[str, Any]) -> bool:
     return isinstance(identity_hash, str) and bool(identity_hash)
 
 
+def _require_concrete_scope_value(value: Any, field: str) -> str:
+    if not isinstance(value, str) or not value or value != value.strip():
+        raise ValueError(f"{field} must be a concrete unpadded string")
+    normalized = " ".join(value.casefold().replace("_", " ").replace("-", " ").split())
+    if normalized in UNRESOLVED_SCOPE_LABELS:
+        raise ValueError(f"{field} must not be an unresolved scope placeholder")
+    return value
+
+
 def _event_scope(event: dict[str, Any]) -> tuple[Any, Any, Any, Any] | None:
     entity = event.get("entity")
     if not isinstance(entity, dict):
@@ -88,6 +97,11 @@ def _event_scope(event: dict[str, Any]) -> tuple[Any, Any, Any, Any] | None:
     if not isinstance(entity_type, str) or not entity_type:
         return None
     if not isinstance(entity_id, str) or not entity_id:
+        return None
+    # Preserve legacy entity-only events. A scope is supplied when either
+    # marketplace or profile_scope is present; partial supplied scope is
+    # validated as incomplete rather than treated as missing.
+    if "marketplace" not in event and "profile_scope" not in event:
         return None
     return (
         event.get("marketplace"),
@@ -115,11 +129,13 @@ def _validate_scope(
     event_scope: tuple[Any, Any, Any, Any] | None,
     expected_scope: tuple[str, str, str, str] | None,
 ) -> tuple[Any, Any, Any, Any] | None:
-    if expected_scope is None:
-        return event_scope
-    if event_scope is None or any(not isinstance(item, str) or not item for item in event_scope):
-        raise ValueError("realization event scope is incomplete for the requested expected scope")
-    if event_scope != expected_scope:
+    if event_scope is None:
+        if expected_scope is not None:
+            raise ValueError("realization event scope is incomplete for the requested expected scope")
+        return None
+    for field, item in zip(SCOPE_FIELDS, event_scope):
+        _require_concrete_scope_value(item, f"realization event scope.{field}")
+    if expected_scope is not None and event_scope != expected_scope:
         raise ValueError("realization event scope does not match the requested expected scope")
     return event_scope
 
