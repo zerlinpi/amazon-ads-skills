@@ -366,3 +366,8 @@ When a change materially affects source comparability, negatives, bid/budget rev
 ## Measurement scope validation
 
 When an event contains an observed scope object, validate all scope fields even if expected_scope is omitted. Unresolved placeholders and padded values are invalid provenance; absence of a scope object remains distinct from an unresolved supplied scope. Do not convert unresolved or missing scope to zero, false, or a usable identity.
+
+
+## Account identity validation
+
+Account identity fields in read-only measurement/realization projections must be concrete, unpadded strings. Whole-label unresolved values such as Unknown, Partial, Missing, Unsupported, Unavailable, Not Applicable and N/A are invalid provenance. Missing account identity remains missing; concrete opaque IDs containing these words as a substring remain valid. Do not convert unresolved or missing account identity to zero, false, or a usable join key.
