@@ -292,30 +292,58 @@ class RealizationProjectorTests(unittest.TestCase):
 
 
     def test_unresolved_expected_scope_is_rejected_before_projection(self):
-        event = self._event()
-        with self.assertRaisesRegex(ValueError, "expected_scope"):
-            project_realization_history(
-                [event],
-                expected_scope={
-                    "marketplace": "Unknown",
-                    "profile_scope": "profile-us-1",
-                    "entity_type": "keyword",
-                    "entity_id": "keyword-1",
-                },
-            )
+        result = self.invoke_projector(
+            [
+                {
+                    "event_id": "e1",
+                    "timestamp": "2026-09-14T08:00:00Z",
+                    "marketplace": "US",
+                    "profile_scope": "profile-a",
+                    "entity": {"type": "campaign", "id": "campaign-1"},
+                    "realization_snapshot": {
+                        "snapshot_id": "r1",
+                        "captured_at": "2026-09-14T08:00:00Z",
+                        "realized_surfaces": ["shopping_results"],
+                        "coverage_status": "Complete",
+                    },
+                }
+            ],
+            expected_scope={
+                "marketplace": "Unknown",
+                "profile_scope": "profile-a",
+                "entity_type": "campaign",
+                "entity_id": "campaign-1",
+            },
+        )
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("expected_scope", result.stderr)
 
     def test_padded_expected_scope_is_rejected_before_projection(self):
-        event = self._event()
-        with self.assertRaisesRegex(ValueError, "expected_scope"):
-            project_realization_history(
-                [event],
-                expected_scope={
-                    "marketplace": " US",
-                    "profile_scope": "profile-us-1",
-                    "entity_type": "keyword",
-                    "entity_id": "keyword-1",
-                },
-            )
+        result = self.invoke_projector(
+            [
+                {
+                    "event_id": "e1",
+                    "timestamp": "2026-09-14T08:00:00Z",
+                    "marketplace": "US",
+                    "profile_scope": "profile-a",
+                    "entity": {"type": "campaign", "id": "campaign-1"},
+                    "realization_snapshot": {
+                        "snapshot_id": "r1",
+                        "captured_at": "2026-09-14T08:00:00Z",
+                        "realized_surfaces": ["shopping_results"],
+                        "coverage_status": "Complete",
+                    },
+                }
+            ],
+            expected_scope={
+                "marketplace": " US",
+                "profile_scope": "profile-a",
+                "entity_type": "campaign",
+                "entity_id": "campaign-1",
+            },
+        )
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("expected_scope", result.stderr)
 
 if __name__ == "__main__":
     unittest.main()
