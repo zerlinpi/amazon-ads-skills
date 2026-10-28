@@ -1,3 +1,9 @@
+## v2.7.0
+
+- Expose explicit Skill-eval trigger observation coverage and status (`complete`, `partial`, `unmeasured`) alongside the observed denominator.
+- Preserve missing/null as unmeasured; no zero/false imputation.
+- Deterministic RED→GREEN coverage tests added; no new Skill, schema, dependency, or Ads write capability.
+
 # Changelog
 
 ## v2.6.0 — 2026-10-28
