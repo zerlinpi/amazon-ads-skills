@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v2.5.0`  
+> 当前版本：`v2.6.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Validate Skill-eval trigger observations and expose the rate denominator (v2.6.0)** — supplied non-null `triggered` values must be booleans, including on excluded trials; malformed strings/numbers/arrays/objects fail rather than silently disappearing. Missing/null remain unmeasured, not false/zero. Each comparable arm reports `trigger_observed_count` beside `trigger_rate` so partial trigger coverage is explicit. Read-only synthetic verification; no harness authenticity or Ads write claim.
 
 - **Reject unresolved single-run Skill-eval identities (v2.5.0)** — the paired read-only summarizer now rejects missing, malformed, padded or placeholder benchmark/fixture/model/runtime/evaluator identities and invalid evaluation modes before reporting `Measured`. Optional omitted/null hashes and explicit null rubric remain compatible; this does not authenticate real model runs, prove significance or authorize Ads writes.
 
