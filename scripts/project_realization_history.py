@@ -119,9 +119,9 @@ def _normalize_expected_scope(value: Any) -> tuple[str, str, str, str] | None:
     normalized: list[str] = []
     for field in SCOPE_FIELDS:
         item = value.get(field)
-        if not isinstance(item, str) or not item:
-            raise ValueError(f"expected_scope.{field} must be a non-empty string")
-        normalized.append(item)
+        normalized.append(
+            _require_concrete_scope_value(item, f"expected_scope.{field}")
+        )
     return tuple(normalized)  # type: ignore[return-value]
 
 
