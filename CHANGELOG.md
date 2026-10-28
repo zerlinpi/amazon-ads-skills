@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.1.0 — 2026-10-28
+
+### Stream v1/v2 explicit dataset identity parity (MINOR)
+
+- Verified v1 delta proof previously allowed explicit unresolved `stream_dataset`; v2 placeholder regex also misread literal 's', missing `Missing` and `Unsupported`. Reuse existing dataset guard for both generations and correct regex. Omitted optional dataset and valid opaque labels stay compatible; source authentication and delivery completeness remain external.
+- RED `b2f62de401e0f83725d2e5c4003c4b52d8d5702a` ([Actions #40617171450](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40617171450)): 2174 tests, 8 FAIL. Intermediate fix `222a7d0f6f43a13bde730c7bdbc956f20bcd083b` ([#40617232281](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40617232281)): 1 FAIL. Additional v2 RED `ba8d1bd63605909c067d311b2fb386b9432ca4dc` ([#40617295510](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40617295510)): 2176 tests, 3 FAIL. GREEN `0c3203e6e3313b0c33894f5f21b64ba0d7ba592a` ([#40617361659](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40617361659)): 2176 PASS, 15 Skills and 55 Evals PASS.
+- Research: `docs/research/stream-v1-explicit-dataset-identity-parity-2026-10.md`; sources and licensing: `docs/SOURCES.md`. No live Ads write or new dependency.
+
 ## v2.0.0 — 2026-10-28
 
 ### Require Stream v1 delta idempotency and delivery-window proof (MAJOR)

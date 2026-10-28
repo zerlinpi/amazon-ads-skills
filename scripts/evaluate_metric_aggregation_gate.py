@@ -72,6 +72,20 @@ def _stream_reconciliation_status(payload: dict[str, Any]) -> str:
     generation = _stream_generation(payload)
     if generation == "not_stream":
         return "Not Applicable"
+    # A declared Stream dataset is source identity, not a free-form
+    # placeholder. Keep omitted legacy dataset compatible; do not let an
+    # explicitly unknown/null/padded dataset ride on otherwise Verified
+    # reconciliation claims to authorize summation.
+    if "stream_dataset" in payload:
+        dataset = payload["stream_dataset"]
+        if (not isinstance(dataset, str) or not dataset.strip()
+                or dataset != dataset.strip()
+                or re.sub(r"[\s_-]+", " ", dataset.casefold()) in {
+                    "unknown", "partial", "missing", "unsupported",
+                    "unavailable", "not available", "not supported",
+                    "not applicable", "n/a",
+                }):
+            return "Unknown"
     if generation == "v1":
         # V1 values are deltas. Disjoint metric rows do not establish that
         # retried deliveries were deduplicated or that the requested window
@@ -90,20 +104,6 @@ def _stream_reconciliation_status(payload: dict[str, Any]) -> str:
                 else "Unknown")
     if generation != "v2" or "stream_delta_reconciliation" in payload:
         return "Unknown"
-    # A declared Stream v2 dataset is source identity, not a free-form
-    # placeholder. Keep omitted legacy dataset compatible; do not let an
-    # explicitly unknown/null/padded dataset ride on otherwise Verified
-    # record-version claims to authorize summation.
-    if "stream_dataset" in payload:
-        dataset = payload["stream_dataset"]
-        if (not isinstance(dataset, str) or not dataset.strip()
-                or dataset != dataset.strip()
-                or re.sub(r"[\\s_-]+", " ", dataset.casefold()) in {
-                    "unknown", "partial", "missing", "unsupported",
-                    "unavailable", "not available", "not supported",
-                    "not applicable", "n/a",
-                }):
-            return "Unknown"
     evidence = payload.get("stream_record_reconciliation")
     if evidence is None:
         return "Unknown"

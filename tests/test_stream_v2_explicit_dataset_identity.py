@@ -37,6 +37,12 @@ class StreamV2ExplicitDatasetIdentityTests(unittest.TestCase):
     def test_explicit_partial_dataset_is_not_verified(self):
         self.assert_unresolved("Partial")
 
+    def test_explicit_missing_dataset_is_not_verified(self):
+        self.assert_unresolved("Missing")
+
+    def test_explicit_unsupported_dataset_is_not_verified(self):
+        self.assert_unresolved("Unsupported")
+
     def test_explicit_not_applicable_dataset_is_not_verified(self):
         self.assert_unresolved("Not Applicable")
 
