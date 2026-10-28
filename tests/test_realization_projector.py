@@ -290,5 +290,32 @@ class RealizationProjectorTests(unittest.TestCase):
         self.assertEqual(projected["last_observed_realization"]["snapshot_id"], "r1")
 
 
+
+    def test_unresolved_expected_scope_is_rejected_before_projection(self):
+        event = self._event()
+        with self.assertRaisesRegex(ValueError, "expected_scope"):
+            project_realization_history(
+                [event],
+                expected_scope={
+                    "marketplace": "Unknown",
+                    "profile_scope": "profile-us-1",
+                    "entity_type": "keyword",
+                    "entity_id": "keyword-1",
+                },
+            )
+
+    def test_padded_expected_scope_is_rejected_before_projection(self):
+        event = self._event()
+        with self.assertRaisesRegex(ValueError, "expected_scope"):
+            project_realization_history(
+                [event],
+                expected_scope={
+                    "marketplace": " US",
+                    "profile_scope": "profile-us-1",
+                    "entity_type": "keyword",
+                    "entity_id": "keyword-1",
+                },
+            )
+
 if __name__ == "__main__":
     unittest.main()
