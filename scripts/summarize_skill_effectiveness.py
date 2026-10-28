@@ -9,6 +9,7 @@ recorded deterministic checks.
 from __future__ import annotations
 
 import json
+import math
 import sys
 from collections import defaultdict
 from statistics import mean
@@ -72,6 +73,31 @@ def _full_pass(trial: dict[str, Any]) -> bool:
 
 def _rate(values: list[bool]) -> float | None:
     return sum(1 for value in values if value) / len(values) if values else None
+
+
+def _validate_resource_metrics(trial: dict[str, Any]) -> None:
+    """Keep optional resource measurements faithful to the benchmark schema.
+
+    Missing/null means unmeasured, never zero. A present value must not be
+    silently omitted from a mean or serialized as non-standard NaN/Infinity.
+    """
+    tokens = trial.get("tokens")
+    if tokens is not None and (type(tokens) is not int or tokens < 0):
+        raise ValueError("trial.tokens must be a non-negative integer or null")
+
+    latency = trial.get("latency_ms")
+    if latency is not None:
+        try:
+            valid = (
+                isinstance(latency, (int, float))
+                and not isinstance(latency, bool)
+                and latency >= 0
+                and math.isfinite(latency)
+            )
+        except OverflowError:
+            valid = False
+        if not valid:
+            raise ValueError("trial.latency_ms must be a finite non-negative number or null")
 
 
 def _mean_optional(trials: list[dict[str, Any]], field: str) -> float | None:
@@ -186,6 +212,7 @@ def summarize(payload: dict[str, Any]) -> dict[str, Any]:
         seen_trial_ids.add(trial_id)
         if variant not in VARIANTS:
             raise ValueError("trial.variant must be with_skill or without_skill")
+        _validate_resource_metrics(trial)
         status = _validate_measurement(trial)
         measurement_status_counts[status] += 1
         if variant in pairs[pair_id]:
