@@ -125,38 +125,57 @@ def _summarize_variant(trials: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 
-def _require_non_empty_string(value: Any, field: str) -> str:
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"{field} must be a non-empty string")
+# Keep single-run summaries from claiming measured evidence with unresolved
+# identity. The longitudinal comparator independently treats these labels as
+# Unknown; repeating a placeholder is not a verified model/fixture identity.
+UNRESOLVED_IDENTITIES = {
+    "unknown", "partial", "missing", "unsupported", "unavailable",
+    "not available", "not supported", "not applicable", "n/a",
+}
+VALID_MODES = {"Discovery", "Forced invocation", "Negative control", "Ablation"}
+
+
+def _require_concrete_identity(value: Any, field: str) -> str:
+    if not isinstance(value, str) or not value.strip() or value != value.strip():
+        raise ValueError(f"{field} must be a concrete unpadded string")
+    normalized = " ".join(value.casefold().replace("_", " ").replace("-", " ").split())
+    if normalized in UNRESOLVED_IDENTITIES:
+        raise ValueError(f"{field} must not be an unresolved identity placeholder")
     return value
 
 
 def _validate_measurement_identity(payload: dict[str, Any]) -> None:
-    _require_non_empty_string(payload.get("fixture_version"), "fixture_version")
+    for field in ("benchmark_id", "skill", "fixture_id", "fixture_version"):
+        _require_concrete_identity(payload.get(field), field)
+    mode = payload.get("mode")
+    if not isinstance(mode, str) or mode not in VALID_MODES:
+        raise ValueError("mode must be a supported Skill-effectiveness evaluation mode")
+
     harness = payload.get("harness")
     if not isinstance(harness, dict):
         raise ValueError("harness must be an object")
+    for field in ("runtime", "model", "model_version"):
+        _require_concrete_identity(harness.get(field), f"harness.{field}")
+    # Optional hashes can be omitted or explicitly null. A supplied non-null
+    # identity must be concrete; null is unmeasured, never a fabricated hash.
+    for field in ("config_hash", "tool_profile_hash", "evidence_hash"):
+        if harness.get(field) is not None:
+            _require_concrete_identity(harness[field], f"harness.{field}")
+
     contract = harness.get("measurement_contract")
     if not isinstance(contract, dict):
         raise ValueError("harness.measurement_contract must be an object")
-    _require_non_empty_string(
-        contract.get("evaluator_id"),
-        "harness.measurement_contract.evaluator_id",
-    )
-    _require_non_empty_string(
-        contract.get("evaluator_version"),
-        "harness.measurement_contract.evaluator_version",
-    )
+    for field in ("evaluator_id", "evaluator_version"):
+        _require_concrete_identity(
+            contract.get(field), f"harness.measurement_contract.{field}"
+        )
     if "rubric_version" not in contract:
         raise ValueError(
             "harness.measurement_contract.rubric_version must be explicit; use null when no semantic rubric is used"
         )
-    rubric_version = contract.get("rubric_version")
-    if rubric_version is not None and (
-        not isinstance(rubric_version, str) or not rubric_version.strip()
-    ):
-        raise ValueError(
-            "harness.measurement_contract.rubric_version must be a non-empty string or null"
+    if contract["rubric_version"] is not None:
+        _require_concrete_identity(
+            contract["rubric_version"], "harness.measurement_contract.rubric_version"
         )
 
 

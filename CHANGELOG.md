@@ -1,5 +1,14 @@
 # Changelog
 
+## v2.5.0 — 2026-10-28
+
+### Fail closed on unresolved single-run Skill-evaluation measurement identity (MINOR)
+
+- The paired summarizer previously returned `Measured` even when required benchmark/fixture/model/runtime/evaluator identity was missing, malformed, padded or a whole-label `Unknown`/`Partial`/`N/A`; it also accepted an invalid evaluation mode and malformed optional non-null evidence/config/tool hashes. The existing longitudinal comparator already rejected unresolved identity for comparability, but the summarizer did not validate its own input before producing a measured result.
+- The read-only summarizer now requires concrete required identities and one of the four benchmark modes. Optional hash fields remain omittable/null; explicit null rubric remains valid. Real opaque IDs containing placeholder words remain valid. No schema expansion, model execution or Amazon Ads writes.
+- RED test-only `a34d6e6178dfbab9bdd2262c4ec46e8a82c4b822`: [Actions #40639471528](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40639471528), 2241 tests / 18 expected FAIL / 4 compatibility PASS. First fix `2b9df331f7e6f9ca42f6e6fd46ec6afef8ec1cf8`: [GREEN #40639535046](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40639535046), 2241 PASS. Additional malformed-mode test `dfd79dc4919e4d5b3625edeee6d93daea11a9124`: [RED #40639552609](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40639552609), 2242 tests / 1 ERROR (unhandled list mode). Final fix `767c12de1126c82419e9574f9a93ff6d906d7a76`: [GREEN #40639597102](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40639597102), 2242 PASS, 15 Skills PASS, 55 Evals PASS.
+- This validates declared benchmark identity only, not actual harness provenance, statistical lift, source authenticity or account-level Ads mutations. Source/license boundary and test reproduction recorded in research and SOURCES.
+
 ## v2.4.0 — 2026-10-28
 
 ### Validate optional paired Skill-eval resource measurements (MINOR)
