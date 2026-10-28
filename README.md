@@ -1,8 +1,10 @@
 # Amazon Ads Skills
 
+- **Reject unresolved observed scope without expected scope (v2.9.0)** — when an event contains a scope object, every scope value is now validated even if no expected_scope was supplied. Whole-label unresolved placeholders and padded values are rejected; missing scope remains allowed when no scope is provided. Concrete opaque IDs remain compatible. Read-only lineage guard only; no Skill, schema, dependency or Ads write.
+
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v2.8.0`  
+> 当前版本：`v2.9.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
