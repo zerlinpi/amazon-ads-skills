@@ -74,6 +74,9 @@ class SkillSummaryIdentityIntegrityTests(unittest.TestCase):
     def test_missing_mode_rejected(self):
         self.reject("mode", None, missing=True)
 
+    def test_list_mode_rejected_with_value_error(self):
+        self.reject("mode", [])
+
     def test_missing_runtime_rejected(self):
         self.reject("harness.runtime", None, missing=True)
 
