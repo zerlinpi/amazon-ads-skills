@@ -299,6 +299,8 @@ Keep `name` within the Agent Skills naming constraints and `description` within 
 
 - A `Ready` combined readout must treat whitespace-obfuscated whole-label `Not Applicable` metric names as unresolved for both primary and guardrail identities. Normalize actual whitespace (including repeated spaces, tabs, newlines and Unicode whitespace) alongside hyphens/underscores before the exact placeholder comparison. Do not reject concrete names merely containing these words, and do not change exploratory/non-combined legacy behavior. This is read-only internal evidence validation, not source authentication, a zero measurement, or live Ads write permission.
 
+- `scripts/project_measurement_history.py` rejects unresolved or padded expected/observed scope identities; missing/unknown scope never becomes a usable measurement identity. Concrete IDs with placeholder substrings remain allowed.
+
 ## Versioning and releases
 
 `VERSION` is the canonical repository release version. Keep the README version label and all runtime manifests (`.codex-plugin/plugin.json`, `.claude-plugin/plugin.json`, and `.workbuddy-plugin/plugin.json`) synchronized with it, and add the release entry to `CHANGELOG.md`.
