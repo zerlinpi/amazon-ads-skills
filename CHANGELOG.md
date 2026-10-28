@@ -1,5 +1,14 @@
 # Changelog
 
+## v2.6.0 — 2026-10-28
+
+### Validate trigger telemetry and report observed trigger denominator (MINOR)
+
+- The paired Skill-effectiveness summarizer silently ignored supplied non-boolean `triggered` values, changing the denominator of its `trigger_rate` without warning. It now rejects non-null malformed trigger values for every trial, including excluded scorer/harness/insufficient-evidence arms; missing/null remain unmeasured, never false or zero.
+- Add `trigger_observed_count` to each comparable variant summary so the number of measured boolean trigger observations is explicit and can be distinguished from `trial_count`. A partial observation rate is still a rate among observed booleans, not proof of complete discovery coverage. Existing valid paired decision rates remain unchanged.
+- RED test-only `81b3eb4a73cd503e98667554a73117bfa0f89584`: [Actions #40645366608](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40645366608), 2258 tests / 12 FAIL / 3 ERROR. Minimal fix `86a33d549bb5b32047e075a959e41c15ac46bc1a`: [GREEN #40645433397](https://github.com/zerlinpi/amazon-ads-skills/actions/runs/40645433397), 2258 PASS, 15 Skills and 55 Evals PASS. Sixteen synthetic deterministic tests; no new Skill, schema, dependency, live harness or Ads write.
+- Internal benchmark schema and evaluation protocol are the normative basis; Amazon Ads official documentation and third-party harnesses do not define this internal field. See research and SOURCES for reviewed provenance, license and rejection decisions.
+
 ## v2.5.0 — 2026-10-28
 
 ### Fail closed on unresolved single-run Skill-evaluation measurement identity (MINOR)

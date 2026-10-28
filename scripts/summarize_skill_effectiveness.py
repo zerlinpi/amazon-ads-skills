@@ -100,6 +100,13 @@ def _validate_resource_metrics(trial: dict[str, Any]) -> None:
             raise ValueError("trial.latency_ms must be a finite non-negative number or null")
 
 
+def _validate_trigger_measurement(trial: dict[str, Any]) -> None:
+    """Reject supplied non-boolean trigger telemetry without inventing zeros."""
+    triggered = trial.get("triggered")
+    if triggered is not None and not isinstance(triggered, bool):
+        raise ValueError("trial.triggered must be boolean or null")
+
+
 def _mean_optional(trials: list[dict[str, Any]], field: str) -> float | None:
     values = [trial.get(field) for trial in trials if isinstance(trial.get(field), (int, float)) and not isinstance(trial.get(field), bool)]
     return mean(values) if values else None
@@ -119,6 +126,7 @@ def _summarize_variant(trials: list[dict[str, Any]]) -> dict[str, Any]:
         "forbidden_behavior_rate": _rate(forbidden),
         "required_observations_rate": _rate(observations),
         "trigger_rate": _rate(trigger_values) if trigger_values else None,
+        "trigger_observed_count": len(trigger_values),
         "mean_tokens": _mean_optional(trials, "tokens"),
         "mean_latency_ms": _mean_optional(trials, "latency_ms"),
     }
@@ -232,6 +240,7 @@ def summarize(payload: dict[str, Any]) -> dict[str, Any]:
         if variant not in VARIANTS:
             raise ValueError("trial.variant must be with_skill or without_skill")
         _validate_resource_metrics(trial)
+        _validate_trigger_measurement(trial)
         status = _validate_measurement(trial)
         measurement_status_counts[status] += 1
         if variant in pairs[pair_id]:
