@@ -2,11 +2,13 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v1.116.0`  
+> 当前版本：`v2.0.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
 ## What you can do
+
+- **Stream v1 delta direct-sum proof (v2.0.0 breaking migration)** — deprecated Marketing Stream v1 delivers incremental changes, not complete window totals. The read-only aggregation gate now returns `Unknown` for additive/disjoint v1 data unless the external connector supplies Verified `idempotency_id_coverage`, `idempotency_id_deduplication`, and `delivery_window_coverage` under `stream_delta_reconciliation`. Previously unproven v1 rows could return `Allowed`; existing v1 callers must migrate their evidence envelope. Stream v2 retains separate highest-version-per-record proof. No Ads writes or connector retries are implemented here.
 
 - **Reject unproven sibling arrays in observed SP rule events** — schedule/event/budget `control_events` now return `Unknown` when either before/after rule state contains an additional direct array not covered by the registered rule-list completeness proof, including empty arrays. Valid schedule/event/active-budget rule collections and scalar extra fields remain compatible. No new schema, Skill, dependency or live Ads write.
 

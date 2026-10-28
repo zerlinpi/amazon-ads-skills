@@ -40,6 +40,24 @@ Do **not** treat `Amazon Marketing Stream` as a single version-independent inges
 - Amazon's Stream v2 performance dataset `ads-performance-v1` unifies advertising products; `adProduct.value` distinguishes Sponsored Products, Sponsored Brands, Sponsored Display and DSP performance rows. The v1 **sibling subscription** rule cannot be applied blindly to v2. Establish coverage for the actual v2 dataset plus required metrics, dimensions, profile/marketplace, grain and restatement window instead.
 - Stream v1 and v2 are **not interchangeable**: do not deduplicate v2 by the v1 `idempotency_id` contract, and do not treat v1 delta rows as v2 per-window totals. Migration comparison must reconcile compatible windows, grains, event/date semantics, product scopes, backfill and maturity rather than summing both generations as independent performance.
 
+For a decision that **directly sums Stream v1 delta metrics**, the same read-only aggregation gate now requires a separate connector-verified delta proof (v2.0.0 breaking change):
+
+```json
+{
+  "acquisition_channel": "amazon_marketing_stream_v1",
+  "operation": "sum",
+  "metric_semantics": {"aggregation_semantics": "additive"},
+  "source_relation": "disjoint",
+  "stream_delta_reconciliation": {
+    "idempotency_id_coverage": "Verified",
+    "idempotency_id_deduplication": "Verified",
+    "delivery_window_coverage": "Verified"
+  }
+}
+```
+
+Without all three Verified declarations for the exact dataset/account/time window, direct sum is `Unknown` rather than `Allowed`. This changes prior legacy behavior and requires downstream migration. Row disjointness alone is not proof of deduplicated deliveries; a v2 `stream_record_reconciliation` envelope cannot substitute for v1 `idempotency_id` evidence. The gate checks declarations only; external authorized ingestion owns actual deduplication, retry, window accounting and source authentication.
+
 For a decision that **directly sums base metrics from Stream v2 records**, load `../scripts/evaluate_metric_aggregation_gate.py` and supply `acquisition_channel=amazon_marketing_stream_v2` plus a source-supported `stream_record_reconciliation` envelope:
 
 ```json
