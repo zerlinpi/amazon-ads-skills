@@ -1464,9 +1464,5 @@ Initial public v1 release of the 15-Skill Amazon Ads decision library.
 
 - Reject unresolved or padded observed measurement scope when an event supplies scope without expected_scope.
 - Preserve missing scope as missing; concrete opaque IDs remain compatible.
-
-
-## v2.9.0
-
 - Reject unresolved or padded account identity values in measurement and realization history projections.
 - Preserve missing account identity as missing; concrete opaque identifiers remain compatible.
