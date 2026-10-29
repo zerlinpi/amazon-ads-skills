@@ -238,5 +238,28 @@ class AccountIdentityProjectionTests(unittest.TestCase):
         self.assertEqual(projected["account_identity"]["global_advertiser_account_id"], "global-a")
 
 
+    def test_explicit_weak_only_account_identity_is_rejected_by_both_projectors(self):
+        weak_identity = {"country_code": "US"}
+
+        measurement_event = base_event("e-weak-m", weak_identity, timestamp="2026-09-17T16:00:00Z")
+        measurement_event["evidence_snapshot"] = {
+            "snapshot_id": "m-weak",
+            "captured_at": "2026-09-17T16:00:00Z",
+        }
+        measurement = invoke(MEASUREMENT_SCRIPT, [measurement_event])
+        self.assertEqual(measurement.returncode, 2)
+        self.assertIn("account identity", measurement.stderr.lower())
+
+        realization_event = base_event("e-weak-r", weak_identity, timestamp="2026-09-17T17:00:00Z")
+        realization_event["realization_snapshot"] = {
+            "snapshot_id": "r-weak",
+            "captured_at": "2026-09-17T17:00:00Z",
+            "realized_surfaces": ["shopping_results"],
+            "coverage_status": "Complete",
+        }
+        realization = invoke(REALIZATION_SCRIPT, [realization_event])
+        self.assertEqual(realization.returncode, 2)
+        self.assertIn("account identity", realization.stderr.lower())
+
 if __name__ == "__main__":
     unittest.main()
