@@ -6,14 +6,6 @@
 - Missing account identity remains missing; concrete advertiser or regional profile identifiers remain supported.
 - Read-only provenance validation only. No Amazon Ads writes, retries, idempotency, reconciliation, new Skill, schema, dependency, or third-party code.
 
-## v2.14.0 — 2026-10-29
-
-### Weak-only account identity claims fail closed
-
-- Explicit account identity objects that contain only weak context such as `country_code` are now rejected instead of being silently downgraded to missing identity.
-- Missing account identity remains missing; concrete advertiser or regional profile identifiers remain supported.
-- This is read-only provenance validation. No Amazon Ads writes, retries, idempotency, reconciliation, or third-party code were added.
-
 ## v2.13.0 — 2026-10-29
 
 ### Realization partial-scope provenance
