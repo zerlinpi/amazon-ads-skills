@@ -4,12 +4,6 @@
 - Fix: explicit identity claims require at least one advertiser or regional profile identifier; missing identity remains missing and concrete opaque IDs remain valid.
 - No third-party code, prompt, schema, workflow, or template copied. External authorized Executor boundaries are unchanged.
 
-## 2026-10-29 — Weak-only account identity claim integrity (v2.14.0)
-
-- Internal deterministic gap: measurement and realization projectors silently discarded explicit account identity objects that contained only weak context fields such as `country_code`, treating an incomplete claim as missing identity.
-- Fix: explicit identity claims now require at least one advertiser or regional profile identifier; missing identity remains missing, while concrete opaque IDs remain valid.
-- No third-party code, prompt, schema, workflow, or template copied. External authorized Executor boundaries are unchanged.
-
 ## 2026-10-29 — Partial realization scope claim integrity (v2.13.0)
 
 - Verified internal gap: project_realization_history.py returned None when entity was absent or malformed before checking whether marketplace/profile scope had been supplied. A supplied partial scope claim could therefore be downgraded to legacy-unbound history and bypass fail-closed scope validation.
