@@ -106,14 +106,14 @@ def _normalize_expected_scope(value: Any) -> tuple[str, str, str, str] | None:
 
 
 def _event_scope(event: dict[str, Any]) -> tuple[Any, Any, Any, Any] | None:
-    entity = event.get("entity")
-    if not isinstance(entity, dict):
-        return None
-    # Preserve legacy events that only identify an entity. A scope object is
-    # considered supplied when marketplace/profile_scope is present; partial
-    # supplied scope remains invalid and is validated below.
+    # A supplied marketplace/profile_scope is a scope claim even when the
+    # entity object is absent or malformed. Treat that as partial scope so
+    # validation fails closed instead of silently downgrading to legacy-unbound.
     if "marketplace" not in event and "profile_scope" not in event:
         return None
+    entity = event.get("entity")
+    if not isinstance(entity, dict):
+        entity = {}
     return (
         event.get("marketplace"),
         event.get("profile_scope"),
