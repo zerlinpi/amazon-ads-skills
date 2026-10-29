@@ -1698,6 +1698,11 @@ New candidate review: WaytoAIC/waytoaic-amazon-ads-skills is a small public Skil
 - Source/reuse boundary: cross-account identity guidance and Amazon Ads reporting material support the abstract principle that account identity is a join boundary. No third-party code, prompt, schema, workflow or template was copied. External authorized Executor responsibilities are unchanged.
 
 
+## 2026-10-29 — Partial scope claim integrity (v2.12.0)
+
+- Internal deterministic gap: an event that supplied `marketplace`/`profile_scope` without a valid entity object could be treated as legacy-unbound because scope extraction returned `None` before validation. RED tests now cover measurement and comparison history; the minimal fix treats those fields as a supplied partial scope and fails closed.
+- This is a repository-owned provenance contract. Amazon Ads official profile/reporting materials and public lineage/eval projects are abstract context only; no third-party code, prompt, schema, workflow or template was copied. Missing/unknown/partial/unsupported remain non-evidence and never become zero. External authorized Executor boundaries are unchanged.
+
 ## 2026-10-29 — Realization observed-scope parity (v2.10.0)
 
 - Internal gap: realization-history projection accepted supplied marketplace/profile/entity scope without validating it when expected_scope was omitted, and legacy entity-only events were not distinguished from supplied partial scope.
