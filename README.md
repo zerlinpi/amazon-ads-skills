@@ -24,7 +24,7 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v2.14.0`  
+> 当前版本：`v2.15.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
