@@ -89,25 +89,20 @@ def _require_concrete_scope_value(value: Any, field: str) -> str:
 
 
 def _event_scope(event: dict[str, Any]) -> tuple[Any, Any, Any, Any] | None:
-    entity = event.get("entity")
-    if not isinstance(entity, dict):
-        return None
-    entity_type = entity.get("type")
-    entity_id = entity.get("id")
-    if not isinstance(entity_type, str) or not entity_type:
-        return None
-    if not isinstance(entity_id, str) or not entity_id:
-        return None
-    # Preserve legacy entity-only events. A scope is supplied when either
-    # marketplace or profile_scope is present; partial supplied scope is
-    # validated as incomplete rather than treated as missing.
+    # A supplied marketplace/profile_scope is a scope claim even when the
+    # entity object is absent or malformed. Preserve that claim as partial
+    # scope so validation fails closed instead of downgrading to legacy-unbound.
     if "marketplace" not in event and "profile_scope" not in event:
         return None
+
+    entity = event.get("entity")
+    if not isinstance(entity, dict):
+        entity = {}
     return (
         event.get("marketplace"),
         event.get("profile_scope"),
-        entity_type,
-        entity_id,
+        entity.get("type"),
+        entity.get("id"),
     )
 
 
