@@ -1,5 +1,11 @@
 # Amazon Ads Skills
 
+## v2.14.0 — Weak-only account identity claim integrity
+
+- Explicit `account_identity` objects now require at least one advertiser or regional profile identifier; weak-only claims such as `country_code` fail closed instead of becoming missing identity.
+- Missing identity remains missing; concrete opaque advertiser/profile identifiers remain supported.
+
+
 - **Reject partial realization scope claims without entity identity (v2.13.0)** — realization events that supply marketplace/profile scope without a concrete entity identity now fail closed instead of being downgraded to legacy-unbound history. Missing scope remains distinct from partial/unresolved scope; no Skill, schema, dependency or Ads write.
 
 - **Reject partial measurement/comparison scope claims (v2.12.0)** — a supplied marketplace/profile scope without a concrete entity identity now fails closed instead of silently downgrading to legacy-unbound history. Missing scope remains distinct from partial/unresolved scope; no Skill, schema, dependency or Ads write.
