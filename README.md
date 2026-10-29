@@ -1,5 +1,11 @@
 # Amazon Ads Skills
 
+## v2.14.0 — Weak-only account identity claim integrity
+
+- Explicit `account_identity` objects now require at least one advertiser or regional profile identifier; weak-only claims such as `country_code` fail closed instead of becoming missing identity.
+- Missing identity remains missing; concrete opaque advertiser/profile identifiers remain supported.
+
+
 - **Reject partial realization scope claims without entity identity (v2.13.0)** — realization events that supply marketplace/profile scope without a concrete entity identity now fail closed instead of being downgraded to legacy-unbound history. Missing scope remains distinct from partial/unresolved scope; no Skill, schema, dependency or Ads write.
 
 - **Reject partial measurement/comparison scope claims (v2.12.0)** — a supplied marketplace/profile scope without a concrete entity identity now fails closed instead of silently downgrading to legacy-unbound history. Missing scope remains distinct from partial/unresolved scope; no Skill, schema, dependency or Ads write.
@@ -12,7 +18,7 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v2.13.0`  
+> 当前版本：`v2.14.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 

@@ -365,7 +365,9 @@ When a change materially affects source comparability, negatives, bid/budget rev
 
 ## Measurement scope validation
 
-When an event contains an observed scope object, validate all scope fields even if expected_scope is omitted. Unresolved placeholders and padded values are invalid provenance; absence of a scope object remains distinct from an unresolved supplied scope. Do not convert unresolved or missing scope to zero, false, or a usable identity.
+When an event contains an observed scope object, validate all scope fields even if expected_scope is omitted.
+
+When an event explicitly supplies an account_identity object, it must contain at least one advertiser or regional profile identifier. Weak-only claims such as country_code are partial identity, not missing identity, and must fail closed. Missing account_identity remains distinct from an explicit incomplete claim. Unresolved placeholders and padded values are invalid provenance; absence of a scope object remains distinct from an unresolved supplied scope. Do not convert unresolved or missing scope to zero, false, or a usable identity.
 
 
 ## Realization measurement scope validation
@@ -389,3 +391,8 @@ Realization projector callers must provide concrete, unpadded expected scope val
 ## Partial realization scope claim validation
 
 When a realization event supplies marketplace or profile_scope, it is a scope claim even if the entity object is absent or malformed. Reject the event as partial/unresolved provenance rather than downgrading it to a legacy unbound event. Missing scope remains distinct from supplied partial scope.
+
+
+## Weak-only account identity claim validation
+
+When an event explicitly supplies an account_identity object, it must contain at least one advertiser or regional profile identifier. Weak-only claims such as country_code are incomplete identity and must fail closed rather than being silently downgraded to missing identity. Missing account_identity remains distinct from an explicit incomplete claim.
