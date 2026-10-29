@@ -1,3 +1,10 @@
+## v2.13.0 — 2026-10-29
+
+### Realization partial-scope provenance
+
+- Reject realization events that supply marketplace/profile scope without a concrete entity identity; preserve missing versus partial/unresolved scope semantics.
+- RED→GREEN deterministic coverage added; no live Ads calls or writes.
+
 ## v2.11.0 — 2026-10-29
 
 ### Realization expected-scope placeholder integrity
