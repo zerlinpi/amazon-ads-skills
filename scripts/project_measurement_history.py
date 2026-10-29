@@ -158,7 +158,7 @@ def _event_account_identity(event: dict[str, Any]) -> dict[str, Any] | None:
             item, f"account identity {field}"
         )
 
-    if normalized and not any(field in normalized for field in STRONG_ACCOUNT_IDENTITY_FIELDS):
+    if not normalized or not any(field in normalized for field in STRONG_ACCOUNT_IDENTITY_FIELDS):
         raise ValueError(
             "account identity must include at least one advertiser or regional profile identifier"
         )

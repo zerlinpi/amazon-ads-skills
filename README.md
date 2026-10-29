@@ -1,5 +1,11 @@
 # Amazon Ads Skills
 
+## v2.15.0 — Explicit empty account identity integrity
+
+- Explicit empty or provenance-only `account_identity` objects now fail closed as incomplete claims in measurement and comparison projections.
+- Missing identity remains distinct from an explicit incomplete claim; no Skill, schema, dependency or Ads write.
+
+
 ## v2.14.0 — Weak-only account identity claim integrity
 
 - Explicit `account_identity` objects now require at least one advertiser or regional profile identifier; weak-only claims such as `country_code` fail closed instead of becoming missing identity.
@@ -18,7 +24,7 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v2.14.0`  
+> 当前版本：`v2.15.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
