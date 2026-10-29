@@ -1,3 +1,14 @@
+## v2.15.0 — 2026-10-30
+
+### Fixed
+
+- Explicit empty or provenance-only `account_identity` objects now fail closed as incomplete claims in measurement and comparison projections.
+- Missing identity remains distinct from an explicit incomplete claim; no Skill, schema, dependency or Ads write.
+
+### Verification
+
+- Deterministic RED regression added before the minimal fix; full repository unit tests and Skill/eval validators are required on the final PR HEAD.
+
 ## v2.14.0 — 2026-10-29
 
 ### Weak-only account identity claims fail closed
