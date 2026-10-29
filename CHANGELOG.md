@@ -26,6 +26,13 @@
 
 # Changelog
 
+## v2.12.0 — 2026-10-29
+
+- RED tests prove that measurement and comparison history reject supplied marketplace/profile scope claims when entity identity is absent.
+- Minimal fix makes `_event_scope` treat marketplace/profile as a claim even without a valid entity object; missing scope remains legacy-compatible and partial scope fails closed.
+- No live Ads writes, retries, idempotency or reconciliation.
+
+
 ## v2.6.0 — 2026-10-28
 
 ### Validate trigger telemetry and report observed trigger denominator (MINOR)
