@@ -372,6 +372,10 @@ When an event contains an observed scope object, validate all scope fields even 
 
 When a realization event supplies marketplace or profile scope, validate all scope fields even if expected_scope is omitted. Unresolved placeholders and padded values are invalid provenance; absence of marketplace/profile scope remains distinct from a supplied partial/unresolved scope. Legacy entity-only events remain compatible without upgrading to verified scope.
 
+## Partial scope claim validation
+
+When an event supplies `marketplace` or `profile_scope`, it is a scope claim even if the `entity` object is absent or malformed. Reject the event as partial/unresolved provenance rather than downgrading it to a legacy unbound event. Missing scope remains distinct from supplied partial scope.
+
 ## Account identity validation
 
 Account identity fields in read-only measurement/realization projections must be concrete, unpadded strings. Whole-label unresolved values such as Unknown, Partial, Missing, Unsupported, Unavailable, Not Applicable and N/A are invalid provenance. Missing account identity remains missing; concrete opaque IDs containing these words as a substring remain valid. Do not convert unresolved or missing account identity to zero, false, or a usable join key.
