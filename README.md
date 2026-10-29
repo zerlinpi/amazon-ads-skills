@@ -8,7 +8,7 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v2.10.0`  
+> 当前版本：`v2.11.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
@@ -298,3 +298,9 @@ Use pull requests and RED→GREEN for behavioral changes: prove the gap with a d
 ## License
 
 Repository-owned code and Skills are distributed under [MIT](LICENSE). Amazon documentation and third-party projects retain their own copyrights and licenses.
+
+## v2.11.0 — Realization expected-scope placeholder integrity
+
+- Realization history now rejects unresolved or padded `expected_scope` values before projection.
+- Missing, unknown, partial, and unsupported scope values remain non-evidence and are never converted to zero or a usable identity.
+- No live Amazon Ads writes, retries, idempotency, or reconciliation are introduced.

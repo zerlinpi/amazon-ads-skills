@@ -290,5 +290,60 @@ class RealizationProjectorTests(unittest.TestCase):
         self.assertEqual(projected["last_observed_realization"]["snapshot_id"], "r1")
 
 
+
+    def test_unresolved_expected_scope_is_rejected_before_projection(self):
+        result = self.invoke_projector(
+            [
+                {
+                    "event_id": "e1",
+                    "timestamp": "2026-09-14T08:00:00Z",
+                    "marketplace": "US",
+                    "profile_scope": "profile-a",
+                    "entity": {"type": "campaign", "id": "campaign-1"},
+                    "realization_snapshot": {
+                        "snapshot_id": "r1",
+                        "captured_at": "2026-09-14T08:00:00Z",
+                        "realized_surfaces": ["shopping_results"],
+                        "coverage_status": "Complete",
+                    },
+                }
+            ],
+            expected_scope={
+                "marketplace": "Unknown",
+                "profile_scope": "profile-a",
+                "entity_type": "campaign",
+                "entity_id": "campaign-1",
+            },
+        )
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("expected_scope", result.stderr)
+
+    def test_padded_expected_scope_is_rejected_before_projection(self):
+        result = self.invoke_projector(
+            [
+                {
+                    "event_id": "e1",
+                    "timestamp": "2026-09-14T08:00:00Z",
+                    "marketplace": "US",
+                    "profile_scope": "profile-a",
+                    "entity": {"type": "campaign", "id": "campaign-1"},
+                    "realization_snapshot": {
+                        "snapshot_id": "r1",
+                        "captured_at": "2026-09-14T08:00:00Z",
+                        "realized_surfaces": ["shopping_results"],
+                        "coverage_status": "Complete",
+                    },
+                }
+            ],
+            expected_scope={
+                "marketplace": " US",
+                "profile_scope": "profile-a",
+                "entity_type": "campaign",
+                "entity_id": "campaign-1",
+            },
+        )
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("expected_scope", result.stderr)
+
 if __name__ == "__main__":
     unittest.main()
