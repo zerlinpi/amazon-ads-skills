@@ -384,3 +384,8 @@ Account identity fields in read-only measurement/realization projections must be
 ### v2.11.0 scope-integrity note
 
 Realization projector callers must provide concrete, unpadded expected scope values. Unresolved placeholders are rejected before any projection; missing scope remains missing.
+
+
+## Partial realization scope claim validation
+
+When a realization event supplies marketplace or profile_scope, it is a scope claim even if the entity object is absent or malformed. Reject the event as partial/unresolved provenance rather than downgrading it to a legacy unbound event. Missing scope remains distinct from supplied partial scope.
