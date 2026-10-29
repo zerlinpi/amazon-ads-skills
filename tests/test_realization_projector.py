@@ -291,6 +291,26 @@ class RealizationProjectorTests(unittest.TestCase):
 
 
 
+    def test_partial_scope_without_entity_is_rejected(self):
+        result = self.invoke_projector(
+            [
+                {
+                    "event_id": "partial-scope",
+                    "timestamp": "2026-10-29T08:00:00Z",
+                    "marketplace": "US",
+                    "profile_scope": "profile-a",
+                    "realization_snapshot": {
+                        "captured_at": "2026-10-29T08:00:00Z",
+                        "realized_surfaces": ["shopping_results"],
+                        "coverage_status": "Complete",
+                    },
+                }
+            ]
+        )
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("scope", result.stderr.lower())
+
     def test_unresolved_expected_scope_is_rejected_before_projection(self):
         result = self.invoke_projector(
             [

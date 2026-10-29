@@ -1,5 +1,7 @@
 # Amazon Ads Skills
 
+- **Reject partial realization scope claims without entity identity (v2.13.0)** — realization events that supply marketplace/profile scope without a concrete entity identity now fail closed instead of being downgraded to legacy-unbound history. Missing scope remains distinct from partial/unresolved scope; no Skill, schema, dependency or Ads write.
+
 - **Reject partial measurement/comparison scope claims (v2.12.0)** — a supplied marketplace/profile scope without a concrete entity identity now fails closed instead of silently downgrading to legacy-unbound history. Missing scope remains distinct from partial/unresolved scope; no Skill, schema, dependency or Ads write.
 
 - **Reject unresolved account identity placeholders (v2.9.0)** — account identity fields now reject whole-label unresolved values and padded values in measurement and realization projections; concrete opaque IDs containing placeholder substrings remain valid. Read-only lineage guard only; no Skill or Ads write.
@@ -10,7 +12,7 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v2.12.0`  
+> 当前版本：`v2.13.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
