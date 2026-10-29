@@ -158,8 +158,10 @@ def _event_account_identity(event: dict[str, Any]) -> dict[str, Any] | None:
             item, f"account identity {field}"
         )
 
-    if not any(field in normalized for field in STRONG_ACCOUNT_IDENTITY_FIELDS):
-        return None
+    if normalized and not any(field in normalized for field in STRONG_ACCOUNT_IDENTITY_FIELDS):
+        raise ValueError(
+            "account identity must include at least one advertiser or regional profile identifier"
+        )
 
     provenance = value.get("identity_mapping_provenance")
     if provenance is not None:
