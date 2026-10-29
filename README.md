@@ -1,5 +1,11 @@
 # Amazon Ads Skills
 
+## v2.15.0 — Explicit empty account identity integrity
+
+- Explicit empty or provenance-only `account_identity` objects now fail closed as incomplete claims in measurement and comparison projections.
+- Missing identity remains distinct from an explicit incomplete claim; no Skill, schema, dependency or Ads write.
+
+
 ## v2.14.0 — Weak-only account identity claim integrity
 
 - Explicit `account_identity` objects now require at least one advertiser or regional profile identifier; weak-only claims such as `country_code` fail closed instead of becoming missing identity.
