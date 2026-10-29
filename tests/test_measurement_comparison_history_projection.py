@@ -243,5 +243,15 @@ class MeasurementComparisonExpectedScopeTests(unittest.TestCase):
                 expected_scope=self._scope(account_identity={"country_code": "US"}),
             )
 
+    def test_partial_scope_without_entity_is_rejected(self):
+        item = event("partial-scope", "2026-10-09T08:00:00Z", measurement_comparison=comparison())
+        item.pop("entity")
+        item["marketplace"] = "US"
+        item["profile_scope"] = "profile-us-1"
+        with self.assertRaisesRegex(ValueError, "scope"):
+            project_measurement_comparison_history([item])
+
+
+
 if __name__ == "__main__":
     unittest.main()
