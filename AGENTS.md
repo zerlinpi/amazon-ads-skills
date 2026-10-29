@@ -383,16 +383,6 @@ When an event supplies `marketplace` or `profile_scope`, it is a scope claim eve
 Account identity fields in read-only measurement/realization projections must be concrete, unpadded strings. Whole-label unresolved values such as Unknown, Partial, Missing, Unsupported, Unavailable, Not Applicable and N/A are invalid provenance. Missing account identity remains missing; concrete opaque IDs containing these words as a substring remain valid. Do not convert unresolved or missing account identity to zero, false, or a usable join key.
 
 
-### v2.11.0 scope-integrity note
-
-Realization projector callers must provide concrete, unpadded expected scope values. Unresolved placeholders are rejected before any projection; missing scope remains missing.
-
-
-## Partial realization scope claim validation
-
-When a realization event supplies marketplace or profile_scope, it is a scope claim even if the entity object is absent or malformed. Reject the event as partial/unresolved provenance rather than downgrading it to a legacy unbound event. Missing scope remains distinct from supplied partial scope.
-
-
 ## Weak-only account identity claim validation
 
 When an event explicitly supplies an account_identity object, it must contain at least one advertiser or regional profile identifier. Weak-only claims such as country_code are incomplete identity and must fail closed rather than being silently downgraded to missing identity. Missing account_identity remains distinct from an explicit incomplete claim.
