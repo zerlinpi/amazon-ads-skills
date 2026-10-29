@@ -224,5 +224,23 @@ class MeasurementProjectorTests(unittest.TestCase):
         )
 
 
+    def test_partial_scope_without_entity_is_rejected(self):
+        result = self.invoke_projector(
+            [{
+                "event_id": "partial-scope",
+                "timestamp": "2026-10-09T08:00:00Z",
+                "marketplace": "US",
+                "profile_scope": "profile-a",
+                "evidence_snapshot": {
+                    "captured_at": "2026-10-09T08:00:00Z",
+                    "coverage_status": "Complete",
+                },
+            }]
+        )
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("scope", result.stderr.lower())
+
+
+
 if __name__ == "__main__":
     unittest.main()

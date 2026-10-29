@@ -1,5 +1,7 @@
 # Amazon Ads Skills
 
+- **Reject partial measurement/comparison scope claims (v2.12.0)** — a supplied marketplace/profile scope without a concrete entity identity now fails closed instead of silently downgrading to legacy-unbound history. Missing scope remains distinct from partial/unresolved scope; no Skill, schema, dependency or Ads write.
+
 - **Reject unresolved account identity placeholders (v2.9.0)** — account identity fields now reject whole-label unresolved values and padded values in measurement and realization projections; concrete opaque IDs containing placeholder substrings remain valid. Read-only lineage guard only; no Skill or Ads write.
 
 - **Reject unresolved observed realization scope without expected scope (v2.10.0)** — realization projections now validate any supplied marketplace/profile/entity scope even when expected_scope is omitted; legacy entity-only events remain distinct from supplied partial/unresolved scope.
@@ -8,7 +10,7 @@
 
 A portable **Amazon Ads decision library for AI agents**. It packages 15 focused Skills for audit, monitoring, diagnosis, growth, experiments, search terms, targeting, bids, budgets, placements, profitability and post-change learning without turning this repository into an autonomous write bot.
 
-> 当前版本：`v2.11.0`  
+> 当前版本：`v2.12.0`  
 > Default mode: `Suggest`  
 > Live Amazon Ads writes: external Connector / Executor only
 
@@ -298,6 +300,12 @@ Use pull requests and RED→GREEN for behavioral changes: prove the gap with a d
 ## License
 
 Repository-owned code and Skills are distributed under [MIT](LICENSE). Amazon documentation and third-party projects retain their own copyrights and licenses.
+
+## v2.12.0 — Partial scope claim integrity
+
+- Measurement and comparison history now reject marketplace/profile scope claims without a concrete entity type/id.
+- Missing scope remains missing; supplied partial/unresolved scope is not promoted to a usable identity.
+- No live Amazon Ads writes, retries, idempotency, or reconciliation are introduced.
 
 ## v2.11.0 — Realization expected-scope placeholder integrity
 
